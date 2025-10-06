@@ -26,7 +26,7 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
               <img src={logo} alt={name} className="w-full h-full object-contain rounded-md" data-testid="img-broker-logo" />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="text-lg md:text-xl font-bold text-foreground break-words leading-tight" data-testid="text-broker-name">{name}</h3>
+              <h3 className="text-base md:text-lg font-bold text-foreground break-words leading-tight" data-testid="text-broker-name">{name}</h3>
               <div className="flex items-center gap-1 mt-2">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
