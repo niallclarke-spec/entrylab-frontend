@@ -6,15 +6,40 @@ import { useToast } from "@/hooks/use-toast";
 
 export function NewsletterCTA() {
   const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Subscribed!",
-      description: "You'll receive the latest forex news and updates.",
-    });
-    setEmail("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Subscription failed");
+      }
+
+      toast({
+        title: "Subscribed!",
+        description: "You'll receive the latest forex news and updates.",
+      });
+      setEmail("");
+    } catch (error) {
+      toast({
+        title: "Subscription Failed",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const benefits = [
@@ -64,8 +89,8 @@ export function NewsletterCTA() {
                   />
                 </div>
               </div>
-              <Button type="submit" size="lg" className="w-full" data-testid="button-subscribe">
-                Subscribe Now
+              <Button type="submit" size="lg" className="w-full" disabled={isSubmitting} data-testid="button-subscribe">
+                {isSubmitting ? "Subscribing..." : "Subscribe Now"}
               </Button>
               <p className="text-xs text-muted-foreground text-center">
                 We respect your privacy. Unsubscribe at any time.
