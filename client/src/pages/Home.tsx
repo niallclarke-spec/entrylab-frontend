@@ -99,9 +99,9 @@ export default function Home() {
   const featuredPost = posts?.[0];
   const latestPosts = posts?.slice(1, 7) || [];
   
-  // Separate featured broker from popular brokers based on category
+  // Featured broker shows in featured section, all brokers show in popular section
   const featuredBroker = brokers.find(b => b.featured);
-  const popularBrokers = brokers.filter(b => !b.featured);
+  const popularBrokers = brokers;
 
   const getCategoryName = (post: WordPressPost) => {
     return post._embedded?.["wp:term"]?.[0]?.[0]?.name || "News";
