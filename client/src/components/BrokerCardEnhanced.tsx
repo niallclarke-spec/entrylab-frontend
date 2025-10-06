@@ -25,16 +25,16 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
             <div className="w-28 h-28 rounded-xl bg-white dark:bg-card flex items-center justify-center shadow-sm p-4 flex-shrink-0" style={{ border: '0.5px solid rgba(128, 128, 128, 0.15)' }}>
               <img src={logo} alt={name} className="w-full h-full object-contain rounded-md" data-testid="img-broker-logo" />
             </div>
-            <div className="min-w-0">
-              <h3 className="text-xl font-bold text-foreground" data-testid="text-broker-name">{name}</h3>
-              <div className="flex items-center gap-2 mt-1">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-lg md:text-xl font-bold text-foreground break-words leading-tight" data-testid="text-broker-name">{name}</h3>
+              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
-                    className={`h-6 w-6 ${i < rating ? "text-amber-500 fill-amber-500" : "text-muted"}`}
+                    className={`h-6 w-6 flex-shrink-0 ${i < rating ? "text-amber-500 fill-amber-500" : "text-muted"}`}
                   />
                 ))}
-                <span className="text-sm text-muted-foreground ml-1">{rating}/5</span>
+                <span className="text-sm font-semibold text-foreground ml-1">{rating}/5</span>
               </div>
             </div>
           </div>
