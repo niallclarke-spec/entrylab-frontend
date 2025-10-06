@@ -76,7 +76,7 @@ export default function Archive() {
                 placeholder="Search articles..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-10 focus-visible:ring-primary focus-visible:ring-2 focus-visible:shadow-[0_0_20px_rgba(168,85,246,0.3)]"
                 data-testid="input-search-articles"
               />
             </div>
@@ -95,20 +95,6 @@ export default function Archive() {
                 {category.name}
               </Badge>
             ))}
-          </div>
-
-          {/* Results Count */}
-          <div className="mb-6">
-            <p className="text-sm text-muted-foreground text-center">
-              {isLoading ? (
-                "Loading articles..."
-              ) : (
-                <>
-                  Showing <span className="font-semibold text-foreground">{filteredPosts.length}</span> {filteredPosts.length === 1 ? "article" : "articles"}
-                  {searchQuery && ` matching "${searchQuery}"`}
-                </>
-              )}
-            </p>
           </div>
 
           {/* Posts Grid */}
