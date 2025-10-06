@@ -1,0 +1,145 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
+import { ArticleCard } from "@/components/ArticleCard";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Search, Loader2 } from "lucide-react";
+import type { WordPressPost } from "@shared/schema";
+
+export default function Archive() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
+  const { data: categories } = useQuery<any[]>({
+    queryKey: ["/api/wordpress/categories"],
+  });
+
+  const { data: posts, isLoading } = useQuery<WordPressPost[]>({
+    queryKey: ["/api/wordpress/posts"],
+  });
+
+  const getCategoryName = (post: WordPressPost) => 
+    post._embedded?.["wp:term"]?.[0]?.[0]?.name || "News";
+  
+  const getCategorySlug = (post: WordPressPost) => 
+    post._embedded?.["wp:term"]?.[0]?.[0]?.slug || "";
+
+  const getAuthorName = (post: WordPressPost) => 
+    post._embedded?.author?.[0]?.name || "EntryLab Team";
+  
+  const getFeaturedImage = (post: WordPressPost) => 
+    post._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
+
+  const stripHtml = (html: string) => {
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return div.textContent || div.innerText || "";
+  };
+
+  const filteredPosts = posts?.filter(post => {
+    const matchesCategory = selectedCategory === "all" || getCategorySlug(post) === selectedCategory;
+    const matchesSearch = searchQuery === "" || 
+      stripHtml(post.title.rendered).toLowerCase().includes(searchQuery.toLowerCase()) ||
+      stripHtml(post.excerpt.rendered).toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  }) || [];
+
+  const allCategories = [
+    { name: "All Posts", slug: "all" },
+    ...(categories || []).map(cat => ({ name: cat.name, slug: cat.slug }))
+  ];
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navigation />
+      
+      <main className="flex-1 py-12 md:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+              Article Archive
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Browse our complete collection of forex broker news, prop firm updates, and trading analysis
+            </p>
+          </div>
+
+          {/* Search Bar */}
+          <div className="max-w-2xl mx-auto mb-8">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search articles..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+                data-testid="input-search-articles"
+              />
+            </div>
+          </div>
+
+          {/* Category Filter */}
+          <div className="flex flex-wrap gap-2 justify-center mb-12">
+            {allCategories.map((category) => (
+              <Badge
+                key={category.slug}
+                variant={selectedCategory === category.slug ? "default" : "outline"}
+                className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
+                onClick={() => setSelectedCategory(category.slug)}
+                data-testid={`badge-category-${category.slug}`}
+              >
+                {category.name}
+              </Badge>
+            ))}
+          </div>
+
+          {/* Results Count */}
+          <div className="mb-6">
+            <p className="text-sm text-muted-foreground text-center">
+              {isLoading ? (
+                "Loading articles..."
+              ) : (
+                <>
+                  Showing <span className="font-semibold text-foreground">{filteredPosts.length}</span> {filteredPosts.length === 1 ? "article" : "articles"}
+                  {searchQuery && ` matching "${searchQuery}"`}
+                </>
+              )}
+            </p>
+          </div>
+
+          {/* Posts Grid */}
+          {isLoading ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : filteredPosts.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-muted-foreground">No articles found matching your criteria.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredPosts.map((post) => (
+                <ArticleCard
+                  key={post.id}
+                  title={post.title.rendered}
+                  excerpt={post.excerpt.rendered}
+                  author={getAuthorName(post)}
+                  date={post.date}
+                  category={getCategoryName(post)}
+                  link={`/article/${post.slug}`}
+                  imageUrl={getFeaturedImage(post)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
