@@ -57,15 +57,21 @@ export default function Home() {
     if (!name) return null;
     
     // Key features for the 4 feature cards (from broker_usp)
-    const keyFeatures = acf.broker_usp ? acf.broker_usp.split('\n').filter((f: string) => f.trim()).slice(0, 4) : [
-      "Ultra-low spreads",
-      "Fast execution",
-      "Regulated broker",
-      "24/7 support"
-    ];
+    // Handle both comma-separated and newline-separated
+    const keyFeatures = acf.broker_usp 
+      ? acf.broker_usp.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f).slice(0, 4)
+      : [
+        "Ultra-low spreads",
+        "Fast execution",
+        "Regulated broker",
+        "24/7 support"
+      ];
     
     // Why choose reasons (from why_choose)
-    const whyChoose = acf.why_choose ? acf.why_choose.split('\n').filter((f: string) => f.trim()) : keyFeatures;
+    // Handle both comma-separated and newline-separated
+    const whyChoose = acf.why_choose 
+      ? acf.why_choose.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f)
+      : keyFeatures;
     
     return {
       id: wpBroker.id.toString(),
