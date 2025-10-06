@@ -184,16 +184,16 @@ export default function Home() {
 
           {popularBrokers.length > 0 && (
             <section className="py-16 md:py-24 bg-gradient-to-b from-background via-card/50 to-background">
-              <div className="max-w-7xl mx-auto px-6">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6">
                 <div className="text-center mb-12">
                   <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4" data-testid="text-popular-brokers">
                     Top Rated Brokers
                   </h2>
-                  <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                  <p className="text-lg text-muted-foreground max-w-2xl mx-auto px-4">
                     Compare the best forex brokers trusted by thousands of traders worldwide
                   </p>
                 </div>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {popularBrokers.map((broker) => (
                     <BrokerCardEnhanced
                       key={broker.id}
