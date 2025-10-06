@@ -31,7 +31,7 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
-                    className={`h-4 w-4 ${i < rating ? "text-amber-500 fill-amber-500" : "text-muted"}`}
+                    className={`h-5 w-5 ${i < rating ? "text-amber-500 fill-amber-500" : "text-muted"}`}
                   />
                 ))}
                 <span className="text-sm text-muted-foreground ml-1">{rating}/5</span>
@@ -39,7 +39,7 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
             </div>
           </div>
           {verified && (
-            <Badge className="bg-chart-2 hover:bg-chart-2/80 text-white border-0 flex-shrink-0" data-testid="badge-verified">
+            <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white border-0 flex-shrink-0" data-testid="badge-verified">
               <CheckCircle2 className="h-3 w-3 mr-1" />
               Verified
             </Badge>
