@@ -38,7 +38,7 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
           <div className="grid md:grid-cols-[300px,1fr] gap-0">
             {/* Left Side - Broker Info */}
             <div className="bg-gradient-to-br from-primary/20 to-primary/5 p-8 flex flex-col items-center justify-center border-r">
-              <div className="w-40 h-40 bg-gradient-to-br from-white/95 to-white/90 dark:from-card dark:to-background rounded-2xl flex items-center justify-center mb-4 shadow-xl border border-border/50 p-6 ring-1 ring-primary/10">
+              <div className="w-40 h-40 bg-gradient-to-br from-white/95 to-white/90 dark:from-card dark:to-background rounded-2xl flex items-center justify-center mb-4 shadow-lg border border-border/20 p-6">
                 <img src={logo} alt={name} className="w-full h-full object-contain" data-testid="img-featured-logo" />
               </div>
               <h3 className="text-2xl font-bold text-foreground mb-2 text-center" data-testid="text-featured-name">{name}</h3>
