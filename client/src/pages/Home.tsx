@@ -133,6 +133,7 @@ export default function Home() {
             date={featuredPost.date}
             category={getCategoryName(featuredPost)}
             link={`/article/${featuredPost.slug}`}
+            imageUrl={getFeaturedImage(featuredPost)}
           />
 
           <TrendingTopics 
