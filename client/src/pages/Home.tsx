@@ -45,24 +45,34 @@ export default function Home() {
     queryKey: ["/api/wordpress/brokers"],
   });
 
+  const { data: fallbackBrokers } = useQuery<Broker[]>({
+    queryKey: ["/api/brokers"],
+  });
+
   const transformBroker = (wpBroker: any): Broker | null => {
     const meta = wpBroker.meta || {};
     const logo = wpBroker._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
     
-    if (!meta.broker_name || !meta.rating) return null;
+    // Use title as name if broker_name meta isn't available yet
+    const name = meta.broker_name || wpBroker.title?.rendered;
+    if (!name) return null;
     
-    const features = meta.broker_usp ? meta.broker_usp.split('\n').filter((f: string) => f.trim()) : [];
+    const features = meta.broker_usp ? meta.broker_usp.split('\n').filter((f: string) => f.trim()) : [
+      "Regulated broker",
+      "Fast execution",
+      "24/7 support"
+    ];
     
     return {
       id: wpBroker.id.toString(),
-      name: meta.broker_name,
-      logo: logo || "https://placehold.co/200x80/1a1a1a/8b5cf6?text=" + encodeURIComponent(meta.broker_name),
+      name: name,
+      logo: logo || "https://placehold.co/200x80/1a1a1a/8b5cf6?text=" + encodeURIComponent(name),
       rating: parseFloat(meta.rating) || 4.5,
       verified: true,
       featured: wpBroker.id === wordpressBrokers?.[0]?.id,
-      tagline: meta.broker_intro || "",
-      bonusOffer: meta.bonus_offer || "",
-      link: meta.affiliate_link || "#",
+      tagline: meta.broker_intro || "Trusted forex broker",
+      bonusOffer: meta.bonus_offer || "Get 100% Deposit Bonus",
+      link: meta.affiliate_link || wpBroker.link || "#",
       pros: features.slice(0, 3),
       highlights: features,
       features: features.map((f: string) => ({ icon: "TrendingUp", title: f })),
@@ -70,7 +80,8 @@ export default function Home() {
     };
   };
 
-  const brokers = wordpressBrokers?.map(transformBroker).filter((b): b is Broker => b !== null) || [];
+  const wpBrokers = wordpressBrokers?.map(transformBroker).filter((b): b is Broker => b !== null) || [];
+  const brokers = wpBrokers.length > 0 ? wpBrokers : (fallbackBrokers || []);
 
   const featuredPost = posts?.[0];
   const latestPosts = posts?.slice(1, 7) || [];
