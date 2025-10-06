@@ -41,14 +41,41 @@ export default function Home() {
     },
   });
 
-  const { data: brokers } = useQuery<Broker[]>({
-    queryKey: ["/api/brokers"],
+  const { data: wordpressBrokers } = useQuery<any[]>({
+    queryKey: ["/api/wordpress/brokers"],
   });
+
+  const transformBroker = (wpBroker: any): Broker | null => {
+    const meta = wpBroker.meta || {};
+    const logo = wpBroker._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
+    
+    if (!meta.broker_name || !meta.rating) return null;
+    
+    const features = meta.broker_usp ? meta.broker_usp.split('\n').filter((f: string) => f.trim()) : [];
+    
+    return {
+      id: wpBroker.id.toString(),
+      name: meta.broker_name,
+      logo: logo || "https://placehold.co/200x80/1a1a1a/8b5cf6?text=" + encodeURIComponent(meta.broker_name),
+      rating: parseFloat(meta.rating) || 4.5,
+      verified: true,
+      featured: wpBroker.id === wordpressBrokers?.[0]?.id,
+      tagline: meta.broker_intro || "",
+      bonusOffer: meta.bonus_offer || "",
+      link: meta.affiliate_link || "#",
+      pros: features.slice(0, 3),
+      highlights: features,
+      features: features.map((f: string) => ({ icon: "TrendingUp", title: f })),
+      featuredHighlights: features.slice(0, 4),
+    };
+  };
+
+  const brokers = wordpressBrokers?.map(transformBroker).filter((b): b is Broker => b !== null) || [];
 
   const featuredPost = posts?.[0];
   const latestPosts = posts?.slice(1, 7) || [];
-  const featuredBroker = brokers?.find(b => b.featured);
-  const popularBrokers = brokers?.filter(b => !b.featured) || [];
+  const featuredBroker = brokers?.[0];
+  const popularBrokers = brokers?.slice(1) || [];
 
   const getCategoryName = (post: WordPressPost) => {
     return post._embedded?.["wp:term"]?.[0]?.[0]?.name || "News";
