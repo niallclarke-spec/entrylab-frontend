@@ -22,7 +22,7 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
       <CardHeader className="space-y-4 pb-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-xl bg-white dark:bg-card flex items-center justify-center shadow-sm p-3" style={{ border: '0.5px solid rgba(128, 128, 128, 0.15)' }}>
+            <div className="w-28 h-28 rounded-xl bg-white dark:bg-card flex items-center justify-center shadow-sm p-4" style={{ border: '0.5px solid rgba(128, 128, 128, 0.15)' }}>
               <img src={logo} alt={name} className="w-full h-full object-contain rounded-md" data-testid="img-broker-logo" />
             </div>
             <div>
