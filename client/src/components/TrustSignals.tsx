@@ -1,4 +1,4 @@
-import { Shield, Users, TrendingUp, Award } from "lucide-react";
+import { Shield, Users, TrendingUp, Award, Newspaper, Handshake, BarChart3, MessageCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 const iconMap: Record<string, any> = {
@@ -6,6 +6,10 @@ const iconMap: Record<string, any> = {
   trending: TrendingUp,
   award: Award,
   shield: Shield,
+  newspaper: Newspaper,
+  handshake: Handshake,
+  barchart: BarChart3,
+  community: MessageCircle,
 };
 
 export function TrustSignals() {
