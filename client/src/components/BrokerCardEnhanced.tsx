@@ -31,7 +31,7 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
-                    className={`h-5 w-5 ${i < rating ? "text-amber-500 fill-amber-500" : "text-muted"}`}
+                    className={`h-6 w-6 ${i < rating ? "text-amber-500 fill-amber-500" : "text-muted"}`}
                   />
                 ))}
                 <span className="text-sm text-muted-foreground ml-1">{rating}/5</span>
@@ -61,8 +61,8 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
             {pros.slice(0, 3).map((pro, index) => {
               const Icon = icons[index % icons.length];
               return (
-                <div key={index} className="flex items-start gap-2" data-testid={`pro-${index}`}>
-                  <div className="flex-shrink-0 w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center mt-0.5">
+                <div key={index} className="flex items-center gap-2" data-testid={`pro-${index}`}>
+                  <div className="flex-shrink-0 w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center">
                     <Icon className="h-4 w-4 text-primary" />
                   </div>
                   <p className="text-sm text-muted-foreground flex-1">{pro}</p>
