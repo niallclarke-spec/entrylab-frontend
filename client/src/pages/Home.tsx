@@ -56,6 +56,10 @@ export default function Home() {
     const name = wpBroker.title?.rendered;
     if (!name) return null;
     
+    // Check if broker has "featured-broker" category
+    const categories = wpBroker._embedded?.["wp:term"]?.[0] || [];
+    const isFeatured = categories.some((cat: any) => cat.slug === "featured-broker");
+    
     // Key features for the 4 feature cards (from broker_usp)
     // Handle both comma-separated and newline-separated
     const keyFeatures = acf.broker_usp 
@@ -79,7 +83,7 @@ export default function Home() {
       logo: logo || "https://placehold.co/200x80/1a1a1a/8b5cf6?text=" + encodeURIComponent(name),
       rating: parseFloat(acf.rating) || 4.5,
       verified: true,
-      featured: wpBroker.id === wordpressBrokers?.[0]?.id,
+      featured: isFeatured,
       tagline: acf.broker_intro || "Trusted forex broker",
       bonusOffer: acf.bonus_offer || "Get 100% Deposit Bonus",
       link: acf.affiliate_link || wpBroker.link || "#",
@@ -95,8 +99,10 @@ export default function Home() {
 
   const featuredPost = posts?.[0];
   const latestPosts = posts?.slice(1, 7) || [];
-  const featuredBroker = brokers?.[0];
-  const popularBrokers = brokers?.slice(1) || [];
+  
+  // Separate featured broker from popular brokers based on category
+  const featuredBroker = brokers.find(b => b.featured);
+  const popularBrokers = brokers.filter(b => !b.featured);
 
   const getCategoryName = (post: WordPressPost) => {
     return post._embedded?.["wp:term"]?.[0]?.[0]?.name || "News";
