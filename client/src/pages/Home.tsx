@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
 import { MarketTicker } from "@/components/MarketTicker";
 import { Hero } from "@/components/Hero";
+import { TrendingTopics } from "@/components/TrendingTopics";
 import { ArticleCard } from "@/components/ArticleCard";
 import { BrokerCard } from "@/components/BrokerCard";
 import { NewsletterCTA } from "@/components/NewsletterCTA";
@@ -52,6 +53,8 @@ export default function Home() {
             category={getCategoryName(featuredPost)}
             link={featuredPost.link}
           />
+
+          <TrendingTopics />
 
           <section className="py-16 md:py-24">
             <div className="max-w-7xl mx-auto px-6">

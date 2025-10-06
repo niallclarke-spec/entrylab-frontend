@@ -16,8 +16,8 @@ export function BrokerCard({ name, logo, verified, pros, link }: BrokerCardProps
     <Card className="hover-elevate transition-all" data-testid={`card-broker-${name}`}>
       <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-16 h-16 rounded-md bg-muted flex items-center justify-center overflow-hidden">
-            <img src={logo} alt={name} className="w-full h-full object-contain p-2" data-testid="img-broker-logo" />
+          <div className="w-24 h-24 rounded-md bg-muted flex items-center justify-center overflow-hidden">
+            <img src={logo} alt={name} className="w-full h-full object-contain p-3" data-testid="img-broker-logo" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-foreground" data-testid="text-broker-name">{name}</h3>
