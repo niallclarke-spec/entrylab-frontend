@@ -1,6 +1,7 @@
 import { Clock, User, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { FloatingForexSymbols } from "./FloatingForexSymbols";
 
 interface HeroProps {
   title: string;
@@ -13,8 +14,9 @@ interface HeroProps {
 
 export function Hero({ title, excerpt, author, date, category, link }: HeroProps) {
   return (
-    <section className="relative bg-gradient-to-br from-primary/20 via-background to-chart-2/20 border-b">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(59,130,246,0.1),transparent_50%)]"></div>
+    <section className="relative bg-gradient-to-br from-primary/20 via-background to-chart-2/20 border-b overflow-hidden">
+      <FloatingForexSymbols />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(139,92,246,0.15),transparent_50%)]"></div>
       <div className="relative max-w-7xl mx-auto px-6 py-20 md:py-32">
         <div className="max-w-4xl">
           <Badge variant="default" className="mb-6" data-testid="badge-category">
