@@ -103,6 +103,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/wordpress/post/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const response = await fetch(
+        `https://entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed`
+      );
+      
+      if (!response.ok) {
+        throw new Error(`WordPress API error: ${response.statusText}`);
+      }
+      
+      const posts = await response.json();
+      if (posts.length === 0) {
+        return res.status(404).json({ error: "Post not found" });
+      }
+      
+      res.json(posts[0]);
+    } catch (error) {
+      console.error("Error fetching WordPress post:", error);
+      res.status(500).json({ error: "Failed to fetch post" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
