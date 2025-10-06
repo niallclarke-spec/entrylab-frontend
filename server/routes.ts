@@ -6,7 +6,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/posts", async (req, res) => {
     try {
       const { category } = req.query;
-      let url = "https://entrylab.io/wp-json/wp/v2/posts?_embed&per_page=10&orderby=date&order=desc";
+      let url = "https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&per_page=10&orderby=date&order=desc";
       
       if (category) {
         url += `&categories=${category}`;
@@ -29,7 +29,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/categories", async (req, res) => {
     try {
       const { slug } = req.query;
-      let url = "https://entrylab.io/wp-json/wp/v2/categories";
+      let url = "https://admin.entrylab.io/wp-json/wp/v2/categories";
       
       if (slug) {
         url += `?slug=${slug}`;
@@ -52,7 +52,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/brokers", async (req, res) => {
     try {
       const response = await fetch(
-        "https://entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard"
+        "https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard"
       );
       
       if (!response.ok) {
@@ -76,7 +76,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Fetch trust signals from WordPress options
       const response = await fetch(
-        "https://entrylab.io/wp-json/entrylab/v1/trust-signals"
+        "https://admin.entrylab.io/wp-json/entrylab/v1/trust-signals"
       );
       
       if (!response.ok) {
@@ -107,7 +107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { slug } = req.params;
       const response = await fetch(
-        `https://entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed`
+        `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed`
       );
       
       if (!response.ok) {
@@ -135,7 +135,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const response = await fetch(
-        "https://entrylab.io/wp-json/entrylab/v1/newsletter/subscribe",
+        "https://admin.entrylab.io/wp-json/entrylab/v1/newsletter/subscribe",
         {
           method: "POST",
           headers: {

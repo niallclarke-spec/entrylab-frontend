@@ -84,7 +84,7 @@ Preferred communication style: Simple, everyday language.
 - `WordPressPost`: TypeScript interface mapping WordPress REST API response structure with slug, embedded terms with IDs, and category data
 
 **Current Data Sources**:
-- WordPress REST API at `https://entrylab.io/wp-json/wp/v2/` for articles and categories
+- WordPress REST API at `https://admin.entrylab.io/wp-json/wp/v2/` for articles and categories
 - WordPress custom post type `popular_broker` for broker information (via REST API)
 - In-memory storage for broker data (fallback, can be replaced with WordPress data)
 
@@ -104,7 +104,20 @@ Preferred communication style: Simple, everyday language.
 - Content parsing and dynamic component injection (broker insertion in articles)
 - Sticky sidebar layout for desktop with stacked mobile view
 
+## Deployment Setup
+
+**Frontend Domain**: `entrylab.io` (React application)  
+**Backend Domain**: `admin.entrylab.io` (WordPress content management)  
+**Hosting**: Hostinger
+
+WordPress has been migrated to `admin.entrylab.io` subdomain. All API endpoints in the React app now point to `https://admin.entrylab.io/wp-json/` for content fetching.
+
 ## Recent Changes
+
+**October 6, 2025 - WordPress Migration to Subdomain**:
+- Migrated WordPress from entrylab.io to admin.entrylab.io in Hostinger
+- Updated all API endpoints to fetch from admin.entrylab.io
+- Prepared React app for production deployment to entrylab.io main domain
 
 **October 6, 2025 - Archive Page**:
 - Created sleek archive page at `/archive` with complete article listing
