@@ -3,8 +3,10 @@ import { Navigation } from "@/components/Navigation";
 import { MarketTicker } from "@/components/MarketTicker";
 import { Hero } from "@/components/Hero";
 import { TrendingTopics } from "@/components/TrendingTopics";
+import { FeaturedBroker } from "@/components/FeaturedBroker";
+import { TrustSignals } from "@/components/TrustSignals";
 import { ArticleCard } from "@/components/ArticleCard";
-import { BrokerCard } from "@/components/BrokerCard";
+import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { NewsletterCTA } from "@/components/NewsletterCTA";
 import { Footer } from "@/components/Footer";
 import type { WordPressPost, Broker } from "@shared/schema";
@@ -21,6 +23,8 @@ export default function Home() {
 
   const featuredPost = posts?.[0];
   const latestPosts = posts?.slice(1, 7) || [];
+  const featuredBroker = brokers?.find(b => b.featured);
+  const popularBrokers = brokers?.filter(b => !b.featured) || [];
 
   const getCategoryName = (post: WordPressPost) => {
     return post._embedded?.["wp:term"]?.[0]?.[0]?.name || "News";
@@ -56,6 +60,21 @@ export default function Home() {
 
           <TrendingTopics />
 
+          <TrustSignals />
+
+          {featuredBroker && (
+            <FeaturedBroker
+              name={featuredBroker.name}
+              logo={featuredBroker.logo}
+              tagline={featuredBroker.tagline || ""}
+              rating={featuredBroker.rating}
+              features={featuredBroker.features || []}
+              highlights={featuredBroker.featuredHighlights || []}
+              bonusOffer={featuredBroker.bonusOffer}
+              link={featuredBroker.link}
+            />
+          )}
+
           <section className="py-16 md:py-24">
             <div className="max-w-7xl mx-auto px-6">
               <div className="flex items-center justify-between mb-8">
@@ -83,20 +102,27 @@ export default function Home() {
             </div>
           </section>
 
-          {brokers && brokers.length > 0 && (
-            <section className="py-16 md:py-24 bg-card border-y">
+          {popularBrokers.length > 0 && (
+            <section className="py-16 md:py-24 bg-gradient-to-b from-background via-card/50 to-background">
               <div className="max-w-7xl mx-auto px-6">
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-8" data-testid="text-popular-brokers">
-                  Popular Brokers
-                </h2>
-                <div className="grid md:grid-cols-2 gap-6">
-                  {brokers.map((broker) => (
-                    <BrokerCard
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4" data-testid="text-popular-brokers">
+                    Top Rated Brokers
+                  </h2>
+                  <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                    Compare the best forex brokers trusted by thousands of traders worldwide
+                  </p>
+                </div>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {popularBrokers.map((broker) => (
+                    <BrokerCardEnhanced
                       key={broker.id}
                       name={broker.name}
                       logo={broker.logo}
                       verified={broker.verified}
+                      rating={broker.rating}
                       pros={broker.pros}
+                      highlights={broker.highlights}
                       link={broker.link}
                     />
                   ))}
