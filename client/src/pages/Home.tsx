@@ -85,7 +85,7 @@ export default function Home() {
       link: acf.affiliate_link || wpBroker.link || "#",
       pros: whyChoose.slice(0, 3),
       highlights: whyChoose,
-      features: keyFeatures.map((f: string) => ({ icon: "TrendingUp", title: f })),
+      features: keyFeatures.map((f: string) => ({ icon: "trending", text: f })),
       featuredHighlights: keyFeatures,
     };
   };
@@ -144,7 +144,7 @@ export default function Home() {
               tagline={featuredBroker.tagline || ""}
               rating={featuredBroker.rating}
               features={featuredBroker.features || []}
-              highlights={featuredBroker.featuredHighlights || []}
+              highlights={featuredBroker.highlights || []}
               bonusOffer={featuredBroker.bonusOffer}
               link={featuredBroker.link}
             />
