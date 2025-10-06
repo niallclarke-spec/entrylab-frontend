@@ -2,6 +2,7 @@ import { Search, Menu, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "./ThemeProvider";
+import { Link } from "wouter";
 import { useState } from "react";
 
 export function Navigation() {
@@ -15,10 +16,17 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex h-16 items-center justify-between gap-4">
           <div className="flex items-center gap-8">
-            <a href="/" className="text-2xl font-bold text-foreground" data-testid="link-home">
+            <Link href="/" className="text-2xl font-bold text-foreground" data-testid="link-home">
               EntryLab
-            </a>
+            </Link>
             <nav className="hidden md:flex items-center gap-6">
+              <Link
+                href="/archive"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                data-testid="link-archive"
+              >
+                Archive
+              </Link>
               {categories.map((cat) => (
                 <a
                   key={cat}
@@ -64,6 +72,13 @@ export function Navigation() {
 
         {mobileMenuOpen && (
           <nav className="md:hidden pb-4 space-y-2">
+            <Link
+              href="/archive"
+              className="block py-2 text-sm text-muted-foreground hover:text-foreground"
+              data-testid="link-mobile-archive"
+            >
+              Archive
+            </Link>
             {categories.map((cat) => (
               <a
                 key={cat}
