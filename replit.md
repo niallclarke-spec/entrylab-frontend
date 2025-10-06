@@ -16,7 +16,7 @@ Preferred communication style: Simple, everyday language.
 
 **Framework**: React 18 with TypeScript, using Vite as the build tool and development server.
 
-**Routing**: Uses `wouter` for lightweight client-side routing (currently only home page and 404 page implemented).
+**Routing**: Uses `wouter` for lightweight client-side routing with homepage, single article page, and 404 fallback.
 
 **State Management**: 
 - React Query (`@tanstack/react-query`) for server state management and data fetching
@@ -35,13 +35,15 @@ Preferred communication style: Simple, everyday language.
 **Key UI Components**:
 - Navigation with search, category filtering, and theme toggle
 - Hero section with floating forex symbols animation (with HTML-stripped excerpts)
-- Article cards with WordPress content
+- Article cards with WordPress content and automatic reading time calculation
 - Broker cards (standard and enhanced versions) with gold star ratings
+- **InlineBrokerCard** - Compact broker card for mid-article insertion
 - Featured broker showcase with dashed-border bonus badges
 - Market ticker displaying real-time-style forex data
 - Newsletter CTA with email subscription
 - **Trending topics filter bar** - Interactive category filtering with active state
-- Trust signals section
+- Trust signals section with ACF Options Page integration
+- **Single article template** with hero image, meta info, and 2-column responsive layout
 
 ### Backend Architecture
 
@@ -61,8 +63,10 @@ Preferred communication style: Simple, everyday language.
 
 **Key API Endpoints**:
 - `GET /api/wordpress/posts` - Fetches posts from WordPress, supports category filtering via query param
+- `GET /api/wordpress/post/:slug` - Fetches single post by slug with embedded data for article pages
 - `GET /api/wordpress/categories` - Fetches category data, supports slug filtering
 - `GET /api/wordpress/brokers` - Fetches broker data from WordPress custom post type
+- `GET /api/wordpress/trust-signals` - Fetches trust signals from ACF Options Page
 - `GET /api/brokers` - Legacy endpoint for in-memory broker storage (fallback)
 - In-memory storage interface defined (ready for database integration)
 
@@ -76,7 +80,7 @@ Preferred communication style: Simple, everyday language.
 **Data Models**:
 - `User`: Basic user authentication schema (id, username, password)
 - `Broker`: Interface for broker information including ratings, features, and promotional details
-- `WordPressPost`: TypeScript interface mapping WordPress REST API response structure
+- `WordPressPost`: TypeScript interface mapping WordPress REST API response structure with slug, embedded terms with IDs, and category data
 
 **Current Data Sources**:
 - WordPress REST API at `https://entrylab.io/wp-json/wp/v2/` for articles and categories
@@ -96,6 +100,20 @@ Preferred communication style: Simple, everyday language.
 - Composition via Radix UI Slot pattern
 - Variant-based styling using `class-variance-authority`
 - Responsive design with mobile-first approach
+- Content parsing and dynamic component injection (broker insertion in articles)
+- Sticky sidebar layout for desktop with stacked mobile view
+
+## Recent Changes
+
+**October 6, 2025 - Single Post Template**:
+- Implemented internal article routing (`/article/:slug`) with WordPress API integration
+- Built content parser that dynamically inserts featured broker at 40-50% through article content
+- Created InlineBrokerCard component for compact mid-article broker display
+- Added 2-column desktop layout (70% content, 30% sticky sidebar) with mobile stacking
+- Sidebar features: Top 3 rated brokers + Related articles (filtered by category)
+- Updated all article links to use internal routing (wouter Link) instead of external WordPress URLs
+- Enhanced ArticleCard with reading time calculation (~200 words/min)
+- Integrated ACF Options Page for no-code trust signals editing (8 icon choices)
 
 ## External Dependencies
 
@@ -104,7 +122,8 @@ Preferred communication style: Simple, everyday language.
 **Content Management**: WordPress REST API
 - Endpoint: `https://entrylab.io/wp-json/wp/v2/`
 - Used for fetching articles, categories, featured media, and author information
-- Embeds support for related data (featured images, author details, taxonomy terms)
+- Custom endpoint: `https://entrylab.io/wp-json/entrylab/v1/trust-signals` for ACF Options
+- Embeds support for related data (featured images, author details, taxonomy terms with IDs)
 
 **Database**: PostgreSQL (configured for Neon serverless)
 - Connection managed via `DATABASE_URL` environment variable
