@@ -13,6 +13,15 @@ interface HeroProps {
 }
 
 export function Hero({ title, excerpt, author, date, category, link }: HeroProps) {
+  const stripHtml = (html: string) => {
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return div.textContent || div.innerText || "";
+  };
+
+  const cleanExcerpt = stripHtml(excerpt).slice(0, 200) + (stripHtml(excerpt).length > 200 ? "..." : "");
+  const cleanTitle = stripHtml(title);
+
   return (
     <section className="relative bg-gradient-to-br from-primary/20 via-background to-chart-2/20 border-b overflow-hidden">
       <FloatingForexSymbols />
@@ -23,10 +32,10 @@ export function Hero({ title, excerpt, author, date, category, link }: HeroProps
             {category}
           </Badge>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight" data-testid="text-hero-title">
-            {title}
+            {cleanTitle}
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed" data-testid="text-hero-excerpt">
-            {excerpt}
+            {cleanExcerpt}
           </p>
           <div className="flex flex-wrap items-center gap-6 mb-8">
             <div className="flex items-center gap-2 text-sm text-muted-foreground" data-testid="text-author">
