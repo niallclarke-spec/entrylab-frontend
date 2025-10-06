@@ -2,6 +2,7 @@ import { Clock, User, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FloatingForexSymbols } from "./FloatingForexSymbols";
+import { Link } from "wouter";
 
 interface HeroProps {
   title: string;
@@ -48,9 +49,9 @@ export function Hero({ title, excerpt, author, date, category, link }: HeroProps
             </div>
           </div>
           <Button asChild size="lg" data-testid="button-read-article">
-            <a href={link} target="_blank" rel="noopener noreferrer">
+            <Link href={link}>
               Read Full Article <ArrowRight className="ml-2 h-4 w-4" />
-            </a>
+            </Link>
           </Button>
         </div>
       </div>

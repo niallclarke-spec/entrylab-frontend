@@ -19,6 +19,7 @@ export type User = typeof users.$inferSelect;
 
 export interface WordPressPost {
   id: number;
+  slug: string;
   title: { rendered: string };
   excerpt: { rendered: string };
   content: { rendered: string };
@@ -30,7 +31,7 @@ export interface WordPressPost {
   _embedded?: {
     author?: Array<{ name: string; avatar_urls?: { [key: string]: string } }>;
     "wp:featuredmedia"?: Array<{ source_url: string; alt_text: string }>;
-    "wp:term"?: Array<Array<{ name: string; slug: string }>>;
+    "wp:term"?: Array<Array<{ id: number; name: string; slug: string }>>;
   };
 }
 

@@ -1,6 +1,7 @@
 import { Clock, User, BookOpen } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "wouter";
 
 interface ArticleCardProps {
   title: string;
@@ -31,7 +32,7 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
 
   return (
     <Card className="hover-elevate active-elevate-2 transition-all h-full flex flex-col group" data-testid={`card-article-${title.substring(0, 20)}`}>
-      <a href={link} target="_blank" rel="noopener noreferrer" className="flex flex-col h-full">
+      <Link href={link} className="flex flex-col h-full">
         {imageUrl && (
           <div className="w-full h-40 overflow-hidden rounded-t-md bg-muted">
             <img
@@ -71,7 +72,7 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
             <span>{new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
           </div>
         </CardFooter>
-      </a>
+      </Link>
     </Card>
   );
 }

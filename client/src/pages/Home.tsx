@@ -132,7 +132,7 @@ export default function Home() {
             author={getAuthorName(featuredPost)}
             date={featuredPost.date}
             category={getCategoryName(featuredPost)}
-            link={featuredPost.link}
+            link={`/article/${featuredPost.slug}`}
           />
 
           <TrendingTopics 
@@ -174,7 +174,7 @@ export default function Home() {
                     author={getAuthorName(post)}
                     date={post.date}
                     category={getCategoryName(post)}
-                    link={post.link}
+                    link={`/article/${post.slug}`}
                     imageUrl={getFeaturedImage(post)}
                   />
                 ))}
