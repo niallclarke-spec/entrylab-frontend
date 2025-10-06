@@ -56,9 +56,8 @@ export default function Home() {
     const name = wpBroker.title?.rendered;
     if (!name) return null;
     
-    // Check if broker has "featured-broker" category
-    const categories = wpBroker._embedded?.["wp:term"]?.[0] || [];
-    const isFeatured = categories.some((cat: any) => cat.slug === "featured-broker");
+    // Check if broker is marked as featured (via ACF checkbox)
+    const isFeatured = acf.is_featured === true || acf.is_featured === "1";
     
     // Key features for the 4 feature cards (from broker_usp)
     // Handle both comma-separated and newline-separated
