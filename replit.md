@@ -16,7 +16,7 @@ Preferred communication style: Simple, everyday language.
 
 **Framework**: React 18 with TypeScript, using Vite as the build tool and development server.
 
-**Routing**: Uses `wouter` for lightweight client-side routing with homepage, single article page, and 404 fallback.
+**Routing**: Uses `wouter` for lightweight client-side routing with homepage, single article page, archive page, and 404 fallback.
 
 **State Management**: 
 - React Query (`@tanstack/react-query`) for server state management and data fetching
@@ -33,7 +33,7 @@ Preferred communication style: Simple, everyday language.
 - Color palette: Purple (#A855F6 / 271 91% 65%) matching EntryLab branding, gold (amber-500) for star ratings, green/red reserved for market indicators
 
 **Key UI Components**:
-- Navigation with search, category filtering, and theme toggle
+- Navigation with search, category filtering, theme toggle, and archive link
 - Hero section with floating forex symbols animation (with HTML-stripped excerpts)
 - Article cards with WordPress content and automatic reading time calculation
 - Broker cards (standard and enhanced versions) with gold star ratings
@@ -44,6 +44,7 @@ Preferred communication style: Simple, everyday language.
 - **Trending topics filter bar** - Interactive category filtering with active state
 - Trust signals section with ACF Options Page integration
 - **Single article template** with hero image, meta info, and 2-column responsive layout
+- **Archive page** - Complete article listing with search and category filtering
 
 ### Backend Architecture
 
@@ -104,6 +105,14 @@ Preferred communication style: Simple, everyday language.
 - Sticky sidebar layout for desktop with stacked mobile view
 
 ## Recent Changes
+
+**October 6, 2025 - Archive Page**:
+- Created sleek archive page at `/archive` with complete article listing
+- Implemented dual filtering: live search (title/excerpt) + category badge filtering
+- Responsive grid layout: 1 column (mobile), 2 columns (tablet), 3 columns (desktop)
+- Added Archive link to navigation (desktop and mobile menus)
+- Results counter shows filtered article count with search query feedback
+- All article cards link to internal article pages using wouter routing
 
 **October 6, 2025 - Single Post Template**:
 - Implemented internal article routing (`/article/:slug`) with WordPress API integration
