@@ -20,12 +20,12 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
   return (
     <Card className={`hover-elevate transition-all h-full flex flex-col ${featured ? "border-primary shadow-lg" : ""}`} data-testid={`card-broker-${name}`}>
       <CardHeader className="space-y-4 pb-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-4">
-            <div className="w-28 h-28 rounded-xl bg-white dark:bg-card flex items-center justify-center shadow-sm p-4" style={{ border: '0.5px solid rgba(128, 128, 128, 0.15)' }}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
+            <div className="w-28 h-28 rounded-xl bg-white dark:bg-card flex items-center justify-center shadow-sm p-4 flex-shrink-0" style={{ border: '0.5px solid rgba(128, 128, 128, 0.15)' }}>
               <img src={logo} alt={name} className="w-full h-full object-contain rounded-md" data-testid="img-broker-logo" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h3 className="text-xl font-bold text-foreground" data-testid="text-broker-name">{name}</h3>
               <div className="flex items-center gap-2 mt-1">
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -39,7 +39,7 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
             </div>
           </div>
           {verified && (
-            <Badge variant="default" data-testid="badge-verified">
+            <Badge className="bg-chart-2 hover:bg-chart-2/80 text-white border-0 flex-shrink-0" data-testid="badge-verified">
               <CheckCircle2 className="h-3 w-3 mr-1" />
               Verified
             </Badge>
