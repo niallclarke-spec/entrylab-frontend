@@ -21,14 +21,6 @@ export function TrendingTopics({ selectedCategory, onCategorySelect }: TrendingT
           <span className="text-sm font-semibold text-muted-foreground whitespace-nowrap">
             Trending:
           </span>
-          <Badge
-            variant={selectedCategory === null ? "default" : "outline"}
-            className="gap-2 px-4 py-2 cursor-pointer hover-elevate whitespace-nowrap"
-            onClick={() => onCategorySelect(null)}
-            data-testid="badge-trending-all"
-          >
-            All Topics
-          </Badge>
           {topics.map((topic, index) => {
             const Icon = topic.icon;
             const isSelected = selectedCategory === topic.slug;
