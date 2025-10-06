@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
 import { MarketTicker } from "@/components/MarketTicker";
@@ -13,8 +14,31 @@ import type { WordPressPost, Broker } from "@shared/schema";
 import { Loader2 } from "lucide-react";
 
 export default function Home() {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const { data: categoryData } = useQuery<any[]>({
+    queryKey: ["/api/wordpress/categories", selectedCategory],
+    queryFn: async () => {
+      if (!selectedCategory) return null;
+      const response = await fetch(`/api/wordpress/categories?slug=${selectedCategory}`);
+      if (!response.ok) throw new Error("Failed to fetch category");
+      return response.json();
+    },
+    enabled: !!selectedCategory,
+  });
+
+  const activeCategoryId = selectedCategory && categoryData?.[0]?.id ? categoryData[0].id : null;
+
   const { data: posts, isLoading } = useQuery<WordPressPost[]>({
-    queryKey: ["/api/wordpress/posts"],
+    queryKey: ["/api/wordpress/posts", activeCategoryId],
+    queryFn: async () => {
+      const url = activeCategoryId 
+        ? `/api/wordpress/posts?category=${activeCategoryId}`
+        : "/api/wordpress/posts";
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Failed to fetch posts");
+      return response.json();
+    },
   });
 
   const { data: brokers } = useQuery<Broker[]>({
@@ -58,7 +82,10 @@ export default function Home() {
             link={featuredPost.link}
           />
 
-          <TrendingTopics />
+          <TrendingTopics 
+            selectedCategory={selectedCategory} 
+            onCategorySelect={setSelectedCategory}
+          />
 
           <TrustSignals />
 
