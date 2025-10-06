@@ -39,6 +39,13 @@ export interface Broker {
   name: string;
   logo: string;
   verified: boolean;
+  rating: number;
   pros: string[];
+  highlights?: string[];
   link: string;
+  featured?: boolean;
+  tagline?: string;
+  bonusOffer?: string;
+  features?: Array<{ icon: string; text: string }>;
+  featuredHighlights?: string[];
 }
