@@ -28,7 +28,7 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
     <section className="py-12 md:py-16 bg-gradient-to-br from-primary/10 via-background to-chart-2/10 border-y">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center gap-3 mb-6">
-          <Star className="h-6 w-6 text-primary fill-primary" />
+          <Star className="h-6 w-6 text-amber-500 fill-amber-500" />
           <h2 className="text-2xl md:text-3xl font-bold text-foreground" data-testid="text-featured-title">
             Featured Broker of the Week
           </h2>
@@ -48,14 +48,14 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
-                    className={`h-5 w-5 ${i < rating ? "text-primary fill-primary" : "text-muted"}`}
+                    className={`h-5 w-5 ${i < rating ? "text-amber-500 fill-amber-500" : "text-muted"}`}
                   />
                 ))}
                 <span className="text-sm font-semibold ml-2">{rating}/5</span>
               </div>
 
               {bonusOffer && (
-                <Badge variant="default" className="mb-4 text-center px-4 py-2" data-testid="badge-bonus">
+                <Badge variant="outline" className="mb-4 text-center px-4 py-2 border-dashed border-2" data-testid="badge-bonus">
                   {bonusOffer}
                 </Badge>
               )}
