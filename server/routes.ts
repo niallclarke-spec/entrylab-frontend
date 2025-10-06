@@ -52,7 +52,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/brokers", async (req, res) => {
     try {
       const response = await fetch(
-        "https://entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100"
+        "https://entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard"
       );
       
       if (!response.ok) {
