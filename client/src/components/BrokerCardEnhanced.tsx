@@ -31,7 +31,7 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
-                    className={`h-6 w-6 flex-shrink-0 ${i < rating ? "text-amber-500 fill-amber-500" : "text-muted"}`}
+                    className={`h-6 w-6 flex-shrink-0 ${i < rating ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40 fill-muted-foreground/20"}`}
                   />
                 ))}
                 <span className="text-sm font-semibold text-foreground ml-1">{rating}/5</span>
