@@ -20,9 +20,9 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
   return (
     <Card className={`hover-elevate transition-all h-full flex flex-col ${featured ? "border-primary shadow-lg" : ""}`} data-testid={`card-broker-${name}`}>
       <CardHeader className="space-y-4 pb-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-4 flex-1 min-w-0">
-            <div className="w-28 h-28 rounded-xl bg-white dark:bg-card flex items-center justify-center shadow-sm p-4 flex-shrink-0" style={{ border: '0.5px solid rgba(128, 128, 128, 0.15)' }}>
+        <div className="flex items-start justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+            <div className="w-20 sm:w-28 h-20 sm:h-28 rounded-xl bg-white dark:bg-card flex items-center justify-center shadow-sm p-3 sm:p-4 flex-shrink-0" style={{ border: '0.5px solid rgba(128, 128, 128, 0.15)' }}>
               <img src={logo} alt={name} className="w-full h-full object-contain rounded-md" data-testid="img-broker-logo" />
             </div>
             <div className="min-w-0 flex-1">
@@ -87,8 +87,9 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
 
       <CardFooter className="flex flex-col gap-2 pt-4">
         <Button asChild className="w-full" size="lg" data-testid="button-visit-broker">
-          <a href={link} target="_blank" rel="noopener noreferrer">
-            Visit {name}
+          <a href={link} target="_blank" rel="noopener noreferrer" className="truncate">
+            <span className="hidden sm:inline">Visit {name}</span>
+            <span className="sm:hidden">Visit Broker</span>
           </a>
         </Button>
         <p className="text-xs text-muted-foreground text-center">
