@@ -47,7 +47,7 @@ export function NewsletterCTA() {
     { icon: Newspaper, text: "Latest FX news & market updates", color: "text-primary" },
     { icon: Gift, text: "Exclusive deposit bonuses & promotions", color: "text-amber-500" },
     { icon: Trophy, text: "Free funded challenge giveaways", color: "text-amber-500" },
-    { icon: Rocket, text: "New prop firm launches & closures", color: "text-primary" },
+    { icon: Rocket, text: "Prop firm discount codes & launches", color: "text-primary" },
     { icon: TrendingUp, text: "Broker reviews & industry insights", color: "text-chart-2" },
     { icon: Zap, text: "Breaking alerts & competitions", color: "text-chart-2" },
   ];
@@ -61,7 +61,7 @@ export function NewsletterCTA() {
               <h2 className="text-3xl md:text-4xl font-bold text-foreground" data-testid="text-newsletter-title">
                 Never Miss Out
               </h2>
-              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 hidden md:inline-flex">
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hidden md:inline-flex">
                 Free
               </Badge>
             </div>
@@ -102,7 +102,13 @@ export function NewsletterCTA() {
                   />
                 </div>
               </div>
-              <Button type="submit" size="lg" className="w-full" disabled={isSubmitting} data-testid="button-subscribe">
+              <Button 
+                type="submit" 
+                size="lg" 
+                className="w-full relative animate-pulse-glow" 
+                disabled={isSubmitting} 
+                data-testid="button-subscribe"
+              >
                 {isSubmitting ? "Subscribing..." : "Subscribe Now"}
               </Button>
               <div className="flex items-center justify-center gap-2 pt-2">
