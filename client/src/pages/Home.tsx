@@ -50,33 +50,37 @@ export default function Home() {
   });
 
   const transformBroker = (wpBroker: any): Broker | null => {
-    const meta = wpBroker.meta || {};
-    const logo = wpBroker._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
+    const acf = wpBroker.acf || {};
+    const logo = acf.broker_logo?.url || wpBroker._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
     
-    // Use title as name if broker_name meta isn't available yet
-    const name = meta.broker_name || wpBroker.title?.rendered;
+    const name = wpBroker.title?.rendered;
     if (!name) return null;
     
-    const features = meta.broker_usp ? meta.broker_usp.split('\n').filter((f: string) => f.trim()) : [
-      "Regulated broker",
+    // Key features for the 4 feature cards (from broker_usp)
+    const keyFeatures = acf.broker_usp ? acf.broker_usp.split('\n').filter((f: string) => f.trim()).slice(0, 4) : [
+      "Ultra-low spreads",
       "Fast execution",
+      "Regulated broker",
       "24/7 support"
     ];
+    
+    // Why choose reasons (from why_choose)
+    const whyChoose = acf.why_choose ? acf.why_choose.split('\n').filter((f: string) => f.trim()) : keyFeatures;
     
     return {
       id: wpBroker.id.toString(),
       name: name,
       logo: logo || "https://placehold.co/200x80/1a1a1a/8b5cf6?text=" + encodeURIComponent(name),
-      rating: parseFloat(meta.rating) || 4.5,
+      rating: parseFloat(acf.rating) || 4.5,
       verified: true,
       featured: wpBroker.id === wordpressBrokers?.[0]?.id,
-      tagline: meta.broker_intro || "Trusted forex broker",
-      bonusOffer: meta.bonus_offer || "Get 100% Deposit Bonus",
-      link: meta.affiliate_link || wpBroker.link || "#",
-      pros: features.slice(0, 3),
-      highlights: features,
-      features: features.map((f: string) => ({ icon: "TrendingUp", title: f })),
-      featuredHighlights: features.slice(0, 4),
+      tagline: acf.broker_intro || "Trusted forex broker",
+      bonusOffer: acf.bonus_offer || "Get 100% Deposit Bonus",
+      link: acf.affiliate_link || wpBroker.link || "#",
+      pros: whyChoose.slice(0, 3),
+      highlights: whyChoose,
+      features: keyFeatures.map((f: string) => ({ icon: "TrendingUp", title: f })),
+      featuredHighlights: keyFeatures,
     };
   };
 
