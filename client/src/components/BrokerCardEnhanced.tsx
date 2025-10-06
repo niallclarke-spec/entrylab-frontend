@@ -27,14 +27,14 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="text-lg md:text-xl font-bold text-foreground break-words leading-tight" data-testid="text-broker-name">{name}</h3>
-              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+              <div className="flex items-center gap-1 mt-2">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
-                    className={`h-6 w-6 flex-shrink-0 ${i < rating ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40 fill-muted-foreground/20"}`}
+                    className={`h-5 w-5 flex-shrink-0 ${i < rating ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40 fill-muted-foreground/20"}`}
                   />
                 ))}
-                <span className="text-sm font-semibold text-foreground ml-1">{rating}/5</span>
+                <span className="text-sm font-semibold text-foreground ml-1 whitespace-nowrap">{rating}/5</span>
               </div>
             </div>
           </div>
