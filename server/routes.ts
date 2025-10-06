@@ -72,6 +72,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(brokers);
   });
 
+  app.get("/api/wordpress/trust-signals", async (req, res) => {
+    try {
+      // Fetch trust signals from WordPress options
+      const response = await fetch(
+        "https://entrylab.io/wp-json/entrylab/v1/trust-signals"
+      );
+      
+      if (!response.ok) {
+        // Return default values if endpoint doesn't exist yet
+        return res.json([
+          { icon: "users", value: "50,000+", label: "Active Traders" },
+          { icon: "trending", value: "$2.5B+", label: "Trading Volume" },
+          { icon: "award", value: "100+", label: "Verified Brokers" },
+          { icon: "shield", value: "2020", label: "Trusted Since" },
+        ]);
+      }
+      
+      const signals = await response.json();
+      res.json(signals);
+    } catch (error) {
+      console.error("Error fetching trust signals:", error);
+      // Return defaults on error
+      res.json([
+        { icon: "users", value: "50,000+", label: "Active Traders" },
+        { icon: "trending", value: "$2.5B+", label: "Trading Volume" },
+        { icon: "award", value: "100+", label: "Verified Brokers" },
+        { icon: "shield", value: "2020", label: "Trusted Since" },
+      ]);
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
