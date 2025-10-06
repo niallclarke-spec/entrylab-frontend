@@ -22,8 +22,8 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
       <CardHeader className="space-y-4 pb-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-              <img src={logo} alt={name} className="w-full h-full object-contain p-3" data-testid="img-broker-logo" />
+            <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-white/95 to-white/90 dark:from-card dark:to-background flex items-center justify-center border border-border/50 shadow-md p-3 ring-1 ring-primary/5">
+              <img src={logo} alt={name} className="w-full h-full object-contain" data-testid="img-broker-logo" />
             </div>
             <div>
               <h3 className="text-xl font-bold text-foreground" data-testid="text-broker-name">{name}</h3>
