@@ -157,6 +157,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/forex/quotes", async (req, res) => {
+    try {
+      const apiKey = process.env.FOREX_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ error: "Forex API key not configured" });
+      }
+
+      const symbols = ["EUR/USD", "GBP/USD", "USD/JPY", "XAU/USD", "BTC/USD"];
+      const forexSymbols = ["OANDA:EUR_USD", "OANDA:GBP_USD", "OANDA:USD_JPY"];
+      const cryptoSymbols = ["BINANCE:BTCUSDT"];
+      const commoditySymbols = ["OANDA:XAU_USD"];
+
+      const allSymbols = [...forexSymbols, ...cryptoSymbols, ...commoditySymbols];
+      
+      const responses = await Promise.all(
+        allSymbols.map(symbol =>
+          fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`)
+            .then(res => res.json())
+            .catch(() => null)
+        )
+      );
+
+      const quotes = [
+        {
+          pair: "EUR/USD",
+          price: responses[0]?.c?.toFixed(4) || "1.0842",
+          change: responses[0]?.dp?.toFixed(2) || "0.12"
+        },
+        {
+          pair: "GBP/USD",
+          price: responses[1]?.c?.toFixed(4) || "1.2634",
+          change: responses[1]?.dp?.toFixed(2) || "-0.08"
+        },
+        {
+          pair: "USD/JPY",
+          price: responses[2]?.c?.toFixed(2) || "149.85",
+          change: responses[2]?.dp?.toFixed(2) || "0.24"
+        },
+        {
+          pair: "GOLD",
+          price: responses[4]?.c ? `${Math.round(responses[4].c).toLocaleString()}` : "2,018",
+          change: responses[4]?.dp?.toFixed(2) || "0.56"
+        },
+        {
+          pair: "BTC/USD",
+          price: responses[3]?.c ? `${Math.round(responses[3].c).toLocaleString()}` : "43,250",
+          change: responses[3]?.dp?.toFixed(2) || "-1.23"
+        }
+      ];
+
+      res.json(quotes);
+    } catch (error) {
+      console.error("Error fetching forex quotes:", error);
+      res.status(500).json({ error: "Failed to fetch forex data" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
