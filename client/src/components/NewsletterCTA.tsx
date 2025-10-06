@@ -1,6 +1,7 @@
-import { CheckCircle2, Mail } from "lucide-react";
+import { Gift, TrendingUp, Trophy, Zap, Mail, Newspaper, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -43,10 +44,12 @@ export function NewsletterCTA() {
   };
 
   const benefits = [
-    "Daily market analysis and insights",
-    "Exclusive broker and prop firm reviews",
-    "Breaking news alerts",
-    "Trading tips and strategies",
+    { icon: Newspaper, text: "Latest FX news & market updates", color: "text-primary" },
+    { icon: Gift, text: "Exclusive deposit bonuses & promotions", color: "text-amber-500" },
+    { icon: Trophy, text: "Free funded challenge giveaways", color: "text-amber-500" },
+    { icon: Rocket, text: "New prop firm launches & closures", color: "text-primary" },
+    { icon: TrendingUp, text: "Broker reviews & industry insights", color: "text-chart-2" },
+    { icon: Zap, text: "Breaking alerts & competitions", color: "text-chart-2" },
   ];
 
   return (
@@ -54,22 +57,32 @@ export function NewsletterCTA() {
       <div className="max-w-7xl mx-auto px-6 py-16 md:py-24">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4" data-testid="text-newsletter-title">
-              Stay Up To Date
-            </h2>
-            <p className="text-lg text-muted-foreground mb-6">
-              From broker and prop firm news to in-depth reviews, we keep our subscribers up to date on everything
+            <div className="flex items-center gap-3 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground" data-testid="text-newsletter-title">
+                Never Miss Out
+              </h2>
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 hidden md:inline-flex">
+                Free
+              </Badge>
+            </div>
+            <p className="text-lg text-muted-foreground mb-8">
+              Join thousands of traders getting exclusive promos, bonuses, and breaking news from the forex & prop firm industry
             </p>
-            <ul className="space-y-3">
-              {benefits.map((benefit, index) => (
-                <li key={index} className="flex items-start gap-3" data-testid={`text-benefit-${index}`}>
-                  <CheckCircle2 className="h-5 w-5 text-chart-2 mt-0.5 flex-shrink-0" />
-                  <span className="text-foreground">{benefit}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {benefits.map((benefit, index) => {
+                const Icon = benefit.icon;
+                return (
+                  <div key={index} className="flex items-start gap-3" data-testid={`text-benefit-${index}`}>
+                    <div className={`rounded-lg p-2 bg-muted/50 ${benefit.color}`}>
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <span className="text-sm text-foreground leading-relaxed flex-1">{benefit.text}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          <div>
+          <div className="bg-muted/30 rounded-xl p-6 md:p-8 border">
             <form onSubmit={handleSubscribe} className="space-y-4">
               <div>
                 <label htmlFor="newsletter-email" className="block text-sm font-medium text-foreground mb-2">
@@ -83,7 +96,7 @@ export function NewsletterCTA() {
                     placeholder="your@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 bg-background"
                     required
                     data-testid="input-newsletter-email"
                   />
@@ -92,9 +105,15 @@ export function NewsletterCTA() {
               <Button type="submit" size="lg" className="w-full" disabled={isSubmitting} data-testid="button-subscribe">
                 {isSubmitting ? "Subscribing..." : "Subscribe Now"}
               </Button>
-              <p className="text-xs text-muted-foreground text-center">
-                We respect your privacy. Unsubscribe at any time.
-              </p>
+              <div className="flex items-center justify-center gap-2 pt-2">
+                <Badge variant="secondary" className="text-xs">
+                  12,000+ Subscribers
+                </Badge>
+                <span className="text-xs text-muted-foreground">•</span>
+                <p className="text-xs text-muted-foreground">
+                  Unsubscribe anytime
+                </p>
+              </div>
             </form>
           </div>
         </div>
