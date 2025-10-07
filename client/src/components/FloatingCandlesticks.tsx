@@ -1,65 +1,80 @@
 export function FloatingCandlesticks() {
   const candlesticks = [
-    { type: 'bullish', left: '10%', delay: '0s', duration: '15s' },
-    { type: 'bearish', left: '25%', delay: '3s', duration: '18s' },
-    { type: 'bullish', left: '45%', delay: '1s', duration: '16s' },
-    { type: 'bearish', left: '60%', delay: '4s', duration: '17s' },
-    { type: 'bullish', left: '75%', delay: '2s', duration: '19s' },
-    { type: 'bearish', left: '85%', delay: '5s', duration: '14s' },
-    { type: 'bullish', left: '35%', delay: '6s', duration: '20s' },
-    { type: 'bearish', left: '15%', delay: '7s', duration: '15s' },
+    { type: 'bullish', x: 5, bottom: 25, high: 8, low: 4, open: 6, close: 7.5 },
+    { type: 'bearish', x: 12, bottom: 32, high: 7, low: 4, open: 6.5, close: 5 },
+    { type: 'bullish', x: 19, bottom: 30, high: 10, low: 4, open: 5, close: 9 },
+    { type: 'bullish', x: 26, bottom: 38, high: 9, low: 5, open: 6, close: 8.5 },
+    { type: 'bearish', x: 33, bottom: 45, high: 8, low: 5, open: 7.5, close: 6 },
+    { type: 'bullish', x: 40, bottom: 43, high: 11, low: 5, open: 6.5, close: 10 },
+    { type: 'bullish', x: 47, bottom: 52, high: 10, low: 6, open: 7, close: 9.5 },
+    { type: 'bearish', x: 54, bottom: 60, high: 7, low: 4, open: 6.5, close: 5.5 },
+    { type: 'bullish', x: 61, bottom: 58, high: 12, low: 6, open: 7, close: 11 },
+    { type: 'bullish', x: 68, bottom: 67, high: 10, low: 6, open: 7.5, close: 9.5 },
+    { type: 'bullish', x: 75, bottom: 75, high: 11, low: 7, open: 8, close: 10.5 },
+    { type: 'bearish', x: 82, bottom: 83, high: 8, low: 5, open: 7.5, close: 6 },
+    { type: 'bullish', x: 89, bottom: 81, high: 13, low: 7, open: 8, close: 12 },
+    { type: 'bullish', x: 96, bottom: 92, high: 11, low: 8, open: 9, close: 10.5 },
   ];
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
-      {candlesticks.map((candle, index) => (
-        <div
-          key={index}
-          className="absolute bottom-0 opacity-20 pointer-events-none"
-          style={{
-            left: candle.left,
-            animationDelay: candle.delay,
-            animation: `floatUp ${candle.duration} linear infinite`,
-          }}
-        >
-          <svg
-            width="20"
-            height="40"
-            viewBox="0 0 20 40"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {candle.type === 'bullish' ? (
-              <>
-                <line x1="10" y1="0" x2="10" y2="10" stroke="#10b981" strokeWidth="2" />
-                <rect x="5" y="10" width="10" height="20" fill="#10b981" />
-                <line x1="10" y1="30" x2="10" y2="40" stroke="#10b981" strokeWidth="2" />
-              </>
-            ) : (
-              <>
-                <line x1="10" y1="0" x2="10" y2="10" stroke="#ef4444" strokeWidth="2" />
-                <rect x="5" y="10" width="10" height="20" fill="#ef4444" />
-                <line x1="10" y1="30" x2="10" y2="40" stroke="#ef4444" strokeWidth="2" />
-              </>
-            )}
-          </svg>
-        </div>
-      ))}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/10 to-transparent"></div>
+      
+      <svg 
+        className="absolute inset-0 w-full h-full opacity-40" 
+        viewBox="0 0 100 100" 
+        preserveAspectRatio="none"
+      >
+        <polyline
+          points={candlesticks.map(c => `${c.x},${100 - c.bottom - (c.open + c.close) / 2}`).join(' ')}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="0.3"
+          className="text-primary"
+          opacity="0.5"
+        />
+        
+        {candlesticks.map((candle, index) => {
+          const bodyTop = 100 - candle.bottom - Math.max(candle.open, candle.close);
+          const bodyHeight = Math.abs(candle.close - candle.open);
+          const wickTop = 100 - candle.bottom - candle.high;
+          const wickBottom = 100 - candle.bottom - candle.low;
+          const bodyCenter = 100 - candle.bottom - (candle.open + candle.close) / 2;
+          
+          const isBullish = candle.type === 'bullish';
+          const color = isBullish ? '#10b981' : '#ef4444';
+          
+          return (
+            <g key={index}>
+              <line
+                x1={candle.x}
+                y1={wickTop}
+                x2={candle.x}
+                y2={wickBottom}
+                stroke={color}
+                strokeWidth="0.2"
+              />
+              <rect
+                x={candle.x - 1.5}
+                y={bodyTop}
+                width="3"
+                height={bodyHeight}
+                fill={isBullish ? color : 'none'}
+                stroke={color}
+                strokeWidth="0.3"
+              />
+            </g>
+          );
+        })}
+      </svg>
+      
       <style>{`
-        @keyframes floatUp {
-          0% {
-            transform: translateY(0) scale(1);
-            opacity: 0;
+        @keyframes chartPulse {
+          0%, 100% {
+            opacity: 0.4;
           }
-          10% {
-            opacity: 0.3;
-          }
-          80% {
-            opacity: 0.3;
-          }
-          100% {
-            transform: translateY(-100vh) scale(1.2);
-            opacity: 0;
+          50% {
+            opacity: 0.5;
           }
         }
       `}</style>
