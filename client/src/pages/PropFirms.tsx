@@ -3,7 +3,7 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
-import { Loader2, Shield, Star, TrendingUp, Zap, CheckCircle2, Award, Users, Key, DollarSign, Headphones, FileText, Target, Tag } from "lucide-react";
+import { Loader2, Shield, Star, TrendingUp, Zap, CheckCircle2, Award, Users, Key, DollarSign, Headphones, FileText, Target, Tag, Search } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { useParams, useLocation } from "wouter";
@@ -172,12 +172,26 @@ export default function PropFirms() {
       <section className="py-12 md:py-16 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 mb-3">
+            {/* Mobile: Icon above heading */}
+            <div className="sm:hidden mb-3 flex justify-center">
+              <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                <Search className="h-6 w-6 text-emerald-500" />
+              </div>
+            </div>
+            
+            {/* Desktop: Icon inline with heading */}
+            <div className="hidden sm:inline-flex items-center gap-2 mb-3">
               <Key className="h-5 w-5 text-emerald-500" />
               <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                 What to Look for in a Prop Firm
               </h2>
             </div>
+            
+            {/* Mobile: Heading without icon */}
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3 sm:hidden">
+              What to Look for in a Prop Firm
+            </h2>
+            
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Make an informed decision with these key factors to consider
             </p>
