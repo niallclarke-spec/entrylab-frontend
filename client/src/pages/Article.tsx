@@ -7,7 +7,7 @@ import { InlineBrokerCard } from "@/components/InlineBrokerCard";
 import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { ArticleCard } from "@/components/ArticleCard";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Clock, User, Share2, BookOpen } from "lucide-react";
+import { Loader2, Clock, User, Share2, BookOpen, TrendingUp, Building2, BarChart3, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { WordPressPost, Broker } from "@shared/schema";
 
@@ -236,6 +236,31 @@ export default function Article() {
                       Share
                     </Button>
                   </div>
+                </div>
+              </div>
+
+              {/* Trending Topics */}
+              <div className="mb-8">
+                <div className="flex items-center gap-3 md:gap-4 overflow-x-auto scrollbar-hide pb-2">
+                  <span className="text-sm font-semibold text-muted-foreground whitespace-nowrap">
+                    Trending:
+                  </span>
+                  <Badge variant="outline" className="gap-2 px-3 py-1.5 whitespace-nowrap border-destructive/30">
+                    <TrendingUp className="h-3.5 w-3.5 text-destructive" />
+                    Broker Closures
+                  </Badge>
+                  <Badge variant="outline" className="gap-2 px-3 py-1.5 whitespace-nowrap border-primary/30">
+                    <Building2 className="h-3.5 w-3.5 text-primary" />
+                    Prop Firm Updates
+                  </Badge>
+                  <Badge variant="outline" className="gap-2 px-3 py-1.5 whitespace-nowrap border-chart-2/30 hidden sm:flex">
+                    <BarChart3 className="h-3.5 w-3.5 text-chart-2" />
+                    Market Analysis
+                  </Badge>
+                  <Badge variant="outline" className="gap-2 px-3 py-1.5 whitespace-nowrap border-chart-4/30 hidden md:flex">
+                    <AlertCircle className="h-3.5 w-3.5 text-chart-4" />
+                    Trading Alerts
+                  </Badge>
                 </div>
               </div>
 
