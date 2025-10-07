@@ -108,6 +108,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/wordpress/broker/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const response = await fetch(
+        `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`
+      );
+      
+      if (!response.ok) {
+        throw new Error(`WordPress API error: ${response.statusText}`);
+      }
+      
+      const brokers = await response.json();
+      if (brokers.length === 0) {
+        return res.status(404).json({ error: "Broker not found" });
+      }
+      
+      res.json(brokers[0]);
+    } catch (error) {
+      console.error("Error fetching WordPress broker:", error);
+      res.status(500).json({ error: "Failed to fetch broker" });
+    }
+  });
+
+  app.get("/api/wordpress/prop-firm/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const response = await fetch(
+        `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`
+      );
+      
+      if (!response.ok) {
+        throw new Error(`WordPress API error: ${response.statusText}`);
+      }
+      
+      const propFirms = await response.json();
+      if (propFirms.length === 0) {
+        return res.status(404).json({ error: "Prop firm not found" });
+      }
+      
+      res.json(propFirms[0]);
+    } catch (error) {
+      console.error("Error fetching WordPress prop firm:", error);
+      res.status(500).json({ error: "Failed to fetch prop firm" });
+    }
+  });
+
   app.get("/api/brokers", async (req, res) => {
     const brokers = await storage.getBrokers();
     res.json(brokers);
