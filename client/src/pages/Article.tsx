@@ -91,9 +91,9 @@ export default function Article() {
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(content, 'text/html');
-    const paragraphs = Array.from(doc.querySelectorAll('p, h1, h2, h3, h4, h5, h6, ul, ol, blockquote'));
+    const allElements = Array.from(doc.querySelectorAll('p, h1, h2, h3, h4, h5, h6, ul, ol, blockquote'));
 
-    if (paragraphs.length < 3) {
+    if (allElements.length < 3) {
       return (
         <>
           <div dangerouslySetInnerHTML={{ __html: content }} className="prose prose-lg max-w-none dark:prose-invert" />
@@ -102,15 +102,32 @@ export default function Article() {
       );
     }
 
-    const insertIndex = Math.floor(paragraphs.length * 0.45);
+    // Calculate 40% position
+    const targetIndex = Math.floor(allElements.length * 0.40);
+    
+    // Find first heading (h2, h3, h4, h5, h6) at or after 40% mark
+    let insertIndex = -1;
+    for (let i = targetIndex; i < allElements.length; i++) {
+      const tagName = allElements[i].tagName.toLowerCase();
+      if (['h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName)) {
+        insertIndex = i;
+        break;
+      }
+    }
+
+    // Fallback: if no heading found after 40%, use 45% of all elements
+    if (insertIndex === -1) {
+      insertIndex = Math.floor(allElements.length * 0.45);
+    }
+
     const beforeBroker: Element[] = [];
     const afterBroker: Element[] = [];
 
-    paragraphs.forEach((p, i) => {
+    allElements.forEach((el, i) => {
       if (i < insertIndex) {
-        beforeBroker.push(p);
+        beforeBroker.push(el);
       } else {
-        afterBroker.push(p);
+        afterBroker.push(el);
       }
     });
 
