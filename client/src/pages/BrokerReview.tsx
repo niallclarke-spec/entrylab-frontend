@@ -25,17 +25,25 @@ export default function BrokerReview() {
     if (!name) return null;
 
     const isFeatured = acf.is_featured === true || acf.is_featured === "1";
-    const keyFeatures = acf.broker_usp 
-      ? acf.broker_usp.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f).slice(0, 4)
+    
+    // broker_usp = Features Array (used for highlights)
+    const brokerUsp = acf.broker_usp 
+      ? acf.broker_usp.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f)
       : [];
+    
+    // why_choose = Why Choose section
     const whyChoose = acf.why_choose 
       ? acf.why_choose.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f)
-      : keyFeatures;
+      : [];
+    
+    // pros = Pros text field
+    const prosList = acf.pros 
+      ? acf.pros.split(/[,\n]+/).map((p: string) => p.trim()).filter((p: string) => p)
+      : whyChoose;
+    
+    // cons = Cons text field
     const consList = acf.cons 
       ? acf.cons.split(/[,\n]+/).map((c: string) => c.trim()).filter((c: string) => c)
-      : [];
-    const awardsList = acf.awards 
-      ? acf.awards.split(/[,\n]+/).map((a: string) => a.trim()).filter((a: string) => a)
       : [];
 
     return {
@@ -46,32 +54,21 @@ export default function BrokerReview() {
       rating: parseFloat(acf.rating) || 4.5,
       verified: true,
       featured: isFeatured,
-      tagline: acf.broker_intro || "Trusted forex broker",
-      bonusOffer: acf.bonus_offer || "Get 100% Deposit Bonus",
+      tagline: acf.broker_intro || "",
+      bonusOffer: acf.bonus_offer || "",
       link: acf.affiliate_link || wpBroker.link || "#",
-      pros: whyChoose.slice(0, 3),
-      highlights: whyChoose,
-      features: keyFeatures.map((f: string) => ({ icon: "trending", text: f })),
-      featuredHighlights: keyFeatures,
-      content: wpBroker.content?.rendered || "",
+      pros: prosList,
+      highlights: brokerUsp, // "At a Glance" section
+      features: brokerUsp.map((f: string) => ({ icon: "trending", text: f })),
+      featuredHighlights: brokerUsp,
+      content: acf.review_summary || "", // WYSIWYG review content
       minDeposit: acf.min_deposit,
       maxLeverage: acf.max_leverage,
       spreadFrom: acf.spread_from,
       regulation: acf.regulation,
-      instrumentsCount: acf.instruments_count,
-      supportHours: acf.support_hours,
       cons: consList,
-      bestFor: acf.best_for,
-      platforms: acf.platforms,
-      accountTypes: acf.account_types,
-      paymentMethods: acf.payment_methods,
-      yearFounded: acf.year_founded,
-      headquarters: acf.headquarters,
-      regulationDetails: acf.regulation_details,
-      withdrawalTime: acf.withdrawal_time,
-      trustScore: acf.trust_score ? parseInt(acf.trust_score) : undefined,
-      totalUsers: acf.total_users,
-      awards: awardsList,
+      platforms: acf.trading_platforms, // Updated field name
+      paymentMethods: acf.deposit_methods, // Updated field name
     };
   };
 
