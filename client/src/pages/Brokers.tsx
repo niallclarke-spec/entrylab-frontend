@@ -195,7 +195,7 @@ export default function Brokers() {
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {/* Check Regulation */}
-            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all">
+            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all" data-testid="card-decision-regulation">
               <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mb-4">
                 <Shield className="h-6 w-6 text-emerald-500" />
               </div>
@@ -208,7 +208,7 @@ export default function Brokers() {
             </div>
 
             {/* Compare Spreads */}
-            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all">
+            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all" data-testid="card-decision-spreads">
               <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mb-4">
                 <DollarSign className="h-6 w-6 text-emerald-500" />
               </div>
@@ -221,7 +221,7 @@ export default function Brokers() {
             </div>
 
             {/* Test Support */}
-            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all">
+            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all" data-testid="card-decision-support">
               <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mb-4">
                 <Headphones className="h-6 w-6 text-emerald-500" />
               </div>
@@ -234,7 +234,7 @@ export default function Brokers() {
             </div>
 
             {/* Read Reviews */}
-            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all">
+            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all" data-testid="card-decision-reviews">
               <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mb-4">
                 <FileText className="h-6 w-6 text-emerald-500" />
               </div>
