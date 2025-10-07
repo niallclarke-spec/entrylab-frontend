@@ -21,11 +21,32 @@ export function FloatingCandlesticks() {
       <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/10 to-transparent"></div>
       
       <svg 
-        className="absolute inset-0 w-full h-full" 
+        className="absolute inset-0 w-full h-full opacity-40" 
         viewBox="0 0 100 100" 
         preserveAspectRatio="none"
-        style={{ animation: 'chartPulse 3s ease-in-out infinite' }}
       >
+        <defs>
+          <linearGradient id="scanGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="transparent" />
+            <stop offset="40%" stopColor="transparent" />
+            <stop offset="50%" stopColor="currentColor" stopOpacity="0.3" className="text-primary" />
+            <stop offset="60%" stopColor="transparent" />
+            <stop offset="100%" stopColor="transparent" />
+            <animate
+              attributeName="x1"
+              values="-100%;100%"
+              dur="4s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="x2"
+              values="0%;200%"
+              dur="4s"
+              repeatCount="indefinite"
+            />
+          </linearGradient>
+        </defs>
+
         <polyline
           points={candlesticks.map(c => `${c.x},${100 - c.bottom - (c.open + c.close) / 2}`).join(' ')}
           fill="none"
@@ -33,11 +54,6 @@ export function FloatingCandlesticks() {
           strokeWidth="0.3"
           className="text-primary"
           opacity="0.5"
-          style={{ 
-            strokeDasharray: '200',
-            strokeDashoffset: '200',
-            animation: 'drawLine 2s ease-out forwards'
-          }}
         />
         
         {candlesticks.map((candle, index) => {
@@ -45,7 +61,6 @@ export function FloatingCandlesticks() {
           const bodyHeight = Math.abs(candle.close - candle.open);
           const wickTop = 100 - candle.bottom - candle.high;
           const wickBottom = 100 - candle.bottom - candle.low;
-          const bodyCenter = 100 - candle.bottom - (candle.open + candle.close) / 2;
           
           const isBullish = candle.type === 'bullish';
           const color = isBullish ? '#10b981' : '#ef4444';
@@ -54,7 +69,7 @@ export function FloatingCandlesticks() {
             <g 
               key={index}
               style={{
-                animation: `fadeInCandle 0.5s ease-out ${index * 0.1}s backwards`
+                animation: `candleGlow 4s ease-in-out ${index * 0.28}s infinite`
               }}
             >
               <line
@@ -77,32 +92,26 @@ export function FloatingCandlesticks() {
             </g>
           );
         })}
+        
+        <rect 
+          x="0" 
+          y="0" 
+          width="100" 
+          height="100" 
+          fill="url(#scanGradient)" 
+          pointerEvents="none"
+        />
       </svg>
       
       <style>{`
-        @keyframes chartPulse {
+        @keyframes candleGlow {
           0%, 100% {
-            opacity: 0.4;
+            opacity: 0.6;
+            filter: brightness(1);
           }
           50% {
-            opacity: 0.5;
-          }
-        }
-        
-        @keyframes drawLine {
-          to {
-            strokeDashoffset: 0;
-          }
-        }
-        
-        @keyframes fadeInCandle {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
             opacity: 1;
-            transform: translateY(0);
+            filter: brightness(1.4) drop-shadow(0 0 4px currentColor);
           }
         }
       `}</style>
