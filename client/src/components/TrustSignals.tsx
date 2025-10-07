@@ -28,8 +28,8 @@ export function TrustSignals() {
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
                   <Icon className="h-6 w-6 text-primary" />
                 </div>
-                <p className="text-2xl md:text-3xl font-bold text-foreground mb-1">{signal.value}</p>
-                <p className="text-sm text-muted-foreground">{signal.label}</p>
+                <p className="text-lg md:text-2xl font-bold text-foreground mb-1">{signal.value}</p>
+                <p className="text-xs text-muted-foreground">{signal.label}</p>
               </div>
             );
           })}
