@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { trackNewsletterSignup } from "@/lib/gtm";
 
 export function NewsletterCTA() {
   const [email, setEmail] = useState("");
@@ -26,6 +27,8 @@ export function NewsletterCTA() {
       if (!response.ok) {
         throw new Error("Subscription failed");
       }
+
+      trackNewsletterSignup(email, 'newsletter_cta');
 
       toast({
         title: "Subscribed!",

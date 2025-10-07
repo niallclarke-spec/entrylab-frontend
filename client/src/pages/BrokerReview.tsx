@@ -1,5 +1,6 @@
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
@@ -9,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Broker } from "@shared/schema";
+import { trackPageView, trackReviewView } from "@/lib/gtm";
 
 export default function BrokerReview() {
   const params = useParams();
@@ -82,6 +84,19 @@ export default function BrokerReview() {
   };
 
   const broker = wpBroker ? transformBroker(wpBroker) : null;
+
+  useEffect(() => {
+    if (broker) {
+      trackPageView(`/broker/${slug}`, `${broker.name} Review | EntryLab`);
+      trackReviewView({
+        broker_name: broker.name,
+        broker_type: 'broker',
+        rating: broker.rating,
+        min_deposit: broker.minDeposit,
+        regulation: broker.regulation,
+      });
+    }
+  }, [broker, slug]);
 
   const stripHtml = (html: string) => {
     const div = document.createElement("div");

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, TrendingUp } from "lucide-react";
 import type { Broker } from "@shared/schema";
+import { trackAffiliateClick } from "@/lib/gtm";
 
 interface InlineBrokerCardProps {
   broker: Broker;
@@ -47,7 +48,19 @@ export function InlineBrokerCard({ broker }: InlineBrokerCardProps) {
         {broker.tagline && (
           <p className="text-sm text-muted-foreground">{broker.tagline}</p>
         )}
-        <Button asChild className="w-full" size="lg" data-testid="button-visit-inline-broker">
+        <Button 
+          asChild 
+          className="w-full" 
+          size="lg" 
+          data-testid="button-visit-inline-broker"
+          onClick={() => trackAffiliateClick({
+            broker_name: broker.name,
+            broker_type: 'broker',
+            click_location: 'inline_card',
+            rating: broker.rating,
+            affiliate_link: broker.link
+          })}
+        >
           <a href={broker.link} target="_blank" rel="noopener noreferrer">
             Visit {broker.name}
           </a>

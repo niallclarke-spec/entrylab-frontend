@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
 import { SEO } from "@/components/SEO";
@@ -12,9 +12,14 @@ import { NewsletterCTA } from "@/components/NewsletterCTA";
 import { Footer } from "@/components/Footer";
 import type { WordPressPost, Broker } from "@shared/schema";
 import { Loader2 } from "lucide-react";
+import { trackPageView } from "@/lib/gtm";
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  useEffect(() => {
+    trackPageView("/", "Home | EntryLab - Forex News & Trading Intelligence");
+  }, []);
 
   const { data: categoryData } = useQuery<any[]>({
     queryKey: ["/api/wordpress/categories", selectedCategory],
