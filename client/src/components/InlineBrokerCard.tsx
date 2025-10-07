@@ -23,7 +23,7 @@ export function InlineBrokerCard({ broker }: InlineBrokerCardProps) {
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
-                    className={`h-4 w-4 ${i < broker.rating ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40 fill-muted-foreground/20"}`}
+                    className={`h-4 w-4 ${i < Math.floor(broker.rating) ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40 fill-muted-foreground/20"}`}
                   />
                 ))}
                 <span className="text-sm font-semibold text-foreground ml-1">{broker.rating}/5</span>

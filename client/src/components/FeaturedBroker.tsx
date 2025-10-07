@@ -48,7 +48,7 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
-                    className={`h-5 w-5 ${i < rating ? "text-amber-500 fill-amber-500" : "text-muted"}`}
+                    className={`h-5 w-5 ${i < Math.floor(rating) ? "text-amber-500 fill-amber-500" : "text-muted"}`}
                   />
                 ))}
                 <span className="text-sm font-semibold ml-2">{rating}/5</span>

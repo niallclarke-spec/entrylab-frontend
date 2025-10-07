@@ -10,6 +10,8 @@ import Article from "@/pages/Article";
 import Archive from "@/pages/Archive";
 import Brokers from "@/pages/Brokers";
 import PropFirms from "@/pages/PropFirms";
+import BrokerReview from "@/pages/BrokerReview";
+import PropFirmReview from "@/pages/PropFirmReview";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -19,7 +21,9 @@ function Router() {
       <Route path="/article/:slug" component={Article} />
       <Route path="/archive" component={Archive} />
       <Route path="/brokers" component={Brokers} />
+      <Route path="/broker/:slug" component={BrokerReview} />
       <Route path="/prop-firms/:category?" component={PropFirms} />
+      <Route path="/prop-firm/:slug" component={PropFirmReview} />
       <Route component={NotFound} />
     </Switch>
   );
