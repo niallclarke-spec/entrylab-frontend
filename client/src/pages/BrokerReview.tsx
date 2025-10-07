@@ -76,6 +76,8 @@ export default function BrokerReview() {
       headquarters: acf.headquarters, // New field
       totalUsers: acf.popularity, // New field (popularity -> totalUsers for display)
       lastUpdated: modifiedDate, // WordPress modified date
+      seoTitle: acf.seo_title, // Custom SEO title (optional)
+      seoDescription: acf.seo_description, // Custom SEO description (optional)
     };
   };
 
@@ -118,11 +120,15 @@ export default function BrokerReview() {
     );
   }
 
+  // SEO with fallbacks: Custom ACF fields OR auto-generated defaults
+  const seoTitle = broker.seoTitle || `${stripHtml(broker.name)} Review 2025 | EntryLab`;
+  const seoDescription = broker.seoDescription || broker.tagline || `Comprehensive review of ${stripHtml(broker.name)}. Read about spreads, regulation, platforms, and more.`;
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
-        title={`${stripHtml(broker.name)} Review 2025 | EntryLab`}
-        description={broker.tagline || `Comprehensive review of ${stripHtml(broker.name)}. Read about spreads, regulation, platforms, and more.`}
+        title={seoTitle}
+        description={seoDescription}
         url={`https://entrylab.io/broker/${broker.slug}`}
       />
       <Navigation />
