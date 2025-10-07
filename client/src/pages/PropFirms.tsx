@@ -4,9 +4,10 @@ import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { Loader2, Shield, Star, TrendingUp, Zap, CheckCircle2, Award, Users, Key, DollarSign, Headphones, FileText, Target, Tag, Search } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { useParams, useLocation } from "wouter";
+import { trackPageView, trackCategoryFilter } from "@/lib/gtm";
 import type { Broker } from "@shared/schema";
 
 interface PropFirmCategory {
@@ -117,6 +118,11 @@ export default function PropFirms() {
   const pageUrl = urlCategory
     ? `https://entrylab.io/prop-firms/${urlCategory.slug}`
     : "https://entrylab.io/prop-firms";
+
+  useEffect(() => {
+    const path = urlCategory ? `/prop-firms/${urlCategory.slug}` : '/prop-firms';
+    trackPageView(path, pageTitle);
+  }, [urlCategory, pageTitle]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -289,6 +295,7 @@ export default function PropFirms() {
               onClick={() => {
                 setFilterFeatured(null);
                 setLocation("/prop-firms");
+                trackCategoryFilter('prop_firm', 'all');
               }}
               data-testid="badge-filter-all"
             >
@@ -300,6 +307,7 @@ export default function PropFirms() {
               onClick={() => {
                 setFilterFeatured(true);
                 setLocation("/prop-firms");
+                trackCategoryFilter('prop_firm', 'featured');
               }}
               data-testid="badge-filter-featured"
             >
@@ -322,6 +330,7 @@ export default function PropFirms() {
                   onClick={() => {
                     setFilterFeatured(null);
                     setLocation(selectedCategory === category.id ? "/prop-firms" : `/prop-firms/${category.slug}`);
+                    trackCategoryFilter('prop_firm', category.name);
                   }}
                   data-testid={`badge-filter-${category.slug}`}
                 >
