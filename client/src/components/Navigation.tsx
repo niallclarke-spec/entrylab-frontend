@@ -23,7 +23,14 @@ export function Navigation() {
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 data-testid="link-brokers"
               >
-                Brokers
+                Verified Brokers
+              </Link>
+              <Link
+                href="/prop-firms"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                data-testid="link-prop-firms"
+              >
+                Prop Firms
               </Link>
               <Link
                 href="/archive"
@@ -72,7 +79,14 @@ export function Navigation() {
               className="block py-2 text-sm text-muted-foreground hover:text-foreground"
               data-testid="link-mobile-brokers"
             >
-              Brokers
+              Verified Brokers
+            </Link>
+            <Link
+              href="/prop-firms"
+              className="block py-2 text-sm text-muted-foreground hover:text-foreground"
+              data-testid="link-mobile-prop-firms"
+            >
+              Prop Firms
             </Link>
             <Link
               href="/archive"
