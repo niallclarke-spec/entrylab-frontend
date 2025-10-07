@@ -7,7 +7,7 @@ import { InlineBrokerCard } from "@/components/InlineBrokerCard";
 import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { ArticleCard } from "@/components/ArticleCard";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Clock, User, Share2, BookOpen, TrendingUp, Building2, BarChart3, AlertCircle } from "lucide-react";
+import { Loader2, Clock, User, Share2, BookOpen, TrendingUp, Building2, BarChart3, AlertCircle, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { WordPressPost, Broker } from "@shared/schema";
 
@@ -289,7 +289,10 @@ export default function Article() {
               {/* Mobile: Popular Brokers Below Article */}
               {popularBrokers.length > 0 && (
                 <div className="lg:hidden mt-8 space-y-6">
-                  <h3 className="text-2xl font-bold text-foreground">Top Rated Brokers</h3>
+                  <div className="text-center mb-6">
+                    <Trophy className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+                    <h3 className="text-2xl font-bold text-foreground">Top Rated Brokers</h3>
+                  </div>
                   <div className="grid gap-4">
                     {popularBrokers.map((broker) => (
                       <BrokerCardEnhanced
