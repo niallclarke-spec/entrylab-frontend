@@ -41,8 +41,8 @@ export default function PropFirms() {
       ? acf.pros.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f)
       : keyFeatures;
 
-    // Extract category IDs from WordPress taxonomy data
-    const categoryIds = wpPropFirm.prop_firm_category || [];
+    // Extract category IDs from WordPress taxonomy data (uses dashes, not underscores)
+    const categoryIds = wpPropFirm["prop-firm-category"] || [];
 
     return {
       id: wpPropFirm.id.toString(),
