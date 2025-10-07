@@ -114,6 +114,15 @@ WordPress has been migrated to `admin.entrylab.io` subdomain. All API endpoints 
 
 ## Recent Changes
 
+**October 7, 2025 - Prop Firms Category Filtering**:
+- Added dynamic category filtering system for prop firms (fully WordPress-managed)
+- Created backend API endpoint `/api/wordpress/prop-firm-categories` to fetch taxonomy data
+- Updated PropFirms.tsx to display dynamic category filter buttons (e.g., "Daily Payouts (3)")
+- Categories automatically appear as filter badges when added in WordPress
+- Multi-filter support: works alongside Featured filter
+- WordPress taxonomy: "Prop Firm Categories" (singular: "Prop Firm Category")
+- **Configuration Required**: Taxonomy must be set to "Public" and "Show in REST API" in WordPress
+
 **October 7, 2025 - Prop Firms Section**:
 - Added "Prop Firms" navigation link alongside "Verified Brokers" (renamed from "Brokers")
 - Created dedicated Prop Firms page at `/prop-firms` with similar structure to Brokers page
