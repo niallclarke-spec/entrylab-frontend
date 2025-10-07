@@ -181,7 +181,7 @@ export default function PropFirms() {
             
             {/* Desktop: Icon inline with heading */}
             <div className="hidden sm:inline-flex items-center gap-2 mb-3">
-              <Key className="h-5 w-5 text-emerald-500" />
+              <Search className="h-5 w-5 text-emerald-500" />
               <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                 What to Look for in a Prop Firm
               </h2>
