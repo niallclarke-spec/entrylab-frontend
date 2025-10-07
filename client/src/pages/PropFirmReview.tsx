@@ -6,7 +6,7 @@ import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight } from "lucide-react";
+import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight } from "lucide-react";
 import type { Broker } from "@shared/schema";
 
 export default function PropFirmReview() {
@@ -455,6 +455,61 @@ export default function PropFirmReview() {
           </div>
         </div>
       </main>
+
+      {/* Final CTA Section */}
+      <section className="py-16 bg-gradient-to-br from-primary/10 via-primary/5 to-background border-y">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+          <div className="mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4" data-testid="text-final-cta-headline">
+              Ready to Get Funded with {stripHtml(propFirm.name)}?
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Join thousands of traders who have been funded through {stripHtml(propFirm.name)}
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-10">
+            <div className="flex flex-col items-center gap-2" data-testid="cta-benefit-1">
+              <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                <Shield className="h-6 w-6 text-emerald-500" />
+              </div>
+              <h3 className="font-semibold text-foreground">Trusted Platform</h3>
+              <p className="text-sm text-muted-foreground">Industry-leading prop firm</p>
+            </div>
+            <div className="flex flex-col items-center gap-2" data-testid="cta-benefit-2">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <TrendingUp className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-foreground">High Profit Split</h3>
+              <p className="text-sm text-muted-foreground">Keep more of your profits</p>
+            </div>
+            <div className="flex flex-col items-center gap-2" data-testid="cta-benefit-3">
+              <div className="w-12 h-12 rounded-full bg-chart-2/10 flex items-center justify-center">
+                <Zap className="h-6 w-6 text-chart-2" />
+              </div>
+              <h3 className="font-semibold text-foreground">Quick Evaluation</h3>
+              <p className="text-sm text-muted-foreground">Get funded fast</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+            <Button size="lg" asChild className="min-w-[200px]" data-testid="button-final-cta">
+              <a href={propFirm.link} target="_blank" rel="noopener noreferrer">
+                Start Evaluation Now <ArrowRight className="ml-2 h-4 w-4" />
+              </a>
+            </Button>
+            <Link href="/prop-firms">
+              <Button variant="outline" size="lg" className="min-w-[200px]" data-testid="button-compare-prop-firms">
+                Compare Other Prop Firms
+              </Button>
+            </Link>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            Risk Warning: Trading involves risk. Ensure you understand the evaluation process and trading rules before participating.
+          </p>
+        </div>
+      </section>
 
       <Footer />
     </div>
