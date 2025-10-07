@@ -367,4 +367,11 @@
   .animate-pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
   }
+
+  /* Affiliate link styling */
+  .affiliate-link {
+    @apply text-foreground font-medium underline decoration-emerald-500/50 decoration-2 underline-offset-4;
+    @apply hover:decoration-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400;
+    @apply transition-colors duration-200;
+  }
 }

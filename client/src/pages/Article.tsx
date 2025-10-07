@@ -25,6 +25,10 @@ export default function Article() {
     queryKey: ["/api/wordpress/brokers"],
   });
 
+  const { data: wordpressPropFirms } = useQuery<any[]>({
+    queryKey: ["/api/wordpress/prop-firms"],
+  });
+
   const { data: posts } = useQuery<WordPressPost[]>({
     queryKey: ["/api/wordpress/posts"],
   });
@@ -85,13 +89,137 @@ export default function Article() {
     return Math.max(1, Math.ceil(words / 200));
   };
 
-  const parseContentWithBroker = (content: string, broker: Broker | undefined) => {
-    if (!broker) {
-      return <div dangerouslySetInnerHTML={{ __html: content }} className="prose prose-lg max-w-none dark:prose-invert" />;
+  const addAffiliateLinks = (content: string): string => {
+    // Build keyword map from brokers and prop firms
+    const affiliateKeywords: { name: string; url: string }[] = [];
+    
+    // Add brokers
+    wordpressBrokers?.forEach((wpItem: any) => {
+      const name = wpItem.title?.rendered;
+      const affiliateLink = wpItem.acf?.affiliate_link;
+      if (name && affiliateLink) {
+        affiliateKeywords.push({ 
+          name: stripHtml(name).trim(), 
+          url: affiliateLink 
+        });
+      }
+    });
+    
+    // Add prop firms
+    wordpressPropFirms?.forEach((wpItem: any) => {
+      const name = wpItem.title?.rendered;
+      const affiliateLink = wpItem.acf?.affiliate_link;
+      if (name && affiliateLink) {
+        affiliateKeywords.push({ 
+          name: stripHtml(name).trim(), 
+          url: affiliateLink 
+        });
+      }
+    });
+
+    if (affiliateKeywords.length === 0) {
+      return content;
     }
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(content, 'text/html');
+    
+    // Process each brand keyword
+    affiliateKeywords.forEach(({ name, url }) => {
+      const occurrences: { node: Text; index: number; position: number }[] = [];
+      
+      // Find all text nodes
+      const walker = document.createTreeWalker(
+        doc.body,
+        NodeFilter.SHOW_TEXT,
+        null
+      );
+      
+      let node: Text | null;
+      let position = 0;
+      
+      while ((node = walker.nextNode() as Text | null)) {
+        // Skip if already inside a link or heading
+        let parent = node.parentElement;
+        let skipNode = false;
+        while (parent) {
+          if (['A', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'CODE', 'PRE'].includes(parent.tagName)) {
+            skipNode = true;
+            break;
+          }
+          parent = parent.parentElement;
+        }
+        
+        if (skipNode || !node.textContent) continue;
+        
+        // Case-insensitive search for brand name with word boundaries
+        const regex = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+        let match;
+        
+        while ((match = regex.exec(node.textContent)) !== null) {
+          occurrences.push({
+            node,
+            index: match.index,
+            position: position++
+          });
+        }
+      }
+      
+      // Link first and last occurrence only (max 2)
+      if (occurrences.length === 0) return;
+      
+      const toLink = occurrences.length === 1 
+        ? [occurrences[0]]
+        : [occurrences[0], occurrences[occurrences.length - 1]];
+      
+      // Sort by position in document (reverse to avoid index shifting)
+      toLink.sort((a, b) => b.position - a.position);
+      
+      toLink.forEach(({ node, index }) => {
+        const text = node.textContent || '';
+        const matchLength = name.length;
+        
+        // Split text node
+        const beforeText = text.substring(0, index);
+        const matchText = text.substring(index, index + matchLength);
+        const afterText = text.substring(index + matchLength);
+        
+        // Create link element
+        const link = document.createElement('a');
+        link.href = url;
+        link.textContent = matchText;
+        link.setAttribute('target', '_blank');
+        link.setAttribute('rel', 'sponsored noopener noreferrer');
+        link.className = 'affiliate-link';
+        
+        // Create new nodes
+        const beforeNode = document.createTextNode(beforeText);
+        const afterNode = document.createTextNode(afterText);
+        
+        // Replace original node
+        const parent = node.parentNode;
+        if (parent) {
+          parent.insertBefore(beforeNode, node);
+          parent.insertBefore(link, node);
+          parent.insertBefore(afterNode, node);
+          parent.removeChild(node);
+        }
+      });
+    });
+    
+    return doc.body.innerHTML;
+  };
+
+  const parseContentWithBroker = (content: string, broker: Broker | undefined) => {
+    // First, add affiliate links to the content
+    const contentWithAffiliateLinks = addAffiliateLinks(content);
+    
+    if (!broker) {
+      return <div dangerouslySetInnerHTML={{ __html: contentWithAffiliateLinks }} className="prose prose-lg max-w-none dark:prose-invert" />;
+    }
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(contentWithAffiliateLinks, 'text/html');
     const allElements = Array.from(doc.querySelectorAll('p, h1, h2, h3, h4, h5, h6, ul, ol, blockquote'));
 
     if (allElements.length < 3) {
@@ -285,6 +413,16 @@ export default function Article() {
               {/* Article Content with Broker Insertion */}
               <div className="bg-card rounded-lg p-6 md:p-8 shadow-lg">
                 {parseContentWithBroker(post.content.rendered, featuredBroker)}
+              </div>
+
+              {/* Affiliate Disclosure */}
+              <div className="mt-6 p-4 bg-muted/50 rounded-lg border border-border/50">
+                <p className="text-sm text-muted-foreground flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 mt-0.5 text-emerald-500 flex-shrink-0" />
+                  <span>
+                    This article may contain affiliate links. We may earn a commission at no extra cost to you when you click these links and make a purchase.
+                  </span>
+                </p>
               </div>
 
               {/* Mobile: Popular Brokers Below Article */}
