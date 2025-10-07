@@ -35,45 +35,6 @@ export default function PropFirmReview() {
     const consList = acf.cons 
       ? acf.cons.split(/[,\n]+/).map((c: string) => c.trim()).filter((c: string) => c)
       : [];
-    const awardsList = acf.awards 
-      ? acf.awards.split(/[,\n]+/).map((a: string) => a.trim()).filter((a: string) => a)
-      : [];
-
-    return {
-      id: wpPropFirm.id.toString(),
-      slug: wpPropFirm.slug,
-      name: name,
-      logo: logo || "https://placehold.co/200x80/1a1a1a/8b5cf6?text=" + encodeURIComponent(name),
-      rating: parseFloat(acf.rating) || 4.5,
-      verified: true,
-      featured: isFeatured,
-      tagline: acf.prop_firm_usp ? acf.prop_firm_usp.split(/[,\n]+/)[0] : "Trusted prop trading firm",
-      bonusOffer: acf.discount_code || "Get Funded Today",
-      link: acf.affiliate_link || wpPropFirm.link || "#",
-      pros: prosText.slice(0, 3),
-      highlights: prosText,
-      features: keyFeatures.map((f: string) => ({ icon: "trending", text: f })),
-      featuredHighlights: keyFeatures,
-      content: wpPropFirm.content?.rendered || "",
-      minDeposit: acf.min_deposit,
-      maxLeverage: acf.max_leverage,
-      spreadFrom: acf.spread_from,
-      regulation: acf.regulation,
-      instrumentsCount: acf.instruments_count,
-      supportHours: acf.support_hours,
-      cons: consList,
-      bestFor: acf.best_for,
-      platforms: acf.platforms,
-      accountTypes: acf.account_types,
-      paymentMethods: acf.payment_methods,
-      yearFounded: acf.year_founded,
-      headquarters: acf.headquarters,
-      regulationDetails: acf.regulation_details,
-      withdrawalTime: acf.withdrawal_time,
-      trustScore: acf.trust_score ? parseInt(acf.trust_score) : undefined,
-      totalUsers: acf.popularity, // New field (popularity -> totalUsers for display)
-      awards: awardsList,
-    };
   };
 
   const propFirm = wpPropFirm ? transformPropFirm(wpPropFirm) : null;
