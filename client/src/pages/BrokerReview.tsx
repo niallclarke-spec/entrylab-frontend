@@ -129,7 +129,7 @@ export default function BrokerReview() {
             </Button>
           </Link>
 
-          <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-start">
+          <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-center">
             <div>
               <div className="flex items-center gap-4 mb-6">
                 <img 
@@ -193,7 +193,7 @@ export default function BrokerReview() {
               )}
             </div>
 
-            <div className="flex flex-col gap-3 w-full lg:max-w-sm">
+            <div className="flex flex-col gap-3 w-full lg:w-72">
               <Button size="lg" asChild className="w-full" data-testid="button-visit-broker">
                 <a href={broker.link} target="_blank" rel="noopener noreferrer">
                   Visit {stripHtml(broker.name)} <ExternalLink className="ml-2 h-4 w-4" />
