@@ -73,8 +73,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard"
       );
       
-      if (!response.ok) {
-        throw new Error(`WordPress API error: ${response.statusText}`);
+      // If custom post type doesn't exist yet, return empty array
+      if (response.status === 404 || !response.ok) {
+        console.log(`WordPress prop firm endpoint returned ${response.status}, returning empty array`);
+        return res.json([]);
       }
       
       const propFirms = await response.json();
