@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Loader2 } from "lucide-react";
 import type { WordPressPost } from "@shared/schema";
-import { trackPageView } from "@/lib/gtm";
+import { trackPageView, trackSearch, trackCategoryFilter } from "@/lib/gtm";
 
 export default function Archive() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,6 +51,16 @@ export default function Archive() {
       stripHtml(post.excerpt.rendered).toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   }) || [];
+
+  // Debounced search tracking
+  useEffect(() => {
+    if (searchQuery) {
+      const timer = setTimeout(() => {
+        trackSearch(searchQuery, filteredPosts.length, 'archive');
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [searchQuery, filteredPosts.length]);
 
   const allCategories = [
     { name: "All Posts", slug: "all" },
@@ -101,7 +111,10 @@ export default function Archive() {
                 key={category.slug}
                 variant={selectedCategory === category.slug ? "default" : "outline"}
                 className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
-                onClick={() => setSelectedCategory(category.slug)}
+                onClick={() => {
+                  setSelectedCategory(category.slug);
+                  trackCategoryFilter('article', category.name);
+                }}
                 data-testid={`badge-category-${category.slug}`}
               >
                 {category.name}
