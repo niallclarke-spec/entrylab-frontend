@@ -62,7 +62,7 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
             {cleanExcerpt}
           </p>
         </CardContent>
-        <CardFooter className="flex items-center gap-3 text-xs text-muted-foreground pt-3 border-t">
+        <CardFooter className="flex items-center gap-3 text-xs text-muted-foreground pt-3 border-t bg-muted/20">
           <div className="flex items-center gap-1.5" data-testid="text-author">
             <User className="h-3.5 w-3.5" />
             <span className="truncate">{author}</span>
