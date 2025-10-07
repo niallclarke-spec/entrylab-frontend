@@ -90,6 +90,9 @@ export default function Home() {
       highlights: whyChoose,
       features: keyFeatures.map((f: string) => ({ icon: "trending", text: f })),
       featuredHighlights: keyFeatures,
+      minDeposit: acf.min_deposit,
+      headquarters: acf.headquarters,
+      totalUsers: acf.popularity,
     };
   };
 
