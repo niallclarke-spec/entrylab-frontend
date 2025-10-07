@@ -114,6 +114,13 @@ WordPress has been migrated to `admin.entrylab.io` subdomain. All API endpoints 
 
 ## Recent Changes
 
+**October 7, 2025 - Brokers Page: Key Decision Factors Section**:
+- Added educational "What to Look for in a Forex Broker" section between hero and broker listings
+- Created 4 informational cards with emerald green accents: Check Regulation, Compare Spreads, Test Support, Read Reviews
+- Implemented responsive grid layout: 1 column (mobile), 2 columns (tablet), 4 columns (desktop)
+- Added data-testid attributes for automated testing instrumentation
+- Cards feature subtle hover effects and follow established design patterns
+
 **October 6, 2025 - WordPress Migration to Subdomain**:
 - Migrated WordPress from entrylab.io to admin.entrylab.io in Hostinger
 - Updated all API endpoints to fetch from admin.entrylab.io
