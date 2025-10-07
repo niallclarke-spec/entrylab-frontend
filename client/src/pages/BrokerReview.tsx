@@ -6,7 +6,7 @@ import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info } from "lucide-react";
+import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Broker } from "@shared/schema";
 
@@ -203,9 +203,23 @@ export default function BrokerReview() {
                 </a>
               </Button>
               {broker.bonusOffer && (
-                <Badge className="w-full text-center justify-center py-2 bg-emerald-500/10 text-emerald-500 border-emerald-500/20" data-testid="badge-bonus">
-                  🎁 {broker.bonusOffer}
-                </Badge>
+                <div className="relative">
+                  <ArrowUp className="h-4 w-4 text-blue-500 absolute -top-5 left-1/2 -translate-x-1/2 animate-bounce" />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <Badge className="w-full text-center justify-center py-2 bg-blue-500/10 text-blue-500 border-blue-500/20 cursor-help" data-testid="badge-bonus">
+                            🎁 {broker.bonusOffer} <Info className="h-3 w-3 ml-1 inline" />
+                          </Badge>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p className="text-xs">If you sign up with the above button, you will receive a bonus on your first deposit</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               )}
             </div>
           </div>
