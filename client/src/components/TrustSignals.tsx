@@ -29,7 +29,7 @@ export function TrustSignals() {
                   <Icon className="h-6 w-6 text-primary" />
                 </div>
                 <p className="text-lg md:text-2xl font-bold text-foreground mb-1">{signal.value}</p>
-                <p className="text-xs text-muted-foreground">{signal.label}</p>
+                <p className="text-sm text-muted-foreground">{signal.label}</p>
               </div>
             );
           })}
