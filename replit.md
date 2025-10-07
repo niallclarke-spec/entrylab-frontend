@@ -114,6 +114,17 @@ WordPress has been migrated to `admin.entrylab.io` subdomain. All API endpoints 
 
 ## Recent Changes
 
+**October 7, 2025 - Prop Firms Section**:
+- Added "Prop Firms" navigation link alongside "Verified Brokers" (renamed from "Brokers")
+- Created dedicated Prop Firms page at `/prop-firms` with similar structure to Brokers page
+- Implemented WordPress custom post type `popular_prop_firm` with ACF fields:
+  - prop_firm_logo (Image), rating (Number), is_featured (True/False)
+  - prop_firm_usp (Text), pros (Text), cons (Text)
+  - affiliate_link (URL), discount_code (Text)
+- Added backend API endpoint `/api/wordpress/prop-firms` with 404 fallback to empty array
+- Prop Firms page features: Hero with stats, Key Decision Factors (Profit Split, Evaluation Process, Scaling Plans, Payout Speed)
+- Responsive grid layout: 1 column (mobile) → 2 columns (tablet) → 3 columns (desktop)
+
 **October 7, 2025 - Brokers Page: Key Decision Factors Section**:
 - Added educational "What to Look for in a Forex Broker" section between hero and broker listings
 - Created 4 informational cards with emerald green accents: Check Regulation, Compare Spreads, Test Support, Read Reviews
