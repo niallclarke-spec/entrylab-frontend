@@ -127,7 +127,7 @@ export default function PropFirms() {
           </div>
 
           {/* Stats */}
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 mb-8">
+          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
             <div className="flex items-center gap-2">
               <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
               <span className="text-sm font-medium text-muted-foreground">
@@ -141,63 +141,6 @@ export default function PropFirms() {
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-chart-2" />
               <span>Community Verified</span>
-            </div>
-          </div>
-
-          {/* Filter Tabs */}
-          <div className="flex flex-col items-center gap-3">
-            <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
-              <Tag className="h-4 w-4" />
-              Filter by category:
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-2 max-w-4xl">
-              <Badge 
-                variant={filterFeatured === null && selectedCategory === null ? "default" : "secondary"}
-                className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
-                onClick={() => {
-                  setFilterFeatured(null);
-                  setSelectedCategory(null);
-                }}
-                data-testid="badge-filter-all"
-              >
-                All Prop Firms ({propFirms.length})
-              </Badge>
-              <Badge 
-                variant={filterFeatured === true && selectedCategory === null ? "default" : "secondary"}
-                className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
-                onClick={() => {
-                  setFilterFeatured(true);
-                  setSelectedCategory(null);
-                }}
-                data-testid="badge-filter-featured"
-              >
-                <Star className="h-3.5 w-3.5 mr-1.5" />
-                Featured ({featuredCount})
-              </Badge>
-              
-              {/* Dynamic Category Filters - Only show categories with prop firms */}
-              {categories
-                .map((category) => ({
-                  ...category,
-                  count: propFirms.filter(p => p.categoryIds.includes(category.id)).length
-                }))
-                .filter(category => category.count > 0)
-                .map((category) => (
-                  <Badge 
-                    key={category.id}
-                    variant={selectedCategory === category.id ? "default" : "secondary"}
-                    className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
-                    onClick={() => {
-                      setSelectedCategory(selectedCategory === category.id ? null : category.id);
-                      setFilterFeatured(null);
-                    }}
-                    data-testid={`badge-filter-${category.slug}`}
-                  >
-                    <Tag className="h-3.5 w-3.5 mr-1.5" />
-                    {category.name} ({category.count})
-                  </Badge>
-                ))
-              }
             </div>
           </div>
         </div>
@@ -277,6 +220,65 @@ export default function PropFirms() {
       <main className="flex-1 py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           
+          {/* Filter Label */}
+          <div className="text-center mb-3">
+            <p className="text-sm text-muted-foreground inline-flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              Filter by category:
+            </p>
+          </div>
+
+          {/* Filter Tabs */}
+          <div className="flex flex-wrap items-center justify-center gap-2 max-w-4xl mx-auto mb-12">
+            <Badge 
+              variant={filterFeatured === null && selectedCategory === null ? "default" : "secondary"}
+              className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
+              onClick={() => {
+                setFilterFeatured(null);
+                setSelectedCategory(null);
+              }}
+              data-testid="badge-filter-all"
+            >
+              All Prop Firms ({propFirms.length})
+            </Badge>
+            <Badge 
+              variant={filterFeatured === true && selectedCategory === null ? "default" : "secondary"}
+              className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
+              onClick={() => {
+                setFilterFeatured(true);
+                setSelectedCategory(null);
+              }}
+              data-testid="badge-filter-featured"
+            >
+              <Star className="h-3.5 w-3.5 mr-1.5" />
+              Featured ({featuredCount})
+            </Badge>
+            
+            {/* Dynamic Category Filters - Only show categories with prop firms */}
+            {categories
+              .map((category) => ({
+                ...category,
+                count: propFirms.filter(p => p.categoryIds.includes(category.id)).length
+              }))
+              .filter(category => category.count > 0)
+              .map((category) => (
+                <Badge 
+                  key={category.id}
+                  variant={selectedCategory === category.id ? "default" : "secondary"}
+                  className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
+                  onClick={() => {
+                    setSelectedCategory(selectedCategory === category.id ? null : category.id);
+                    setFilterFeatured(null);
+                  }}
+                  data-testid={`badge-filter-${category.slug}`}
+                >
+                  <Tag className="h-3.5 w-3.5 mr-1.5" />
+                  {category.name} ({category.count})
+                </Badge>
+              ))
+            }
+          </div>
+
           {/* Section Heading */}
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
