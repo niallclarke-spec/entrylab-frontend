@@ -3,7 +3,7 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
-import { Loader2, Shield, Star, TrendingUp, Zap, CheckCircle2, Award, Users, Key, DollarSign, Headphones, FileText, Target } from "lucide-react";
+import { Loader2, Shield, Star, TrendingUp, Zap, CheckCircle2, Award, Users, Key, DollarSign, Headphones, FileText, Target, Tag } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import type { Broker } from "@shared/schema";
@@ -145,53 +145,60 @@ export default function PropFirms() {
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex flex-wrap items-center justify-center gap-2 max-w-4xl mx-auto">
-            <Badge 
-              variant={filterFeatured === null && selectedCategory === null ? "default" : "secondary"}
-              className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
-              onClick={() => {
-                setFilterFeatured(null);
-                setSelectedCategory(null);
-              }}
-              data-testid="badge-filter-all"
-            >
-              All Prop Firms ({propFirms.length})
-            </Badge>
-            <Badge 
-              variant={filterFeatured === true && selectedCategory === null ? "default" : "secondary"}
-              className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
-              onClick={() => {
-                setFilterFeatured(true);
-                setSelectedCategory(null);
-              }}
-              data-testid="badge-filter-featured"
-            >
-              <Star className="h-3.5 w-3.5 mr-1.5" />
-              Featured ({featuredCount})
-            </Badge>
-            
-            {/* Dynamic Category Filters - Only show categories with prop firms */}
-            {categories
-              .map((category) => ({
-                ...category,
-                count: propFirms.filter(p => p.categoryIds.includes(category.id)).length
-              }))
-              .filter(category => category.count > 0)
-              .map((category) => (
-                <Badge 
-                  key={category.id}
-                  variant={selectedCategory === category.id ? "default" : "secondary"}
-                  className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
-                  onClick={() => {
-                    setSelectedCategory(selectedCategory === category.id ? null : category.id);
-                    setFilterFeatured(null);
-                  }}
-                  data-testid={`badge-filter-${category.slug}`}
-                >
-                  {category.name} ({category.count})
-                </Badge>
-              ))
-            }
+          <div className="flex flex-col items-center gap-3">
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              Filter by category:
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2 max-w-4xl">
+              <Badge 
+                variant={filterFeatured === null && selectedCategory === null ? "default" : "secondary"}
+                className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
+                onClick={() => {
+                  setFilterFeatured(null);
+                  setSelectedCategory(null);
+                }}
+                data-testid="badge-filter-all"
+              >
+                All Prop Firms ({propFirms.length})
+              </Badge>
+              <Badge 
+                variant={filterFeatured === true && selectedCategory === null ? "default" : "secondary"}
+                className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
+                onClick={() => {
+                  setFilterFeatured(true);
+                  setSelectedCategory(null);
+                }}
+                data-testid="badge-filter-featured"
+              >
+                <Star className="h-3.5 w-3.5 mr-1.5" />
+                Featured ({featuredCount})
+              </Badge>
+              
+              {/* Dynamic Category Filters - Only show categories with prop firms */}
+              {categories
+                .map((category) => ({
+                  ...category,
+                  count: propFirms.filter(p => p.categoryIds.includes(category.id)).length
+                }))
+                .filter(category => category.count > 0)
+                .map((category) => (
+                  <Badge 
+                    key={category.id}
+                    variant={selectedCategory === category.id ? "default" : "secondary"}
+                    className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
+                    onClick={() => {
+                      setSelectedCategory(selectedCategory === category.id ? null : category.id);
+                      setFilterFeatured(null);
+                    }}
+                    data-testid={`badge-filter-${category.slug}`}
+                  >
+                    <Tag className="h-3.5 w-3.5 mr-1.5" />
+                    {category.name} ({category.count})
+                  </Badge>
+                ))
+              }
+            </div>
           </div>
         </div>
       </div>
