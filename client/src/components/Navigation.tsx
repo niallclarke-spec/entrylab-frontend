@@ -37,7 +37,7 @@ export function Navigation() {
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
                 data-testid="link-news"
               >
-                <Newspaper className="h-4 w-4" />
+                <Newspaper className="h-4 w-4 text-emerald-500" />
                 News
               </Link>
             </nav>
@@ -94,7 +94,7 @@ export function Navigation() {
               className="block py-2 text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5"
               data-testid="link-mobile-news"
             >
-              <Newspaper className="h-4 w-4" />
+              <Newspaper className="h-4 w-4 text-emerald-500" />
               News
             </Link>
           </nav>
