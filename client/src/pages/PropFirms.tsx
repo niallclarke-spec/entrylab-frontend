@@ -146,7 +146,7 @@ export default function PropFirms() {
 
           {/* Filter Tabs */}
           <div className="flex flex-col items-center gap-3">
-            <p className="text-sm text-muted-foreground flex items-center gap-2">
+            <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
               <Tag className="h-4 w-4" />
               Filter by category:
             </p>
