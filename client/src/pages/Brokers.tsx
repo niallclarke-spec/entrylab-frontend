@@ -3,7 +3,7 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
-import { Loader2, Shield, Star, TrendingUp, Zap, CheckCircle2, Award, Users } from "lucide-react";
+import { Loader2, Shield, Star, TrendingUp, Zap, CheckCircle2, Award, Users, Key, DollarSign, Headphones, FileText } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import type { Broker } from "@shared/schema";
@@ -177,6 +177,77 @@ export default function Brokers() {
           </div>
         </div>
       </div>
+
+      {/* Key Decision Factors */}
+      <section className="py-12 md:py-16 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 mb-3">
+              <Key className="h-5 w-5 text-emerald-500" />
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                What to Look for in a Forex Broker
+              </h2>
+            </div>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Make an informed decision with these key factors to consider
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Check Regulation */}
+            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mb-4">
+                <Shield className="h-6 w-6 text-emerald-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                Check Regulation
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Verify broker licensing & regulatory compliance to ensure your funds are protected
+              </p>
+            </div>
+
+            {/* Compare Spreads */}
+            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mb-4">
+                <DollarSign className="h-6 w-6 text-emerald-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                Compare Spreads
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Find competitive trading costs and transparent pricing for better profitability
+              </p>
+            </div>
+
+            {/* Test Support */}
+            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mb-4">
+                <Headphones className="h-6 w-6 text-emerald-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                Test Support
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Ensure reliable customer service with 24/7 availability and quick response times
+              </p>
+            </div>
+
+            {/* Read Reviews */}
+            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mb-4">
+                <FileText className="h-6 w-6 text-emerald-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                Read Reviews
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Check real trader experiences and independent reviews before making your choice
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <main className="flex-1 py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
