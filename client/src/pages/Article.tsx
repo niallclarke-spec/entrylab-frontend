@@ -193,18 +193,19 @@ export default function Article() {
           <div className="grid lg:grid-cols-[1fr_350px] gap-8 xl:gap-12">
             {/* Main Content */}
             <article className="min-w-0">
-              {/* Article Header with Purple Glow */}
-              <div className="bg-card rounded-lg p-6 md:p-8 mb-8 relative border border-primary/20" 
-                style={{ 
-                  boxShadow: '0 0 40px -10px rgba(168, 85, 247, 0.4), 0 0 80px -20px rgba(168, 85, 247, 0.2), inset 0 0 60px -30px rgba(168, 85, 247, 0.1)'
-                }}
-              >
-                {/* Gradient border effect */}
-                <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-primary/20 via-transparent to-primary/10 pointer-events-none" />
+              {/* Article Header with Subtle Top Glow */}
+              <div className="bg-card rounded-lg p-6 md:p-8 mb-8 relative overflow-hidden shadow-lg">
+                {/* Subtle purple glow at top only */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/60 via-primary to-primary/60" />
+                <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
                 
                 <div className="relative">
                   <div className="flex items-center gap-2 flex-wrap mb-4">
-                    <Badge variant="secondary" data-testid="badge-category">
+                    <Badge 
+                      variant="secondary" 
+                      data-testid="badge-category"
+                      className="bg-emerald-500 text-white hover:bg-emerald-600 border-0"
+                    >
                       {getCategoryName(post)}
                     </Badge>
                     <Badge variant="outline" className="gap-1 border-primary/30 text-primary">
