@@ -194,13 +194,14 @@ export default function Article() {
             {/* Main Content */}
             <article className="min-w-0">
               {/* Article Header with Subtle Top Glow */}
-              <div className="bg-card rounded-xl p-6 md:p-8 mb-8 relative shadow-lg border-t-2 border-primary">
-                {/* Left side glow extending down from corner with gradual fade */}
-                <div className="absolute top-0 left-0 w-2 h-[25%] bg-gradient-to-b from-primary via-primary/60 to-transparent pointer-events-none rounded-tl-xl" />
-                {/* Right side glow extending down from corner with gradual fade */}
-                <div className="absolute top-0 right-0 w-2 h-[25%] bg-gradient-to-b from-primary via-primary/60 to-transparent pointer-events-none rounded-tr-xl" />
-                {/* Top gradient fade from edges */}
-                <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent pointer-events-none rounded-t-xl" />
+              <div className="bg-card rounded-xl p-6 md:p-8 mb-8 relative shadow-lg before:absolute before:inset-0 before:rounded-xl before:pointer-events-none before:bg-gradient-to-b before:from-primary/20 before:to-transparent before:h-[25%]">
+                {/* Unified top accent line that wraps corners */}
+                <div 
+                  className="absolute top-0 left-0 right-0 h-[2px] rounded-t-xl pointer-events-none"
+                  style={{
+                    background: 'linear-gradient(90deg, transparent 0%, rgba(168, 85, 247, 0.8) 5%, rgba(168, 85, 247, 1) 50%, rgba(168, 85, 247, 0.8) 95%, transparent 100%)'
+                  }}
+                />
                 
                 <div className="relative">
                   <div className="flex items-center gap-2 flex-wrap mb-4">
