@@ -6,7 +6,7 @@ import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight } from "lucide-react";
+import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity } from "lucide-react";
 import type { Broker } from "@shared/schema";
 
 export default function PropFirmReview() {
@@ -227,8 +227,8 @@ export default function PropFirmReview() {
             )}
             {propFirm.maxLeverage && (
               <div className="text-center" data-testid="stat-max-leverage">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
-                  <TrendingUp className="h-6 w-6 text-primary" />
+                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-amber-500/10 mx-auto mb-2">
+                  <Zap className="h-6 w-6 text-amber-500" />
                 </div>
                 <div className="font-bold text-foreground">{propFirm.maxLeverage}</div>
                 <div className="text-xs text-muted-foreground">Max Leverage</div>
@@ -236,8 +236,8 @@ export default function PropFirmReview() {
             )}
             {propFirm.spreadFrom && (
               <div className="text-center" data-testid="stat-profit-split">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
-                  <TrendingUp className="h-6 w-6 text-primary" />
+                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-500/10 mx-auto mb-2">
+                  <Activity className="h-6 w-6 text-blue-500" />
                 </div>
                 <div className="font-bold text-foreground">{propFirm.spreadFrom}</div>
                 <div className="text-xs text-muted-foreground">Profit Split</div>
@@ -360,7 +360,7 @@ export default function PropFirmReview() {
                   {propFirm.maxLeverage && (
                     <div className="p-4 rounded-lg bg-muted/50" data-testid="detail-max-leverage">
                       <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp className="h-5 w-5 text-primary" />
+                        <Zap className="h-5 w-5 text-amber-500" />
                         <span className="font-semibold">Max Leverage</span>
                       </div>
                       <p className="text-sm text-muted-foreground">{propFirm.maxLeverage}</p>
