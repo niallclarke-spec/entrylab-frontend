@@ -104,12 +104,25 @@ export default function PropFirms() {
     );
   }
 
+  // Dynamic SEO based on category
+  const pageTitle = urlCategory 
+    ? `${urlCategory.name} Prop Firms | EntryLab`
+    : "Prop Firm Reviews | EntryLab";
+  
+  const pageDescription = urlCategory
+    ? `Compare top prop trading firms with ${urlCategory.name.toLowerCase()}. Find the best funded trading opportunities with competitive profit splits and evaluation processes.`
+    : "Compare and review top prop trading firms. Find the best funded trading opportunities with competitive profit splits and evaluation processes.";
+  
+  const pageUrl = urlCategory
+    ? `https://entrylab.io/prop-firms/${urlCategory.slug}`
+    : "https://entrylab.io/prop-firms";
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
-        title="Prop Firm Reviews | EntryLab"
-        description="Compare and review top prop trading firms. Find the best funded trading opportunities with competitive profit splits and evaluation processes."
-        url="https://entrylab.io/prop-firms"
+        title={pageTitle}
+        description={pageDescription}
+        url={pageUrl}
       />
       <Navigation />
       
@@ -128,7 +141,7 @@ export default function PropFirms() {
             
             {/* Main Heading */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-              Compare Top Prop Trading Firms
+              {urlCategory ? `${urlCategory.name} Prop Trading Firms` : "Compare Top Prop Trading Firms"}
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               Get funded and trade with the best proprietary trading firms. Compare evaluations, profit splits, and funding opportunities.
