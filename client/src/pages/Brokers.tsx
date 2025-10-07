@@ -3,7 +3,7 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
-import { Loader2, Filter } from "lucide-react";
+import { Loader2, Shield, Star, TrendingUp, Zap, CheckCircle2, Award, Users } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import type { Broker } from "@shared/schema";
@@ -53,6 +53,10 @@ export default function Brokers() {
     : brokers.filter(b => b.featured === filterFeatured);
 
   const featuredCount = brokers.filter(b => b.featured).length;
+  const avgRating = brokers.length > 0 
+    ? (brokers.reduce((sum, b) => sum + b.rating, 0) / brokers.length).toFixed(1)
+    : "0.0";
+  const totalVerified = brokers.filter(b => b.verified).length;
 
   if (isLoading) {
     return (
@@ -75,41 +79,101 @@ export default function Brokers() {
       />
       <Navigation />
       
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-background border-b">
+        {/* Animated background accent */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 animate-pulse" />
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-20">
+          <div className="text-center mb-12">
+            {/* Badge */}
+            <Badge className="mb-6 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
+              <Award className="h-3 w-3 mr-1.5" />
+              Trusted Broker Reviews Since 2020
+            </Badge>
+            
+            {/* Headline */}
+            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
+              Find Your Perfect
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60">
+                Forex Broker
+              </span>
+            </h1>
+            
+            {/* Subheading */}
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+              Compare {brokers.length} verified brokers with unbiased reviews based on real trading conditions
+            </p>
+
+            {/* Stats */}
+            <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 mb-10">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card/50 backdrop-blur-sm border">
+                <Shield className="h-5 w-5 text-emerald-500" />
+                <div className="text-left">
+                  <div className="text-2xl font-bold text-foreground">{totalVerified}</div>
+                  <div className="text-xs text-muted-foreground">Verified Brokers</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card/50 backdrop-blur-sm border">
+                <Star className="h-5 w-5 text-amber-500" />
+                <div className="text-left">
+                  <div className="text-2xl font-bold text-foreground">{avgRating}</div>
+                  <div className="text-xs text-muted-foreground">Avg Rating</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card/50 backdrop-blur-sm border">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                <div className="text-left">
+                  <div className="text-2xl font-bold text-foreground">{featuredCount}</div>
+                  <div className="text-xs text-muted-foreground">Top Rated</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm text-muted-foreground mb-10">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                <span>100% Unbiased Reviews</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Zap className="h-4 w-4 text-primary" />
+                <span>Real Trading Conditions</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-chart-2" />
+                <span>Community Verified</span>
+              </div>
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="inline-flex items-center gap-2 p-1 rounded-lg bg-muted/50 backdrop-blur-sm">
+              <Badge 
+                variant={filterFeatured === null ? "default" : "secondary"}
+                className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
+                onClick={() => setFilterFeatured(null)}
+                data-testid="badge-filter-all"
+              >
+                All Brokers ({brokers.length})
+              </Badge>
+              <Badge 
+                variant={filterFeatured === true ? "default" : "secondary"}
+                className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
+                onClick={() => setFilterFeatured(true)}
+                data-testid="badge-filter-featured"
+              >
+                <Star className="h-3.5 w-3.5 mr-1.5" />
+                Featured ({featuredCount})
+              </Badge>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <main className="flex-1 py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          {/* Header */}
-          <div className="mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-              Broker Reviews
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-3xl">
-              Compare verified forex brokers. All reviews are unbiased and based on real trading conditions.
-            </p>
-          </div>
-
-          {/* Filter Bar */}
-          <div className="mb-8 flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-semibold text-muted-foreground">Filter:</span>
-            </div>
-            <Badge 
-              variant={filterFeatured === null ? "default" : "outline"}
-              className="cursor-pointer px-4 py-1.5"
-              onClick={() => setFilterFeatured(null)}
-              data-testid="badge-filter-all"
-            >
-              All Brokers ({brokers.length})
-            </Badge>
-            <Badge 
-              variant={filterFeatured === true ? "default" : "outline"}
-              className="cursor-pointer px-4 py-1.5"
-              onClick={() => setFilterFeatured(true)}
-              data-testid="badge-filter-featured"
-            >
-              Featured ({featuredCount})
-            </Badge>
-          </div>
 
           {/* Brokers Grid */}
           {filteredBrokers.length > 0 ? (
