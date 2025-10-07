@@ -24,6 +24,7 @@ export interface WordPressPost {
   excerpt: { rendered: string };
   content: { rendered: string };
   date: string;
+  modified: string;
   link: string;
   featured_media?: number;
   categories?: number[];
