@@ -454,7 +454,7 @@ export default function PropFirmReview() {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="text-muted-foreground flex items-center gap-1 cursor-help">
-                              Popularity: <Info className="h-3 w-3" />
+                              Popularity: <Info className="h-3 w-3 text-blue-500" />
                             </span>
                           </TooltipTrigger>
                           <TooltipContent className="max-w-xs text-center">
