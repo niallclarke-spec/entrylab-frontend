@@ -8,14 +8,26 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import type { Broker } from "@shared/schema";
 
+interface PropFirmCategory {
+  id: number;
+  name: string;
+  slug: string;
+  count: number;
+}
+
 export default function PropFirms() {
   const [filterFeatured, setFilterFeatured] = useState<boolean | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   const { data: wordpressPropFirms, isLoading } = useQuery<any[]>({
     queryKey: ["/api/wordpress/prop-firms"],
   });
 
-  const transformPropFirm = (wpPropFirm: any): Broker | null => {
+  const { data: categories = [] } = useQuery<PropFirmCategory[]>({
+    queryKey: ["/api/wordpress/prop-firm-categories"],
+  });
+
+  const transformPropFirm = (wpPropFirm: any): (Broker & { categoryIds: number[] }) | null => {
     const acf = wpPropFirm.acf || {};
     const logo = acf.prop_firm_logo?.url || wpPropFirm._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
     const name = wpPropFirm.title?.rendered;
@@ -28,6 +40,9 @@ export default function PropFirms() {
     const prosText = acf.pros 
       ? acf.pros.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f)
       : keyFeatures;
+
+    // Extract category IDs from WordPress taxonomy data
+    const categoryIds = wpPropFirm.prop_firm_category || [];
 
     return {
       id: wpPropFirm.id.toString(),
@@ -43,14 +58,24 @@ export default function PropFirms() {
       highlights: prosText,
       features: keyFeatures.map((f: string) => ({ icon: "trending", text: f })),
       featuredHighlights: keyFeatures,
+      categoryIds,
     };
   };
 
-  const propFirms = wordpressPropFirms?.map(transformPropFirm).filter((p): p is Broker => p !== null) || [];
+  const propFirms = wordpressPropFirms?.map(transformPropFirm).filter((p): p is (Broker & { categoryIds: number[] }) => p !== null) || [];
   
-  const filteredPropFirms = filterFeatured === null 
-    ? propFirms 
-    : propFirms.filter(p => p.featured === filterFeatured);
+  // Apply filters
+  let filteredPropFirms = propFirms;
+  
+  // Filter by featured
+  if (filterFeatured !== null) {
+    filteredPropFirms = filteredPropFirms.filter(p => p.featured === filterFeatured);
+  }
+  
+  // Filter by category
+  if (selectedCategory !== null) {
+    filteredPropFirms = filteredPropFirms.filter(p => p.categoryIds.includes(selectedCategory));
+  }
 
   const featuredCount = propFirms.filter(p => p.featured).length;
   const avgRating = propFirms.length > 0 
@@ -120,24 +145,49 @@ export default function PropFirms() {
           </div>
 
           {/* Filter Tabs */}
-          <div className="inline-flex items-center gap-2 p-1 rounded-lg bg-muted/50 backdrop-blur-sm">
+          <div className="flex flex-wrap items-center justify-center gap-2 max-w-4xl mx-auto">
             <Badge 
-              variant={filterFeatured === null ? "default" : "secondary"}
+              variant={filterFeatured === null && selectedCategory === null ? "default" : "secondary"}
               className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
-              onClick={() => setFilterFeatured(null)}
+              onClick={() => {
+                setFilterFeatured(null);
+                setSelectedCategory(null);
+              }}
               data-testid="badge-filter-all"
             >
               All Prop Firms ({propFirms.length})
             </Badge>
             <Badge 
-              variant={filterFeatured === true ? "default" : "secondary"}
+              variant={filterFeatured === true && selectedCategory === null ? "default" : "secondary"}
               className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
-              onClick={() => setFilterFeatured(true)}
+              onClick={() => {
+                setFilterFeatured(true);
+                setSelectedCategory(null);
+              }}
               data-testid="badge-filter-featured"
             >
               <Star className="h-3.5 w-3.5 mr-1.5" />
               Featured ({featuredCount})
             </Badge>
+            
+            {/* Dynamic Category Filters */}
+            {categories.map((category) => {
+              const categoryCount = propFirms.filter(p => p.categoryIds.includes(category.id)).length;
+              return (
+                <Badge 
+                  key={category.id}
+                  variant={selectedCategory === category.id ? "default" : "secondary"}
+                  className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
+                  onClick={() => {
+                    setSelectedCategory(selectedCategory === category.id ? null : category.id);
+                    setFilterFeatured(null);
+                  }}
+                  data-testid={`badge-filter-${category.slug}`}
+                >
+                  {category.name} ({categoryCount})
+                </Badge>
+              );
+            })}
           </div>
         </div>
       </div>
