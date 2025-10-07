@@ -6,6 +6,7 @@ import { SEO } from "@/components/SEO";
 import { InlineBrokerCard } from "@/components/InlineBrokerCard";
 import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { ArticleCard } from "@/components/ArticleCard";
+import { NewsletterCTA } from "@/components/NewsletterCTA";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Clock, User, Share2, BookOpen, TrendingUp, Building2, BarChart3, AlertCircle, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -309,6 +310,11 @@ export default function Article() {
                   </div>
                 </div>
               )}
+
+              {/* Newsletter Subscription */}
+              <div className="mt-8">
+                <NewsletterCTA />
+              </div>
             </article>
 
             {/* Desktop: Sticky Sidebar */}
