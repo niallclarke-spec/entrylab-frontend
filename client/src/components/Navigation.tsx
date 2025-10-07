@@ -30,7 +30,7 @@ export function Navigation() {
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 data-testid="link-prop-firms"
               >
-                Prop Firms
+                Verified Prop Firms
               </Link>
               <Link
                 href="/archive"
@@ -87,7 +87,7 @@ export function Navigation() {
               className="block py-2 text-sm text-muted-foreground hover:text-foreground"
               data-testid="link-mobile-prop-firms"
             >
-              Prop Firms
+              Verified Prop Firms
             </Link>
             <Link
               href="/archive"
