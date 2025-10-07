@@ -47,6 +47,9 @@ export default function BrokerReview() {
       ? acf.cons.split(/[,\n]+/).map((c: string) => c.trim()).filter((c: string) => c)
       : [];
 
+    // Format modified date
+    const modifiedDate = wpBroker.modified ? new Date(wpBroker.modified) : null;
+
     return {
       id: wpBroker.id.toString(),
       slug: wpBroker.slug,
@@ -72,6 +75,7 @@ export default function BrokerReview() {
       paymentMethods: acf.deposit_methods, // Updated field name
       headquarters: acf.headquarters, // New field
       totalUsers: acf.popularity, // New field (popularity -> totalUsers for display)
+      lastUpdated: modifiedDate, // WordPress modified date
     };
   };
 
@@ -160,6 +164,11 @@ export default function BrokerReview() {
                       <Badge className="bg-primary/10 text-primary border-primary/20" data-testid="badge-featured">
                         <Award className="h-3 w-3 mr-1" /> Featured
                       </Badge>
+                    )}
+                    {broker.lastUpdated && (
+                      <span className="text-xs text-muted-foreground" data-testid="text-last-updated">
+                        Updated {broker.lastUpdated.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
                     )}
                   </div>
                 </div>
