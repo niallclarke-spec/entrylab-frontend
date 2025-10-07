@@ -87,6 +87,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/wordpress/prop-firm-categories", async (req, res) => {
+    try {
+      // WordPress converts "Prop Firm Categories" to "prop_firm_category" slug
+      const response = await fetch(
+        "https://admin.entrylab.io/wp-json/wp/v2/prop_firm_category?per_page=100"
+      );
+      
+      // If taxonomy doesn't exist yet, return empty array
+      if (response.status === 404 || !response.ok) {
+        console.log(`WordPress prop firm categories endpoint returned ${response.status}, returning empty array`);
+        return res.json([]);
+      }
+      
+      const categories = await response.json();
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching WordPress prop firm categories:", error);
+      res.json([]); // Return empty array instead of error for graceful degradation
+    }
+  });
+
   app.get("/api/brokers", async (req, res) => {
     const brokers = await storage.getBrokers();
     res.json(brokers);
