@@ -170,10 +170,14 @@ export default function PropFirms() {
               Featured ({featuredCount})
             </Badge>
             
-            {/* Dynamic Category Filters */}
-            {categories.map((category) => {
-              const categoryCount = propFirms.filter(p => p.categoryIds.includes(category.id)).length;
-              return (
+            {/* Dynamic Category Filters - Only show categories with prop firms */}
+            {categories
+              .map((category) => ({
+                ...category,
+                count: propFirms.filter(p => p.categoryIds.includes(category.id)).length
+              }))
+              .filter(category => category.count > 0)
+              .map((category) => (
                 <Badge 
                   key={category.id}
                   variant={selectedCategory === category.id ? "default" : "secondary"}
@@ -184,10 +188,10 @@ export default function PropFirms() {
                   }}
                   data-testid={`badge-filter-${category.slug}`}
                 >
-                  {category.name} ({categoryCount})
+                  {category.name} ({category.count})
                 </Badge>
-              );
-            })}
+              ))
+            }
           </div>
         </div>
       </div>
