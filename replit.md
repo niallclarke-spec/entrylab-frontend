@@ -67,6 +67,10 @@ Preferred communication style: Simple, everyday language.
 - `GET /api/wordpress/post/:slug` - Fetches single post by slug with embedded data for article pages
 - `GET /api/wordpress/categories` - Fetches category data, supports slug filtering
 - `GET /api/wordpress/brokers` - Fetches broker data from WordPress custom post type
+- `GET /api/wordpress/broker/:slug` - Fetches single broker by slug for review page
+- `GET /api/wordpress/prop-firms` - Fetches prop firm data from WordPress custom post type
+- `GET /api/wordpress/prop-firm/:slug` - Fetches single prop firm by slug for review page
+- `GET /api/wordpress/prop-firm-categories` - Fetches prop firm categories taxonomy
 - `GET /api/wordpress/trust-signals` - Fetches trust signals from ACF Options Page
 - `GET /api/brokers` - Legacy endpoint for in-memory broker storage (fallback)
 - In-memory storage interface defined (ready for database integration)
@@ -113,6 +117,17 @@ Preferred communication style: Simple, everyday language.
 WordPress has been migrated to `admin.entrylab.io` subdomain. All API endpoints in the React app now point to `https://admin.entrylab.io/wp-json/` for content fetching.
 
 ## Recent Changes
+
+**October 7, 2025 - Broker & Prop Firm Review Pages**:
+- Implemented dedicated review pages for brokers and prop firms with high-converting affiliate template design
+- Added new routes: `/broker/:slug` for broker reviews, `/prop-firm/:slug` for prop firm reviews
+- Created API endpoints: `/api/wordpress/broker/:slug` and `/api/wordpress/prop-firm/:slug` to fetch individual reviews
+- Extended Broker schema with comprehensive ACF fields: min_deposit, max_leverage, spread_from, regulation, cons, platforms, account_types, payment_methods, year_founded, headquarters, withdrawal_time, trust_score, total_users, awards
+- Review page structure: Hero section with logo/name/rating, Quick Stats Bar (Min Deposit, Max Leverage, Spreads, Regulation), Pros/Cons columns, Info Grid (Platforms, Account Types, Payment Methods, etc.), Full WordPress content
+- Added "Read Review" button to BrokerCardEnhanced component for both brokers and prop firms
+- Updated Brokers.tsx and PropFirms.tsx to pass slug and type props to cards for proper routing
+- Fixed star rating logic across all components (BrokerCardEnhanced, FeaturedBroker, InlineBrokerCard) to use Math.floor() for accurate fractional rating display
+- WordPress content editor used for review content (flexible long-form content in CPT post content field)
 
 **October 7, 2025 - SEO-Friendly Prop Firm Category Routes**:
 - Implemented dynamic category routes for better SEO indexability: `/prop-firms/:category?`
