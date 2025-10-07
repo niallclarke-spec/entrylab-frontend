@@ -21,9 +21,10 @@ export function FloatingCandlesticks() {
       <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/10 to-transparent"></div>
       
       <svg 
-        className="absolute inset-0 w-full h-full opacity-40" 
+        className="absolute inset-0 w-full h-full" 
         viewBox="0 0 100 100" 
         preserveAspectRatio="none"
+        style={{ animation: 'chartPulse 3s ease-in-out infinite' }}
       >
         <polyline
           points={candlesticks.map(c => `${c.x},${100 - c.bottom - (c.open + c.close) / 2}`).join(' ')}
@@ -32,6 +33,11 @@ export function FloatingCandlesticks() {
           strokeWidth="0.3"
           className="text-primary"
           opacity="0.5"
+          style={{ 
+            strokeDasharray: '200',
+            strokeDashoffset: '200',
+            animation: 'drawLine 2s ease-out forwards'
+          }}
         />
         
         {candlesticks.map((candle, index) => {
@@ -45,7 +51,12 @@ export function FloatingCandlesticks() {
           const color = isBullish ? '#10b981' : '#ef4444';
           
           return (
-            <g key={index}>
+            <g 
+              key={index}
+              style={{
+                animation: `fadeInCandle 0.5s ease-out ${index * 0.1}s backwards`
+              }}
+            >
               <line
                 x1={candle.x}
                 y1={wickTop}
@@ -75,6 +86,23 @@ export function FloatingCandlesticks() {
           }
           50% {
             opacity: 0.5;
+          }
+        }
+        
+        @keyframes drawLine {
+          to {
+            strokeDashoffset: 0;
+          }
+        }
+        
+        @keyframes fadeInCandle {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
           }
         }
       `}</style>
