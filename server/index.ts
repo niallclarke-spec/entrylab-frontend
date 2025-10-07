@@ -54,7 +54,7 @@ app.use((req, res, next) => {
     const { setupVite } = await import("./vite");
     await setupVite(app, server);
   } else {
-    const { serveStatic } = await import("./static");
+    const { serveStatic } = await import("./static.js");
     serveStatic(app);
   }
 
