@@ -8,6 +8,7 @@ import { HelmetProvider } from "react-helmet-async";
 import Home from "@/pages/Home";
 import Article from "@/pages/Article";
 import Archive from "@/pages/Archive";
+import Brokers from "@/pages/Brokers";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/article/:slug" component={Article} />
       <Route path="/archive" component={Archive} />
+      <Route path="/brokers" component={Brokers} />
       <Route component={NotFound} />
     </Switch>
   );

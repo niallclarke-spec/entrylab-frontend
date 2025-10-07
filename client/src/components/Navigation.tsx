@@ -19,6 +19,13 @@ export function Navigation() {
             </Link>
             <nav className="hidden md:flex items-center gap-6">
               <Link
+                href="/brokers"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                data-testid="link-brokers"
+              >
+                Brokers
+              </Link>
+              <Link
                 href="/archive"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 data-testid="link-archive"
@@ -60,6 +67,13 @@ export function Navigation() {
 
         {mobileMenuOpen && (
           <nav className="md:hidden pb-4 space-y-2">
+            <Link
+              href="/brokers"
+              className="block py-2 text-sm text-muted-foreground hover:text-foreground"
+              data-testid="link-mobile-brokers"
+            >
+              Brokers
+            </Link>
             <Link
               href="/archive"
               className="block py-2 text-sm text-muted-foreground hover:text-foreground"
