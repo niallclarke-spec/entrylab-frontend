@@ -2,6 +2,7 @@ import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 import { InlineBrokerCard } from "@/components/InlineBrokerCard";
 import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { ArticleCard } from "@/components/ArticleCard";
@@ -154,9 +155,24 @@ export default function Article() {
 
   const featuredImage = getFeaturedImage(post);
   const readingTime = calculateReadingTime(stripHtml(post.content.rendered));
+  
+  const seoTitle = stripHtml(post.title.rendered) + " | EntryLab";
+  const seoDescription = stripHtml(post.excerpt.rendered).substring(0, 160) || 
+    stripHtml(post.content.rendered).substring(0, 160);
+  const seoImage = featuredImage || "https://entrylab.io/og-image.jpg";
+  const seoUrl = `https://entrylab.io/article/${post.slug}`;
 
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        image={seoImage}
+        url={seoUrl}
+        type="article"
+        publishedTime={post.date}
+        author={getAuthorName(post)}
+      />
       <Navigation />
       
       {/* Hero Section */}

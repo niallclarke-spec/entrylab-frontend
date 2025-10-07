@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
+import { SEO } from "@/components/SEO";
 import { MarketTicker } from "@/components/MarketTicker";
 import { Hero } from "@/components/Hero";
 import { TrendingTopics } from "@/components/TrendingTopics";
@@ -117,6 +118,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
+      <SEO
+        title="EntryLab - Forex Broker & Prop Firm News"
+        description="Stay informed with the latest forex broker news, prop firm updates, and trading analysis. Unbiased reviews and market insights for traders worldwide."
+        url="https://entrylab.io"
+        type="website"
+      />
       <Navigation />
       <MarketTicker />
 
