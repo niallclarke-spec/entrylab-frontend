@@ -67,6 +67,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/wordpress/prop-firms", async (req, res) => {
+    try {
+      const response = await fetch(
+        "https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard"
+      );
+      
+      if (!response.ok) {
+        throw new Error(`WordPress API error: ${response.statusText}`);
+      }
+      
+      const propFirms = await response.json();
+      res.json(propFirms);
+    } catch (error) {
+      console.error("Error fetching WordPress prop firms:", error);
+      res.status(500).json({ error: "Failed to fetch prop firms" });
+    }
+  });
+
   app.get("/api/brokers", async (req, res) => {
     const brokers = await storage.getBrokers();
     res.json(brokers);
