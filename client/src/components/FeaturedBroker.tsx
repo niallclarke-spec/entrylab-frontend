@@ -71,41 +71,8 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
             </div>
 
             {/* Right Side - Features & Highlights */}
-            <div className="p-8 relative">
-              {/* Quick Stats Circle - Desktop Only */}
-              {(minDeposit || headquarters || totalUsers) && (
-                <div className="hidden md:flex absolute top-8 right-8 w-48 h-48 rounded-full border-2 border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 flex-col items-center justify-center gap-3 shadow-lg">
-                  {minDeposit && (
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1.5 mb-1">
-                        <DollarSign className="h-4 w-4 text-purple-500" />
-                        <span className="text-xs text-muted-foreground font-medium">Min Deposit</span>
-                      </div>
-                      <div className="text-2xl font-bold text-foreground">{minDeposit}</div>
-                    </div>
-                  )}
-                  {headquarters && (
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1.5 mb-1">
-                        <MapPin className="h-4 w-4 text-blue-500" />
-                        <span className="text-xs text-muted-foreground font-medium">Location</span>
-                      </div>
-                      <div className="text-sm font-semibold text-foreground">{headquarters}</div>
-                    </div>
-                  )}
-                  {totalUsers && (
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1.5 mb-1">
-                        <Users className="h-4 w-4 text-emerald-500" />
-                        <span className="text-xs text-muted-foreground font-medium">Traders</span>
-                      </div>
-                      <div className="text-sm font-semibold text-foreground">{totalUsers}</div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="mb-8 md:mr-52">
+            <div className="p-8">
+              <div className="mb-8">
                 <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                   <Zap className="h-5 w-5 text-primary" />
                   Key Features
@@ -127,21 +94,35 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
                 </div>
               </div>
 
-              <div>
-                <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-chart-2" />
-                  Why Traders Choose {name}
-                </h4>
-                <div className="space-y-3">
-                  {highlights.map((highlight, index) => (
-                    <div key={index} className="flex items-center gap-3" data-testid={`highlight-${index}`}>
-                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-chart-2/20 flex items-center justify-center">
-                        <CheckCircle2 className="h-4 w-4 text-chart-2" />
+              <div className="grid md:grid-cols-[1fr,auto] gap-6">
+                <div>
+                  <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-chart-2" />
+                    Why Traders Choose {name}
+                  </h4>
+                  <div className="space-y-3">
+                    {highlights.map((highlight, index) => (
+                      <div key={index} className="flex items-center gap-3" data-testid={`highlight-${index}`}>
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-chart-2/20 flex items-center justify-center">
+                          <CheckCircle2 className="h-4 w-4 text-chart-2" />
+                        </div>
+                        <p className="text-muted-foreground">{highlight}</p>
                       </div>
-                      <p className="text-muted-foreground">{highlight}</p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
+
+                {minDeposit && (
+                  <div className="hidden md:block">
+                    <Card className="w-40 p-6 text-center bg-gradient-to-br from-primary/5 to-background border-primary/20">
+                      <div className="flex items-center justify-center gap-1.5 mb-2">
+                        <DollarSign className="h-4 w-4 text-purple-500" />
+                        <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Min Deposit</span>
+                      </div>
+                      <div className="text-3xl font-bold text-foreground">{minDeposit}</div>
+                    </Card>
+                  </div>
+                )}
               </div>
             </div>
           </div>
