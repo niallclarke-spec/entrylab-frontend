@@ -87,7 +87,7 @@ export default function Brokers() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-20">
           <div className="text-center mb-12">
             {/* Badge */}
-            <Badge className="mb-6 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
+            <Badge className="mb-6 bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20">
               <Award className="h-3 w-3 mr-1.5" />
               Trusted Broker Reviews Since 2020
             </Badge>
@@ -107,27 +107,33 @@ export default function Brokers() {
 
             {/* Stats */}
             <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 mb-10">
-              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card/50 backdrop-blur-sm border">
-                <Shield className="h-5 w-5 text-emerald-500" />
+              <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-card/50 backdrop-blur-sm border">
+                <div className="flex items-center justify-center">
+                  <Shield className="h-5 w-5 text-emerald-500" />
+                </div>
                 <div className="text-left">
-                  <div className="text-2xl font-bold text-foreground">{totalVerified}</div>
-                  <div className="text-xs text-muted-foreground">Verified Brokers</div>
+                  <div className="text-2xl font-bold text-foreground leading-none mb-1">{totalVerified}</div>
+                  <div className="text-xs text-muted-foreground whitespace-nowrap">Verified Brokers</div>
                 </div>
               </div>
               
-              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card/50 backdrop-blur-sm border">
-                <Star className="h-5 w-5 text-amber-500" />
+              <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-card/50 backdrop-blur-sm border">
+                <div className="flex items-center justify-center">
+                  <Star className="h-5 w-5 text-emerald-500" />
+                </div>
                 <div className="text-left">
-                  <div className="text-2xl font-bold text-foreground">{avgRating}</div>
-                  <div className="text-xs text-muted-foreground">Avg Rating</div>
+                  <div className="text-2xl font-bold text-foreground leading-none mb-1">{avgRating}</div>
+                  <div className="text-xs text-muted-foreground whitespace-nowrap">Avg Rating</div>
                 </div>
               </div>
               
-              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card/50 backdrop-blur-sm border">
-                <TrendingUp className="h-5 w-5 text-primary" />
+              <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-card/50 backdrop-blur-sm border">
+                <div className="flex items-center justify-center">
+                  <TrendingUp className="h-5 w-5 text-emerald-500" />
+                </div>
                 <div className="text-left">
-                  <div className="text-2xl font-bold text-foreground">{featuredCount}</div>
-                  <div className="text-xs text-muted-foreground">Top Rated</div>
+                  <div className="text-2xl font-bold text-foreground leading-none mb-1">{featuredCount}</div>
+                  <div className="text-xs text-muted-foreground whitespace-nowrap">Top Rated</div>
                 </div>
               </div>
             </div>
