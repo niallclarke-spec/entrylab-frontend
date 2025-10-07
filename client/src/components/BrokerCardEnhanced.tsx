@@ -88,8 +88,7 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
       <CardFooter className="flex flex-col gap-2 pt-4">
         <Button asChild className="w-full" size="lg" data-testid="button-visit-broker">
           <a href={link} target="_blank" rel="noopener noreferrer" className="truncate">
-            <span className="hidden sm:inline">Visit {name}</span>
-            <span className="sm:hidden">Visit Broker</span>
+            Visit {name}
           </a>
         </Button>
         <p className="text-xs text-muted-foreground text-center">
