@@ -214,7 +214,7 @@ export default function BrokerReview() {
                           </Badge>
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent className="max-w-xs">
+                      <TooltipContent className="max-w-xs text-center">
                         <p className="text-xs">Get "{broker.bonusOffer}" if you sign up with the button above</p>
                       </TooltipContent>
                     </Tooltip>
@@ -456,7 +456,7 @@ export default function BrokerReview() {
                               Popularity: <Info className="h-3 w-3" />
                             </span>
                           </TooltipTrigger>
-                          <TooltipContent className="max-w-xs">
+                          <TooltipContent className="max-w-xs text-center">
                             <p className="text-xs">We base this on website traffic according to SimilarWeb tool, social media engagement and affiliates promoting them</p>
                           </TooltipContent>
                         </Tooltip>
