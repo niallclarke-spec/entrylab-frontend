@@ -50,4 +50,26 @@ export interface Broker {
   bonusOffer?: string;
   features?: Array<{ icon: string; text: string }>;
   featuredHighlights?: string[];
+  
+  // New ACF fields for detailed review
+  slug?: string;
+  content?: string; // WordPress post content (review body)
+  minDeposit?: string;
+  maxLeverage?: string;
+  spreadFrom?: string;
+  regulation?: string;
+  instrumentsCount?: string;
+  supportHours?: string;
+  cons?: string[];
+  bestFor?: string;
+  platforms?: string;
+  accountTypes?: string;
+  paymentMethods?: string;
+  yearFounded?: string;
+  headquarters?: string;
+  regulationDetails?: string;
+  withdrawalTime?: string;
+  trustScore?: number;
+  totalUsers?: string;
+  awards?: string[];
 }
