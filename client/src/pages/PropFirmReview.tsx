@@ -6,7 +6,8 @@ import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity } from "lucide-react";
+import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Broker } from "@shared/schema";
 
 export default function PropFirmReview() {
@@ -70,7 +71,7 @@ export default function PropFirmReview() {
       regulationDetails: acf.regulation_details,
       withdrawalTime: acf.withdrawal_time,
       trustScore: acf.trust_score ? parseInt(acf.trust_score) : undefined,
-      totalUsers: acf.total_users,
+      totalUsers: acf.popularity, // New field (popularity -> totalUsers for display)
       awards: awardsList,
     };
   };
@@ -434,8 +435,19 @@ export default function PropFirmReview() {
                     </div>
                   )}
                   {propFirm.totalUsers && (
-                    <div className="flex justify-between" data-testid="info-users">
-                      <span className="text-muted-foreground">Funded Traders:</span>
+                    <div className="flex justify-between" data-testid="info-popularity">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-muted-foreground flex items-center gap-1 cursor-help">
+                              Popularity: <Info className="h-3 w-3" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <p className="text-xs">We base this on website traffic according to SimilarWeb tool, social media engagement and affiliates promoting them</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       <span className="font-medium">{propFirm.totalUsers}</span>
                     </div>
                   )}
