@@ -210,13 +210,13 @@ export default function PropFirmReview() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div>
-                          <Badge className="w-full text-center justify-center py-2 bg-blue-500/10 text-blue-500 border-blue-500/20 cursor-help" data-testid="badge-bonus">
-                            🎁 {propFirm.bonusOffer} <Info className="h-3 w-3 ml-1 inline" />
+                          <Badge className="w-full text-center justify-center py-2.5 bg-blue-500/10 text-blue-500 border-blue-500/20 cursor-help text-base" data-testid="badge-bonus">
+                            🎁 {propFirm.bonusOffer} <Info className="h-3.5 w-3.5 ml-1 inline" />
                           </Badge>
                         </div>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
-                        <p className="text-xs">If you sign up with the above button, you will receive a bonus on your first deposit</p>
+                        <p className="text-xs">Get "{propFirm.bonusOffer}" if you sign up with the button above</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
