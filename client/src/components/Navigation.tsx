@@ -9,8 +9,6 @@ export function Navigation() {
   const { theme, setTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const categories = ["Forex", "Brokers", "Prop Firms", "Analysis", "Education"];
-
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
       <div className="max-w-7xl mx-auto px-6">
@@ -27,16 +25,6 @@ export function Navigation() {
               >
                 Archive
               </Link>
-              {categories.map((cat) => (
-                <a
-                  key={cat}
-                  href={`#${cat.toLowerCase()}`}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  data-testid={`link-category-${cat.toLowerCase()}`}
-                >
-                  {cat}
-                </a>
-              ))}
             </nav>
           </div>
 
@@ -79,16 +67,6 @@ export function Navigation() {
             >
               Archive
             </Link>
-            {categories.map((cat) => (
-              <a
-                key={cat}
-                href={`#${cat.toLowerCase()}`}
-                className="block py-2 text-sm text-muted-foreground hover:text-foreground"
-                data-testid={`link-mobile-${cat.toLowerCase()}`}
-              >
-                {cat}
-              </a>
-            ))}
           </nav>
         )}
       </div>
