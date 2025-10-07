@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 import { ArticleCard } from "@/components/ArticleCard";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +54,12 @@ export default function Archive() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO
+        title="Article Archive | EntryLab - Forex Broker & Prop Firm News"
+        description="Browse our complete collection of forex broker news, prop firm updates, and trading analysis. Find the insights you need for successful trading."
+        url="https://entrylab.io/archive"
+        type="website"
+      />
       <Navigation />
       
       <main className="flex-1 py-12 md:py-20">
