@@ -55,6 +55,7 @@ export default function PropFirms() {
 
     return {
       id: wpPropFirm.id.toString(),
+      slug: wpPropFirm.slug,
       name: name,
       logo: logo || "https://placehold.co/200x80/1a1a1a/8b5cf6?text=" + encodeURIComponent(name),
       rating: parseFloat(acf.rating) || 4.5,
@@ -355,6 +356,8 @@ export default function PropFirms() {
                   highlights={firm.highlights}
                   link={firm.link}
                   featured={firm.featured}
+                  slug={firm.slug}
+                  type="prop-firm"
                 />
               ))}
             </div>

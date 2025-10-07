@@ -31,6 +31,7 @@ export default function Brokers() {
 
     return {
       id: wpBroker.id.toString(),
+      slug: wpBroker.slug,
       name: name,
       logo: logo || "https://placehold.co/200x80/1a1a1a/8b5cf6?text=" + encodeURIComponent(name),
       rating: parseFloat(acf.rating) || 4.5,
@@ -273,6 +274,8 @@ export default function Brokers() {
                   highlights={broker.highlights}
                   link={broker.link}
                   featured={broker.featured}
+                  slug={broker.slug}
+                  type="broker"
                 />
               ))}
             </div>
