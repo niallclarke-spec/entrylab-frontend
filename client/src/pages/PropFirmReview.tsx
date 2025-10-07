@@ -35,6 +35,51 @@ export default function PropFirmReview() {
     const consList = acf.cons 
       ? acf.cons.split(/[,\n]+/).map((c: string) => c.trim()).filter((c: string) => c)
       : [];
+    const awardsList = acf.awards 
+      ? acf.awards.split(/[,\n]+/).map((a: string) => a.trim()).filter((a: string) => a)
+      : [];
+
+    // Format modified date
+    const modifiedDate = wpPropFirm.modified ? new Date(wpPropFirm.modified) : null;
+
+    return {
+      id: wpPropFirm.id.toString(),
+      slug: wpPropFirm.slug,
+      name: name,
+      logo: logo || "https://placehold.co/200x80/1a1a1a/8b5cf6?text=" + encodeURIComponent(name),
+      rating: parseFloat(acf.rating) || 4.5,
+      verified: true,
+      featured: isFeatured,
+      tagline: acf.prop_firm_usp ? acf.prop_firm_usp.split(/[,\n]+/)[0] : "Trusted prop trading firm",
+      bonusOffer: acf.discount_code || "Get Funded Today",
+      link: acf.affiliate_link || wpPropFirm.link || "#",
+      pros: prosText.slice(0, 3),
+      highlights: prosText,
+      features: keyFeatures.map((f: string) => ({ icon: "trending", text: f })),
+      featuredHighlights: keyFeatures,
+      content: wpPropFirm.content?.rendered || "",
+      minDeposit: acf.min_deposit,
+      maxLeverage: acf.max_leverage,
+      spreadFrom: acf.spread_from,
+      regulation: acf.regulation,
+      instrumentsCount: acf.instruments_count,
+      supportHours: acf.support_hours,
+      cons: consList,
+      bestFor: acf.best_for,
+      platforms: acf.platforms,
+      accountTypes: acf.account_types,
+      paymentMethods: acf.payment_methods,
+      yearFounded: acf.year_founded,
+      headquarters: acf.headquarters,
+      regulationDetails: acf.regulation_details,
+      withdrawalTime: acf.withdrawal_time,
+      trustScore: acf.trust_score ? parseInt(acf.trust_score) : undefined,
+      totalUsers: acf.popularity,
+      awards: awardsList,
+      lastUpdated: modifiedDate,
+      seoTitle: acf.seo_title,
+      seoDescription: acf.seo_description,
+    };
   };
 
   const propFirm = wpPropFirm ? transformPropFirm(wpPropFirm) : null;
@@ -76,11 +121,15 @@ export default function PropFirmReview() {
     );
   }
 
+  // SEO with fallbacks: Custom ACF fields OR auto-generated defaults
+  const seoTitle = propFirm.seoTitle || `${stripHtml(propFirm.name)} Review 2025 | EntryLab`;
+  const seoDescription = propFirm.seoDescription || propFirm.tagline || `Comprehensive review of ${stripHtml(propFirm.name)}. Read about funding, profit splits, evaluation process, and more.`;
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
-        title={`${stripHtml(propFirm.name)} Review 2025 | EntryLab`}
-        description={propFirm.tagline || `Comprehensive review of ${stripHtml(propFirm.name)}. Read about funding, profit splits, evaluation process, and more.`}
+        title={seoTitle}
+        description={seoDescription}
         url={`https://entrylab.io/prop-firm/${propFirm.slug}`}
       />
       <Navigation />
@@ -122,6 +171,11 @@ export default function PropFirmReview() {
                       <Badge className="bg-primary/10 text-primary border-primary/20" data-testid="badge-featured">
                         <Award className="h-3 w-3 mr-1" /> Featured
                       </Badge>
+                    )}
+                    {propFirm.lastUpdated && (
+                      <span className="text-xs text-muted-foreground" data-testid="text-last-updated">
+                        Updated {propFirm.lastUpdated.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
                     )}
                   </div>
                 </div>
