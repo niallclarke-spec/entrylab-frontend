@@ -176,54 +176,122 @@ export default function Article() {
       />
       <Navigation />
       
-      {/* Hero Section */}
-      {featuredImage && (
-        <div className="w-full h-[300px] md:h-[400px] overflow-hidden bg-muted relative">
+      {/* Hero Section with Overlaid Header */}
+      {featuredImage ? (
+        <div className="w-full h-[400px] md:h-[500px] overflow-hidden bg-muted relative">
           <img
             src={featuredImage}
             alt={stripHtml(post.title.rendered)}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-        </div>
-      )}
-
-      <main className="flex-1 -mt-20 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-          <div className="grid lg:grid-cols-[1fr_350px] gap-8 xl:gap-12">
-            {/* Main Content */}
-            <article className="min-w-0">
-              {/* Article Header */}
-              <div className="bg-card rounded-lg p-6 md:p-8 shadow-lg mb-8">
-                <div className="flex items-center gap-2 flex-wrap mb-4">
-                  <Badge variant="secondary" data-testid="badge-category">
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40" />
+          
+          {/* Overlaid Article Header */}
+          <div className="absolute inset-0 flex items-end">
+            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 pb-12 md:pb-16">
+              <div className="max-w-4xl">
+                {/* Badges */}
+                <div className="flex items-center gap-2 flex-wrap mb-6">
+                  <Badge 
+                    variant="secondary" 
+                    data-testid="badge-category"
+                    className="bg-primary/90 text-primary-foreground hover:bg-primary border-0 text-sm px-3 py-1"
+                  >
                     {getCategoryName(post)}
                   </Badge>
-                  <Badge variant="outline" className="gap-1 border-primary/30 text-primary">
-                    <BookOpen className="h-3 w-3" />
+                  <Badge variant="outline" className="gap-1.5 border-white/30 text-white bg-black/30 backdrop-blur-sm">
+                    <BookOpen className="h-3.5 w-3.5" />
                     {readingTime} min read
                   </Badge>
                 </div>
                 
-                <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight mb-6" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
+                {/* Title */}
+                <h1 
+                  className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6 drop-shadow-2xl" 
+                  dangerouslySetInnerHTML={{ __html: post.title.rendered }} 
+                />
                 
-                <div className="flex items-center justify-between flex-wrap gap-4 pt-4 border-t">
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                {/* Meta Info */}
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div className="flex items-center gap-6 text-sm text-white/90">
                     <div className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      <span>{getAuthorName(post)}</span>
+                      <div className="h-8 w-8 rounded-full bg-primary/20 backdrop-blur-sm flex items-center justify-center">
+                        <User className="h-4 w-4 text-white" />
+                      </div>
+                      <span className="font-medium">{getAuthorName(post)}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
+                      <Clock className="h-4 w-4 text-white/80" />
                       <span>{new Date(post.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" className="gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-2 border-white/30 text-white bg-black/30 backdrop-blur-sm hover:bg-white/20"
+                  >
                     <Share2 className="h-4 w-4" />
                     Share
                   </Button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="w-full bg-gradient-to-br from-primary/10 via-background to-background border-b border-border">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-20">
+            <div className="max-w-4xl">
+              {/* Badges */}
+              <div className="flex items-center gap-2 flex-wrap mb-6">
+                <Badge 
+                  variant="secondary" 
+                  data-testid="badge-category"
+                  className="bg-primary text-primary-foreground hover:bg-primary border-0 text-sm px-3 py-1"
+                >
+                  {getCategoryName(post)}
+                </Badge>
+                <Badge variant="outline" className="gap-1.5 border-primary/30 text-primary">
+                  <BookOpen className="h-3.5 w-3.5" />
+                  {readingTime} min read
+                </Badge>
+              </div>
+              
+              {/* Title */}
+              <h1 
+                className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6" 
+                dangerouslySetInnerHTML={{ __html: post.title.rendered }} 
+              />
+              
+              {/* Meta Info */}
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="font-medium text-foreground">{getAuthorName(post)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    <span>{new Date(post.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Share2 className="h-4 w-4" />
+                  Share
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <main className="flex-1 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12">
+          <div className="grid lg:grid-cols-[1fr_350px] gap-8 xl:gap-12">
+            {/* Main Content */}
+            <article className="min-w-0">
 
               {/* Article Content with Broker Insertion */}
               <div className="bg-card rounded-lg p-6 md:p-8 shadow-lg">
