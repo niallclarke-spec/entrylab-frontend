@@ -53,7 +53,7 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
               {readingTime} min read
             </Badge>
           </div>
-          <h3 className="text-lg font-bold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors" data-testid="text-article-title">
+          <h3 className="text-xl font-bold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors" data-testid="text-article-title">
             {stripHtml(title)}
           </h3>
         </CardHeader>
