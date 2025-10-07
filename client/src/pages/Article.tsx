@@ -237,7 +237,7 @@ export default function Article() {
                   
                   <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight mb-6" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
                   
-                  <div className="flex items-center justify-between flex-wrap gap-4 pt-4 border-t bg-muted/40 -mx-6 md:-mx-8 px-6 md:px-8 pb-4 -mb-6 md:-mb-8 rounded-b-xl">
+                  <div className="flex items-center justify-between flex-wrap gap-4 pt-4 border-t bg-muted/50 -mx-6 md:-mx-8 px-6 md:px-8 pb-4 -mb-6 md:-mb-8 rounded-b-xl">
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4" />
@@ -248,7 +248,7 @@ export default function Article() {
                         <span>{new Date(post.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="gap-2">
+                    <Button variant="outline" size="sm" className="gap-2 border-emerald-500/50 text-emerald-500 hover:bg-emerald-500/10">
                       <Share2 className="h-4 w-4" />
                       Share
                     </Button>
