@@ -171,6 +171,7 @@ export default function Article() {
         url={seoUrl}
         type="article"
         publishedTime={post.date}
+        modifiedTime={post.modified}
         author={getAuthorName(post)}
       />
       <Navigation />
