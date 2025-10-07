@@ -179,14 +179,14 @@ export default function PropFirmReview() {
               )}
             </div>
 
-            <div className="flex flex-col gap-3 items-center lg:items-start">
-              <Button size="lg" asChild className="w-full lg:w-auto" data-testid="button-visit-prop-firm">
+            <div className="flex flex-col gap-3 w-full lg:max-w-sm">
+              <Button size="lg" asChild className="w-full" data-testid="button-visit-prop-firm">
                 <a href={propFirm.link} target="_blank" rel="noopener noreferrer">
                   Visit {stripHtml(propFirm.name)} <ExternalLink className="ml-2 h-4 w-4" />
                 </a>
               </Button>
               {propFirm.bonusOffer && (
-                <Badge className="text-center justify-center py-2 bg-emerald-500/10 text-emerald-500 border-emerald-500/20" data-testid="badge-bonus">
+                <Badge className="w-full text-center justify-center py-2 bg-emerald-500/10 text-emerald-500 border-emerald-500/20" data-testid="badge-bonus">
                   🎁 {propFirm.bonusOffer}
                 </Badge>
               )}
