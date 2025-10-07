@@ -8,7 +8,7 @@ import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { ArticleCard } from "@/components/ArticleCard";
 import { NewsletterCTA } from "@/components/NewsletterCTA";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Clock, User, Share2, BookOpen, TrendingUp, Building2, BarChart3, AlertCircle, ShieldCheck } from "lucide-react";
+import { Loader2, Clock, User, Share2, BookOpen, TrendingUp, Building2, BarChart3, AlertCircle, ShieldCheck, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { WordPressPost, Broker } from "@shared/schema";
 
@@ -428,8 +428,10 @@ export default function Article() {
               {/* Mobile: Popular Brokers Below Article */}
               {popularBrokers.length > 0 && (
                 <div className="lg:hidden mt-8 space-y-6">
-                  <div className="text-center mb-6">
-                    <ShieldCheck className="h-8 w-8 text-primary mx-auto mb-2" />
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+                      <Award className="h-5 w-5 text-primary" />
+                    </div>
                     <h3 className="text-2xl font-bold text-foreground">Top Rated Brokers</h3>
                   </div>
                   <div className="grid gap-4">
@@ -461,7 +463,12 @@ export default function Article() {
                 {/* Popular Brokers */}
                 {popularBrokers.length > 0 && (
                   <div>
-                    <h3 className="text-xl font-bold text-foreground mb-4">Top Rated Brokers</h3>
+                    <div className="flex items-center gap-2 mb-6">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                        <Award className="h-4 w-4 text-primary" />
+                      </div>
+                      <h3 className="text-xl font-bold text-foreground">Top Rated Brokers</h3>
+                    </div>
                     <div className="space-y-4">
                       {popularBrokers.map((broker) => (
                         <BrokerCardEnhanced
