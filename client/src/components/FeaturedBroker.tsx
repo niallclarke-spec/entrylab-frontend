@@ -2,6 +2,7 @@ import { CheckCircle2, TrendingUp, Shield, Zap, DollarSign, Globe, Star, ArrowRi
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { trackAffiliateClick } from "@/lib/gtm";
 
 interface FeaturedBrokerProps {
   name: string;
@@ -60,7 +61,19 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
                 </Badge>
               )}
 
-              <Button asChild size="lg" className="w-full shadow-lg" data-testid="button-featured-cta">
+              <Button 
+                asChild 
+                size="lg" 
+                className="w-full shadow-lg" 
+                data-testid="button-featured-cta"
+                onClick={() => trackAffiliateClick({
+                  broker_name: name,
+                  broker_type: 'broker',
+                  click_location: 'featured_widget',
+                  rating: rating,
+                  affiliate_link: link
+                })}
+              >
                 <a href={link} target="_blank" rel="noopener noreferrer">
                   Get Started Now <ArrowRight className="ml-2 h-4 w-4" />
                 </a>

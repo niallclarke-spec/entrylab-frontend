@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Star, TrendingUp, Shield, Zap, BookOpen } from "lucide-react";
 import { Link } from "wouter";
+import { trackAffiliateClick } from "@/lib/gtm";
 
 interface BrokerCardEnhancedProps {
   name: string;
@@ -97,7 +98,19 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
             </Link>
           </Button>
         )}
-        <Button asChild className="w-full" size="lg" data-testid="button-visit-broker">
+        <Button 
+          asChild 
+          className="w-full" 
+          size="lg" 
+          data-testid="button-visit-broker"
+          onClick={() => trackAffiliateClick({
+            broker_name: name,
+            broker_type: type === 'prop-firm' ? 'prop_firm' : 'broker',
+            click_location: 'broker_card',
+            rating: rating,
+            affiliate_link: link
+          })}
+        >
           <a href={link} target="_blank" rel="noopener noreferrer" className="truncate">
             Visit {name}
           </a>

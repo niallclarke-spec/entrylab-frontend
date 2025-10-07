@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -8,10 +8,15 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Loader2 } from "lucide-react";
 import type { WordPressPost } from "@shared/schema";
+import { trackPageView } from "@/lib/gtm";
 
 export default function Archive() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
+  useEffect(() => {
+    trackPageView("/archive", "Article Archive | EntryLab");
+  }, []);
 
   const { data: categories } = useQuery<any[]>({
     queryKey: ["/api/wordpress/categories"],

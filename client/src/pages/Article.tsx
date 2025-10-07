@@ -1,5 +1,6 @@
 import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
@@ -11,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Clock, User, Share2, BookOpen, TrendingUp, Building2, BarChart3, AlertCircle, ShieldCheck, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { WordPressPost, Broker } from "@shared/schema";
+import { trackPageView, trackArticleView } from "@/lib/gtm";
 
 export default function Article() {
   const params = useParams();
@@ -64,6 +66,12 @@ export default function Article() {
     };
   };
 
+  const stripHtml = (html: string) => {
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return div.textContent || div.innerText || "";
+  };
+
   const wpBrokers = wordpressBrokers?.map(transformBroker).filter((b): b is Broker => b !== null) || [];
   const featuredBroker = wpBrokers.find(b => b.featured);
   const popularBrokers = wpBrokers.slice(0, 3);
@@ -72,17 +80,27 @@ export default function Article() {
   const getAuthorName = (p: WordPressPost) => p._embedded?.author?.[0]?.name || "EntryLab Team";
   const getFeaturedImage = (p: WordPressPost) => p._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
 
+  useEffect(() => {
+    if (post) {
+      const title = stripHtml(post.title.rendered);
+      const categories = post._embedded?.["wp:term"]?.[0]?.map((term: any) => term.name) || [];
+      const author = getAuthorName(post);
+      
+      trackPageView(`/article/${slug}`, `${title} | EntryLab`);
+      trackArticleView({
+        article_title: title,
+        article_slug: slug || '',
+        categories: categories,
+        author: author,
+      });
+    }
+  }, [post, slug]);
+
   // Get related articles from same category
   const currentCategoryId = post?._embedded?.["wp:term"]?.[0]?.[0]?.id;
   const relatedPosts = posts
     ?.filter(p => p.id !== post?.id && p._embedded?.["wp:term"]?.[0]?.[0]?.id === currentCategoryId)
     .slice(0, 2) || [];
-
-  const stripHtml = (html: string) => {
-    const div = document.createElement("div");
-    div.innerHTML = html;
-    return div.textContent || div.innerText || "";
-  };
 
   const calculateReadingTime = (text: string) => {
     const words = text.trim().split(/\s+/).length;
