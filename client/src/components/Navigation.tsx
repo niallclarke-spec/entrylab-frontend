@@ -11,9 +11,8 @@ export function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur">
-      <MarketTicker />
-      <div className="border-b">
+    <>
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex h-16 items-center justify-between gap-4">
             <div className="flex items-center gap-8">
@@ -103,7 +102,8 @@ export function Navigation() {
             </nav>
           )}
         </div>
-      </div>
-    </header>
+      </header>
+      <MarketTicker />
+    </>
   );
 }

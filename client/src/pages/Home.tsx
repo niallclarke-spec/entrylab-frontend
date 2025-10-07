@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
 import { SEO } from "@/components/SEO";
-import { MarketTicker } from "@/components/MarketTicker";
 import { Hero } from "@/components/Hero";
 import { TrendingTopics } from "@/components/TrendingTopics";
 import { FeaturedBroker } from "@/components/FeaturedBroker";
@@ -125,7 +124,6 @@ export default function Home() {
         type="website"
       />
       <Navigation />
-      <MarketTicker />
 
       {isLoading ? (
         <div className="flex-1 flex items-center justify-center py-32">
