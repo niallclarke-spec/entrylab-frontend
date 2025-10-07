@@ -194,13 +194,13 @@ export default function Article() {
             {/* Main Content */}
             <article className="min-w-0">
               {/* Article Header with Subtle Top Glow */}
-              <div className="bg-card rounded-lg p-6 md:p-8 mb-8 relative shadow-lg border-t-2 border-primary">
-                {/* Left side glow extending down from corner */}
-                <div className="absolute top-0 left-0 w-1 h-[20%] bg-gradient-to-b from-primary to-transparent pointer-events-none rounded-tl-lg" />
-                {/* Right side glow extending down from corner */}
-                <div className="absolute top-0 right-0 w-1 h-[20%] bg-gradient-to-b from-primary to-transparent pointer-events-none rounded-tr-lg" />
+              <div className="bg-card rounded-xl p-6 md:p-8 mb-8 relative shadow-lg border-t-2 border-primary">
+                {/* Left side glow extending down from corner with gradual fade */}
+                <div className="absolute top-0 left-0 w-2 h-[25%] bg-gradient-to-b from-primary via-primary/60 to-transparent pointer-events-none rounded-tl-xl" />
+                {/* Right side glow extending down from corner with gradual fade */}
+                <div className="absolute top-0 right-0 w-2 h-[25%] bg-gradient-to-b from-primary via-primary/60 to-transparent pointer-events-none rounded-tr-xl" />
                 {/* Top gradient fade from edges */}
-                <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none rounded-t-lg" />
+                <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent pointer-events-none rounded-t-xl" />
                 
                 <div className="relative">
                   <div className="flex items-center gap-2 flex-wrap mb-4">
