@@ -72,4 +72,5 @@ export interface Broker {
   trustScore?: number;
   totalUsers?: string;
   awards?: string[];
+  lastUpdated?: Date | null;
 }
