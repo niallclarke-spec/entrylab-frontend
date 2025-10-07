@@ -161,9 +161,6 @@ export default function Home() {
               highlights={featuredBroker.highlights || []}
               bonusOffer={featuredBroker.bonusOffer}
               link={featuredBroker.link}
-              minDeposit={featuredBroker.minDeposit}
-              headquarters={featuredBroker.headquarters}
-              totalUsers={featuredBroker.totalUsers}
             />
           )}
 

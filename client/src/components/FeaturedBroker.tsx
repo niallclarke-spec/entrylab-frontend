@@ -1,4 +1,4 @@
-import { CheckCircle2, TrendingUp, Shield, Zap, DollarSign, Globe, Star, ArrowRight, MapPin, Users } from "lucide-react";
+import { CheckCircle2, TrendingUp, Shield, Zap, DollarSign, Globe, Star, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,9 +12,6 @@ interface FeaturedBrokerProps {
   highlights: string[];
   bonusOffer?: string;
   link: string;
-  minDeposit?: string;
-  headquarters?: string;
-  totalUsers?: string;
 }
 
 const iconMap: Record<string, any> = {
@@ -26,7 +23,7 @@ const iconMap: Record<string, any> = {
   "star": Star,
 };
 
-export function FeaturedBroker({ name, logo, tagline, rating, features, highlights, bonusOffer, link, minDeposit, headquarters, totalUsers }: FeaturedBrokerProps) {
+export function FeaturedBroker({ name, logo, tagline, rating, features, highlights, bonusOffer, link }: FeaturedBrokerProps) {
   return (
     <section className="py-12 md:py-16 bg-gradient-to-br from-primary/10 via-background to-chart-2/10 border-y">
       <div className="max-w-7xl mx-auto px-6">
@@ -38,7 +35,7 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
         </div>
         
         <Card className="overflow-hidden border-primary/20">
-          <div className="grid md:grid-cols-[300px,1fr] gap-0 relative">
+          <div className="grid md:grid-cols-[300px,1fr] gap-0">
             {/* Left Side - Broker Info */}
             <div className="bg-gradient-to-br from-primary/20 to-primary/5 p-8 flex flex-col items-center justify-center border-r">
               <div className="w-40 h-40 bg-white dark:bg-card rounded-2xl flex items-center justify-center mb-4 shadow-md p-6" style={{ border: '0.5px solid rgba(128, 128, 128, 0.15)' }}>
@@ -94,35 +91,21 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-[1fr,auto] gap-6">
-                <div>
-                  <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-chart-2" />
-                    Why Traders Choose {name}
-                  </h4>
-                  <div className="space-y-3">
-                    {highlights.map((highlight, index) => (
-                      <div key={index} className="flex items-center gap-3" data-testid={`highlight-${index}`}>
-                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-chart-2/20 flex items-center justify-center">
-                          <CheckCircle2 className="h-4 w-4 text-chart-2" />
-                        </div>
-                        <p className="text-muted-foreground">{highlight}</p>
+              <div>
+                <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-chart-2" />
+                  Why Traders Choose {name}
+                </h4>
+                <div className="space-y-3">
+                  {highlights.map((highlight, index) => (
+                    <div key={index} className="flex items-center gap-3" data-testid={`highlight-${index}`}>
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-chart-2/20 flex items-center justify-center">
+                        <CheckCircle2 className="h-4 w-4 text-chart-2" />
                       </div>
-                    ))}
-                  </div>
+                      <p className="text-muted-foreground">{highlight}</p>
+                    </div>
+                  ))}
                 </div>
-
-                {minDeposit && (
-                  <div className="hidden md:block">
-                    <Card className="w-40 p-6 text-center bg-gradient-to-br from-primary/5 to-background border-primary/20">
-                      <div className="flex items-center justify-center gap-1.5 mb-2">
-                        <DollarSign className="h-4 w-4 text-purple-500" />
-                        <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Min Deposit</span>
-                      </div>
-                      <div className="text-3xl font-bold text-foreground">{minDeposit}</div>
-                    </Card>
-                  </div>
-                )}
               </div>
             </div>
           </div>
