@@ -179,7 +179,7 @@ export default function PropFirmReview() {
               )}
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 items-center lg:items-start">
               <Button size="lg" asChild className="w-full lg:w-auto" data-testid="button-visit-prop-firm">
                 <a href={propFirm.link} target="_blank" rel="noopener noreferrer">
                   Visit {stripHtml(propFirm.name)} <ExternalLink className="ml-2 h-4 w-4" />
