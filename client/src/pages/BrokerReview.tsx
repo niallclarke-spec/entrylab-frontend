@@ -6,7 +6,8 @@ import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity } from "lucide-react";
+import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Broker } from "@shared/schema";
 
 export default function BrokerReview() {
@@ -69,6 +70,8 @@ export default function BrokerReview() {
       cons: consList,
       platforms: acf.trading_platforms, // Updated field name
       paymentMethods: acf.deposit_methods, // Updated field name
+      headquarters: acf.headquarters, // New field
+      totalUsers: acf.popularity, // New field (popularity -> totalUsers for display)
     };
   };
 
@@ -431,15 +434,20 @@ export default function BrokerReview() {
                     </div>
                   )}
                   {broker.totalUsers && (
-                    <div className="flex justify-between" data-testid="info-users">
-                      <span className="text-muted-foreground">Total Users:</span>
+                    <div className="flex justify-between" data-testid="info-popularity">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-muted-foreground flex items-center gap-1 cursor-help">
+                              Popularity: <Info className="h-3 w-3" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <p className="text-xs">We base this on website traffic according to SimilarWeb tool, social media engagement and affiliates promoting them</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       <span className="font-medium">{broker.totalUsers}</span>
-                    </div>
-                  )}
-                  {broker.trustScore && (
-                    <div className="flex justify-between" data-testid="info-trust-score">
-                      <span className="text-muted-foreground">Trust Score:</span>
-                      <span className="font-medium">{broker.trustScore}/100</span>
                     </div>
                   )}
                 </div>
