@@ -1,4 +1,4 @@
-import { Gift, TrendingUp, Trophy, Zap, Mail, Newspaper, Rocket } from "lucide-react";
+import { Gift, TrendingUp, Trophy, Mail, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -44,12 +44,10 @@ export function NewsletterCTA() {
   };
 
   const benefits = [
-    { icon: Newspaper, text: "Latest FX news & market updates", color: "text-primary" },
     { icon: Gift, text: "Exclusive deposit bonuses & promotions", color: "text-amber-500" },
     { icon: Trophy, text: "Free funded challenge giveaways", color: "text-amber-500" },
     { icon: Rocket, text: "Prop firm discount codes & launches", color: "text-primary" },
     { icon: TrendingUp, text: "Broker reviews & industry insights", color: "text-chart-2" },
-    { icon: Zap, text: "Breaking alerts & competitions", color: "text-chart-2" },
   ];
 
   return (
