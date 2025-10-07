@@ -183,57 +183,73 @@ export default function PropFirms() {
             </p>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {/* Profit Split */}
-            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all" data-testid="card-decision-profit-split">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mb-4">
-                <DollarSign className="h-6 w-6 text-emerald-500" />
+            <div className="bg-card rounded-xl p-4 sm:p-6 border hover-elevate transition-all" data-testid="card-decision-profit-split">
+              <div className="flex sm:flex-col gap-4 sm:gap-0">
+                <div className="flex items-center justify-center w-12 h-12 flex-shrink-0 rounded-lg bg-emerald-500/10 sm:mb-4">
+                  <DollarSign className="h-6 w-6 text-emerald-500" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1 sm:mb-2">
+                    Profit Split
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-snug">
+                    Compare profit sharing ratios and find firms offering competitive trader compensation
+                  </p>
+                </div>
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                Profit Split
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Compare profit sharing ratios and find firms offering competitive trader compensation
-              </p>
             </div>
 
             {/* Evaluation Process */}
-            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all" data-testid="card-decision-evaluation">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mb-4">
-                <Target className="h-6 w-6 text-emerald-500" />
+            <div className="bg-card rounded-xl p-4 sm:p-6 border hover-elevate transition-all" data-testid="card-decision-evaluation">
+              <div className="flex sm:flex-col gap-4 sm:gap-0">
+                <div className="flex items-center justify-center w-12 h-12 flex-shrink-0 rounded-lg bg-emerald-500/10 sm:mb-4">
+                  <Target className="h-6 w-6 text-emerald-500" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1 sm:mb-2">
+                    Evaluation Process
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-snug">
+                    Review challenge difficulty, time limits, and rules to find programs that match your style
+                  </p>
+                </div>
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                Evaluation Process
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Review challenge difficulty, time limits, and rules to find programs that match your style
-              </p>
             </div>
 
             {/* Scaling Plans */}
-            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all" data-testid="card-decision-scaling">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mb-4">
-                <TrendingUp className="h-6 w-6 text-emerald-500" />
+            <div className="bg-card rounded-xl p-4 sm:p-6 border hover-elevate transition-all" data-testid="card-decision-scaling">
+              <div className="flex sm:flex-col gap-4 sm:gap-0">
+                <div className="flex items-center justify-center w-12 h-12 flex-shrink-0 rounded-lg bg-emerald-500/10 sm:mb-4">
+                  <TrendingUp className="h-6 w-6 text-emerald-500" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1 sm:mb-2">
+                    Scaling Plans
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-snug">
+                    Check account scaling opportunities and maximum funding available for successful traders
+                  </p>
+                </div>
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                Scaling Plans
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Check account scaling opportunities and maximum funding available for successful traders
-              </p>
             </div>
 
             {/* Payout Speed */}
-            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all" data-testid="card-decision-payouts">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mb-4">
-                <Zap className="h-6 w-6 text-emerald-500" />
+            <div className="bg-card rounded-xl p-4 sm:p-6 border hover-elevate transition-all" data-testid="card-decision-payouts">
+              <div className="flex sm:flex-col gap-4 sm:gap-0">
+                <div className="flex items-center justify-center w-12 h-12 flex-shrink-0 rounded-lg bg-emerald-500/10 sm:mb-4">
+                  <Zap className="h-6 w-6 text-emerald-500" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1 sm:mb-2">
+                    Payout Speed
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-snug">
+                    Verify withdrawal frequency and processing times to ensure timely access to your profits
+                  </p>
+                </div>
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                Payout Speed
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Verify withdrawal frequency and processing times to ensure timely access to your profits
-              </p>
             </div>
           </div>
         </div>
