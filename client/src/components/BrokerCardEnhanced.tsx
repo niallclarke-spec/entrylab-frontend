@@ -1,7 +1,8 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Star, TrendingUp, Shield, Zap } from "lucide-react";
+import { CheckCircle2, Star, TrendingUp, Shield, Zap, BookOpen } from "lucide-react";
+import { Link } from "wouter";
 
 interface BrokerCardEnhancedProps {
   name: string;
@@ -12,10 +13,13 @@ interface BrokerCardEnhancedProps {
   highlights?: string[];
   link: string;
   featured?: boolean;
+  slug?: string;
+  type?: "broker" | "prop-firm";
 }
 
-export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlights, link, featured }: BrokerCardEnhancedProps) {
+export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlights, link, featured, slug, type = "broker" }: BrokerCardEnhancedProps) {
   const icons = [TrendingUp, Shield, Zap];
+  const reviewPath = slug ? `/${type}/${slug}` : null;
   
   return (
     <Card className={`hover-elevate transition-all h-full flex flex-col ${featured ? "border-primary shadow-lg" : ""}`} data-testid={`card-broker-${name}`}>
@@ -86,6 +90,13 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
       </CardContent>
 
       <CardFooter className="flex flex-col gap-2 pt-4">
+        {reviewPath && (
+          <Button asChild variant="outline" className="w-full" data-testid="button-read-review">
+            <Link href={reviewPath}>
+              <BookOpen className="mr-2 h-4 w-4" /> Read Review
+            </Link>
+          </Button>
+        )}
         <Button asChild className="w-full" size="lg" data-testid="button-visit-broker">
           <a href={link} target="_blank" rel="noopener noreferrer" className="truncate">
             Visit {name}
