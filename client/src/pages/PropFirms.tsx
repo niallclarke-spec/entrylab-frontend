@@ -17,16 +17,16 @@ export default function PropFirms() {
 
   const transformPropFirm = (wpPropFirm: any): Broker | null => {
     const acf = wpPropFirm.acf || {};
-    const logo = acf.broker_logo?.url || wpPropFirm._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
+    const logo = acf.prop_firm_logo?.url || wpPropFirm._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
     const name = wpPropFirm.title?.rendered;
     if (!name) return null;
 
     const isFeatured = acf.is_featured === true || acf.is_featured === "1";
-    const keyFeatures = acf.broker_usp 
-      ? acf.broker_usp.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f).slice(0, 4)
+    const keyFeatures = acf.prop_firm_usp 
+      ? acf.prop_firm_usp.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f).slice(0, 4)
       : ["Funded accounts up to $200K", "Profit split 80/20", "Quick evaluation", "Professional support"];
-    const whyChoose = acf.why_choose 
-      ? acf.why_choose.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f)
+    const prosText = acf.pros 
+      ? acf.pros.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f)
       : keyFeatures;
 
     return {
@@ -36,11 +36,11 @@ export default function PropFirms() {
       rating: parseFloat(acf.rating) || 4.5,
       verified: true,
       featured: isFeatured,
-      tagline: acf.broker_intro || "Trusted prop trading firm",
-      bonusOffer: acf.bonus_offer || "Get Funded Today",
+      tagline: acf.prop_firm_usp ? acf.prop_firm_usp.split(/[,\n]+/)[0] : "Trusted prop trading firm",
+      bonusOffer: acf.discount_code || "Get Funded Today",
       link: acf.affiliate_link || wpPropFirm.link || "#",
-      pros: whyChoose.slice(0, 3),
-      highlights: whyChoose,
+      pros: prosText.slice(0, 3),
+      highlights: prosText,
       features: keyFeatures.map((f: string) => ({ icon: "trending", text: f })),
       featuredHighlights: keyFeatures,
     };
