@@ -171,6 +171,23 @@ export default function PropFirmReview() {
                 </p>
               )}
 
+              {/* At a Glance Highlights */}
+              {(propFirm.highlights && propFirm.highlights.length > 0) && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-primary" /> At a Glance
+                  </h3>
+                  <div className="grid sm:grid-cols-2 gap-2">
+                    {propFirm.highlights.slice(0, 4).map((highlight, index) => (
+                      <div key={index} className="flex items-center gap-2 text-sm text-muted-foreground" data-testid={`hero-highlight-${index}`}>
+                        <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                        <span>{highlight}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {propFirm.bestFor && (
                 <div className="mb-6">
                   <span className="text-sm font-medium text-muted-foreground">Best For: </span>
