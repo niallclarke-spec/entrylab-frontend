@@ -4,12 +4,17 @@ import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { Loader2, Shield, Star, TrendingUp, Zap, CheckCircle2, Award, Users, Key, DollarSign, Headphones, FileText } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
+import { trackPageView, trackCategoryFilter } from "@/lib/gtm";
 import type { Broker } from "@shared/schema";
 
 export default function Brokers() {
   const [filterFeatured, setFilterFeatured] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    trackPageView('/brokers', 'Broker Reviews | EntryLab');
+  }, []);
 
   const { data: wordpressBrokers, isLoading } = useQuery<any[]>({
     queryKey: ["/api/wordpress/brokers"],
@@ -157,7 +162,10 @@ export default function Brokers() {
               <Badge 
                 variant={filterFeatured === null ? "default" : "secondary"}
                 className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
-                onClick={() => setFilterFeatured(null)}
+                onClick={() => {
+                  setFilterFeatured(null);
+                  trackCategoryFilter('broker', 'all');
+                }}
                 data-testid="badge-filter-all"
               >
                 All Brokers ({brokers.length})
@@ -165,7 +173,10 @@ export default function Brokers() {
               <Badge 
                 variant={filterFeatured === true ? "default" : "secondary"}
                 className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
-                onClick={() => setFilterFeatured(true)}
+                onClick={() => {
+                  setFilterFeatured(true);
+                  trackCategoryFilter('broker', 'featured');
+                }}
                 data-testid="badge-filter-featured"
               >
                 <Star className="h-3.5 w-3.5 mr-1.5" />
