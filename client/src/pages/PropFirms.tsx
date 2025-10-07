@@ -6,6 +6,7 @@ import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { Loader2, Shield, Star, TrendingUp, Zap, CheckCircle2, Award, Users, Key, DollarSign, Headphones, FileText, Target, Tag } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { useParams, useLocation } from "wouter";
 import type { Broker } from "@shared/schema";
 
 interface PropFirmCategory {
@@ -16,8 +17,9 @@ interface PropFirmCategory {
 }
 
 export default function PropFirms() {
+  const params = useParams<{ category?: string }>();
+  const [, setLocation] = useLocation();
   const [filterFeatured, setFilterFeatured] = useState<boolean | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   const { data: wordpressPropFirms, isLoading } = useQuery<any[]>({
     queryKey: ["/api/wordpress/prop-firms"],
@@ -26,6 +28,13 @@ export default function PropFirms() {
   const { data: categories = [] } = useQuery<PropFirmCategory[]>({
     queryKey: ["/api/wordpress/prop-firm-categories"],
   });
+
+  // Find the category based on URL slug
+  const urlCategory = params.category 
+    ? categories.find(cat => cat.slug === params.category)
+    : null;
+  
+  const selectedCategory = urlCategory?.id || null;
 
   const transformPropFirm = (wpPropFirm: any): (Broker & { categoryIds: number[] }) | null => {
     const acf = wpPropFirm.acf || {};
@@ -235,7 +244,7 @@ export default function PropFirms() {
               className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
               onClick={() => {
                 setFilterFeatured(null);
-                setSelectedCategory(null);
+                setLocation("/prop-firms");
               }}
               data-testid="badge-filter-all"
             >
@@ -246,7 +255,7 @@ export default function PropFirms() {
               className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
               onClick={() => {
                 setFilterFeatured(true);
-                setSelectedCategory(null);
+                setLocation("/prop-firms");
               }}
               data-testid="badge-filter-featured"
             >
@@ -267,8 +276,8 @@ export default function PropFirms() {
                   variant={selectedCategory === category.id ? "default" : "secondary"}
                   className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
                   onClick={() => {
-                    setSelectedCategory(selectedCategory === category.id ? null : category.id);
                     setFilterFeatured(null);
+                    setLocation(selectedCategory === category.id ? "/prop-firms" : `/prop-firms/${category.slug}`);
                   }}
                   data-testid={`badge-filter-${category.slug}`}
                 >
