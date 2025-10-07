@@ -40,13 +40,14 @@
 - **Body**: Inter (400-500 weight) - excellent readability
 - **Data/Numbers**: JetBrains Mono (500 weight) - monospace for financial figures
 
-**Scale**:
-- Hero Headline: text-5xl md:text-6xl lg:text-7xl font-bold
-- Section Titles: text-3xl md:text-4xl font-semibold
-- Article Titles: text-xl md:text-2xl font-semibold
-- Body: text-base md:text-lg
-- Captions/Meta: text-sm
-- Data Numbers: text-lg md:text-xl font-mono
+**Scale** (2025 Optimized for Readability):
+- Hero Headline: text-5xl md:text-6xl lg:text-7xl font-bold (48-72px)
+- Article Page H1: text-3xl md:text-4xl lg:text-5xl font-bold (30-48px)
+- Section Titles: text-3xl md:text-4xl font-semibold (30-36px)
+- Article Card Titles: text-xl font-bold (20px)
+- Body: text-lg leading-7 (18px with 1.75 line-height via prose-lg)
+- Captions/Meta: text-sm (14px)
+- Data Numbers: text-lg md:text-xl font-mono (18-20px)
 
 ---
 
