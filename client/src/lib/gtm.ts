@@ -57,22 +57,21 @@ export const trackNewsletterSignup = (email: string, location: string) => {
 };
 
 // Category filter tracking
-export const trackCategoryFilter = (params: {
-  category_name: string;
-  page_type: 'brokers' | 'prop_firms' | 'archive';
-}) => {
+export const trackCategoryFilter = (page_type: 'broker' | 'prop_firm' | 'article', category_name: string) => {
   pushToDataLayer({
     event: 'category_filter',
-    ...params,
+    filter_type: page_type,
+    filter_value: category_name,
   });
 };
 
 // Search tracking
-export const trackSearch = (searchQuery: string, resultsCount: number) => {
+export const trackSearch = (searchQuery: string, resultsCount: number, location: string) => {
   pushToDataLayer({
     event: 'search',
     search_query: searchQuery,
     results_count: resultsCount,
+    search_location: location,
   });
 };
 
