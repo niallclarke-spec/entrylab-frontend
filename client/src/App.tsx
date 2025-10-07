@@ -19,7 +19,7 @@ function Router() {
       <Route path="/article/:slug" component={Article} />
       <Route path="/archive" component={Archive} />
       <Route path="/brokers" component={Brokers} />
-      <Route path="/prop-firms" component={PropFirms} />
+      <Route path="/prop-firms/:category?" component={PropFirms} />
       <Route component={NotFound} />
     </Switch>
   );
