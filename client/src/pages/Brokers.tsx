@@ -3,7 +3,6 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
-import { FloatingCandlesticks } from "@/components/FloatingCandlesticks";
 import { Loader2, Shield, Star, TrendingUp, Zap, CheckCircle2, Award, Users, Key, DollarSign, Headphones, FileText } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -82,9 +81,6 @@ export default function Brokers() {
       
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-background border-b">
-        {/* Floating Candlesticks Animation */}
-        <FloatingCandlesticks />
-        
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-20">
           <div className="text-center mb-12">
             {/* Badge */}
