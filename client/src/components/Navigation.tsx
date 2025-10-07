@@ -1,4 +1,4 @@
-import { Search, Menu, Moon, Sun } from "lucide-react";
+import { Search, Menu, Moon, Sun, Newspaper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "./ThemeProvider";
@@ -34,10 +34,11 @@ export function Navigation() {
               </Link>
               <Link
                 href="/archive"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                data-testid="link-archive"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+                data-testid="link-news"
               >
-                Archive
+                <Newspaper className="h-4 w-4" />
+                News
               </Link>
             </nav>
           </div>
@@ -90,10 +91,11 @@ export function Navigation() {
             </Link>
             <Link
               href="/archive"
-              className="block py-2 text-sm text-muted-foreground hover:text-foreground"
-              data-testid="link-mobile-archive"
+              className="block py-2 text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5"
+              data-testid="link-mobile-news"
             >
-              Archive
+              <Newspaper className="h-4 w-4" />
+              News
             </Link>
           </nav>
         )}
