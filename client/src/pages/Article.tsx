@@ -194,9 +194,12 @@ export default function Article() {
             {/* Main Content */}
             <article className="min-w-0">
               {/* Article Header with Subtle Top Glow */}
-              <div className="bg-card rounded-lg p-6 md:p-8 mb-8 relative shadow-lg">
-                {/* Subtle purple glow at top with curved edges and fade */}
-                <div className="absolute top-0 left-0 right-0 h-1 rounded-t-lg bg-gradient-to-r from-transparent via-primary to-transparent" />
+              <div className="bg-card rounded-lg p-6 md:p-8 mb-8 relative shadow-lg border-t-2 border-primary">
+                {/* Left side glow extending down from corner */}
+                <div className="absolute top-0 left-0 w-1 h-[20%] bg-gradient-to-b from-primary to-transparent pointer-events-none rounded-tl-lg" />
+                {/* Right side glow extending down from corner */}
+                <div className="absolute top-0 right-0 w-1 h-[20%] bg-gradient-to-b from-primary to-transparent pointer-events-none rounded-tr-lg" />
+                {/* Top gradient fade from edges */}
                 <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none rounded-t-lg" />
                 
                 <div className="relative">
