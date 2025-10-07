@@ -235,7 +235,7 @@ export default function Article() {
                     </Badge>
                   </div>
                   
-                  <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight mb-6" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight mb-6" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
                   
                   <div className="flex items-center justify-between flex-wrap gap-4 pt-4 border-t bg-muted/60 -mx-6 md:-mx-8 px-6 md:px-8 pb-4 -mb-6 md:-mb-8 rounded-b-xl">
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
