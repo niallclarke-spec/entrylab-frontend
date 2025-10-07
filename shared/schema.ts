@@ -73,4 +73,6 @@ export interface Broker {
   totalUsers?: string;
   awards?: string[];
   lastUpdated?: Date | null;
+  seoTitle?: string;
+  seoDescription?: string;
 }
