@@ -114,6 +114,15 @@ WordPress has been migrated to `admin.entrylab.io` subdomain. All API endpoints 
 
 ## Recent Changes
 
+**October 7, 2025 - SEO-Friendly Prop Firm Category Routes**:
+- Implemented dynamic category routes for better SEO indexability: `/prop-firms/:category?`
+- Each category now has its own unique URL (e.g., `/prop-firms/daily-payouts`)
+- Dynamic page titles based on category: "{Category Name} Prop Firms | EntryLab"
+- Dynamic meta descriptions for each category page
+- Category filter badges navigate to category-specific URLs using wouter
+- Main heading updates dynamically based on selected category
+- Google can now index individual category pages for better search visibility
+
 **October 7, 2025 - Prop Firms Category Filtering**:
 - Added dynamic category filtering system for prop firms (fully WordPress-managed)
 - Created backend API endpoint `/api/wordpress/prop-firm-categories` to fetch taxonomy data
