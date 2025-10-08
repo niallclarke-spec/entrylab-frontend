@@ -69,7 +69,8 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
                 onClick={() => trackAffiliateClick({
                   broker_name: name,
                   broker_type: 'broker',
-                  click_location: 'featured_widget',
+                  page_location: 'home',
+                  placement_type: 'featured_widget',
                   rating: rating,
                   affiliate_link: link
                 })}
