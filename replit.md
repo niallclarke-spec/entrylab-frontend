@@ -41,7 +41,11 @@ Preferred communication style: Simple, everyday language.
 
 ### Deployment & Analytics
 - **Deployment**: Frontend on `entrylab.io`, Backend (WordPress) on `admin.entrylab.io`, hosted on Hostinger.
-- **Analytics**: Google Tag Manager (GTM-KPCJDF2M) implemented for `page_view`, `affiliate_click`, `category_filter`, `search`, `newsletter_signup`, `review_view`, `article_view` events with rich metadata.
+- **Analytics**: Google Tag Manager (GTM-KPCJDF2M) with enhanced granular placement tracking
+  - **Enhanced Affiliate Click Tracking** (October 8, 2025): Granular placement attribution with `page_location`, `placement_type`, `position`, and auto-generated `click_location` field
+  - **Event Types**: `page_view`, `affiliate_click`, `category_filter`, `search`, `newsletter_signup`, `review_view`, `article_view`
+  - **Placement Tracking**: Home featured widget, Top rated cards with positions, Broker/PropFirm list cards, Review page CTAs (hero, quick stats, bottom), Inline article cards
+  - **Data Fields**: broker_name, broker_type, page_location, placement_type, click_location (e.g., "home_top_rated_card_position_1"), position, rating, affiliate_link
 
 ## External Dependencies
 
