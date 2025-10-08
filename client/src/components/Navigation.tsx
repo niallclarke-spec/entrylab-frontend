@@ -16,8 +16,8 @@ export function Navigation() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex h-16 items-center justify-between gap-4">
             <div className="flex items-center gap-8">
-              <Link href="/" className="text-2xl font-bold text-foreground" data-testid="link-home">
-                EntryLab
+              <Link href="/" className="flex items-center" data-testid="link-home">
+                <img src="/logo.png" alt="EntryLab" className="h-8" />
               </Link>
               <nav className="hidden md:flex items-center gap-6">
                 <Link
