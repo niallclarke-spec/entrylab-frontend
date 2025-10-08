@@ -497,9 +497,9 @@ export default function BrokerReview() {
                 <h3 className="font-bold mb-4">Quick Info</h3>
                 <div className="space-y-3 text-sm">
                   {broker.headquarters && (
-                    <div className="flex justify-between" data-testid="info-headquarters">
-                      <span className="text-muted-foreground">Headquarters:</span>
-                      <span className="font-medium">{broker.headquarters}</span>
+                    <div className="flex justify-between gap-3" data-testid="info-headquarters">
+                      <span className="text-muted-foreground flex-shrink-0">Headquarters:</span>
+                      <span className="font-medium text-right">{broker.headquarters}</span>
                     </div>
                   )}
                   {broker.support && (
