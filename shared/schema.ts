@@ -45,6 +45,7 @@ export interface Broker {
   pros: string[];
   highlights?: string[];
   link: string;
+  reviewLink?: string;
   featured?: boolean;
   tagline?: string;
   bonusOffer?: string;
