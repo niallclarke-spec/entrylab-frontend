@@ -20,7 +20,7 @@ export function Navigation() {
               <Link href="/" className="flex items-center justify-center h-full" data-testid="link-home">
                 <img src={logoImage} alt="EntryLab" className="h-16 w-auto object-contain" />
               </Link>
-              <nav className="hidden md:flex items-center gap-6">
+              <nav className="hidden md:flex items-center gap-6 mt-5">
                 <Link
                   href="/brokers"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center"
