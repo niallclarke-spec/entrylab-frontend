@@ -18,7 +18,7 @@ export function Navigation() {
           <div className="flex h-16 items-center justify-between gap-4">
             <div className="flex items-center gap-8">
               <Link href="/" className="flex items-center" data-testid="link-home">
-                <img src={logoImage} alt="EntryLab" className="h-11 w-auto" />
+                <img src={logoImage} alt="EntryLab" className="h-[4.25rem] w-auto" />
               </Link>
               <nav className="hidden md:flex items-center gap-6">
                 <Link
