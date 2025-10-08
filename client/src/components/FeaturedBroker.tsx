@@ -53,7 +53,7 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
                     className={`h-5 w-5 ${i < Math.floor(rating) ? "text-amber-500 fill-amber-500" : "text-muted"}`}
                   />
                 ))}
-                <span className="text-base font-semibold ml-1">{rating}/5</span>
+                <span className="text-base font-semibold ml-0.5">{rating}/5</span>
               </div>
 
               {bonusOffer && (
