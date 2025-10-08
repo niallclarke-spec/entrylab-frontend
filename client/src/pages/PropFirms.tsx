@@ -354,7 +354,7 @@ export default function PropFirms() {
           {/* Prop Firms Grid */}
           {filteredPropFirms.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filteredPropFirms.map((firm) => (
+              {filteredPropFirms.map((firm, index) => (
                 <BrokerCardEnhanced
                   key={firm.id}
                   name={firm.name}
@@ -367,6 +367,9 @@ export default function PropFirms() {
                   featured={firm.featured}
                   slug={firm.slug}
                   type="prop-firm"
+                  pageLocation="prop_firms"
+                  placementType={filterFeatured === true ? 'top_rated_card' : 'broker_list_card'}
+                  position={index + 1}
                 />
               ))}
             </div>
