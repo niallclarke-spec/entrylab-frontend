@@ -76,6 +76,7 @@ export default function BrokerReview() {
       platforms: acf.trading_platforms, // Updated field name
       paymentMethods: acf.deposit_methods, // Updated field name
       headquarters: acf.headquarters, // New field
+      support: acf.support, // Support information field
       totalUsers: acf.popularity, // New field (popularity -> totalUsers for display)
       lastUpdated: modifiedDate, // WordPress modified date
       seoTitle: acf.seo_title, // Custom SEO title (optional)
@@ -489,6 +490,12 @@ export default function BrokerReview() {
                     <div className="flex justify-between" data-testid="info-headquarters">
                       <span className="text-muted-foreground">Headquarters:</span>
                       <span className="font-medium">{broker.headquarters}</span>
+                    </div>
+                  )}
+                  {broker.support && (
+                    <div className="flex justify-between" data-testid="info-support">
+                      <span className="text-muted-foreground">Support:</span>
+                      <span className="font-medium">{broker.support}</span>
                     </div>
                   )}
                   {broker.totalUsers && (

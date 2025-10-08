@@ -67,6 +67,7 @@ export interface Broker {
   paymentMethods?: string;
   yearFounded?: string;
   headquarters?: string;
+  support?: string;
   regulationDetails?: string;
   withdrawalTime?: string;
   trustScore?: number;
