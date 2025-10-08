@@ -274,7 +274,7 @@ export default function Brokers() {
           {/* Brokers Grid */}
           {filteredBrokers.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filteredBrokers.map((broker) => (
+              {filteredBrokers.map((broker, index) => (
                 <BrokerCardEnhanced
                   key={broker.id}
                   name={broker.name}
@@ -287,6 +287,9 @@ export default function Brokers() {
                   featured={broker.featured}
                   slug={broker.slug}
                   type="broker"
+                  pageLocation="brokers"
+                  placementType={filterFeatured === true ? 'top_rated_card' : 'broker_list_card'}
+                  position={index + 1}
                 />
               ))}
             </div>

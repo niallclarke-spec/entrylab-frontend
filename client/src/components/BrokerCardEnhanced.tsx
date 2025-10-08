@@ -16,9 +16,26 @@ interface BrokerCardEnhancedProps {
   featured?: boolean;
   slug?: string;
   type?: "broker" | "prop-firm";
+  pageLocation?: 'home' | 'brokers' | 'prop_firms' | 'broker_review' | 'prop_firm_review' | 'article' | 'archive';
+  placementType?: 'featured_widget' | 'top_rated_card' | 'broker_list_card' | 'inline_card' | 'hero_cta' | 'quick_stats_cta' | 'bottom_cta';
+  position?: number;
 }
 
-export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlights, link, featured, slug, type = "broker" }: BrokerCardEnhancedProps) {
+export function BrokerCardEnhanced({ 
+  name, 
+  logo, 
+  verified, 
+  rating, 
+  pros, 
+  highlights, 
+  link, 
+  featured, 
+  slug, 
+  type = "broker",
+  pageLocation = 'home',
+  placementType = 'broker_list_card',
+  position
+}: BrokerCardEnhancedProps) {
   const icons = [TrendingUp, Shield, Zap];
   const reviewPath = slug ? `/${type}/${slug}` : null;
   
@@ -106,9 +123,11 @@ export function BrokerCardEnhanced({ name, logo, verified, rating, pros, highlig
           onClick={() => trackAffiliateClick({
             broker_name: name,
             broker_type: type === 'prop-firm' ? 'prop_firm' : 'broker',
-            click_location: 'broker_card',
+            page_location: pageLocation,
+            placement_type: placementType,
             rating: rating,
-            affiliate_link: link
+            affiliate_link: link,
+            position: position
           })}
         >
           <a href={link} target="_blank" rel="noopener noreferrer" className="truncate">
