@@ -208,7 +208,7 @@ export default function Home() {
                   </p>
                 </div>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  {popularBrokers.map((broker) => (
+                  {popularBrokers.map((broker, index) => (
                     <BrokerCardEnhanced
                       key={broker.id}
                       name={broker.name}
@@ -218,6 +218,9 @@ export default function Home() {
                       pros={broker.pros}
                       highlights={broker.highlights}
                       link={broker.link}
+                      pageLocation="home"
+                      placementType="top_rated_card"
+                      position={index + 1}
                     />
                   ))}
                 </div>
