@@ -1,4 +1,5 @@
 import { SiX, SiFacebook, SiLinkedin, SiYoutube } from "react-icons/si";
+import logoImage from "@assets/logo.png";
 
 export function Footer() {
   return (
@@ -6,7 +7,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-12 md:py-16">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex flex-col items-center md:items-start gap-2">
-            <p className="text-2xl font-bold text-foreground">EntryLab</p>
+            <img src={logoImage} alt="EntryLab" className="h-20 w-auto" />
             <p className="text-sm text-muted-foreground">Unbiased Reviews Since 2020</p>
           </div>
           
