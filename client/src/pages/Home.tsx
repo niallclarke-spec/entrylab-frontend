@@ -91,7 +91,7 @@ export default function Home() {
       tagline: acf.broker_intro || "Trusted forex broker",
       bonusOffer: acf.bonus_offer,
       link: acf.affiliate_link || wpBroker.link || "#",
-      reviewLink: wpBroker.link,
+      reviewLink: wpBroker.slug ? `/broker/${wpBroker.slug}` : undefined,
       pros: whyChoose.slice(0, 3),
       highlights: whyChoose,
       features: keyFeatures.map((f: string) => ({ icon: "trending", text: f })),
