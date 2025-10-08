@@ -1,0 +1,39 @@
+{
+  "cookies": [
+    {
+      "name": "_ga",
+      "value": "GA1.1.1925812804.1759965332",
+      "domain": ".9b12ce45-31d9-4b50-87c5-98489c4b96d6-00-114m0wx76i1g8.riker.replit.dev",
+      "path": "/",
+      "expires": 1794525332.140788,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga_E8X9FZV3M9",
+      "value": "GS2.1.s1759965332$o1$g0$t1759965332$j60$l0$h0",
+      "domain": ".9b12ce45-31d9-4b50-87c5-98489c4b96d6-00-114m0wx76i1g8.riker.replit.dev",
+      "path": "/",
+      "expires": 1794525332.186159,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://9b12ce45-31d9-4b50-87c5-98489c4b96d6-00-114m0wx76i1g8.riker.replit.dev",
+      "localStorage": [
+        {
+          "name": "replitDevBannerClosed-9b12ce45-31d9-4b50-87c5-98489c4b96d6-00-114m0wx76i1g8.riker.replit.dev",
+          "value": "true"
+        },
+        {
+          "name": "theme",
+          "value": "dark"
+        }
+      ]
+    }
+  ]
+}
