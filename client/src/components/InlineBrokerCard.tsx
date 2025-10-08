@@ -56,7 +56,8 @@ export function InlineBrokerCard({ broker }: InlineBrokerCardProps) {
           onClick={() => trackAffiliateClick({
             broker_name: broker.name,
             broker_type: 'broker',
-            click_location: 'inline_card',
+            page_location: 'article',
+            placement_type: 'inline_card',
             rating: broker.rating,
             affiliate_link: broker.link
           })}

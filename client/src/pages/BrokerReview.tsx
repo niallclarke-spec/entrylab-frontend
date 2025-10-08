@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Broker } from "@shared/schema";
-import { trackPageView, trackReviewView } from "@/lib/gtm";
+import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
 
 export default function BrokerReview() {
   const params = useParams();
@@ -227,7 +227,14 @@ export default function BrokerReview() {
             </div>
 
             <div className="flex flex-col gap-3 w-full lg:w-72">
-              <Button size="lg" asChild className="w-full" data-testid="button-visit-broker">
+              <Button size="lg" asChild className="w-full" data-testid="button-visit-broker" onClick={() => trackAffiliateClick({
+                broker_name: broker.name,
+                broker_type: 'broker',
+                page_location: 'broker_review',
+                placement_type: 'hero_cta',
+                rating: broker.rating,
+                affiliate_link: broker.link
+              })}>
                 <a href={broker.link} target="_blank" rel="noopener noreferrer">
                   Visit {stripHtml(broker.name)} <ExternalLink className="ml-2 h-4 w-4" />
                 </a>
@@ -457,7 +464,14 @@ export default function BrokerReview() {
                 <p className="text-muted-foreground mb-6">
                   Join thousands of traders who trust {stripHtml(broker.name)}
                 </p>
-                <Button size="lg" asChild data-testid="button-visit-broker-bottom">
+                <Button size="lg" asChild data-testid="button-visit-broker-bottom" onClick={() => trackAffiliateClick({
+                  broker_name: broker.name,
+                  broker_type: 'broker',
+                  page_location: 'broker_review',
+                  placement_type: 'bottom_cta',
+                  rating: broker.rating,
+                  affiliate_link: broker.link
+                })}>
                   <a href={broker.link} target="_blank" rel="noopener noreferrer">
                     Visit {stripHtml(broker.name)} <ChevronRight className="ml-2 h-4 w-4" />
                   </a>
@@ -511,7 +525,14 @@ export default function BrokerReview() {
                   </div>
                 )}
 
-                <Button className="w-full mt-6" asChild data-testid="button-visit-sidebar">
+                <Button className="w-full mt-6" asChild data-testid="button-visit-sidebar" onClick={() => trackAffiliateClick({
+                  broker_name: broker.name,
+                  broker_type: 'broker',
+                  page_location: 'broker_review',
+                  placement_type: 'quick_stats_cta',
+                  rating: broker.rating,
+                  affiliate_link: broker.link
+                })}>
                   <a href={broker.link} target="_blank" rel="noopener noreferrer">
                     Visit Broker <ExternalLink className="ml-2 h-4 w-4" />
                   </a>
