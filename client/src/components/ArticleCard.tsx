@@ -31,7 +31,7 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
   const readingTime = calculateReadingTime(cleanExcerpt);
 
   return (
-    <Card className="hover-elevate active-elevate-2 transition-all h-full flex flex-col group" data-testid={`card-article-${title.substring(0, 20)}`}>
+    <Card className="hover-elevate active-elevate-2 h-full flex flex-col group" data-testid={`card-article-${title.substring(0, 20)}`}>
       <Link href={link} className="flex flex-col h-full">
         {imageUrl && (
           <div className="w-full h-40 overflow-hidden rounded-t-md bg-muted">
