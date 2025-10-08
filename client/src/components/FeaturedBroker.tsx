@@ -1,4 +1,4 @@
-import { CheckCircle2, TrendingUp, Shield, Zap, DollarSign, Globe, Star, ArrowRight } from "lucide-react";
+import { CheckCircle2, TrendingUp, Shield, Zap, DollarSign, Globe, Star, ArrowRight, FileText } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ interface FeaturedBrokerProps {
   highlights: string[];
   bonusOffer?: string;
   link: string;
+  reviewLink?: string;
 }
 
 const iconMap: Record<string, any> = {
@@ -24,7 +25,7 @@ const iconMap: Record<string, any> = {
   "star": Star,
 };
 
-export function FeaturedBroker({ name, logo, tagline, rating, features, highlights, bonusOffer, link }: FeaturedBrokerProps) {
+export function FeaturedBroker({ name, logo, tagline, rating, features, highlights, bonusOffer, link, reviewLink }: FeaturedBrokerProps) {
   return (
     <section className="py-12 md:py-16 bg-gradient-to-br from-primary/10 via-background to-chart-2/10 border-y">
       <div className="max-w-7xl mx-auto px-6">
@@ -61,24 +62,41 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
                 </Badge>
               )}
 
-              <Button 
-                asChild 
-                size="lg" 
-                className="w-full shadow-lg" 
-                data-testid="button-featured-cta"
-                onClick={() => trackAffiliateClick({
-                  broker_name: name,
-                  broker_type: 'broker',
-                  page_location: 'home',
-                  placement_type: 'featured_widget',
-                  rating: rating,
-                  affiliate_link: link
-                })}
-              >
-                <a href={link} target="_blank" rel="noopener noreferrer">
-                  Get Started Now <ArrowRight className="ml-2 h-4 w-4" />
-                </a>
-              </Button>
+              <div className="w-full space-y-3">
+                <Button 
+                  asChild 
+                  size="lg" 
+                  className="w-full shadow-lg" 
+                  data-testid="button-featured-cta"
+                  onClick={() => trackAffiliateClick({
+                    broker_name: name,
+                    broker_type: 'broker',
+                    page_location: 'home',
+                    placement_type: 'featured_widget',
+                    rating: rating,
+                    affiliate_link: link
+                  })}
+                >
+                  <a href={link} target="_blank" rel="noopener noreferrer">
+                    Get Started Now <ArrowRight className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
+
+                {reviewLink && (
+                  <Button 
+                    asChild 
+                    variant="outline" 
+                    size="lg" 
+                    className="w-full" 
+                    data-testid="button-read-review"
+                  >
+                    <a href={reviewLink} target="_blank" rel="noopener noreferrer">
+                      <FileText className="mr-2 h-4 w-4" />
+                      Read Review
+                    </a>
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Right Side - Features & Highlights */}
@@ -92,7 +110,7 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
                   {features.map((feature, index) => {
                     const Icon = iconMap[feature.icon] || CheckCircle2;
                     return (
-                      <div key={index} className="flex items-start gap-3" data-testid={`feature-${index}`}>
+                      <div key={index} className="flex items-center gap-3" data-testid={`feature-${index}`}>
                         <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                           <Icon className="h-5 w-5 text-primary" />
                         </div>
