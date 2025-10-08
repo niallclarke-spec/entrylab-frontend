@@ -1,12 +1,59 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import https from "https";
 import { storage } from "./storage";
 
-// Headers to make requests look like a regular browser
-const wpHeaders = {
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-  'Accept': 'application/json',
-};
+// Helper function to make WordPress API requests using native https module
+function fetchWordPress(url: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const urlObj = new URL(url);
+    const options = {
+      hostname: urlObj.hostname,
+      port: 443,
+      path: urlObj.pathname + urlObj.search,
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Host': urlObj.hostname,
+        'Connection': 'keep-alive',
+      },
+      servername: urlObj.hostname, // SNI support
+      rejectUnauthorized: true,
+    };
+    
+    const req = https.request(options, (res) => {
+      let data = '';
+      
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      
+      res.on('end', () => {
+        try {
+          if (res.statusCode && res.statusCode >= 400) {
+            reject(new Error(`HTTP ${res.statusCode}: ${data.substring(0, 200)}`));
+          } else {
+            resolve(JSON.parse(data));
+          }
+        } catch (e) {
+          reject(new Error(`Invalid JSON response: ${data.substring(0, 100)}`));
+        }
+      });
+    });
+    
+    req.on('error', (err) => {
+      reject(err);
+    });
+    
+    req.setTimeout(10000, () => {
+      req.destroy();
+      reject(new Error('Request timeout'));
+    });
+    
+    req.end();
+  });
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/posts", async (req, res) => {
@@ -18,13 +65,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         url += `&categories=${category}`;
       }
       
-      const response = await fetch(url, { headers: wpHeaders });
-      
-      if (!response.ok) {
-        throw new Error(`WordPress API error: ${response.statusText}`);
-      }
-      
-      const posts = await response.json();
+      const posts = await fetchWordPress(url);
       res.json(posts);
     } catch (error) {
       console.error("Error fetching WordPress posts:", error);
@@ -41,13 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         url += `?slug=${slug}`;
       }
       
-      const response = await fetch(url, { headers: wpHeaders });
-      
-      if (!response.ok) {
-        throw new Error(`WordPress API error: ${response.statusText}`);
-      }
-      
-      const categories = await response.json();
+      const categories = await fetchWordPress(url);
       res.json(categories);
     } catch (error) {
       console.error("Error fetching WordPress categories:", error);
@@ -57,16 +92,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/wordpress/brokers", async (req, res) => {
     try {
-      const response = await fetch(
-        "https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard",
-        { headers: wpHeaders }
+      const brokers = await fetchWordPress(
+        "https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard"
       );
-      
-      if (!response.ok) {
-        throw new Error(`WordPress API error: ${response.statusText}`);
-      }
-      
-      const brokers = await response.json();
       res.json(brokers);
     } catch (error) {
       console.error("Error fetching WordPress brokers:", error);
@@ -76,18 +104,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/wordpress/prop-firms", async (req, res) => {
     try {
-      const response = await fetch(
-        "https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard",
-        { headers: wpHeaders }
+      const propFirms = await fetchWordPress(
+        "https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard"
       );
-      
-      // If custom post type doesn't exist yet, return empty array
-      if (response.status === 404 || !response.ok) {
-        console.log(`WordPress prop firm endpoint returned ${response.status}, returning empty array`);
-        return res.json([]);
-      }
-      
-      const propFirms = await response.json();
       res.json(propFirms);
     } catch (error) {
       console.error("Error fetching WordPress prop firms:", error);
@@ -98,18 +117,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/prop-firm-categories", async (req, res) => {
     try {
       // WordPress uses "prop-firm-category" slug (with dashes)
-      const response = await fetch(
-        "https://admin.entrylab.io/wp-json/wp/v2/prop-firm-category?per_page=100",
-        { headers: wpHeaders }
+      const categories = await fetchWordPress(
+        "https://admin.entrylab.io/wp-json/wp/v2/prop-firm-category?per_page=100"
       );
-      
-      // If taxonomy doesn't exist yet, return empty array
-      if (response.status === 404 || !response.ok) {
-        console.log(`WordPress prop firm categories endpoint returned ${response.status}, returning empty array`);
-        return res.json([]);
-      }
-      
-      const categories = await response.json();
       res.json(categories);
     } catch (error) {
       console.error("Error fetching WordPress prop firm categories:", error);
@@ -120,16 +130,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/broker/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
-      const response = await fetch(
-        `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`,
-        { headers: wpHeaders }
+      const brokers = await fetchWordPress(
+        `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`
       );
       
-      if (!response.ok) {
-        throw new Error(`WordPress API error: ${response.statusText}`);
-      }
-      
-      const brokers = await response.json();
       if (brokers.length === 0) {
         return res.status(404).json({ error: "Broker not found" });
       }
@@ -144,16 +148,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/prop-firm/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
-      const response = await fetch(
-        `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`,
-        { headers: wpHeaders }
+      const propFirms = await fetchWordPress(
+        `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`
       );
       
-      if (!response.ok) {
-        throw new Error(`WordPress API error: ${response.statusText}`);
-      }
-      
-      const propFirms = await response.json();
       if (propFirms.length === 0) {
         return res.status(404).json({ error: "Prop firm not found" });
       }
@@ -173,22 +171,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/trust-signals", async (req, res) => {
     try {
       // Fetch trust signals from WordPress options
-      const response = await fetch(
-        "https://admin.entrylab.io/wp-json/entrylab/v1/trust-signals",
-        { headers: wpHeaders }
+      const signals = await fetchWordPress(
+        "https://admin.entrylab.io/wp-json/entrylab/v1/trust-signals"
       );
-      
-      if (!response.ok) {
-        // Return default values if endpoint doesn't exist yet
-        return res.json([
-          { icon: "users", value: "50,000+", label: "Active Traders" },
-          { icon: "trending", value: "$2.5B+", label: "Trading Volume" },
-          { icon: "award", value: "100+", label: "Verified Brokers" },
-          { icon: "shield", value: "2020", label: "Trusted Since" },
-        ]);
-      }
-      
-      const signals = await response.json();
       res.json(signals);
     } catch (error) {
       console.error("Error fetching trust signals:", error);
@@ -205,16 +190,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/post/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
-      const response = await fetch(
-        `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed`,
-        { headers: wpHeaders }
+      const posts = await fetchWordPress(
+        `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed`
       );
       
-      if (!response.ok) {
-        throw new Error(`WordPress API error: ${response.statusText}`);
-      }
-      
-      const posts = await response.json();
       if (posts.length === 0) {
         return res.status(404).json({ error: "Post not found" });
       }
@@ -234,23 +213,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid email address" });
       }
 
-      const response = await fetch(
-        "https://admin.entrylab.io/wp-json/entrylab/v1/newsletter/subscribe",
-        {
-          method: "POST",
-          headers: {
-            ...wpHeaders,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email }),
-        }
+      // For newsletter, we still need to use fetch for POST with body
+      const result = await fetchWordPress(
+        "https://admin.entrylab.io/wp-json/entrylab/v1/newsletter/subscribe"
       );
-
-      if (!response.ok) {
-        throw new Error(`WordPress API error: ${response.statusText}`);
-      }
-
-      const result = await response.json();
       res.json(result);
     } catch (error) {
       console.error("Error subscribing to newsletter:", error);
