@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useTheme } from "./ThemeProvider";
 import { Link } from "wouter";
 import { useState } from "react";
+import logoImage from "@assets/logo.png";
 import { MarketTicker } from "@/components/MarketTicker";
 
 export function Navigation() {
@@ -17,7 +18,7 @@ export function Navigation() {
           <div className="flex h-16 items-center justify-between gap-4">
             <div className="flex items-center gap-8">
               <Link href="/" className="flex items-center" data-testid="link-home">
-                <img src="/logo.png" alt="EntryLab" className="h-8" />
+                <img src={logoImage} alt="EntryLab" className="h-8" />
               </Link>
               <nav className="hidden md:flex items-center gap-6">
                 <Link
