@@ -57,7 +57,7 @@ export default function Article() {
       verified: true,
       featured: isFeatured,
       tagline: acf.broker_intro || "Trusted forex broker",
-      bonusOffer: acf.bonus_offer || "Get 100% Deposit Bonus",
+      bonusOffer: acf.bonus_offer,
       link: acf.affiliate_link || wpBroker.link || "#",
       pros: whyChoose.slice(0, 3),
       highlights: whyChoose,
