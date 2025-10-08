@@ -7,7 +7,7 @@ import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp } from "lucide-react";
+import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, ArrowDownToLine } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Broker } from "@shared/schema";
 import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
@@ -296,13 +296,13 @@ export default function BrokerReview() {
                 <div className="text-xs text-muted-foreground">Spread From</div>
               </div>
             )}
-            {broker.regulation && (
-              <div className="text-center" data-testid="stat-regulation">
+            {broker.minWithdrawal && (
+              <div className="text-center" data-testid="stat-min-withdrawal">
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mx-auto mb-2">
-                  <Shield className="h-6 w-6 text-emerald-500" />
+                  <ArrowDownToLine className="h-6 w-6 text-emerald-500" />
                 </div>
-                <div className="font-bold text-foreground text-sm">{broker.regulation.split(',')[0].trim()}</div>
-                <div className="text-xs text-muted-foreground">Regulated</div>
+                <div className="font-bold text-foreground">{broker.minWithdrawal}</div>
+                <div className="text-xs text-muted-foreground">Min Withdrawal</div>
               </div>
             )}
             {broker.instrumentsCount && (
@@ -432,7 +432,7 @@ export default function BrokerReview() {
                     <div className="p-4 rounded-lg bg-muted/50" data-testid="detail-payment">
                       <div className="flex items-center gap-2 mb-2">
                         <CreditCard className="h-5 w-5 text-primary" />
-                        <span className="font-semibold">Payment Methods</span>
+                        <span className="font-semibold">Deposit Methods</span>
                       </div>
                       <p className="text-sm text-muted-foreground">{broker.paymentMethods}</p>
                     </div>
