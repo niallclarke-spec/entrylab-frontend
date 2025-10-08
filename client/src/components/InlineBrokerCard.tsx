@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, TrendingUp } from "lucide-react";
+import { Star, TrendingUp, FileText } from "lucide-react";
 import type { Broker } from "@shared/schema";
 import { trackAffiliateClick } from "@/lib/gtm";
 
@@ -48,24 +48,40 @@ export function InlineBrokerCard({ broker }: InlineBrokerCardProps) {
         {broker.tagline && (
           <p className="text-sm text-muted-foreground">{broker.tagline}</p>
         )}
-        <Button 
-          asChild 
-          className="w-full" 
-          size="lg" 
-          data-testid="button-visit-inline-broker"
-          onClick={() => trackAffiliateClick({
-            broker_name: broker.name,
-            broker_type: 'broker',
-            page_location: 'article',
-            placement_type: 'inline_card',
-            rating: broker.rating,
-            affiliate_link: broker.link
-          })}
-        >
-          <a href={broker.link} target="_blank" rel="noopener noreferrer">
-            Visit {broker.name}
-          </a>
-        </Button>
+        <div className="space-y-2">
+          <Button 
+            asChild 
+            className="w-full" 
+            size="lg" 
+            data-testid="button-visit-inline-broker"
+            onClick={() => trackAffiliateClick({
+              broker_name: broker.name,
+              broker_type: 'broker',
+              page_location: 'article',
+              placement_type: 'inline_card',
+              rating: broker.rating,
+              affiliate_link: broker.link
+            })}
+          >
+            <a href={broker.link} target="_blank" rel="noopener noreferrer">
+              Visit {broker.name}
+            </a>
+          </Button>
+          {broker.reviewLink && (
+            <Button 
+              asChild 
+              variant="outline" 
+              className="w-full" 
+              size="lg" 
+              data-testid="button-read-review-inline"
+            >
+              <a href={broker.reviewLink} target="_blank" rel="noopener noreferrer">
+                <FileText className="mr-2 h-4 w-4" />
+                Read Review
+              </a>
+            </Button>
+          )}
+        </div>
         <p className="text-xs text-muted-foreground text-center">
           Risk Warning: Trading involves risk
         </p>
