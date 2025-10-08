@@ -2,6 +2,12 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 
+// Headers to make requests look like a regular browser
+const wpHeaders = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+  'Accept': 'application/json',
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/posts", async (req, res) => {
     try {
@@ -12,7 +18,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         url += `&categories=${category}`;
       }
       
-      const response = await fetch(url);
+      const response = await fetch(url, { headers: wpHeaders });
       
       if (!response.ok) {
         throw new Error(`WordPress API error: ${response.statusText}`);
@@ -35,7 +41,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         url += `?slug=${slug}`;
       }
       
-      const response = await fetch(url);
+      const response = await fetch(url, { headers: wpHeaders });
       
       if (!response.ok) {
         throw new Error(`WordPress API error: ${response.statusText}`);
@@ -52,7 +58,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/brokers", async (req, res) => {
     try {
       const response = await fetch(
-        "https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard"
+        "https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard",
+        { headers: wpHeaders }
       );
       
       if (!response.ok) {
@@ -70,7 +77,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/prop-firms", async (req, res) => {
     try {
       const response = await fetch(
-        "https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard"
+        "https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard",
+        { headers: wpHeaders }
       );
       
       // If custom post type doesn't exist yet, return empty array
@@ -91,7 +99,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // WordPress uses "prop-firm-category" slug (with dashes)
       const response = await fetch(
-        "https://admin.entrylab.io/wp-json/wp/v2/prop-firm-category?per_page=100"
+        "https://admin.entrylab.io/wp-json/wp/v2/prop-firm-category?per_page=100",
+        { headers: wpHeaders }
       );
       
       // If taxonomy doesn't exist yet, return empty array
@@ -112,7 +121,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { slug } = req.params;
       const response = await fetch(
-        `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`
+        `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`,
+        { headers: wpHeaders }
       );
       
       if (!response.ok) {
@@ -135,7 +145,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { slug } = req.params;
       const response = await fetch(
-        `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`
+        `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`,
+        { headers: wpHeaders }
       );
       
       if (!response.ok) {
@@ -163,7 +174,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Fetch trust signals from WordPress options
       const response = await fetch(
-        "https://admin.entrylab.io/wp-json/entrylab/v1/trust-signals"
+        "https://admin.entrylab.io/wp-json/entrylab/v1/trust-signals",
+        { headers: wpHeaders }
       );
       
       if (!response.ok) {
@@ -194,7 +206,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { slug } = req.params;
       const response = await fetch(
-        `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed`
+        `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed`,
+        { headers: wpHeaders }
       );
       
       if (!response.ok) {
@@ -226,6 +239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         {
           method: "POST",
           headers: {
+            ...wpHeaders,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ email }),
