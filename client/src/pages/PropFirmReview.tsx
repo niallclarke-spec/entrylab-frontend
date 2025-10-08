@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Broker } from "@shared/schema";
-import { trackPageView, trackReviewView } from "@/lib/gtm";
+import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
 
 export default function PropFirmReview() {
   const params = useParams();
@@ -228,7 +228,14 @@ export default function PropFirmReview() {
             </div>
 
             <div className="flex flex-col gap-3 w-full lg:w-72">
-              <Button size="lg" asChild className="w-full" data-testid="button-visit-prop-firm">
+              <Button size="lg" asChild className="w-full" data-testid="button-visit-prop-firm" onClick={() => trackAffiliateClick({
+                broker_name: propFirm.name,
+                broker_type: 'prop_firm',
+                page_location: 'prop_firm_review',
+                placement_type: 'hero_cta',
+                rating: propFirm.rating,
+                affiliate_link: propFirm.link
+              })}>
                 <a href={propFirm.link} target="_blank" rel="noopener noreferrer">
                   Visit {stripHtml(propFirm.name)} <ExternalLink className="ml-2 h-4 w-4" />
                 </a>
@@ -458,7 +465,14 @@ export default function PropFirmReview() {
                 <p className="text-muted-foreground mb-6">
                   Join thousands of funded traders with {stripHtml(propFirm.name)}
                 </p>
-                <Button size="lg" asChild data-testid="button-visit-prop-firm-bottom">
+                <Button size="lg" asChild data-testid="button-visit-prop-firm-bottom" onClick={() => trackAffiliateClick({
+                  broker_name: propFirm.name,
+                  broker_type: 'prop_firm',
+                  page_location: 'prop_firm_review',
+                  placement_type: 'bottom_cta',
+                  rating: propFirm.rating,
+                  affiliate_link: propFirm.link
+                })}>
                   <a href={propFirm.link} target="_blank" rel="noopener noreferrer">
                     Visit {stripHtml(propFirm.name)} <ChevronRight className="ml-2 h-4 w-4" />
                   </a>
@@ -518,7 +532,14 @@ export default function PropFirmReview() {
                   </div>
                 )}
 
-                <Button className="w-full mt-6" asChild data-testid="button-visit-sidebar">
+                <Button className="w-full mt-6" asChild data-testid="button-visit-sidebar" onClick={() => trackAffiliateClick({
+                  broker_name: propFirm.name,
+                  broker_type: 'prop_firm',
+                  page_location: 'prop_firm_review',
+                  placement_type: 'quick_stats_cta',
+                  rating: propFirm.rating,
+                  affiliate_link: propFirm.link
+                })}>
                   <a href={propFirm.link} target="_blank" rel="noopener noreferrer">
                     Visit Prop Firm <ExternalLink className="ml-2 h-4 w-4" />
                   </a>
@@ -566,7 +587,14 @@ export default function PropFirmReview() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
-            <Button size="lg" asChild className="min-w-[200px]" data-testid="button-final-cta">
+            <Button size="lg" asChild className="min-w-[200px]" data-testid="button-final-cta" onClick={() => trackAffiliateClick({
+              broker_name: propFirm.name,
+              broker_type: 'prop_firm',
+              page_location: 'prop_firm_review',
+              placement_type: 'bottom_cta',
+              rating: propFirm.rating,
+              affiliate_link: propFirm.link
+            })}>
               <a href={propFirm.link} target="_blank" rel="noopener noreferrer">
                 Start Evaluation Now <ArrowRight className="ml-2 h-4 w-4" />
               </a>
