@@ -405,7 +405,7 @@ export default function BrokerReview() {
                     <div className="p-4 rounded-lg bg-muted/50" data-testid="detail-platforms">
                       <div className="flex items-center gap-2 mb-2">
                         <TrendingUp className="h-5 w-5 text-primary" />
-                        <span className="font-semibold">Platforms</span>
+                        <span className="font-semibold">Trading Platforms</span>
                       </div>
                       <p className="text-sm text-muted-foreground">{broker.platforms}</p>
                     </div>
