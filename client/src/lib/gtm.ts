@@ -33,17 +33,30 @@ export const trackPageView = (pagePath: string, pageTitle: string) => {
   });
 };
 
-// Affiliate click tracking
+// Affiliate click tracking with granular placement details
 export const trackAffiliateClick = (params: {
   broker_name: string;
   broker_type: 'broker' | 'prop_firm';
-  click_location: string; // e.g., 'featured_widget', 'broker_card', 'inline_card', 'review_page'
+  page_location: 'home' | 'brokers' | 'prop_firms' | 'broker_review' | 'prop_firm_review' | 'article' | 'archive';
+  placement_type: 'featured_widget' | 'top_rated_card' | 'broker_list_card' | 'inline_card' | 'hero_cta' | 'quick_stats_cta' | 'bottom_cta';
   rating?: number;
   affiliate_link?: string;
+  position?: number; // Position in list (e.g., 1st, 2nd, 3rd card)
 }) => {
+  // Create descriptive click_location for easy filtering: "home_featured_widget" or "brokers_top_rated_card_position_1"
+  const positionSuffix = params.position ? `_position_${params.position}` : '';
+  const click_location = `${params.page_location}_${params.placement_type}${positionSuffix}`;
+  
   pushToDataLayer({
     event: 'affiliate_click',
-    ...params,
+    broker_name: params.broker_name,
+    broker_type: params.broker_type,
+    page_location: params.page_location,
+    placement_type: params.placement_type,
+    click_location, // Combined string for easy filtering
+    rating: params.rating,
+    affiliate_link: params.affiliate_link,
+    position: params.position,
   });
 };
 
