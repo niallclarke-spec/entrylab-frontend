@@ -69,6 +69,7 @@ export default function BrokerReview() {
       featuredHighlights: brokerUsp,
       content: acf.review_summary || "", // WYSIWYG review content
       minDeposit: acf.min_deposit,
+      minWithdrawal: acf.minimum_withdrawal,
       maxLeverage: acf.max_leverage,
       spreadFrom: acf.spread_from,
       regulation: acf.regulation,
@@ -389,6 +390,15 @@ export default function BrokerReview() {
                         <span className="font-semibold">Minimum Deposit</span>
                       </div>
                       <p className="text-sm text-muted-foreground">{broker.minDeposit}</p>
+                    </div>
+                  )}
+                  {broker.minWithdrawal && (
+                    <div className="p-4 rounded-lg bg-muted/50" data-testid="detail-min-withdrawal">
+                      <div className="flex items-center gap-2 mb-2">
+                        <DollarSign className="h-5 w-5 text-primary" />
+                        <span className="font-semibold">Minimum Withdrawal</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{broker.minWithdrawal}</p>
                     </div>
                   )}
                   {broker.platforms && (

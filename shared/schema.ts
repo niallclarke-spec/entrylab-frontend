@@ -55,6 +55,7 @@ export interface Broker {
   slug?: string;
   content?: string; // WordPress post content (review body)
   minDeposit?: string;
+  minWithdrawal?: string;
   maxLeverage?: string;
   spreadFrom?: string;
   regulation?: string;
