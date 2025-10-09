@@ -59,7 +59,12 @@ export function ReviewModalSimple({
   useEffect(() => {
     if (!isOpen) return;
     
-    console.log("Modal opened - simple version", { brokerName, brokerId });
+    console.log("Modal opened - simple version", { 
+      brokerName, 
+      brokerId, 
+      hasRecaptchaKey,
+      siteKey: import.meta.env.VITE_RECAPTCHA_SITE_KEY 
+    });
     
     // Load reCAPTCHA script if key is available
     if (hasRecaptchaKey && !window.grecaptcha) {
