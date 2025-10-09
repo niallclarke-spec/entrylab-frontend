@@ -182,51 +182,36 @@ export function ReviewModalSimple({
   if (!isOpen) return null;
 
   const modalContent = (
-    <div 
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1rem'
-      }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          console.log("Closing modal from overlay click");
-          onClose();
-        }
-      }}
-      data-testid="modal-overlay"
-    >
-      {/* Overlay */}
+    <>
+      {/* Dark Overlay */}
       <div 
         style={{
-          position: 'absolute',
+          position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)'
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          zIndex: 9998
         }}
+        onClick={onClose}
       />
       
-      {/* Modal Content */}
+      {/* Modal Box */}
       <div 
         style={{
-          position: 'relative',
-          zIndex: 10000,
-          width: '100%',
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 9999,
+          width: '90vw',
           maxWidth: '500px',
+          maxHeight: '90vh',
           backgroundColor: '#ff0000',
           border: '10px solid #ffff00',
           borderRadius: '8px',
           padding: '1.5rem',
-          maxHeight: '90vh',
           overflowY: 'auto'
         }}
         data-testid="dialog-review"
@@ -425,7 +410,7 @@ export function ReviewModalSimple({
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 
   // Use portal to render at body level, avoiding any parent CSS that breaks fixed positioning
