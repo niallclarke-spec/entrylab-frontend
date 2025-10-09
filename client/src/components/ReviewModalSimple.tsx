@@ -136,8 +136,18 @@ export function ReviewModalSimple({
     try {
       let recaptchaToken = '';
       
-      // Skip reCAPTCHA in development (widget is hidden)
-      // In production, reCAPTCHA will be required
+      // Get reCAPTCHA token if available (production)
+      if (hasRecaptchaKey && window.grecaptcha) {
+        try {
+          recaptchaToken = window.grecaptcha.getResponse();
+          if (!recaptchaToken) {
+            throw new Error("Please complete the reCAPTCHA verification");
+          }
+        } catch (e) {
+          console.error("reCAPTCHA error:", e);
+          throw new Error("reCAPTCHA verification failed. Please try again.");
+        }
+      }
 
       const response = await fetch("/api/reviews/submit", {
         method: "POST",
@@ -163,14 +173,19 @@ export function ReviewModalSimple({
         description: "Thank you for sharing your experience. Your review will be published after approval.",
       });
 
+      // Reset reCAPTCHA if it exists
+      if (hasRecaptchaKey && window.grecaptcha) {
+        window.grecaptcha.reset();
+      }
+
       onClose();
       setStep(1);
       setFormData({
-        rating: 0,
-        title: "",
-        reviewText: "",
-        name: "",
-        email: "",
+        rating: isDev ? 5 : 0,
+        title: isDev ? "Excellent trading experience" : "",
+        reviewText: isDev ? "I've been trading with this broker for 6 months and the experience has been fantastic. Fast execution, tight spreads, and excellent customer support. The withdrawal process is smooth and funds arrive within 24 hours. Highly recommend!" : "",
+        name: isDev ? "John Trader" : "",
+        email: isDev ? "test@example.com" : "",
         newsletterOptin: false,
       });
     } catch (error: any) {
@@ -179,6 +194,15 @@ export function ReviewModalSimple({
         description: error.message || "Please try again later.",
         variant: "destructive",
       });
+      
+      // Reset reCAPTCHA on error
+      if (hasRecaptchaKey && window.grecaptcha) {
+        try {
+          window.grecaptcha.reset();
+        } catch (e) {
+          console.error("Failed to reset reCAPTCHA:", e);
+        }
+      }
     } finally {
       setIsSubmitting(false);
     }
