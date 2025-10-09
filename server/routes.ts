@@ -26,6 +26,9 @@ function fetchWordPress(url: string, options: { method?: string; body?: any; req
       if (username && password) {
         const credentials = Buffer.from(`${username}:${password}`).toString('base64');
         headers['Authorization'] = `Basic ${credentials}`;
+        console.log(`[WordPress Auth] Sending credentials for user: ${username}`);
+      } else {
+        console.error('[WordPress Auth] Missing credentials!');
       }
     }
     
