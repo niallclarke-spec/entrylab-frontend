@@ -58,12 +58,34 @@ function fetchWordPress(url: string, options: { method?: string; body?: any; req
       res.on('end', () => {
         try {
           if (res.statusCode && res.statusCode >= 400) {
-            reject(new Error(`HTTP ${res.statusCode}: ${data.substring(0, 200)}`));
+            // Try to parse error response, but handle invalid JSON
+            let errorMessage = `HTTP ${res.statusCode}`;
+            try {
+              const errorData = JSON.parse(data);
+              errorMessage = errorData.message || errorData.error || errorMessage;
+            } catch {
+              // If not JSON, include raw response preview
+              errorMessage += `: ${data.substring(0, 200)}`;
+            }
+            const error: any = new Error(errorMessage);
+            error.statusCode = res.statusCode;
+            error.isHttpError = true;
+            reject(error);
           } else {
-            resolve(JSON.parse(data));
+            const parsedData = JSON.parse(data);
+            resolve(parsedData);
           }
         } catch (e) {
-          reject(new Error(`Invalid JSON response: ${data.substring(0, 100)}`));
+          // WordPress returned non-JSON (likely HTML from WAF, rate limit, or error page)
+          const error: any = new Error('WordPress returned invalid response format');
+          error.statusCode = 502; // Bad Gateway
+          error.isParseError = true;
+          error.responsePreview = data.substring(0, 200);
+          // Check if it looks like HTML
+          if (data.trim().startsWith('<')) {
+            error.message = 'WordPress returned HTML instead of JSON (possible rate limit or WAF block)';
+          }
+          reject(error);
         }
       });
     });
@@ -82,6 +104,33 @@ function fetchWordPress(url: string, options: { method?: string; body?: any; req
     }
     
     req.end();
+  });
+}
+
+// Helper function to handle WordPress API errors
+function handleWordPressError(error: any, res: any, operation: string) {
+  console.error(`Error ${operation}:`, error.message);
+  
+  // Determine appropriate status code
+  let statusCode = 500;
+  let errorMessage = `Failed to ${operation}`;
+  
+  if (error.isParseError) {
+    // WordPress returned non-JSON (WAF, rate limit, etc.)
+    statusCode = 502; // Bad Gateway
+    errorMessage = error.message;
+  } else if (error.isHttpError && error.statusCode) {
+    // WordPress returned an HTTP error
+    statusCode = error.statusCode;
+    errorMessage = error.message;
+  } else if (error.message?.includes('timeout')) {
+    statusCode = 504; // Gateway Timeout
+    errorMessage = 'WordPress request timed out';
+  }
+  
+  res.status(statusCode).json({ 
+    error: errorMessage,
+    details: error.responsePreview ? `Response: ${error.responsePreview}` : undefined
   });
 }
 
@@ -139,8 +188,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const posts = await fetchWordPress(url);
       res.json(posts);
     } catch (error) {
-      console.error("Error fetching WordPress posts:", error);
-      res.status(500).json({ error: "Failed to fetch posts" });
+      handleWordPressError(error, res, "fetch posts");
     }
   });
 
@@ -168,8 +216,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       res.json(brokers);
     } catch (error) {
-      console.error("Error fetching WordPress brokers:", error);
-      res.status(500).json({ error: "Failed to fetch brokers" });
+      handleWordPressError(error, res, "fetch brokers");
     }
   });
 
@@ -180,8 +227,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       res.json(propFirms);
     } catch (error) {
-      console.error("Error fetching WordPress prop firms:", error);
-      res.status(500).json({ error: "Failed to fetch prop firms" });
+      handleWordPressError(error, res, "fetch prop firms");
     }
   });
 

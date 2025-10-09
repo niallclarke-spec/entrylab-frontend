@@ -45,6 +45,7 @@ export function ReviewModalSimple({
   const recaptchaRef = useRef<HTMLDivElement>(null);
   const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
   const [recaptchaSiteKey, setRecaptchaSiteKey] = useState<string | null>(null);
+  const [recaptchaError, setRecaptchaError] = useState<string | null>(null);
   
   // Auto-fill with test data in development
   const isDev = import.meta.env.DEV;
@@ -62,9 +63,17 @@ export function ReviewModalSimple({
   useEffect(() => {
     if (!isOpen) return;
     
+    // Reset error state when modal opens
+    setRecaptchaError(null);
+    
     // Fetch reCAPTCHA site key from backend
     fetch('/api/recaptcha/site-key')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to load security verification');
+        }
+        return res.json();
+      })
       .then(data => {
         console.log("Modal opened - simple version", { 
           brokerName, 
@@ -72,9 +81,17 @@ export function ReviewModalSimple({
           siteKey: data.siteKey 
         });
         setRecaptchaSiteKey(data.siteKey);
+        setRecaptchaError(null);
       })
       .catch(err => {
         console.error("Failed to fetch reCAPTCHA site key:", err);
+        const errorMsg = "Security verification unavailable. Please try again later.";
+        setRecaptchaError(errorMsg);
+        toast({
+          title: "Error",
+          description: errorMsg,
+          variant: "destructive",
+        });
       });
     
     // Load reCAPTCHA script
@@ -131,21 +148,36 @@ export function ReviewModalSimple({
   };
 
   const handleSubmit = async () => {
+    // Block submission if reCAPTCHA failed to load in production
+    if (!isDev && recaptchaError) {
+      toast({
+        title: "Cannot Submit",
+        description: "Security verification is required but unavailable. Please refresh and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
       let recaptchaToken = '';
       
-      // Get reCAPTCHA token if available (production)
-      if (hasRecaptchaKey && window.grecaptcha) {
-        try {
-          recaptchaToken = window.grecaptcha.getResponse();
-          if (!recaptchaToken) {
-            throw new Error("Please complete the reCAPTCHA verification");
+      // Get reCAPTCHA token in production only
+      if (!isDev) {
+        if (hasRecaptchaKey && window.grecaptcha) {
+          try {
+            recaptchaToken = window.grecaptcha.getResponse();
+            if (!recaptchaToken) {
+              throw new Error("Please complete the reCAPTCHA verification");
+            }
+          } catch (e) {
+            console.error("reCAPTCHA error:", e);
+            throw new Error("reCAPTCHA verification failed. Please try again.");
           }
-        } catch (e) {
-          console.error("reCAPTCHA error:", e);
-          throw new Error("reCAPTCHA verification failed. Please try again.");
+        } else if (!hasRecaptchaKey) {
+          // In production, reCAPTCHA is required
+          throw new Error("Security verification is required. Please refresh and try again.");
         }
       }
 
@@ -383,6 +415,20 @@ export function ReviewModalSimple({
                   Subscribe to our newsletter for forex market updates and broker news
                 </label>
               </div>
+              
+              {/* reCAPTCHA */}
+              {!isDev && (
+                <div className="flex flex-col items-center gap-3">
+                  {recaptchaError ? (
+                    <div className="w-full p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm text-destructive text-center">
+                      {recaptchaError}
+                    </div>
+                  ) : (
+                    <div ref={recaptchaRef} data-testid="recaptcha-container"></div>
+                  )}
+                </div>
+              )}
+              
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                 <p className="text-sm text-foreground">
                   ✓ Your review will be published after approval<br />
@@ -418,7 +464,7 @@ export function ReviewModalSimple({
           ) : (
             <Button
               onClick={handleSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || (!isDev && recaptchaError !== null)}
               data-testid="button-submit-review"
             >
               {isSubmitting ? (
