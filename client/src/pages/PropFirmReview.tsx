@@ -11,7 +11,7 @@ import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Broker } from "@shared/schema";
 import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
-import { ReviewModal } from "@/components/ReviewModal";
+import { ReviewModalSimple as ReviewModal } from "@/components/ReviewModalSimple";
 
 export default function PropFirmReview() {
   const params = useParams();
