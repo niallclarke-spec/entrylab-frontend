@@ -145,6 +145,7 @@ export default function Home() {
                     category={getCategoryName(post)}
                     link={`/article/${post.slug}`}
                     imageUrl={getFeaturedImage(post)}
+                    slug={post.slug}
                   />
                 ))}
               </div>
