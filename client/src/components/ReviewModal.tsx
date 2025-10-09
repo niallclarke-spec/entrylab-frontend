@@ -212,7 +212,6 @@ export function ReviewModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
         className="sm:max-w-[500px]" 
-        style={{ backgroundColor: 'red', border: '5px solid yellow' }}
         data-testid="dialog-review"
       >
         <DialogHeader>
