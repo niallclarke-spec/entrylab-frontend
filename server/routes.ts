@@ -271,6 +271,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint to get reCAPTCHA site key
+  app.get("/api/recaptcha/site-key", (req, res) => {
+    const siteKey = process.env.RECAPTCHA_SITE_KEY;
+    console.log("[reCAPTCHA] Site key requested, returning:", siteKey ? "***key***" : "null");
+    res.setHeader('Content-Type', 'application/json');
+    if (siteKey) {
+      return res.json({ siteKey });
+    } else {
+      return res.json({ siteKey: null });
+    }
+  });
+
   app.post("/api/reviews/submit", async (req, res) => {
     try {
       const { rating, title, reviewText, name, email, newsletterOptin, brokerId, itemType, recaptchaToken } = req.body;
