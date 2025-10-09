@@ -70,7 +70,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Development Tools
 
-### Code Quality
-- **Error Handling**: `ErrorBoundary` component catches React errors, prevents white screen
+### Code Quality & Performance (October 9, 2025)
+- **Error Handling**: `ErrorBoundary` component catches React errors, prevents white screen of death with branded fallback UI
 - **Transform Utilities**: `client/src/lib/transforms.ts` - Shared WordPress data transformation functions
+  - Functions: `transformBroker`, `transformBrokerDetailed`, `transformPropFirm`, `transformPropFirmDetailed`
+  - Eliminated 150+ lines of duplicate code across 6 components
 - **API Error Handling**: `handleWordPressError` helper for consistent 502/504/500 responses
+  - Applied to 4 key routes: categories, broker/:slug, prop-firm/:slug, post/:slug
+  - Fallback data strategy for trust-signals, prop-firm-categories, reviews (graceful degradation)
+- **Image Optimization**: Native lazy loading with responsive sizing
+  - `loading="lazy"` attribute on all broker/prop firm logos and article thumbnails
+  - Intrinsic width/height dimensions prevent CLS (Cumulative Layout Shift)
+  - Improves LCP (Largest Contentful Paint) and initial page load performance
+  - Components: BrokerCard, BrokerCardEnhanced, FeaturedBroker, InlineBrokerCard, ArticleCard
