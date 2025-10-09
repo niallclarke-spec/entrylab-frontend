@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Star, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { createPortal } from "react-dom";
+// import { createPortal } from "react-dom";
 
 declare global {
   interface Window {
@@ -233,7 +233,18 @@ export function ReviewModalSimple({
       
       {/* Modal Content */}
       <div 
-        className="relative z-[10000] w-full max-w-[500px] bg-card rounded-lg shadow-2xl p-6 max-h-[90vh] overflow-y-auto border border-border"
+        style={{
+          position: 'relative',
+          zIndex: 10000,
+          width: '100%',
+          maxWidth: '500px',
+          backgroundColor: '#ff0000',
+          border: '10px solid #ffff00',
+          borderRadius: '8px',
+          padding: '1.5rem',
+          maxHeight: '90vh',
+          overflowY: 'auto'
+        }}
         data-testid="dialog-review"
         onClick={(e) => e.stopPropagation()}
       >
@@ -433,5 +444,5 @@ export function ReviewModalSimple({
     </div>
   );
 
-  return createPortal(modalContent, document.body);
+  return modalContent;
 }
