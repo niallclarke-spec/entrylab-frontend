@@ -234,7 +234,7 @@ export default function Article() {
     const contentWithAffiliateLinks = addAffiliateLinks(content);
     
     if (!broker) {
-      return <div dangerouslySetInnerHTML={{ __html: contentWithAffiliateLinks }} className="prose prose-lg max-w-none dark:prose-invert" />;
+      return <div dangerouslySetInnerHTML={{ __html: contentWithAffiliateLinks }} className="prose prose-slate dark:prose-invert max-w-none" />;
     }
 
     const parser = new DOMParser();
@@ -244,7 +244,7 @@ export default function Article() {
     if (allElements.length < 3) {
       return (
         <>
-          <div dangerouslySetInnerHTML={{ __html: content }} className="prose prose-lg max-w-none dark:prose-invert" />
+          <div dangerouslySetInnerHTML={{ __html: content }} className="prose prose-slate dark:prose-invert max-w-none" />
           <InlineBrokerCard broker={broker} />
         </>
       );
@@ -283,12 +283,12 @@ export default function Article() {
       <>
         <div 
           dangerouslySetInnerHTML={{ __html: beforeBroker.map(el => el.outerHTML).join('') }} 
-          className="prose prose-lg max-w-none dark:prose-invert" 
+          className="prose prose-slate dark:prose-invert max-w-none" 
         />
         <InlineBrokerCard broker={broker} />
         <div 
           dangerouslySetInnerHTML={{ __html: afterBroker.map(el => el.outerHTML).join('') }} 
-          className="prose prose-lg max-w-none dark:prose-invert" 
+          className="prose prose-slate dark:prose-invert max-w-none" 
         />
       </>
     );
@@ -383,7 +383,7 @@ export default function Article() {
                     </Badge>
                   </div>
                   
-                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight mb-6" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
+                  <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight mb-6" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
                   
                   <div className="flex items-center justify-between flex-wrap gap-4 pt-4 border-t bg-muted/60 -mx-6 md:-mx-8 px-6 md:px-8 pb-4 -mb-6 md:-mb-8 rounded-b-xl">
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -486,7 +486,7 @@ export default function Article() {
                       <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
                         <Award className="h-4 w-4 text-primary" />
                       </div>
-                      <h3 className="text-xl font-bold text-foreground">Top Rated Brokers</h3>
+                      <h3 className="text-2xl font-bold text-foreground">Top Rated Brokers</h3>
                     </div>
                     <div className="space-y-4">
                       {popularBrokers.map((broker) => (
