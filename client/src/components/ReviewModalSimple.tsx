@@ -61,9 +61,6 @@ export function ReviewModalSimple({
     
     console.log("Modal opened - simple version", { brokerName, brokerId });
     
-    // Lock body scroll when modal is open
-    document.body.style.overflow = 'hidden';
-    
     // Load reCAPTCHA script if key is available
     if (hasRecaptchaKey && !window.grecaptcha) {
       const script = document.createElement("script");
@@ -75,11 +72,6 @@ export function ReviewModalSimple({
     } else if (window.grecaptcha) {
       setRecaptchaLoaded(true);
     }
-    
-    // Cleanup: restore body scroll
-    return () => {
-      document.body.style.overflow = '';
-    };
   }, [isOpen, hasRecaptchaKey, brokerName, brokerId]);
 
   useEffect(() => {
@@ -191,7 +183,18 @@ export function ReviewModalSimple({
 
   const modalContent = (
     <div 
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem'
+      }}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           console.log("Closing modal from overlay click");
@@ -201,7 +204,16 @@ export function ReviewModalSimple({
       data-testid="modal-overlay"
     >
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black/80" />
+      <div 
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)'
+        }}
+      />
       
       {/* Modal Content */}
       <div 
