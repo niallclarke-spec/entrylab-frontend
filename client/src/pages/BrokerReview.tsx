@@ -707,13 +707,19 @@ export default function BrokerReview() {
       {broker && (
         <ReviewModal
           isOpen={isReviewModalOpen}
-          onClose={() => setIsReviewModalOpen(false)}
+          onClose={() => {
+            console.log("Closing review modal");
+            setIsReviewModalOpen(false);
+          }}
           brokerName={stripHtml(broker.name)}
           brokerLogo={broker.logo}
           brokerId={broker.id}
           itemType="broker"
         />
       )}
+      
+      {/* Debug: Log when modal should be open */}
+      {isReviewModalOpen && console.log("Modal should be open, broker exists:", !!broker, "broker data:", broker)}
     </div>
   );
 }
