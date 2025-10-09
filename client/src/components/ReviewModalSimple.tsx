@@ -408,7 +408,7 @@ export function ReviewModalSimple({
             </Button>
           )}
         </div>
-      </div>
+        </div>
       </div>
     </>
   );
