@@ -56,7 +56,7 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
                 <span className="text-base font-semibold ml-0.5">{rating}/5</span>
               </div>
 
-              {bonusOffer && (
+              {bonusOffer && bonusOffer.trim() && (
                 <Badge variant="outline" className="mb-4 text-center px-4 py-2 border-dashed border-2" data-testid="badge-bonus">
                   {bonusOffer}
                 </Badge>
