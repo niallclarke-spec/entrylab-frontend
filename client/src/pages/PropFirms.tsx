@@ -94,19 +94,7 @@ export default function PropFirms() {
     : "0.0";
   const totalVerified = propFirms.filter(p => p.verified).length;
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navigation />
-        <div className="flex-1 flex items-center justify-center py-32">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  // Dynamic SEO based on category
+  // Dynamic SEO based on category (must be before early return to avoid hooks issues)
   const pageTitle = urlCategory 
     ? `${urlCategory.name} Prop Firms | EntryLab`
     : "Prop Firm Reviews | EntryLab";
@@ -119,10 +107,23 @@ export default function PropFirms() {
     ? `https://entrylab.io/prop-firms/${urlCategory.slug}`
     : "https://entrylab.io/prop-firms";
 
+  // Track page view (hook must be called before any conditional returns)
   useEffect(() => {
     const path = urlCategory ? `/prop-firms/${urlCategory.slug}` : '/prop-firms';
     trackPageView(path, pageTitle);
   }, [urlCategory, pageTitle]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navigation />
+        <div className="flex-1 flex items-center justify-center py-32">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
