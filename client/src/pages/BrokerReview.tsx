@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, ArrowDownToLine, MessageSquare } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { transformBrokerDetailed } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
 import { ReviewModalSimple as ReviewModal } from "@/components/ReviewModalSimple";
@@ -28,71 +29,7 @@ export default function BrokerReview() {
     enabled: !!wpBroker?.id,
   });
 
-  const transformBroker = (wpBroker: any): Broker | null => {
-    const acf = wpBroker.acf || {};
-    const logo = acf.broker_logo?.url || wpBroker._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
-    const name = wpBroker.title?.rendered;
-    if (!name) return null;
-
-    const isFeatured = acf.is_featured === true || acf.is_featured === "1";
-    
-    // broker_usp = Features Array (used for highlights)
-    const brokerUsp = acf.broker_usp 
-      ? acf.broker_usp.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f)
-      : [];
-    
-    // why_choose = Why Choose section
-    const whyChoose = acf.why_choose 
-      ? acf.why_choose.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f)
-      : [];
-    
-    // pros = Pros text field
-    const prosList = acf.pros 
-      ? acf.pros.split(/[,\n]+/).map((p: string) => p.trim()).filter((p: string) => p)
-      : whyChoose;
-    
-    // cons = Cons text field
-    const consList = acf.cons 
-      ? acf.cons.split(/[,\n]+/).map((c: string) => c.trim()).filter((c: string) => c)
-      : [];
-
-    // Format modified date
-    const modifiedDate = wpBroker.modified ? new Date(wpBroker.modified) : null;
-
-    return {
-      id: wpBroker.id.toString(),
-      slug: wpBroker.slug,
-      name: name,
-      logo: logo || "https://placehold.co/200x80/1a1a1a/8b5cf6?text=" + encodeURIComponent(name),
-      rating: parseFloat(acf.rating) || 4.5,
-      verified: true,
-      featured: isFeatured,
-      tagline: acf.broker_intro || "",
-      bonusOffer: acf.bonus_offer || "",
-      link: acf.affiliate_link || wpBroker.link || "#",
-      pros: prosList,
-      highlights: brokerUsp, // "At a Glance" section
-      features: brokerUsp.map((f: string) => ({ icon: "trending", text: f })),
-      featuredHighlights: brokerUsp,
-      content: acf.review_summary || "", // WYSIWYG review content
-      minDeposit: acf.min_deposit,
-      minWithdrawal: acf.minimum_withdrawal,
-      maxLeverage: acf.max_leverage,
-      spreadFrom: acf.spread_from,
-      regulation: acf.regulation,
-      cons: consList,
-      platforms: acf.trading_platforms, // Updated field name
-      paymentMethods: acf.deposit_methods, // Updated field name
-      headquarters: acf.headquarters, // New field
-      support: acf.support, // Support information field
-      totalUsers: acf.popularity, // New field (popularity -> totalUsers for display)
-      lastUpdated: modifiedDate, // WordPress modified date
-      seoTitle: acf.seo_title, // Custom SEO title (optional)
-      seoDescription: acf.seo_description, // Custom SEO description (optional)
-    };
-  };
-
-  const broker = wpBroker ? transformBroker(wpBroker) : null;
+  const broker = wpBroker ? transformBrokerDetailed(wpBroker) : null;
 
   useEffect(() => {
     if (broker) {
