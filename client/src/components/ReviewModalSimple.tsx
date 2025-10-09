@@ -413,6 +413,25 @@ export function ReviewModalSimple({
     </>
   );
 
-  // Use portal to render at body level, avoiding any parent CSS that breaks fixed positioning
-  return createPortal(modalContent, document.body);
+  // Create a separate div outside React root to avoid ANY CSS interference
+  let modalRoot = document.getElementById('modal-root');
+  if (!modalRoot) {
+    modalRoot = document.createElement('div');
+    modalRoot.id = 'modal-root';
+    modalRoot.style.position = 'fixed';
+    modalRoot.style.top = '0';
+    modalRoot.style.left = '0';
+    modalRoot.style.right = '0';
+    modalRoot.style.bottom = '0';
+    modalRoot.style.zIndex = '999999';
+    modalRoot.style.pointerEvents = 'none';
+    document.body.appendChild(modalRoot);
+  }
+  
+  return createPortal(
+    <div style={{ pointerEvents: 'auto' }}>
+      {modalContent}
+    </div>,
+    modalRoot
+  );
 }
