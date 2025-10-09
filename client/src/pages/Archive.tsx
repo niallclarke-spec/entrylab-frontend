@@ -146,6 +146,7 @@ export default function Archive() {
                   category={getCategoryName(post)}
                   link={`/article/${post.slug}`}
                   imageUrl={getFeaturedImage(post)}
+                  slug={post.slug}
                 />
               ))}
             </div>

@@ -1,11 +1,16 @@
-import { type User, type InsertUser, type Broker } from "@shared/schema";
+import { type User, type InsertUser, type Broker, type ArticleView, articleViews } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq, sql } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   getBrokers(): Promise<Broker[]>;
+  incrementArticleView(slug: string): Promise<number>;
+  getArticleViewCount(slug: string): Promise<number>;
+  getArticleViewCountsBatch(slugs: string[]): Promise<Record<string, number>>;
 }
 
 export class MemStorage implements IStorage {
@@ -92,6 +97,51 @@ export class MemStorage implements IStorage {
 
   async getBrokers(): Promise<Broker[]> {
     return this.brokers;
+  }
+
+  async incrementArticleView(slug: string): Promise<number> {
+    // Try to increment existing record
+    const existing = await db.select().from(articleViews).where(eq(articleViews.articleSlug, slug)).limit(1);
+    
+    if (existing.length > 0) {
+      const updated = await db
+        .update(articleViews)
+        .set({ 
+          viewCount: sql`${articleViews.viewCount} + 1`,
+          lastViewed: new Date()
+        })
+        .where(eq(articleViews.articleSlug, slug))
+        .returning();
+      return updated[0].viewCount;
+    } else {
+      // Create new record
+      const created = await db
+        .insert(articleViews)
+        .values({ articleSlug: slug, viewCount: 1 })
+        .returning();
+      return created[0].viewCount;
+    }
+  }
+
+  async getArticleViewCount(slug: string): Promise<number> {
+    const result = await db.select().from(articleViews).where(eq(articleViews.articleSlug, slug)).limit(1);
+    return result.length > 0 ? result[0].viewCount : 0;
+  }
+
+  async getArticleViewCountsBatch(slugs: string[]): Promise<Record<string, number>> {
+    if (slugs.length === 0) return {};
+    
+    const results = await db
+      .select()
+      .from(articleViews)
+      .where(sql`${articleViews.articleSlug} = ANY(${slugs})`);
+    
+    const viewCounts: Record<string, number> = {};
+    results.forEach(result => {
+      viewCounts[result.articleSlug] = result.viewCount;
+    });
+    
+    return viewCounts;
   }
 }
 
