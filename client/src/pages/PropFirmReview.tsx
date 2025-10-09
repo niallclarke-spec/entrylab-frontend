@@ -700,14 +700,16 @@ export default function PropFirmReview() {
 
       <Footer />
       
-      <ReviewModal
-        isOpen={isReviewModalOpen}
-        onClose={() => setIsReviewModalOpen(false)}
-        brokerName={stripHtml(propFirm.name)}
-        brokerLogo={propFirm.logo}
-        brokerId={propFirm.id}
-        itemType="prop-firm"
-      />
+      {propFirm && (
+        <ReviewModal
+          isOpen={isReviewModalOpen}
+          onClose={() => setIsReviewModalOpen(false)}
+          brokerName={stripHtml(propFirm.name)}
+          brokerLogo={propFirm.logo}
+          brokerId={propFirm.id}
+          itemType="prop-firm"
+        />
+      )}
     </div>
   );
 }

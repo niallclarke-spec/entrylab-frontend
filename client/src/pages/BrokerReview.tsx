@@ -704,14 +704,16 @@ export default function BrokerReview() {
 
       <Footer />
       
-      <ReviewModal
-        isOpen={isReviewModalOpen}
-        onClose={() => setIsReviewModalOpen(false)}
-        brokerName={stripHtml(broker.name)}
-        brokerLogo={broker.logo}
-        brokerId={broker.id}
-        itemType="broker"
-      />
+      {broker && (
+        <ReviewModal
+          isOpen={isReviewModalOpen}
+          onClose={() => setIsReviewModalOpen(false)}
+          brokerName={stripHtml(broker.name)}
+          brokerLogo={broker.logo}
+          brokerId={broker.id}
+          itemType="broker"
+        />
+      )}
     </div>
   );
 }
