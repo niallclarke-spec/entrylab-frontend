@@ -200,19 +200,19 @@ export function ReviewModalSimple({
       {/* Modal Box */}
       <div 
         style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          zIndex: 9999,
-          width: '90vw',
-          maxWidth: '500px',
+          position: 'fixed !important' as any,
+          top: '5vh !important' as any,
+          left: '50% !important' as any,
+          marginLeft: '-250px !important' as any,
+          zIndex: 999999,
+          width: '500px',
           maxHeight: '90vh',
           backgroundColor: '#ff0000',
           border: '10px solid #ffff00',
           borderRadius: '8px',
           padding: '1.5rem',
-          overflowY: 'auto'
+          overflowY: 'auto',
+          boxShadow: '0 0 100px rgba(255, 255, 0, 0.8)'
         }}
         data-testid="dialog-review"
         onClick={(e) => e.stopPropagation()}
