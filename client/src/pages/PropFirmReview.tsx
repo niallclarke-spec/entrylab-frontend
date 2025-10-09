@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, MessageSquare } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { transformPropFirmDetailed } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
 import { ReviewModalSimple as ReviewModal } from "@/components/ReviewModalSimple";
@@ -28,70 +29,7 @@ export default function PropFirmReview() {
     enabled: !!wpPropFirm?.id,
   });
 
-  const transformPropFirm = (wpPropFirm: any): Broker | null => {
-    const acf = wpPropFirm.acf || {};
-    const logo = acf.prop_firm_logo?.url || wpPropFirm._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
-    const name = wpPropFirm.title?.rendered;
-    if (!name) return null;
-
-    const isFeatured = acf.is_featured === true || acf.is_featured === "1";
-    const keyFeatures = acf.prop_firm_usp 
-      ? acf.prop_firm_usp.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f).slice(0, 4)
-      : [];
-    const prosText = acf.pros 
-      ? acf.pros.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f)
-      : keyFeatures;
-    const consList = acf.cons 
-      ? acf.cons.split(/[,\n]+/).map((c: string) => c.trim()).filter((c: string) => c)
-      : [];
-    const awardsList = acf.awards 
-      ? acf.awards.split(/[,\n]+/).map((a: string) => a.trim()).filter((a: string) => a)
-      : [];
-
-    // Format modified date
-    const modifiedDate = wpPropFirm.modified ? new Date(wpPropFirm.modified) : null;
-
-    return {
-      id: wpPropFirm.id.toString(),
-      slug: wpPropFirm.slug,
-      name: name,
-      logo: logo || "https://placehold.co/200x80/1a1a1a/8b5cf6?text=" + encodeURIComponent(name),
-      rating: parseFloat(acf.rating) || 4.5,
-      verified: true,
-      featured: isFeatured,
-      tagline: acf.prop_firm_usp ? acf.prop_firm_usp.split(/[,\n]+/)[0] : "Trusted prop trading firm",
-      bonusOffer: acf.discount_code || "Get Funded Today",
-      link: acf.affiliate_link || wpPropFirm.link || "#",
-      pros: prosText.slice(0, 3),
-      highlights: prosText,
-      features: keyFeatures.map((f: string) => ({ icon: "trending", text: f })),
-      featuredHighlights: keyFeatures,
-      content: wpPropFirm.content?.rendered || "",
-      minDeposit: acf.min_deposit,
-      maxLeverage: acf.max_leverage,
-      spreadFrom: acf.spread_from,
-      regulation: acf.regulation,
-      instrumentsCount: acf.instruments_count,
-      supportHours: acf.support_hours,
-      cons: consList,
-      bestFor: acf.best_for,
-      platforms: acf.platforms,
-      accountTypes: acf.account_types,
-      paymentMethods: acf.payment_methods,
-      yearFounded: acf.year_founded,
-      headquarters: acf.headquarters,
-      regulationDetails: acf.regulation_details,
-      withdrawalTime: acf.withdrawal_time,
-      trustScore: acf.trust_score ? parseInt(acf.trust_score) : undefined,
-      totalUsers: acf.popularity,
-      awards: awardsList,
-      lastUpdated: modifiedDate,
-      seoTitle: acf.seo_title,
-      seoDescription: acf.seo_description,
-    };
-  };
-
-  const propFirm = wpPropFirm ? transformPropFirm(wpPropFirm) : null;
+  const propFirm = wpPropFirm ? transformPropFirmDetailed(wpPropFirm) : null;
 
   useEffect(() => {
     if (propFirm) {

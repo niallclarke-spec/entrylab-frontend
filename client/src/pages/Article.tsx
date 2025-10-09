@@ -11,6 +11,7 @@ import { NewsletterCTA } from "@/components/NewsletterCTA";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Clock, User, Share2, BookOpen, TrendingUp, Building2, BarChart3, AlertCircle, ShieldCheck, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { transformBroker } from "@/lib/transforms";
 import type { WordPressPost, Broker } from "@shared/schema";
 import { trackPageView, trackArticleView } from "@/lib/gtm";
 
@@ -34,38 +35,6 @@ export default function Article() {
   const { data: posts } = useQuery<WordPressPost[]>({
     queryKey: ["/api/wordpress/posts"],
   });
-
-  const transformBroker = (wpBroker: any): Broker | null => {
-    const acf = wpBroker.acf || {};
-    const logo = acf.broker_logo?.url || wpBroker._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
-    const name = wpBroker.title?.rendered;
-    if (!name) return null;
-
-    const isFeatured = acf.is_featured === true || acf.is_featured === "1";
-    const keyFeatures = acf.broker_usp 
-      ? acf.broker_usp.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f).slice(0, 4)
-      : ["Ultra-low spreads", "Fast execution", "Regulated broker", "24/7 support"];
-    const whyChoose = acf.why_choose 
-      ? acf.why_choose.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f)
-      : keyFeatures;
-
-    return {
-      id: wpBroker.id.toString(),
-      name: name,
-      logo: logo || "https://placehold.co/200x80/1a1a1a/8b5cf6?text=" + encodeURIComponent(name),
-      rating: parseFloat(acf.rating) || 4.5,
-      verified: true,
-      featured: isFeatured,
-      tagline: acf.broker_intro || "Trusted forex broker",
-      bonusOffer: acf.bonus_offer,
-      link: acf.affiliate_link || wpBroker.link || "#",
-      reviewLink: wpBroker.slug ? `/broker/${wpBroker.slug}` : undefined,
-      pros: whyChoose.slice(0, 3),
-      highlights: whyChoose,
-      features: keyFeatures.map((f: string) => ({ icon: "trending", text: f })),
-      featuredHighlights: keyFeatures,
-    };
-  };
 
   const stripHtml = (html: string) => {
     const div = document.createElement("div");

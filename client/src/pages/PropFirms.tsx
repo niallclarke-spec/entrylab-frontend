@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { useParams, useLocation } from "wouter";
 import { trackPageView, trackCategoryFilter } from "@/lib/gtm";
+import { transformPropFirm } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 
 interface PropFirmCategory {
@@ -36,42 +37,6 @@ export default function PropFirms() {
     : null;
   
   const selectedCategory = urlCategory?.id || null;
-
-  const transformPropFirm = (wpPropFirm: any): (Broker & { categoryIds: number[] }) | null => {
-    const acf = wpPropFirm.acf || {};
-    const logo = acf.prop_firm_logo?.url || wpPropFirm._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
-    const name = wpPropFirm.title?.rendered;
-    if (!name) return null;
-
-    const isFeatured = acf.is_featured === true || acf.is_featured === "1";
-    const keyFeatures = acf.prop_firm_usp 
-      ? acf.prop_firm_usp.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f).slice(0, 4)
-      : ["Funded accounts up to $200K", "Profit split 80/20", "Quick evaluation", "Professional support"];
-    const prosText = acf.pros 
-      ? acf.pros.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f)
-      : keyFeatures;
-
-    // Extract category IDs from WordPress taxonomy data (uses dashes, not underscores)
-    const categoryIds = wpPropFirm["prop-firm-category"] || [];
-
-    return {
-      id: wpPropFirm.id.toString(),
-      slug: wpPropFirm.slug,
-      name: name,
-      logo: logo || "https://placehold.co/200x80/1a1a1a/8b5cf6?text=" + encodeURIComponent(name),
-      rating: parseFloat(acf.rating) || 4.5,
-      verified: true,
-      featured: isFeatured,
-      tagline: acf.prop_firm_usp ? acf.prop_firm_usp.split(/[,\n]+/)[0] : "Trusted prop trading firm",
-      bonusOffer: acf.discount_code || "Get Funded Today",
-      link: acf.affiliate_link || wpPropFirm.link || "#",
-      pros: prosText.slice(0, 3),
-      highlights: prosText,
-      features: keyFeatures.map((f: string) => ({ icon: "trending", text: f })),
-      featuredHighlights: keyFeatures,
-      categoryIds,
-    };
-  };
 
   const propFirms = wordpressPropFirms?.map(transformPropFirm).filter((p): p is (Broker & { categoryIds: number[] }) => p !== null) || [];
   

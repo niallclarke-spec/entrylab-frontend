@@ -10,6 +10,7 @@ import { ArticleCard } from "@/components/ArticleCard";
 import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { NewsletterCTA } from "@/components/NewsletterCTA";
 import { Footer } from "@/components/Footer";
+import { transformBroker } from "@/lib/transforms";
 import type { WordPressPost, Broker } from "@shared/schema";
 import { Loader2 } from "lucide-react";
 import { trackPageView } from "@/lib/gtm";
@@ -53,54 +54,6 @@ export default function Home() {
   const { data: fallbackBrokers } = useQuery<Broker[]>({
     queryKey: ["/api/brokers"],
   });
-
-  const transformBroker = (wpBroker: any): Broker | null => {
-    const acf = wpBroker.acf || {};
-    const logo = acf.broker_logo?.url || wpBroker._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
-    
-    const name = wpBroker.title?.rendered;
-    if (!name) return null;
-    
-    // Check if broker is marked as featured (via ACF checkbox)
-    const isFeatured = acf.is_featured === true || acf.is_featured === "1";
-    
-    // Key features for the 4 feature cards (from broker_usp)
-    // Handle both comma-separated and newline-separated
-    const keyFeatures = acf.broker_usp 
-      ? acf.broker_usp.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f).slice(0, 4)
-      : [
-        "Ultra-low spreads",
-        "Fast execution",
-        "Regulated broker",
-        "24/7 support"
-      ];
-    
-    // Why choose reasons (from why_choose)
-    // Handle both comma-separated and newline-separated
-    const whyChoose = acf.why_choose 
-      ? acf.why_choose.split(/[,\n]+/).map((f: string) => f.trim()).filter((f: string) => f)
-      : keyFeatures;
-    
-    return {
-      id: wpBroker.id.toString(),
-      name: name,
-      logo: logo || "https://placehold.co/200x80/1a1a1a/8b5cf6?text=" + encodeURIComponent(name),
-      rating: parseFloat(acf.rating) || 4.5,
-      verified: true,
-      featured: isFeatured,
-      tagline: acf.broker_intro || "Trusted forex broker",
-      bonusOffer: acf.bonus_offer,
-      link: acf.affiliate_link || wpBroker.link || "#",
-      reviewLink: wpBroker.slug ? `/broker/${wpBroker.slug}` : undefined,
-      pros: whyChoose.slice(0, 3),
-      highlights: whyChoose,
-      features: keyFeatures.map((f: string) => ({ icon: "trending", text: f })),
-      featuredHighlights: keyFeatures,
-      minDeposit: acf.min_deposit,
-      headquarters: acf.headquarters,
-      totalUsers: acf.popularity,
-    };
-  };
 
   const wpBrokers = wordpressBrokers?.map(transformBroker).filter((b): b is Broker => b !== null) || [];
   const brokers = wpBrokers.length > 0 ? wpBrokers : (fallbackBrokers || []);
