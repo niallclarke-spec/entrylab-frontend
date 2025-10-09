@@ -7,7 +7,7 @@ import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, ArrowDownToLine, MessageSquare } from "lucide-react";
+import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, ArrowDownToLine, MessageSquare, Monitor } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { transformBrokerDetailed } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
@@ -223,6 +223,19 @@ export default function BrokerReview() {
       <div className="border-b bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {/* Always show Regulation - with fallback */}
+            <div className="text-center" data-testid="stat-regulation">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mx-auto mb-2">
+                <Shield className="h-6 w-6 text-emerald-500" />
+              </div>
+              <div className="font-bold text-foreground truncate px-2">
+                {broker.regulation && broker.regulation.trim() && broker.regulation.toLowerCase() !== 'none' && broker.regulation.toLowerCase() !== 'no regulation' 
+                  ? broker.regulation.split(',')[0] 
+                  : 'No Regulation'}
+              </div>
+              <div className="text-xs text-muted-foreground">Regulation</div>
+            </div>
+            
             {/* Always show Min Deposit */}
             {broker.minDeposit && (
               <div className="text-center" data-testid="stat-min-deposit">
@@ -231,6 +244,28 @@ export default function BrokerReview() {
                 </div>
                 <div className="font-bold text-foreground">{broker.minDeposit}</div>
                 <div className="text-xs text-muted-foreground">Min Deposit</div>
+              </div>
+            )}
+            
+            {/* Always show Minimum Withdrawal */}
+            {broker.minWithdrawal && (
+              <div className="text-center" data-testid="stat-min-withdrawal">
+                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-500/10 mx-auto mb-2">
+                  <ArrowDownToLine className="h-6 w-6 text-blue-500" />
+                </div>
+                <div className="font-bold text-foreground">{broker.minWithdrawal}</div>
+                <div className="text-xs text-muted-foreground">Min Withdrawal</div>
+              </div>
+            )}
+            
+            {/* Always show Trading Platforms */}
+            {broker.platforms && (
+              <div className="text-center" data-testid="stat-platforms">
+                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-purple-500/10 mx-auto mb-2">
+                  <Monitor className="h-6 w-6 text-purple-500" />
+                </div>
+                <div className="font-bold text-foreground truncate px-2">{broker.platforms.split(',')[0]}{broker.platforms.includes(',') ? '+' : ''}</div>
+                <div className="text-xs text-muted-foreground">Trading Platforms</div>
               </div>
             )}
             
@@ -253,38 +288,6 @@ export default function BrokerReview() {
                 </div>
                 <div className="font-bold text-foreground truncate px-2">{broker.paymentMethods.split(',')[0]}{broker.paymentMethods.includes(',') ? '+' : ''}</div>
                 <div className="text-xs text-muted-foreground">Deposit Methods</div>
-              </div>
-            )}
-            
-            {/* Only show Regulation if broker is regulated */}
-            {broker.regulation && broker.regulation.trim() && broker.regulation.toLowerCase() !== 'none' && broker.regulation.toLowerCase() !== 'no regulation' && (
-              <div className="text-center" data-testid="stat-regulation">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mx-auto mb-2">
-                  <Shield className="h-6 w-6 text-emerald-500" />
-                </div>
-                <div className="font-bold text-foreground truncate px-2">{broker.regulation.split(',')[0]}</div>
-                <div className="text-xs text-muted-foreground">Regulation</div>
-              </div>
-            )}
-            
-            {/* Show other stats only if broker is regulated */}
-            {broker.regulation && broker.regulation.trim() && broker.regulation.toLowerCase() !== 'none' && broker.regulation.toLowerCase() !== 'no regulation' && broker.spreadFrom && (
-              <div className="text-center" data-testid="stat-spread">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-500/10 mx-auto mb-2">
-                  <Activity className="h-6 w-6 text-blue-500" />
-                </div>
-                <div className="font-bold text-foreground">{broker.spreadFrom}</div>
-                <div className="text-xs text-muted-foreground">Spread From</div>
-              </div>
-            )}
-            
-            {broker.regulation && broker.regulation.trim() && broker.regulation.toLowerCase() !== 'none' && broker.regulation.toLowerCase() !== 'no regulation' && broker.supportHours && (
-              <div className="text-center" data-testid="stat-support">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
-                  <Headphones className="h-6 w-6 text-primary" />
-                </div>
-                <div className="font-bold text-foreground">{broker.supportHours}</div>
-                <div className="text-xs text-muted-foreground">Support</div>
               </div>
             )}
           </div>
