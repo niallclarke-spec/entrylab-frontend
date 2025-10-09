@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Star, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-// import { createPortal } from "react-dom";
+import { createPortal } from "react-dom";
 
 declare global {
   interface Window {
@@ -444,5 +444,6 @@ export function ReviewModalSimple({
     </div>
   );
 
-  return modalContent;
+  // Use portal to render at body level, avoiding any parent CSS that breaks fixed positioning
+  return createPortal(modalContent, document.body);
 }
