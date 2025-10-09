@@ -69,23 +69,24 @@ function fetchWordPress(url: string, options: { method?: string; body?: any } = 
 // Helper function to verify reCAPTCHA token
 async function verifyRecaptcha(token: string): Promise<boolean> {
   const secretKey = process.env.RECAPTCHA_SECRET_KEY;
-  const isDevelopment = process.env.NODE_ENV === 'development';
+  const isProduction = process.env.NODE_ENV === 'production';
   
-  // In development mode, skip reCAPTCHA verification
-  if (isDevelopment) {
-    console.log('[reCAPTCHA] Development mode - skipping verification');
+  // Skip reCAPTCHA verification in development/Replit environment
+  // Only enforce in production
+  if (!isProduction) {
+    console.log('[reCAPTCHA] Development/Replit mode - skipping verification');
     return true;
   }
   
-  // In production without reCAPTCHA configured, reject
+  // Production mode - enforce reCAPTCHA
   if (!secretKey) {
     console.error('RECAPTCHA_SECRET_KEY not configured in production');
     return false;
   }
 
-  // If no token provided but secret exists, reject (user didn't complete reCAPTCHA)
+  // If no token provided in production, reject
   if (!token || token.trim() === '') {
-    console.warn('No reCAPTCHA token provided');
+    console.warn('No reCAPTCHA token provided in production');
     return false;
   }
 
