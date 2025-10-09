@@ -69,11 +69,18 @@ function fetchWordPress(url: string, options: { method?: string; body?: any } = 
 // Helper function to verify reCAPTCHA token
 async function verifyRecaptcha(token: string): Promise<boolean> {
   const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+  const isDevelopment = process.env.NODE_ENV === 'development';
   
-  // In development/local without reCAPTCHA configured, skip verification
+  // In development mode, skip reCAPTCHA verification
+  if (isDevelopment) {
+    console.log('[reCAPTCHA] Development mode - skipping verification');
+    return true;
+  }
+  
+  // In production without reCAPTCHA configured, reject
   if (!secretKey) {
-    console.warn('RECAPTCHA_SECRET_KEY not configured - skipping verification (dev mode)');
-    return true; // Allow submission in development
+    console.error('RECAPTCHA_SECRET_KEY not configured in production');
+    return false;
   }
 
   // If no token provided but secret exists, reject (user didn't complete reCAPTCHA)

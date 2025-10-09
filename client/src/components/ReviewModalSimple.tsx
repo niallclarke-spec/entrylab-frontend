@@ -375,11 +375,6 @@ export function ReviewModalSimple({
                   ✓ Your email stays private
                 </p>
               </div>
-              {hasRecaptchaKey && (
-                <div className="flex justify-center">
-                  <div ref={recaptchaRef} data-testid="recaptcha-widget"></div>
-                </div>
-              )}
             </div>
           )}
         </div>
