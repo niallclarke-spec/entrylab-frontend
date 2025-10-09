@@ -37,7 +37,7 @@ export function InlineBrokerCard({ broker }: InlineBrokerCardProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {broker.bonusOffer && (
+        {broker.bonusOffer && broker.bonusOffer.trim() && (
           <div className="p-3 rounded-lg bg-amber-500/10 border border-dashed border-amber-500/50">
             <p className="text-sm font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
