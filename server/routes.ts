@@ -76,6 +76,12 @@ async function verifyRecaptcha(token: string): Promise<boolean> {
     return true; // Allow submission in development
   }
 
+  // If no token provided but secret exists, reject (user didn't complete reCAPTCHA)
+  if (!token || token.trim() === '') {
+    console.warn('No reCAPTCHA token provided');
+    return false;
+  }
+
   try {
     const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
       method: 'POST',
