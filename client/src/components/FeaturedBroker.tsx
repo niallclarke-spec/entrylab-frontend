@@ -41,7 +41,7 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
             {/* Left Side - Broker Info */}
             <div className="bg-gradient-to-br from-primary/20 to-primary/5 p-8 flex flex-col items-center justify-center border-r">
               <div className="w-40 h-40 bg-white dark:bg-card rounded-2xl flex items-center justify-center mb-4 shadow-md p-6" style={{ border: '0.5px solid rgba(128, 128, 128, 0.15)' }}>
-                <img src={logo} alt={name} className="w-full h-full object-contain rounded-lg" data-testid="img-featured-logo" />
+                <img src={logo} alt={name} loading="lazy" width="160" height="160" className="w-full h-full object-contain rounded-lg" data-testid="img-featured-logo" />
               </div>
               <h3 className="text-2xl font-bold text-foreground mb-2 text-center" data-testid="text-featured-name">{name}</h3>
               <p className="text-muted-foreground text-center mb-4">{tagline}</p>

@@ -38,6 +38,9 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
             <img
               src={imageUrl}
               alt={title}
+              loading="lazy"
+              width="400"
+              height="160"
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               data-testid="img-article-thumbnail"
             />

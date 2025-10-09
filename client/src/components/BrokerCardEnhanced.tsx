@@ -45,7 +45,7 @@ export function BrokerCardEnhanced({
         <div className="flex items-start justify-between gap-2 sm:gap-3">
           <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
             <div className="w-20 sm:w-28 h-20 sm:h-28 rounded-xl bg-white dark:bg-card flex items-center justify-center shadow-sm p-3 sm:p-4 flex-shrink-0" style={{ border: '0.5px solid rgba(128, 128, 128, 0.15)' }}>
-              <img src={logo} alt={name} className="w-full h-full object-contain rounded-md" data-testid="img-broker-logo" />
+              <img src={logo} alt={name} loading="lazy" width="112" height="112" className="w-full h-full object-contain rounded-md" data-testid="img-broker-logo" />
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="text-base md:text-lg font-bold text-foreground break-words leading-tight" data-testid="text-broker-name">{name}</h3>
