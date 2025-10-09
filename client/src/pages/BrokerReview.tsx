@@ -583,7 +583,7 @@ export default function BrokerReview() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2" data-testid="text-reviews-title">
-                User Reviews
+                {stripHtml(broker.name)} Reviews
               </h2>
               <p className="text-muted-foreground">
                 Read what traders say about {stripHtml(broker.name)}
