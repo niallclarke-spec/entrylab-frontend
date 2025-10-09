@@ -93,3 +93,11 @@ Preferred communication style: Simple, everyday language.
     - **Unregulated brokers**: Display 3 stat cards with circular icons showing actual values (Min Deposit, Max Leverage, Deposit Methods)
     - Regulation check normalizes: empty/"none"/"no regulation"/"unregulated" → unregulated
     - Larger circular icons (w-14 h-14) for unregulated stat cards vs (w-12 h-12) for regulated benefits
+- **Newsletter CTA Redesign** (October 9, 2025):
+  - **Dark Premium Design**: Updated to match darker, more premium aesthetic with purple primary button
+  - **Simplified Benefits**: Reduced from 4 to 2 focused benefits:
+    - "Breaking news about your favourite brokers and prop firms" (TrendingUp icon, primary color)
+    - "Discounts, competitions and bonuses" (Gift icon, amber color)
+  - **Layout**: Two-column grid with benefits on left, subscription form on right
+  - **Styling**: bg-card/50 form container with rounded-2xl borders, enhanced spacing and typography
+  - **GTM Tracking**: newsletter_signup event fires on successful subscription
