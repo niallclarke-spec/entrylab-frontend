@@ -615,10 +615,10 @@ export default function BrokerReview() {
                   <Card key={review.id} className="p-6 flex flex-col" data-testid={`review-${review.id}`}>
                     <div className="flex items-start gap-3 mb-4">
                       <div 
-                        className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0"
+                        className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0"
                         data-testid={`review-avatar-${review.id}`}
                       >
-                        <span className="text-white font-semibold text-lg">
+                        <span className="text-white font-semibold text-base">
                           {initials}
                         </span>
                       </div>
@@ -633,14 +633,14 @@ export default function BrokerReview() {
                     </div>
                     
                     <div className="flex items-center gap-1 mb-3">
-                      {[...Array(10)].map((_, i) => (
+                      {[...Array(5)].map((_, i) => (
                         <Star 
                           key={i} 
                           className={`h-3 w-3 ${i < (acf.rating || 0) ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/20'}`} 
                         />
                       ))}
                       <span className="text-sm font-semibold ml-1" data-testid={`review-rating-${review.id}`}>
-                        {acf.rating}/10
+                        {acf.rating}/5
                       </span>
                     </div>
                     
