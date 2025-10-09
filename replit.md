@@ -67,3 +67,10 @@ Preferred communication style: Simple, everyday language.
 - **Data Fetching & Forms**: `@tanstack/react-query`, `react-hook-form`, `@hookform/resolvers`, `zod`, `drizzle-zod`.
 - **Development Tools**: `vite`, `@vitejs/plugin-react`, `tsx`, `esbuild`.
 - **Utilities**: `date-fns`, `clsx`/`tailwind-merge`, `cmdk`, `embla-carousel-react`, `nanoid`.
+
+## Development Tools
+
+### Code Quality
+- **Error Handling**: `ErrorBoundary` component catches React errors, prevents white screen
+- **Transform Utilities**: `client/src/lib/transforms.ts` - Shared WordPress data transformation functions
+- **API Error Handling**: `handleWordPressError` helper for consistent 502/504/500 responses
