@@ -344,6 +344,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
 
+      console.log('[Review Submit] Sending to WordPress:', JSON.stringify(reviewData, null, 2));
+
       const result = await fetchWordPress(
         "https://admin.entrylab.io/wp-json/wp/v2/review",
         {
@@ -351,6 +353,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           body: reviewData
         }
       );
+
+      console.log('[Review Submit] WordPress response:', JSON.stringify(result, null, 2));
 
       // If user opted into newsletter, subscribe them
       if (newsletterOptin && email) {

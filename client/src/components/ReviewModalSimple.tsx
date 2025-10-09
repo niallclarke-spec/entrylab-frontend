@@ -46,12 +46,14 @@ export function ReviewModalSimple({
   const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
   const [recaptchaSiteKey, setRecaptchaSiteKey] = useState<string | null>(null);
   
+  // Auto-fill with test data in development
+  const isDev = import.meta.env.DEV;
   const [formData, setFormData] = useState<ReviewFormData>({
-    rating: 0,
-    title: "",
-    reviewText: "",
-    name: "",
-    email: "",
+    rating: isDev ? 5 : 0,
+    title: isDev ? "Excellent trading experience" : "",
+    reviewText: isDev ? "I've been trading with this broker for 6 months and the experience has been fantastic. Fast execution, tight spreads, and excellent customer support. The withdrawal process is smooth and funds arrive within 24 hours. Highly recommend!" : "",
+    name: isDev ? "John Trader" : "",
+    email: isDev ? "test@example.com" : "",
     newsletterOptin: false,
   });
 
