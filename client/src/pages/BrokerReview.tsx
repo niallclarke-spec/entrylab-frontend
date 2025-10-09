@@ -229,7 +229,7 @@ export default function BrokerReview() {
                 <Shield className="h-6 w-6 text-emerald-500" />
               </div>
               <div className="font-bold text-foreground truncate px-2">
-                {broker.regulation && broker.regulation.trim() && broker.regulation.toLowerCase() !== 'none' && broker.regulation.toLowerCase() !== 'no regulation' 
+                {broker.regulation && broker.regulation.trim() && broker.regulation.toLowerCase() !== 'none' && broker.regulation.toLowerCase() !== 'no regulation' && broker.regulation.toLowerCase() !== 'unregulated'
                   ? broker.regulation.split(',')[0] 
                   : 'No Regulation'}
               </div>
@@ -237,59 +237,53 @@ export default function BrokerReview() {
             </div>
             
             {/* Always show Min Deposit */}
-            {broker.minDeposit && (
-              <div className="text-center" data-testid="stat-min-deposit">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
-                  <DollarSign className="h-6 w-6 text-primary" />
-                </div>
-                <div className="font-bold text-foreground">{broker.minDeposit}</div>
-                <div className="text-xs text-muted-foreground">Min Deposit</div>
+            <div className="text-center" data-testid="stat-min-deposit">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
+                <DollarSign className="h-6 w-6 text-primary" />
               </div>
-            )}
+              <div className="font-bold text-foreground">{broker.minDeposit || 'N/A'}</div>
+              <div className="text-xs text-muted-foreground">Min Deposit</div>
+            </div>
             
             {/* Always show Minimum Withdrawal */}
-            {broker.minWithdrawal && (
-              <div className="text-center" data-testid="stat-min-withdrawal">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-500/10 mx-auto mb-2">
-                  <ArrowDownToLine className="h-6 w-6 text-blue-500" />
-                </div>
-                <div className="font-bold text-foreground">{broker.minWithdrawal}</div>
-                <div className="text-xs text-muted-foreground">Min Withdrawal</div>
+            <div className="text-center" data-testid="stat-min-withdrawal">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-500/10 mx-auto mb-2">
+                <ArrowDownToLine className="h-6 w-6 text-blue-500" />
               </div>
-            )}
+              <div className="font-bold text-foreground">{broker.minWithdrawal || 'N/A'}</div>
+              <div className="text-xs text-muted-foreground">Min Withdrawal</div>
+            </div>
             
             {/* Always show Trading Platforms */}
-            {broker.platforms && (
-              <div className="text-center" data-testid="stat-platforms">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-purple-500/10 mx-auto mb-2">
-                  <Monitor className="h-6 w-6 text-purple-500" />
-                </div>
-                <div className="font-bold text-foreground truncate px-2">{broker.platforms.split(',')[0]}{broker.platforms.includes(',') ? '+' : ''}</div>
-                <div className="text-xs text-muted-foreground">Trading Platforms</div>
+            <div className="text-center" data-testid="stat-platforms">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-purple-500/10 mx-auto mb-2">
+                <Monitor className="h-6 w-6 text-purple-500" />
               </div>
-            )}
+              <div className="font-bold text-foreground truncate px-2">
+                {broker.platforms ? (broker.platforms.split(',')[0] + (broker.platforms.includes(',') ? '+' : '')) : 'N/A'}
+              </div>
+              <div className="text-xs text-muted-foreground">Trading Platforms</div>
+            </div>
             
             {/* Always show Max Leverage */}
-            {broker.maxLeverage && (
-              <div className="text-center" data-testid="stat-max-leverage">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-amber-500/10 mx-auto mb-2">
-                  <Zap className="h-6 w-6 text-amber-500" />
-                </div>
-                <div className="font-bold text-foreground">{broker.maxLeverage}</div>
-                <div className="text-xs text-muted-foreground">Max Leverage</div>
+            <div className="text-center" data-testid="stat-max-leverage">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-amber-500/10 mx-auto mb-2">
+                <Zap className="h-6 w-6 text-amber-500" />
               </div>
-            )}
+              <div className="font-bold text-foreground">{broker.maxLeverage || 'N/A'}</div>
+              <div className="text-xs text-muted-foreground">Max Leverage</div>
+            </div>
             
             {/* Always show Deposit Methods */}
-            {broker.paymentMethods && (
-              <div className="text-center" data-testid="stat-payment">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
-                  <CreditCard className="h-6 w-6 text-primary" />
-                </div>
-                <div className="font-bold text-foreground truncate px-2">{broker.paymentMethods.split(',')[0]}{broker.paymentMethods.includes(',') ? '+' : ''}</div>
-                <div className="text-xs text-muted-foreground">Deposit Methods</div>
+            <div className="text-center" data-testid="stat-payment">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
+                <CreditCard className="h-6 w-6 text-primary" />
               </div>
-            )}
+              <div className="font-bold text-foreground truncate px-2">
+                {broker.paymentMethods ? (broker.paymentMethods.split(',')[0] + (broker.paymentMethods.includes(',') ? '+' : '')) : 'N/A'}
+              </div>
+              <div className="text-xs text-muted-foreground">Deposit Methods</div>
+            </div>
           </div>
         </div>
       </div>
@@ -637,9 +631,10 @@ export default function BrokerReview() {
             </p>
           </div>
 
-          <div className={`grid ${broker.regulation && broker.regulation.trim() && broker.regulation.toLowerCase() !== 'none' && broker.regulation.toLowerCase() !== 'no regulation' ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-6 mb-10`}>
-            {/* Only show Regulated badge if broker is actually regulated */}
-            {broker.regulation && broker.regulation.trim() && broker.regulation.toLowerCase() !== 'none' && broker.regulation.toLowerCase() !== 'no regulation' && (
+          {/* Show different content for regulated vs unregulated brokers */}
+          {broker.regulation && broker.regulation.trim() && broker.regulation.toLowerCase() !== 'none' && broker.regulation.toLowerCase() !== 'no regulation' && broker.regulation.toLowerCase() !== 'unregulated' ? (
+            // REGULATED BROKER: Show benefits
+            <div className="grid md:grid-cols-3 gap-6 mb-10">
               <div className="flex flex-col items-center gap-2" data-testid="cta-benefit-1">
                 <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
                   <Shield className="h-6 w-6 text-emerald-500" />
@@ -647,22 +642,49 @@ export default function BrokerReview() {
                 <h3 className="font-semibold text-foreground">Regulated & Safe</h3>
                 <p className="text-sm text-muted-foreground">Your funds are protected</p>
               </div>
-            )}
-            <div className="flex flex-col items-center gap-2" data-testid="cta-benefit-2">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-primary" />
+              <div className="flex flex-col items-center gap-2" data-testid="cta-benefit-2">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <TrendingUp className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground">Competitive Spreads</h3>
+                <p className="text-sm text-muted-foreground">Trade with low costs</p>
               </div>
-              <h3 className="font-semibold text-foreground">Competitive Spreads</h3>
-              <p className="text-sm text-muted-foreground">Trade with low costs</p>
-            </div>
-            <div className="flex flex-col items-center gap-2" data-testid="cta-benefit-3">
-              <div className="w-12 h-12 rounded-full bg-chart-2/10 flex items-center justify-center">
-                <Zap className="h-6 w-6 text-chart-2" />
+              <div className="flex flex-col items-center gap-2" data-testid="cta-benefit-3">
+                <div className="w-12 h-12 rounded-full bg-chart-2/10 flex items-center justify-center">
+                  <Zap className="h-6 w-6 text-chart-2" />
+                </div>
+                <h3 className="font-semibold text-foreground">Fast Execution</h3>
+                <p className="text-sm text-muted-foreground">No slippage, instant trades</p>
               </div>
-              <h3 className="font-semibold text-foreground">Fast Execution</h3>
-              <p className="text-sm text-muted-foreground">No slippage, instant trades</p>
             </div>
-          </div>
+          ) : (
+            // UNREGULATED BROKER: Show actual stats with circular icons
+            <div className="grid md:grid-cols-3 gap-6 mb-10">
+              <div className="flex flex-col items-center gap-2" data-testid="cta-stat-min-deposit">
+                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                  <DollarSign className="h-7 w-7 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground">{broker.minDeposit || 'N/A'}</h3>
+                <p className="text-sm text-muted-foreground">Min Deposit</p>
+              </div>
+              <div className="flex flex-col items-center gap-2" data-testid="cta-stat-max-leverage">
+                <div className="w-14 h-14 rounded-full bg-amber-500/10 flex items-center justify-center">
+                  <Zap className="h-7 w-7 text-amber-500" />
+                </div>
+                <h3 className="font-semibold text-foreground">{broker.maxLeverage || 'N/A'}</h3>
+                <p className="text-sm text-muted-foreground">Max Leverage</p>
+              </div>
+              <div className="flex flex-col items-center gap-2" data-testid="cta-stat-deposit-methods">
+                <div className="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <CreditCard className="h-7 w-7 text-blue-500" />
+                </div>
+                <h3 className="font-semibold text-foreground truncate px-2 max-w-full">
+                  {broker.paymentMethods ? broker.paymentMethods.split(',')[0] + (broker.paymentMethods.includes(',') ? '+' : '') : 'N/A'}
+                </h3>
+                <p className="text-sm text-muted-foreground">Deposit Methods</p>
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
             <Button size="lg" asChild className="min-w-[200px]" data-testid="button-final-cta">

@@ -83,3 +83,13 @@ Preferred communication style: Simple, everyday language.
   - Intrinsic width/height dimensions prevent CLS (Cumulative Layout Shift)
   - Improves LCP (Largest Contentful Paint) and initial page load performance
   - Components: BrokerCard, BrokerCardEnhanced, FeaturedBroker, InlineBrokerCard, ArticleCard
+- **Broker Review Page Enhancements** (October 9, 2025):
+  - **Quick Stats Bar**: Always displays 6 stat tiles (regulation, min deposit, min withdrawal, trading platforms, max leverage, deposit methods)
+    - All tiles render unconditionally with "N/A" fallbacks when data is missing
+    - Regulation tile shows "No Regulation" for empty/null/"none"/"no regulation"/"unregulated" values
+    - Consistent grid layout across all broker pages regardless of data availability
+  - **Final CTA Section**: Conditional rendering based on regulation status
+    - **Regulated brokers**: Display 3 benefit cards with circular icons (Regulated & Safe, Competitive Spreads, Fast Execution)
+    - **Unregulated brokers**: Display 3 stat cards with circular icons showing actual values (Min Deposit, Max Leverage, Deposit Methods)
+    - Regulation check normalizes: empty/"none"/"no regulation"/"unregulated" → unregulated
+    - Larger circular icons (w-14 h-14) for unregulated stat cards vs (w-12 h-12) for regulated benefits
