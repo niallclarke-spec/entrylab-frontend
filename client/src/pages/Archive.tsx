@@ -62,9 +62,20 @@ export default function Archive() {
     }
   }, [searchQuery, filteredPosts.length]);
 
+  // Categories to exclude
+  const excludedCategories = [
+    'trading-alerts',
+    'uncategorized', 
+    'uncategorised',
+    'prop-firm-updates',
+    'broker-closures'
+  ];
+
   const allCategories = [
     { name: "All Posts", slug: "all" },
-    ...(categories || []).map(cat => ({ name: cat.name, slug: cat.slug }))
+    ...(categories || [])
+      .filter(cat => !excludedCategories.includes(cat.slug.toLowerCase()))
+      .map(cat => ({ name: cat.name, slug: cat.slug }))
   ];
 
   return (
