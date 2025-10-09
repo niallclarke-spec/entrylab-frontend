@@ -634,14 +634,17 @@ export default function BrokerReview() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-10">
-            <div className="flex flex-col items-center gap-2" data-testid="cta-benefit-1">
-              <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                <Shield className="h-6 w-6 text-emerald-500" />
+          <div className={`grid ${broker.regulation && broker.regulation.trim() && broker.regulation.toLowerCase() !== 'none' && broker.regulation.toLowerCase() !== 'no regulation' ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-6 mb-10`}>
+            {/* Only show Regulated badge if broker is actually regulated */}
+            {broker.regulation && broker.regulation.trim() && broker.regulation.toLowerCase() !== 'none' && broker.regulation.toLowerCase() !== 'no regulation' && (
+              <div className="flex flex-col items-center gap-2" data-testid="cta-benefit-1">
+                <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                  <Shield className="h-6 w-6 text-emerald-500" />
+                </div>
+                <h3 className="font-semibold text-foreground">Regulated & Safe</h3>
+                <p className="text-sm text-muted-foreground">Your funds are protected</p>
               </div>
-              <h3 className="font-semibold text-foreground">Regulated & Safe</h3>
-              <p className="text-sm text-muted-foreground">Your funds are protected</p>
-            </div>
+            )}
             <div className="flex flex-col items-center gap-2" data-testid="cta-benefit-2">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                 <TrendingUp className="h-6 w-6 text-primary" />
