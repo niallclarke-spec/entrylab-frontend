@@ -1,6 +1,7 @@
-import { TrendingUp, AlertCircle, Building2, BarChart3, FileText } from "lucide-react";
+import { TrendingUp, AlertCircle, Building2, BarChart3, Newspaper, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 
 interface TrendingTopicsProps {
   selectedCategory: string | null;
@@ -19,40 +20,62 @@ export function TrendingTopics({ selectedCategory, onCategorySelect }: TrendingT
     queryKey: ["/api/wordpress/categories"],
   });
 
-  // Icon mapping for different category types
-  const getIconForCategory = (slug: string, index: number) => {
-    const iconMap: Record<string, any> = {
-      "broker": TrendingUp,
-      "closures": AlertCircle,
-      "prop-firm": Building2,
-      "market": BarChart3,
-      "analysis": BarChart3,
-      "trading": AlertCircle,
-      "alerts": AlertCircle,
-      "news": FileText,
-    };
-
-    // Try to match category slug with icon keywords
-    for (const [key, Icon] of Object.entries(iconMap)) {
-      if (slug.toLowerCase().includes(key)) {
-        return Icon;
-      }
+  // Get icon and color for WordPress categories
+  const getIconAndColor = (slug: string, index: number) => {
+    // Check for news/article categories
+    if (slug.toLowerCase().includes('news') || 
+        slug.toLowerCase().includes('article') || 
+        slug.toLowerCase().includes('update')) {
+      return { icon: Newspaper, color: 'text-chart-4' };
     }
 
-    // Default icons rotation if no match
-    const defaultIcons = [TrendingUp, Building2, BarChart3, AlertCircle, FileText];
-    return defaultIcons[index % defaultIcons.length];
+    // Check for broker related
+    if (slug.toLowerCase().includes('broker')) {
+      return { icon: TrendingUp, color: 'text-destructive' };
+    }
+
+    // Check for market/analysis
+    if (slug.toLowerCase().includes('market') || 
+        slug.toLowerCase().includes('analysis')) {
+      return { icon: BarChart3, color: 'text-chart-2' };
+    }
+
+    // Check for trading/alerts
+    if (slug.toLowerCase().includes('trading') || 
+        slug.toLowerCase().includes('alert')) {
+      return { icon: AlertCircle, color: 'text-amber-500' };
+    }
+
+    // Check for prop firm
+    if (slug.toLowerCase().includes('prop')) {
+      return { icon: Building2, color: 'text-primary' };
+    }
+
+    // Default rotation with colors
+    const defaults = [
+      { icon: TrendingUp, color: 'text-destructive' },
+      { icon: Building2, color: 'text-primary' },
+      { icon: BarChart3, color: 'text-chart-2' },
+      { icon: Newspaper, color: 'text-chart-4' },
+    ];
+    return defaults[index % defaults.length];
   };
 
-  // Get top 5 categories by post count
+  // Get top 4 categories (since we're adding one fixed category)
   const topCategories = categories
     ?.filter(cat => cat.count > 0)
     ?.sort((a, b) => b.count - a.count)
-    ?.slice(0, 5) || [];
+    ?.slice(0, 4) || [];
 
-  if (!topCategories.length) {
-    return null;
-  }
+  // First item is always "Verified Prop Firm Review"
+  const fixedTopic = {
+    id: 'prop-firm-reviews',
+    label: 'Verified Prop Firm Reviews',
+    slug: 'prop-firm-reviews',
+    icon: ShieldCheck,
+    color: 'text-emerald-500',
+    link: '/prop-firms'
+  };
 
   return (
     <div className="border-y bg-card/50 backdrop-blur">
@@ -61,8 +84,22 @@ export function TrendingTopics({ selectedCategory, onCategorySelect }: TrendingT
           <span className="text-sm font-semibold text-muted-foreground whitespace-nowrap">
             Trending:
           </span>
+          
+          {/* Fixed first item - Verified Prop Firm Reviews */}
+          <Link href={fixedTopic.link}>
+            <Badge
+              variant="outline"
+              className="gap-2 px-4 py-2 cursor-pointer hover-elevate whitespace-nowrap"
+              data-testid="badge-trending-prop-firm-reviews"
+            >
+              <fixedTopic.icon className={`h-4 w-4 ${fixedTopic.color}`} />
+              {fixedTopic.label}
+            </Badge>
+          </Link>
+
+          {/* WordPress categories */}
           {topCategories.map((category, index) => {
-            const Icon = getIconForCategory(category.slug, index);
+            const { icon: Icon, color } = getIconAndColor(category.slug, index);
             const isSelected = selectedCategory === category.slug;
             return (
               <Badge
@@ -72,7 +109,7 @@ export function TrendingTopics({ selectedCategory, onCategorySelect }: TrendingT
                 onClick={() => onCategorySelect(category.slug)}
                 data-testid={`badge-trending-${category.slug}`}
               >
-                <Icon className={`h-4 w-4 ${isSelected ? '' : 'text-primary'}`} />
+                <Icon className={`h-4 w-4 ${isSelected ? '' : color}`} />
                 {category.name}
               </Badge>
             );
