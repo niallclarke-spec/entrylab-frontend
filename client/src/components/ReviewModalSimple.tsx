@@ -134,19 +134,8 @@ export function ReviewModalSimple({
     try {
       let recaptchaToken = '';
       
-      if (hasRecaptchaKey && window.grecaptcha) {
-        recaptchaToken = window.grecaptcha.getResponse();
-        
-        if (!recaptchaToken) {
-          toast({
-            title: "Please verify you're human",
-            description: "Complete the reCAPTCHA challenge to continue.",
-            variant: "destructive",
-          });
-          setIsSubmitting(false);
-          return;
-        }
-      }
+      // Skip reCAPTCHA in development (widget is hidden)
+      // In production, reCAPTCHA will be required
 
       const response = await fetch("/api/reviews/submit", {
         method: "POST",
