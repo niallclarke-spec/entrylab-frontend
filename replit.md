@@ -107,3 +107,14 @@ Preferred communication style: Simple, everyday language.
   - **Implementation**: Both TrendingTopics component and Archive page filter out non-public categories
   - **Type Safety**: Uses case-insensitive matching without type casts, fully TypeScript compliant
   - **Maintenance**: Single source of truth prevents drift between components
+- **Article View Counter** (October 9, 2025):
+  - **Database**: PostgreSQL `article_views` table with unique slug, view_count, last_viewed columns
+  - **API Endpoints**: POST /api/articles/:slug/view (increment), GET /api/articles/:slug/views (fetch count), POST /api/articles/views/batch (batch fetch)
+  - **Display Logic**: View counts only display when > 10 views (Eye icon + count)
+  - **Real-time Updates**: Mutation invalidates TanStack query on success for immediate UI refresh without reload
+  - **Components**: ArticleCard footer displays count, Article page header shows "{count} views" next to metadata
+  - **Auto-tracking**: Article page automatically increments view count on page load
+- **Article Thumbnail Filters** (October 9, 2025):
+  - **Visual Consistency**: All article thumbnails have subtle gradient overlay (`bg-gradient-to-t from-black/20 to-transparent`)
+  - **Implementation**: Absolute positioned div layer over thumbnail images in ArticleCard component
+  - **Purpose**: Provides consistent premium visual treatment across all article cards
