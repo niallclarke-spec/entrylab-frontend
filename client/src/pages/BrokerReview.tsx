@@ -733,7 +733,7 @@ export default function BrokerReview() {
 
       <Footer />
       
-      {broker && (
+      {broker ? (
         <ReviewModal
           isOpen={isReviewModalOpen}
           onClose={() => {
@@ -745,10 +745,7 @@ export default function BrokerReview() {
           brokerId={broker.id}
           itemType="broker"
         />
-      )}
-      
-      {/* Debug: Log when modal should be open */}
-      {isReviewModalOpen && console.log("Modal should be open, broker exists:", !!broker, "broker data:", broker)}
+      ) : null}
     </div>
   );
 }

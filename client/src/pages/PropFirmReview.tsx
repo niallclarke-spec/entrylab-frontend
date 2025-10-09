@@ -729,7 +729,7 @@ export default function PropFirmReview() {
 
       <Footer />
       
-      {propFirm && (
+      {propFirm ? (
         <ReviewModal
           isOpen={isReviewModalOpen}
           onClose={() => setIsReviewModalOpen(false)}
@@ -738,7 +738,7 @@ export default function PropFirmReview() {
           brokerId={propFirm.id}
           itemType="prop-firm"
         />
-      )}
+      ) : null}
     </div>
   );
 }
