@@ -44,6 +44,7 @@ export function ReviewModalSimple({
   const { toast } = useToast();
   const recaptchaRef = useRef<HTMLDivElement>(null);
   const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
+  const [recaptchaSiteKey, setRecaptchaSiteKey] = useState<string | null>(null);
   
   const [formData, setFormData] = useState<ReviewFormData>({
     rating: 0,
@@ -54,38 +55,46 @@ export function ReviewModalSimple({
     newsletterOptin: false,
   });
 
-  const hasRecaptchaKey = Boolean(import.meta.env.VITE_RECAPTCHA_SITE_KEY);
+  const hasRecaptchaKey = Boolean(recaptchaSiteKey);
 
   useEffect(() => {
     if (!isOpen) return;
     
-    console.log("Modal opened - simple version", { 
-      brokerName, 
-      brokerId, 
-      hasRecaptchaKey,
-      siteKey: import.meta.env.VITE_RECAPTCHA_SITE_KEY 
-    });
+    // Fetch reCAPTCHA site key from backend
+    fetch('/api/recaptcha/site-key')
+      .then(res => res.json())
+      .then(data => {
+        console.log("Modal opened - simple version", { 
+          brokerName, 
+          brokerId, 
+          siteKey: data.siteKey 
+        });
+        setRecaptchaSiteKey(data.siteKey);
+      })
+      .catch(err => {
+        console.error("Failed to fetch reCAPTCHA site key:", err);
+      });
     
-    // Load reCAPTCHA script if key is available
-    if (hasRecaptchaKey && !window.grecaptcha) {
+    // Load reCAPTCHA script
+    if (!window.grecaptcha) {
       const script = document.createElement("script");
       script.src = "https://www.google.com/recaptcha/api.js";
       script.async = true;
       script.defer = true;
       script.onload = () => setRecaptchaLoaded(true);
       document.body.appendChild(script);
-    } else if (window.grecaptcha) {
+    } else {
       setRecaptchaLoaded(true);
     }
-  }, [isOpen, hasRecaptchaKey, brokerName, brokerId]);
+  }, [isOpen, brokerName, brokerId]);
 
   useEffect(() => {
-    if (step === 6 && recaptchaLoaded && hasRecaptchaKey && recaptchaRef.current && !recaptchaRef.current.hasChildNodes()) {
+    if (step === 6 && recaptchaLoaded && hasRecaptchaKey && recaptchaSiteKey && recaptchaRef.current && !recaptchaRef.current.hasChildNodes()) {
       window.grecaptcha.render(recaptchaRef.current, {
-        sitekey: import.meta.env.VITE_RECAPTCHA_SITE_KEY,
+        sitekey: recaptchaSiteKey,
       });
     }
-  }, [step, recaptchaLoaded, hasRecaptchaKey]);
+  }, [step, recaptchaLoaded, hasRecaptchaKey, recaptchaSiteKey]);
 
   const totalSteps = 6;
   const canGoNext = () => {
