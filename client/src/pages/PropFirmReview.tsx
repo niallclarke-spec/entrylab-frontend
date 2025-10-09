@@ -580,8 +580,8 @@ export default function PropFirmReview() {
               </p>
             </div>
             <Button 
-              variant="default" 
               onClick={() => setIsReviewModalOpen(true)}
+              className="bg-emerald-500 hover:bg-emerald-600 text-white"
               data-testid="button-write-review-section"
             >
               <MessageSquare className="mr-2 h-4 w-4" />
