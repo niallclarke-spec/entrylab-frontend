@@ -223,6 +223,7 @@ export default function BrokerReview() {
       <div className="border-b bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {/* Always show Min Deposit */}
             {broker.minDeposit && (
               <div className="text-center" data-testid="stat-min-deposit">
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
@@ -232,6 +233,8 @@ export default function BrokerReview() {
                 <div className="text-xs text-muted-foreground">Min Deposit</div>
               </div>
             )}
+            
+            {/* Always show Max Leverage */}
             {broker.maxLeverage && (
               <div className="text-center" data-testid="stat-max-leverage">
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-amber-500/10 mx-auto mb-2">
@@ -241,7 +244,31 @@ export default function BrokerReview() {
                 <div className="text-xs text-muted-foreground">Max Leverage</div>
               </div>
             )}
-            {broker.spreadFrom && (
+            
+            {/* Always show Deposit Methods */}
+            {broker.paymentMethods && (
+              <div className="text-center" data-testid="stat-payment">
+                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
+                  <CreditCard className="h-6 w-6 text-primary" />
+                </div>
+                <div className="font-bold text-foreground truncate px-2">{broker.paymentMethods.split(',')[0]}{broker.paymentMethods.includes(',') ? '+' : ''}</div>
+                <div className="text-xs text-muted-foreground">Deposit Methods</div>
+              </div>
+            )}
+            
+            {/* Only show Regulation if broker is regulated */}
+            {broker.regulation && broker.regulation.trim() && (
+              <div className="text-center" data-testid="stat-regulation">
+                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mx-auto mb-2">
+                  <Shield className="h-6 w-6 text-emerald-500" />
+                </div>
+                <div className="font-bold text-foreground truncate px-2">{broker.regulation.split(',')[0]}</div>
+                <div className="text-xs text-muted-foreground">Regulation</div>
+              </div>
+            )}
+            
+            {/* Show other stats only if broker is regulated */}
+            {broker.regulation && broker.regulation.trim() && broker.spreadFrom && (
               <div className="text-center" data-testid="stat-spread">
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-500/10 mx-auto mb-2">
                   <Activity className="h-6 w-6 text-blue-500" />
@@ -250,25 +277,8 @@ export default function BrokerReview() {
                 <div className="text-xs text-muted-foreground">Spread From</div>
               </div>
             )}
-            {broker.minWithdrawal && (
-              <div className="text-center" data-testid="stat-min-withdrawal">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mx-auto mb-2">
-                  <ArrowDownToLine className="h-6 w-6 text-emerald-500" />
-                </div>
-                <div className="font-bold text-foreground">{broker.minWithdrawal}</div>
-                <div className="text-xs text-muted-foreground">Min Withdrawal</div>
-              </div>
-            )}
-            {broker.instrumentsCount && (
-              <div className="text-center" data-testid="stat-instruments">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
-                  <Globe className="h-6 w-6 text-primary" />
-                </div>
-                <div className="font-bold text-foreground">{broker.instrumentsCount}</div>
-                <div className="text-xs text-muted-foreground">Instruments</div>
-              </div>
-            )}
-            {broker.supportHours && (
+            
+            {broker.regulation && broker.regulation.trim() && broker.supportHours && (
               <div className="text-center" data-testid="stat-support">
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
                   <Headphones className="h-6 w-6 text-primary" />
