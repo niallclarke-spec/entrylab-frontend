@@ -17,6 +17,11 @@ Preferred communication style: Simple, everyday language.
 - **Typography**: Inter (headlines/body), JetBrains Mono (financial data).
 - **Color Palette**: EntryLab purple, gold for ratings, green/red for market indicators.
 - **Key UI Elements**: Navigation, hero with forex animation, article/broker cards (standard, enhanced, inline), featured broker showcase, market ticker, newsletter CTA, trending topics filter, trust signals, single article template, archive page with search and filtering.
+- **Review System** (October 9, 2025): 6-step review modal for brokers/prop firms with spam protection
+  - **Component**: `ReviewModalSimple.tsx` with separate modal-root container for viewport-fixed positioning
+  - **Steps**: Trading experience → Platform quality → Customer service → Costs → Overall rating → Contact info
+  - **Spam Protection**: Google reCAPTCHA v2 (skipped in development, enforced in production)
+  - **Submission**: Creates WordPress review posts via authenticated REST API
 
 ### Backend
 - **Runtime**: Node.js with Express.js.
@@ -28,7 +33,11 @@ Preferred communication style: Simple, everyday language.
     - `GET /api/wordpress/brokers`, `GET /api/wordpress/broker/:slug`
     - `GET /api/wordpress/prop-firms`, `GET /api/wordpress/prop-firm/:slug`, `GET /api/wordpress/prop-firm-categories`
     - `GET /api/wordpress/trust-signals`
+    - `GET /api/wordpress/reviews/:itemId` - Fetch reviews for a broker/prop firm
+    - `POST /api/reviews/submit` - Submit new user reviews with reCAPTCHA verification
+    - `GET /api/recaptcha/site-key` - Dynamic reCAPTCHA site key retrieval
     - `GET /api/brokers` (legacy in-memory fallback)
+- **Authentication**: WordPress Application Password for REST API write operations (reviews, posts)
 
 ### Data Layer
 - **Database**: Drizzle ORM for PostgreSQL (via `@neondatabase/serverless`).

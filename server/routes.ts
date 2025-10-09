@@ -333,7 +333,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const reviewData = {
         title,
         status: 'pending', // Reviews start as pending for moderation
-        fields: {
+        acf: {
           rating,
           review_title: title,
           review_text: reviewText,
