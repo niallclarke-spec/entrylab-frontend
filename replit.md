@@ -101,3 +101,9 @@ Preferred communication style: Simple, everyday language.
   - **Layout**: Two-column grid with benefits on left, subscription form on right
   - **Styling**: bg-card/50 form container with rounded-2xl borders, enhanced spacing and typography
   - **GTM Tracking**: newsletter_signup event fires on successful subscription
+- **Category Filtering System** (October 9, 2025):
+  - **Centralized Exclusion List**: `client/src/lib/constants.ts` exports `EXCLUDED_CATEGORIES` as readonly string array
+  - **Excluded Categories**: trading-alerts, uncategorized, uncategorised, prop-firm-updates, broker-closures
+  - **Implementation**: Both TrendingTopics component and Archive page filter out non-public categories
+  - **Type Safety**: Uses case-insensitive matching without type casts, fully TypeScript compliant
+  - **Maintenance**: Single source of truth prevents drift between components
