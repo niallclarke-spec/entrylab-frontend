@@ -16,7 +16,7 @@ export function InlineBrokerCard({ broker }: InlineBrokerCardProps) {
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-lg bg-white dark:bg-card flex items-center justify-center shadow-sm p-2 flex-shrink-0" style={{ border: '0.5px solid rgba(128, 128, 128, 0.15)' }}>
-              <img src={broker.logo} alt={broker.name} className="w-full h-full object-contain" />
+              <img src={broker.logo} alt={broker.name} loading="lazy" width="64" height="64" className="w-full h-full object-contain" />
             </div>
             <div>
               <h3 className="text-lg font-bold text-foreground">{broker.name}</h3>
