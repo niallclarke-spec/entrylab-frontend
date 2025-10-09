@@ -4,27 +4,43 @@ import https from "https";
 import { storage } from "./storage";
 
 // Helper function to make WordPress API requests using native https module
-function fetchWordPress(url: string, options: { method?: string; body?: any } = {}): Promise<any> {
+function fetchWordPress(url: string, options: { method?: string; body?: any; requireAuth?: boolean } = {}): Promise<any> {
   return new Promise((resolve, reject) => {
     const urlObj = new URL(url);
     const method = options.method || 'GET';
     const body = options.body ? JSON.stringify(options.body) : undefined;
+    
+    // Build headers object
+    const headers: Record<string, string> = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      'Accept': 'application/json',
+      'Host': urlObj.hostname,
+      'Connection': 'keep-alive',
+    };
+    
+    // Add authentication for POST/PUT/DELETE requests or when explicitly required
+    if (options.requireAuth || method !== 'GET') {
+      const username = process.env.WORDPRESS_USERNAME;
+      const password = process.env.WORDPRESS_PASSWORD;
+      
+      if (username && password) {
+        const credentials = Buffer.from(`${username}:${password}`).toString('base64');
+        headers['Authorization'] = `Basic ${credentials}`;
+      }
+    }
+    
+    // Add content headers if body exists
+    if (body) {
+      headers['Content-Type'] = 'application/json';
+      headers['Content-Length'] = Buffer.byteLength(body).toString();
+    }
     
     const requestOptions = {
       hostname: urlObj.hostname,
       port: 443,
       path: urlObj.pathname + urlObj.search,
       method,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'application/json',
-        'Host': urlObj.hostname,
-        'Connection': 'keep-alive',
-        ...(body && {
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(body),
-        }),
-      },
+      headers,
       servername: urlObj.hostname, // SNI support
       rejectUnauthorized: true,
     };
