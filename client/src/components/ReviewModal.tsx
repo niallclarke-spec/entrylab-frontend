@@ -210,7 +210,11 @@ export function ReviewModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]" data-testid="dialog-review">
+      <DialogContent 
+        className="sm:max-w-[500px]" 
+        style={{ backgroundColor: 'red', border: '5px solid yellow' }}
+        data-testid="dialog-review"
+      >
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <img 
