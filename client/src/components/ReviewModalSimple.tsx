@@ -61,16 +61,6 @@ export function ReviewModalSimple({
     
     console.log("Modal opened - simple version", { brokerName, brokerId });
     
-    // Prevent body scroll when modal is open
-    const originalOverflow = document.body.style.overflow;
-    const originalPaddingRight = document.body.style.paddingRight;
-    
-    // Get scrollbar width to prevent layout shift
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    
-    document.body.style.overflow = 'hidden';
-    document.body.style.paddingRight = `${scrollbarWidth}px`;
-    
     // Load reCAPTCHA script if key is available
     if (hasRecaptchaKey && !window.grecaptcha) {
       const script = document.createElement("script");
@@ -82,12 +72,6 @@ export function ReviewModalSimple({
     } else if (window.grecaptcha) {
       setRecaptchaLoaded(true);
     }
-    
-    // Restore on cleanup
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.style.paddingRight = originalPaddingRight;
-    };
   }, [isOpen, hasRecaptchaKey, brokerName, brokerId]);
 
   useEffect(() => {
