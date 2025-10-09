@@ -61,6 +61,9 @@ export function ReviewModalSimple({
     
     console.log("Modal opened - simple version", { brokerName, brokerId });
     
+    // Lock body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+    
     // Load reCAPTCHA script if key is available
     if (hasRecaptchaKey && !window.grecaptcha) {
       const script = document.createElement("script");
@@ -72,6 +75,11 @@ export function ReviewModalSimple({
     } else if (window.grecaptcha) {
       setRecaptchaLoaded(true);
     }
+    
+    // Cleanup: restore body scroll
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [isOpen, hasRecaptchaKey, brokerName, brokerId]);
 
   useEffect(() => {
