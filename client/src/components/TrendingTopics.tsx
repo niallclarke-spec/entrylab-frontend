@@ -61,9 +61,19 @@ export function TrendingTopics({ selectedCategory, onCategorySelect }: TrendingT
     return defaults[index % defaults.length];
   };
 
+  // Categories to exclude from trending topics
+  const excludedCategories = [
+    'trading-alerts',
+    'uncategorized', 
+    'uncategorised',
+    'prop-firm-updates',
+    'broker-closures'
+  ];
+
   // Get top 4 categories (since we're adding one fixed category)
   const topCategories = categories
     ?.filter(cat => cat.count > 0)
+    ?.filter(cat => !excludedCategories.includes(cat.slug.toLowerCase()))
     ?.sort((a, b) => b.count - a.count)
     ?.slice(0, 4) || [];
 
