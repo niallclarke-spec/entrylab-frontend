@@ -257,7 +257,7 @@ export default function BrokerReview() {
             )}
             
             {/* Only show Regulation if broker is regulated */}
-            {broker.regulation && broker.regulation.trim() && (
+            {broker.regulation && broker.regulation.trim() && broker.regulation.toLowerCase() !== 'none' && broker.regulation.toLowerCase() !== 'no regulation' && (
               <div className="text-center" data-testid="stat-regulation">
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mx-auto mb-2">
                   <Shield className="h-6 w-6 text-emerald-500" />
@@ -268,7 +268,7 @@ export default function BrokerReview() {
             )}
             
             {/* Show other stats only if broker is regulated */}
-            {broker.regulation && broker.regulation.trim() && broker.spreadFrom && (
+            {broker.regulation && broker.regulation.trim() && broker.regulation.toLowerCase() !== 'none' && broker.regulation.toLowerCase() !== 'no regulation' && broker.spreadFrom && (
               <div className="text-center" data-testid="stat-spread">
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-500/10 mx-auto mb-2">
                   <Activity className="h-6 w-6 text-blue-500" />
@@ -278,7 +278,7 @@ export default function BrokerReview() {
               </div>
             )}
             
-            {broker.regulation && broker.regulation.trim() && broker.supportHours && (
+            {broker.regulation && broker.regulation.trim() && broker.regulation.toLowerCase() !== 'none' && broker.regulation.toLowerCase() !== 'no regulation' && broker.supportHours && (
               <div className="text-center" data-testid="stat-support">
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
                   <Headphones className="h-6 w-6 text-primary" />
