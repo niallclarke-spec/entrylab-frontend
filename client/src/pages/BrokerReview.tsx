@@ -662,7 +662,11 @@ export default function BrokerReview() {
               <p className="text-muted-foreground mb-6">
                 Be the first to share your experience with {stripHtml(broker.name)}
               </p>
-              <Button onClick={() => setIsReviewModalOpen(true)} data-testid="button-first-review">
+              <Button 
+                onClick={() => setIsReviewModalOpen(true)} 
+                className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                data-testid="button-first-review"
+              >
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Write the First Review
               </Button>
