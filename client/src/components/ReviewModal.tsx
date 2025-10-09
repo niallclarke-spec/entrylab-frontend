@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState, useEffect, useRef } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,6 +7,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Star, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+
+declare global {
+  interface Window {
+    grecaptcha: any;
+  }
+}
 
 interface ReviewModalProps {
   isOpen: boolean;
@@ -37,6 +43,8 @@ export function ReviewModal({
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const recaptchaRef = useRef<HTMLDivElement>(null);
+  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
   
   const [formData, setFormData] = useState<ReviewFormData>({
     rating: 0,
@@ -48,6 +56,35 @@ export function ReviewModal({
   });
 
   const [hoveredRating, setHoveredRating] = useState(0);
+
+  const hasRecaptchaKey = !!import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+
+  useEffect(() => {
+    // Only load reCAPTCHA script if modal is open and site key is configured
+    if (!isOpen || !hasRecaptchaKey) return;
+    
+    if (!window.grecaptcha) {
+      const script = document.createElement('script');
+      script.src = 'https://www.google.com/recaptcha/api.js';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => setRecaptchaLoaded(true);
+      document.head.appendChild(script);
+    } else {
+      setRecaptchaLoaded(true);
+    }
+  }, [isOpen, hasRecaptchaKey]);
+
+  useEffect(() => {
+    // Render reCAPTCHA when on step 6, script is loaded, and key is available
+    if (!hasRecaptchaKey) return;
+    
+    if (step === 6 && recaptchaLoaded && recaptchaRef.current && !recaptchaRef.current.hasChildNodes()) {
+      window.grecaptcha.render(recaptchaRef.current, {
+        sitekey: import.meta.env.VITE_RECAPTCHA_SITE_KEY,
+      });
+    }
+  }, [step, recaptchaLoaded, hasRecaptchaKey]);
 
   const totalSteps = 6;
   const canGoNext = () => {
@@ -85,6 +122,23 @@ export function ReviewModal({
     setIsSubmitting(true);
     
     try {
+      let recaptchaToken = '';
+      
+      // Only verify reCAPTCHA if it's configured
+      if (hasRecaptchaKey && window.grecaptcha) {
+        recaptchaToken = window.grecaptcha.getResponse();
+        
+        if (!recaptchaToken) {
+          toast({
+            title: "Please verify you're human",
+            description: "Complete the reCAPTCHA challenge to continue.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const response = await fetch("/api/reviews/submit", {
         method: "POST",
         headers: {
@@ -94,6 +148,7 @@ export function ReviewModal({
           ...formData,
           brokerId,
           itemType,
+          recaptchaToken,
         }),
       });
 
@@ -116,6 +171,10 @@ export function ReviewModal({
         email: "",
         newsletterOptin: false,
       });
+      
+      if (window.grecaptcha) {
+        window.grecaptcha.reset();
+      }
     } catch (error) {
       toast({
         title: "Submission Failed",
@@ -162,6 +221,9 @@ export function ReviewModal({
             />
             <DialogTitle data-testid="text-dialog-title">Review {brokerName}</DialogTitle>
           </div>
+          <DialogDescription className="sr-only">
+            Submit your review of {brokerName} in {totalSteps} simple steps
+          </DialogDescription>
           <div className="flex gap-1 mt-2">
             {Array.from({ length: totalSteps }).map((_, i) => (
               <div
@@ -325,6 +387,11 @@ export function ReviewModal({
                       ✓ Your email stays private
                     </p>
                   </div>
+                  {hasRecaptchaKey && (
+                    <div className="flex justify-center">
+                      <div ref={recaptchaRef} data-testid="recaptcha-widget"></div>
+                    </div>
+                  )}
                 </div>
               )}
             </motion.div>

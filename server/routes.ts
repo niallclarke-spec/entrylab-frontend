@@ -4,25 +4,32 @@ import https from "https";
 import { storage } from "./storage";
 
 // Helper function to make WordPress API requests using native https module
-function fetchWordPress(url: string): Promise<any> {
+function fetchWordPress(url: string, options: { method?: string; body?: any } = {}): Promise<any> {
   return new Promise((resolve, reject) => {
     const urlObj = new URL(url);
-    const options = {
+    const method = options.method || 'GET';
+    const body = options.body ? JSON.stringify(options.body) : undefined;
+    
+    const requestOptions = {
       hostname: urlObj.hostname,
       port: 443,
       path: urlObj.pathname + urlObj.search,
-      method: 'GET',
+      method,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Accept': 'application/json',
         'Host': urlObj.hostname,
         'Connection': 'keep-alive',
+        ...(body && {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+        }),
       },
       servername: urlObj.hostname, // SNI support
       rejectUnauthorized: true,
     };
     
-    const req = https.request(options, (res) => {
+    const req = https.request(requestOptions, (res) => {
       let data = '';
       
       res.on('data', (chunk) => {
@@ -51,8 +58,39 @@ function fetchWordPress(url: string): Promise<any> {
       reject(new Error('Request timeout'));
     });
     
+    if (body) {
+      req.write(body);
+    }
+    
     req.end();
   });
+}
+
+// Helper function to verify reCAPTCHA token
+async function verifyRecaptcha(token: string): Promise<boolean> {
+  const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+  
+  // In development/local without reCAPTCHA configured, skip verification
+  if (!secretKey) {
+    console.warn('RECAPTCHA_SECRET_KEY not configured - skipping verification (dev mode)');
+    return true; // Allow submission in development
+  }
+
+  try {
+    const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `secret=${secretKey}&response=${token}`,
+    });
+
+    const data = await response.json();
+    return data.success === true;
+  } catch (error) {
+    console.error('reCAPTCHA verification failed:', error);
+    return false;
+  }
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -213,14 +251,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid email address" });
       }
 
-      // For newsletter, we still need to use fetch for POST with body
       const result = await fetchWordPress(
-        "https://admin.entrylab.io/wp-json/entrylab/v1/newsletter/subscribe"
+        "https://admin.entrylab.io/wp-json/entrylab/v1/newsletter/subscribe",
+        {
+          method: 'POST',
+          body: { email }
+        }
       );
       res.json(result);
     } catch (error) {
       console.error("Error subscribing to newsletter:", error);
       res.status(500).json({ error: "Failed to subscribe" });
+    }
+  });
+
+  app.post("/api/reviews/submit", async (req, res) => {
+    try {
+      const { rating, title, reviewText, name, email, newsletterOptin, brokerId, itemType, recaptchaToken } = req.body;
+      
+      // Verify reCAPTCHA
+      const isValidCaptcha = await verifyRecaptcha(recaptchaToken);
+      if (!isValidCaptcha) {
+        return res.status(400).json({ error: "reCAPTCHA verification failed" });
+      }
+
+      // Validate required fields
+      if (!rating || !title || !reviewText || !name || !email || !brokerId || !itemType) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ error: "Invalid email address" });
+      }
+
+      // Submit review to WordPress
+      const reviewData = {
+        title,
+        status: 'pending', // Reviews start as pending for moderation
+        fields: {
+          rating,
+          review_title: title,
+          review_text: reviewText,
+          reviewer_name: name,
+          reviewer_email: email,
+          reviewed_item: brokerId,
+          newsletter_optin: newsletterOptin
+        }
+      };
+
+      const result = await fetchWordPress(
+        "https://admin.entrylab.io/wp-json/wp/v2/review",
+        {
+          method: 'POST',
+          body: reviewData
+        }
+      );
+
+      // If user opted into newsletter, subscribe them
+      if (newsletterOptin && email) {
+        try {
+          await fetchWordPress(
+            "https://admin.entrylab.io/wp-json/entrylab/v1/newsletter/subscribe",
+            {
+              method: 'POST',
+              body: { email }
+            }
+          );
+        } catch (newsletterError) {
+          console.error("Newsletter subscription failed:", newsletterError);
+          // Don't fail the review submission if newsletter fails
+        }
+      }
+
+      res.json({ success: true, review: result });
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      res.status(500).json({ error: "Failed to submit review" });
+    }
+  });
+
+  app.get("/api/wordpress/reviews/:itemId", async (req, res) => {
+    try {
+      const { itemId } = req.params;
+      
+      // Query WordPress for reviews where the ACF relationship field 'reviewed_item' matches the broker/prop firm ID
+      const reviews = await fetchWordPress(
+        `https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed`
+      );
+      
+      // Filter reviews by the reviewed_item ACF field on the backend
+      const filteredReviews = reviews.filter((review: any) => {
+        const reviewedItem = review.acf?.reviewed_item;
+        // Handle both single item and array formats
+        if (Array.isArray(reviewedItem)) {
+          return reviewedItem.some((item: any) => item.ID?.toString() === itemId || item?.toString() === itemId);
+        }
+        return reviewedItem?.ID?.toString() === itemId || reviewedItem?.toString() === itemId;
+      });
+      
+      res.json(filteredReviews);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      res.json([]); // Return empty array on error
     }
   });
 

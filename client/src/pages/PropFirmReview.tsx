@@ -1,24 +1,31 @@
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp } from "lucide-react";
+import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, MessageSquare } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Broker } from "@shared/schema";
 import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
+import { ReviewModal } from "@/components/ReviewModal";
 
 export default function PropFirmReview() {
   const params = useParams();
   const slug = params.slug;
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   const { data: wpPropFirm, isLoading } = useQuery<any>({
     queryKey: ["/api/wordpress/prop-firm", slug],
     enabled: !!slug,
+  });
+
+  const { data: reviews = [] } = useQuery<any[]>({
+    queryKey: ["/api/wordpress/reviews", wpPropFirm?.id],
+    enabled: !!wpPropFirm?.id,
   });
 
   const transformPropFirm = (wpPropFirm: any): Broker | null => {
@@ -239,6 +246,16 @@ export default function PropFirmReview() {
                 <a href={propFirm.link} target="_blank" rel="noopener noreferrer">
                   Visit {stripHtml(propFirm.name)} <ExternalLink className="ml-2 h-4 w-4" />
                 </a>
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="w-full" 
+                data-testid="button-write-review"
+                onClick={() => setIsReviewModalOpen(true)}
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Write a Review
               </Button>
               {propFirm.bonusOffer && (
                 <div className="relative">
@@ -550,6 +567,75 @@ export default function PropFirmReview() {
         </div>
       </main>
 
+      {/* User Reviews Section */}
+      <section className="py-16 bg-card border-y">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2" data-testid="text-reviews-title">
+                User Reviews
+              </h2>
+              <p className="text-muted-foreground">
+                Read what funded traders say about {stripHtml(propFirm.name)}
+              </p>
+            </div>
+            <Button 
+              variant="default" 
+              onClick={() => setIsReviewModalOpen(true)}
+              data-testid="button-write-review-section"
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Write a Review
+            </Button>
+          </div>
+
+          {reviews.length > 0 ? (
+            <div className="grid gap-6">
+              {reviews.map((review: any) => {
+                const acf = review.acf || {};
+                return (
+                  <Card key={review.id} className="p-6" data-testid={`review-${review.id}`}>
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-semibold text-foreground" data-testid={`review-title-${review.id}`}>
+                            {acf.review_title || review.title?.rendered}
+                          </h3>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                            <span className="text-sm font-semibold" data-testid={`review-rating-${review.id}`}>
+                              {acf.rating}/10
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground" data-testid={`review-author-${review.id}`}>
+                          By {acf.reviewer_name} • {new Date(review.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-foreground leading-relaxed" data-testid={`review-text-${review.id}`}>
+                      {acf.review_text}
+                    </p>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-muted/30 rounded-lg border border-dashed">
+              <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">No reviews yet</h3>
+              <p className="text-muted-foreground mb-6">
+                Be the first to share your experience with {stripHtml(propFirm.name)}
+              </p>
+              <Button onClick={() => setIsReviewModalOpen(true)} data-testid="button-first-review">
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Write the First Review
+              </Button>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Final CTA Section */}
       <section className="py-16 bg-gradient-to-br from-primary/10 via-primary/5 to-background border-y">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
@@ -613,6 +699,15 @@ export default function PropFirmReview() {
       </section>
 
       <Footer />
+      
+      <ReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        brokerName={stripHtml(propFirm.name)}
+        brokerLogo={propFirm.logo}
+        brokerId={propFirm.id}
+        itemType="prop-firm"
+      />
     </div>
   );
 }
