@@ -173,6 +173,8 @@ export default function Home() {
                       pros={broker.pros}
                       highlights={broker.highlights}
                       link={broker.link}
+                      slug={broker.slug}
+                      type="broker"
                       pageLocation="home"
                       placementType="top_rated_card"
                       position={index + 1}
