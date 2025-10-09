@@ -600,31 +600,56 @@ export default function BrokerReview() {
           </div>
 
           {reviews.length > 0 ? (
-            <div className="grid gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {reviews.map((review: any) => {
                 const acf = review.acf || {};
+                const reviewerName = acf.reviewer_name || 'Anonymous';
+                const initials = reviewerName
+                  .split(' ')
+                  .map((word: string) => word[0])
+                  .join('')
+                  .toUpperCase()
+                  .slice(0, 2);
+                
                 return (
-                  <Card key={review.id} className="p-6" data-testid={`review-${review.id}`}>
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-foreground" data-testid={`review-title-${review.id}`}>
-                            {acf.review_title || review.title?.rendered}
-                          </h3>
-                          <div className="flex items-center gap-1">
-                            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                            <span className="text-sm font-semibold" data-testid={`review-rating-${review.id}`}>
-                              {acf.rating}/10
-                            </span>
-                          </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground" data-testid={`review-author-${review.id}`}>
-                          By {acf.reviewer_name} • {new Date(review.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  <Card key={review.id} className="p-6 flex flex-col" data-testid={`review-${review.id}`}>
+                    <div className="flex items-start gap-3 mb-4">
+                      <div 
+                        className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0"
+                        data-testid={`review-avatar-${review.id}`}
+                      >
+                        <span className="text-white font-semibold text-lg">
+                          {initials}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-foreground truncate" data-testid={`review-title-${review.id}`}>
+                          {acf.review_title || review.title?.rendered}
+                        </h3>
+                        <p className="text-xs text-muted-foreground" data-testid={`review-author-${review.id}`}>
+                          {reviewerName}
                         </p>
                       </div>
                     </div>
-                    <p className="text-foreground leading-relaxed" data-testid={`review-text-${review.id}`}>
+                    
+                    <div className="flex items-center gap-1 mb-3">
+                      {[...Array(10)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          className={`h-3 w-3 ${i < (acf.rating || 0) ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/20'}`} 
+                        />
+                      ))}
+                      <span className="text-sm font-semibold ml-1" data-testid={`review-rating-${review.id}`}>
+                        {acf.rating}/10
+                      </span>
+                    </div>
+                    
+                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4 flex-1" data-testid={`review-text-${review.id}`}>
                       {acf.review_text}
+                    </p>
+                    
+                    <p className="text-xs text-muted-foreground/60 mt-3">
+                      {new Date(review.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </p>
                   </Card>
                 );
