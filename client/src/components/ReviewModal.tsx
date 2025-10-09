@@ -237,21 +237,8 @@ export function ReviewModal({
           </div>
         </DialogHeader>
 
-        <div className="relative min-h-[280px] overflow-hidden">
-          <AnimatePresence initial={false} custom={direction} mode="wait">
-            <motion.div
-              key={step}
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                x: { type: "spring", stiffness: 300, damping: 30 },
-                opacity: { duration: 0.2 },
-              }}
-              className="absolute inset-0"
-            >
+        <div className="relative min-h-[280px]">
+          <div>
               {step === 1 && (
                 <div className="space-y-4" data-testid="step-rating">
                   <div>
@@ -394,8 +381,7 @@ export function ReviewModal({
                   )}
                 </div>
               )}
-            </motion.div>
-          </AnimatePresence>
+          </div>
         </div>
 
         <div className="flex justify-between gap-3 mt-4 pt-4 border-t">
