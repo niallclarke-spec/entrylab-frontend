@@ -1,7 +1,8 @@
-import { Clock, User, BookOpen } from "lucide-react";
+import { Clock, User, BookOpen, Eye } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 
 interface ArticleCardProps {
   title: string;
@@ -11,9 +12,10 @@ interface ArticleCardProps {
   category: string;
   link: string;
   imageUrl?: string;
+  slug: string;
 }
 
-export function ArticleCard({ title, excerpt, author, date, category, link, imageUrl }: ArticleCardProps) {
+export function ArticleCard({ title, excerpt, author, date, category, link, imageUrl, slug }: ArticleCardProps) {
   const stripHtml = (html: string) => {
     const div = document.createElement("div");
     div.innerHTML = html;
@@ -30,11 +32,17 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
   const cleanExcerpt = stripHtml(excerpt);
   const readingTime = calculateReadingTime(cleanExcerpt);
 
+  // Fetch view count for this article
+  const { data: viewData } = useQuery<{ viewCount: number }>({
+    queryKey: [`/api/articles/${slug}/views`],
+    enabled: !!slug,
+  });
+
   return (
     <Card className="hover-elevate active-elevate-2 h-full flex flex-col group" data-testid={`card-article-${title.substring(0, 20)}`}>
       <Link href={link} className="flex flex-col h-full">
         {imageUrl && (
-          <div className="w-full h-40 overflow-hidden rounded-t-md bg-muted">
+          <div className="relative w-full h-40 overflow-hidden rounded-t-md bg-muted">
             <img
               src={imageUrl}
               alt={title}
@@ -44,6 +52,7 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               data-testid="img-article-thumbnail"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
           </div>
         )}
         <CardHeader className="gap-2 pb-3">
@@ -74,6 +83,12 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
             <Clock className="h-3.5 w-3.5" />
             <span>{new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
           </div>
+          {viewData && viewData.viewCount > 10 && (
+            <div className="flex items-center gap-1.5 ml-auto" data-testid="text-view-count">
+              <Eye className="h-3.5 w-3.5" />
+              <span>{viewData.viewCount.toLocaleString()}</span>
+            </div>
+          )}
         </CardFooter>
       </Link>
     </Card>
