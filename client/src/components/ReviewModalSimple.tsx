@@ -183,7 +183,7 @@ export function ReviewModalSimple({
 
   const modalContent = (
     <>
-      {/* Dark Overlay */}
+      {/* Backdrop with Centering */}
       <div 
         style={{
           position: 'fixed',
@@ -192,31 +192,30 @@ export function ReviewModalSimple({
           right: 0,
           bottom: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          zIndex: 9998
+          zIndex: 9998,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem'
         }}
         onClick={onClose}
-      />
-      
-      {/* Modal Box */}
-      <div 
-        style={{
-          position: 'fixed !important' as any,
-          top: '5vh !important' as any,
-          left: '50% !important' as any,
-          marginLeft: '-250px !important' as any,
-          zIndex: 999999,
-          width: '500px',
-          maxHeight: '90vh',
-          backgroundColor: '#ff0000',
-          border: '10px solid #ffff00',
-          borderRadius: '8px',
-          padding: '1.5rem',
-          overflowY: 'auto',
-          boxShadow: '0 0 100px rgba(255, 255, 0, 0.8)'
-        }}
-        data-testid="dialog-review"
-        onClick={(e) => e.stopPropagation()}
       >
+        {/* Modal Box */}
+        <div 
+          style={{
+            width: '100%',
+            maxWidth: '500px',
+            maxHeight: '90vh',
+            backgroundColor: 'hsl(var(--card))',
+            border: '1px solid hsl(var(--border))',
+            borderRadius: '0.5rem',
+            padding: '1.5rem',
+            overflowY: 'auto',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)'
+          }}
+          data-testid="dialog-review"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <img 
@@ -409,6 +408,7 @@ export function ReviewModalSimple({
             </Button>
           )}
         </div>
+      </div>
       </div>
     </>
   );
