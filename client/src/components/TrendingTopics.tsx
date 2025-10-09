@@ -2,6 +2,7 @@ import { TrendingUp, AlertCircle, Building2, BarChart3, Newspaper, ShieldCheck }
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
+import { EXCLUDED_CATEGORIES } from "@/lib/constants";
 
 interface TrendingTopicsProps {
   selectedCategory: string | null;
@@ -61,19 +62,10 @@ export function TrendingTopics({ selectedCategory, onCategorySelect }: TrendingT
     return defaults[index % defaults.length];
   };
 
-  // Categories to exclude from trending topics
-  const excludedCategories = [
-    'trading-alerts',
-    'uncategorized', 
-    'uncategorised',
-    'prop-firm-updates',
-    'broker-closures'
-  ];
-
   // Get top 4 categories (since we're adding one fixed category)
   const topCategories = categories
     ?.filter(cat => cat.count > 0)
-    ?.filter(cat => !excludedCategories.includes(cat.slug.toLowerCase()))
+    ?.filter(cat => !EXCLUDED_CATEGORIES.includes(cat.slug.toLowerCase()))
     ?.sort((a, b) => b.count - a.count)
     ?.slice(0, 4) || [];
 

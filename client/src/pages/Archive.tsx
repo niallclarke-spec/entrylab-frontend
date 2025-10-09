@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Loader2 } from "lucide-react";
 import type { WordPressPost } from "@shared/schema";
 import { trackPageView, trackSearch, trackCategoryFilter } from "@/lib/gtm";
+import { EXCLUDED_CATEGORIES } from "@/lib/constants";
 
 export default function Archive() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -62,19 +63,10 @@ export default function Archive() {
     }
   }, [searchQuery, filteredPosts.length]);
 
-  // Categories to exclude
-  const excludedCategories = [
-    'trading-alerts',
-    'uncategorized', 
-    'uncategorised',
-    'prop-firm-updates',
-    'broker-closures'
-  ];
-
   const allCategories = [
     { name: "All Posts", slug: "all" },
     ...(categories || [])
-      .filter(cat => !excludedCategories.includes(cat.slug.toLowerCase()))
+      .filter(cat => !EXCLUDED_CATEGORIES.includes(cat.slug.toLowerCase()))
       .map(cat => ({ name: cat.name, slug: cat.slug }))
   ];
 
