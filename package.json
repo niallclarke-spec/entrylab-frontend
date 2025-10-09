@@ -68,6 +68,7 @@
     "react-resizable-panels": "^2.1.7",
     "react-snap": "^1.23.0",
     "recharts": "^2.15.2",
+    "rollup-plugin-visualizer": "^6.0.4",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "tw-animate-css": "^1.2.5",
