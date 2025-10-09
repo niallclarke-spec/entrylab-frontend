@@ -204,8 +204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const categories = await fetchWordPress(url);
       res.json(categories);
     } catch (error) {
-      console.error("Error fetching WordPress categories:", error);
-      res.status(500).json({ error: "Failed to fetch categories" });
+      handleWordPressError(error, res, "fetch categories");
     }
   });
 
@@ -257,8 +256,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(brokers[0]);
     } catch (error) {
-      console.error("Error fetching WordPress broker:", error);
-      res.status(500).json({ error: "Failed to fetch broker" });
+      handleWordPressError(error, res, "fetch broker");
     }
   });
 
@@ -275,8 +273,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(propFirms[0]);
     } catch (error) {
-      console.error("Error fetching WordPress prop firm:", error);
-      res.status(500).json({ error: "Failed to fetch prop firm" });
+      handleWordPressError(error, res, "fetch prop firm");
     }
   });
 
@@ -317,8 +314,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(posts[0]);
     } catch (error) {
-      console.error("Error fetching WordPress post:", error);
-      res.status(500).json({ error: "Failed to fetch post" });
+      handleWordPressError(error, res, "fetch post");
     }
   });
 
