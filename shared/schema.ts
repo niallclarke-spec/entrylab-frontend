@@ -17,6 +17,23 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
+export const brokerAlerts = pgTable("broker_alerts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email", { length: 255 }).notNull(),
+  firstName: varchar("first_name", { length: 255 }).notNull(),
+  brokerId: varchar("broker_id", { length: 255 }).notNull(),
+  brokerName: varchar("broker_name", { length: 255 }).notNull(),
+  subscribedAt: timestamp("subscribed_at").notNull().defaultNow(),
+});
+
+export const insertBrokerAlertSchema = createInsertSchema(brokerAlerts).omit({
+  id: true,
+  subscribedAt: true,
+});
+
+export type InsertBrokerAlert = z.infer<typeof insertBrokerAlertSchema>;
+export type BrokerAlert = typeof brokerAlerts.$inferSelect;
+
 export interface WordPressPost {
   id: number;
   slug: string;
