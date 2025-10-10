@@ -12,8 +12,10 @@ import { NewsletterCTA } from "@/components/NewsletterCTA";
 import { Footer } from "@/components/Footer";
 import { transformBroker } from "@/lib/transforms";
 import type { WordPressPost, Broker } from "@shared/schema";
-import { Loader2 } from "lucide-react";
 import { trackPageView } from "@/lib/gtm";
+import { ArticleCardSkeletonList } from "@/components/skeletons/ArticleCardSkeleton";
+import { BrokerCardSkeletonList } from "@/components/skeletons/BrokerCardSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -88,9 +90,39 @@ export default function Home() {
       <Navigation />
 
       {isLoading ? (
-        <div className="flex-1 flex items-center justify-center py-32">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+        <>
+          <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
+            <Skeleton className="absolute inset-0" />
+            <div className="relative z-10 max-w-4xl mx-auto px-6 text-center space-y-4">
+              <Skeleton className="h-8 w-32 mx-auto" />
+              <Skeleton className="h-12 w-full max-w-3xl mx-auto" />
+              <Skeleton className="h-12 w-4/5 mx-auto" />
+              <Skeleton className="h-6 w-full max-w-2xl mx-auto" />
+              <Skeleton className="h-6 w-3/4 mx-auto" />
+            </div>
+          </section>
+
+          <section className="py-16 md:py-24">
+            <div className="max-w-7xl mx-auto px-6">
+              <Skeleton className="h-10 w-48 mb-8" />
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <ArticleCardSkeletonList count={6} />
+              </div>
+            </div>
+          </section>
+
+          <section className="py-16 md:py-24 bg-gradient-to-b from-background via-card/50 to-background">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+              <div className="text-center mb-12">
+                <Skeleton className="h-10 w-64 mx-auto mb-4" />
+                <Skeleton className="h-6 w-96 mx-auto" />
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <BrokerCardSkeletonList count={6} />
+              </div>
+            </div>
+          </section>
+        </>
       ) : featuredPost ? (
         <>
           <Hero

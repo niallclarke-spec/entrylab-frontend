@@ -6,10 +6,11 @@ import { SEO } from "@/components/SEO";
 import { ArticleCard } from "@/components/ArticleCard";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Loader2 } from "lucide-react";
+import { Search } from "lucide-react";
 import type { WordPressPost } from "@shared/schema";
 import { trackPageView, trackSearch, trackCategoryFilter } from "@/lib/gtm";
 import { EXCLUDED_CATEGORIES } from "@/lib/constants";
+import { ArticleCardSkeletonList } from "@/components/skeletons/ArticleCardSkeleton";
 
 export default function Archive() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -127,8 +128,8 @@ export default function Archive() {
 
           {/* Posts Grid */}
           {isLoading ? (
-            <div className="flex justify-center py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <ArticleCardSkeletonList count={9} />
             </div>
           ) : filteredPosts.length === 0 ? (
             <div className="text-center py-20">

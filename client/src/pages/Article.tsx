@@ -9,8 +9,9 @@ import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { ArticleCard } from "@/components/ArticleCard";
 import { NewsletterCTA } from "@/components/NewsletterCTA";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Clock, User, Share2, BookOpen, TrendingUp, Building2, BarChart3, AlertCircle, ShieldCheck, Award } from "lucide-react";
+import { Clock, User, Share2, BookOpen, TrendingUp, Building2, BarChart3, AlertCircle, ShieldCheck, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { transformBroker } from "@/lib/transforms";
 import type { WordPressPost, Broker } from "@shared/schema";
 import { trackPageView, trackArticleView } from "@/lib/gtm";
@@ -265,11 +266,47 @@ export default function Article() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col overflow-x-hidden">
         <Navigation />
-        <div className="flex-1 flex items-center justify-center py-32">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+        
+        {/* Hero Image Skeleton */}
+        <Skeleton className="w-full h-[300px] md:h-[400px]" />
+        
+        <main className="flex-1 -mt-20 relative z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+            <div className="grid lg:grid-cols-[1fr_350px] gap-8 xl:gap-12">
+              {/* Main Content */}
+              <article className="min-w-0">
+                <div className="bg-card rounded-xl p-6 md:p-8 mb-8">
+                  <Skeleton className="h-8 w-24 mb-4" />
+                  <Skeleton className="h-12 w-full mb-4" />
+                  <Skeleton className="h-12 w-4/5 mb-8" />
+                  
+                  <div className="flex items-center gap-4 mb-8">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-4/5" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              </article>
+              
+              {/* Sidebar Skeleton */}
+              <aside className="space-y-6">
+                <Skeleton className="h-64 w-full rounded-xl" />
+                <Skeleton className="h-48 w-full rounded-xl" />
+              </aside>
+            </div>
+          </div>
+        </main>
         <Footer />
       </div>
     );
