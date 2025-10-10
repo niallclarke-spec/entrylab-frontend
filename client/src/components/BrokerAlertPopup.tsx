@@ -236,21 +236,40 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border border-amber-500/20 rounded-lg p-3">
               <Gift className="h-5 w-5 text-amber-500 mb-2" />
-              <p className="text-xs font-semibold text-foreground">Deposit Bonuses</p>
-              <p className="text-xs text-muted-foreground">Up to 25% extra</p>
+              {brokerType === "prop-firm" ? (
+                <>
+                  <p className="text-xs font-semibold text-foreground">Exclusive Discounts</p>
+                  <p className="text-xs text-muted-foreground">Save on challenges</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-xs font-semibold text-foreground">Deposit Bonuses</p>
+                  <p className="text-xs text-muted-foreground">Up to 25% extra</p>
+                </>
+              )}
             </div>
             <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3">
               <Trophy className="h-5 w-5 text-primary mb-2" />
               <p className="text-xs font-semibold text-foreground">VIP Competitions</p>
-              <p className="text-xs text-muted-foreground">Win cash prizes</p>
+              {brokerType === "prop-firm" ? (
+                <p className="text-xs text-muted-foreground">Win funded accounts</p>
+              ) : (
+                <p className="text-xs text-muted-foreground">Win cash prizes</p>
+              )}
             </div>
           </div>
 
           {/* Social Proof */}
           <div className="bg-primary/5 border border-primary/10 rounded-lg p-3 text-center">
-            <p className="text-sm text-foreground">
-              🎁 <span className="font-bold text-primary">{traderCount} traders</span> unlocked bonuses worth <span className="font-bold text-amber-500">$50,000+</span> through our alerts
-            </p>
+            {brokerType === "prop-firm" ? (
+              <p className="text-sm text-foreground">
+                💰 We have saved <span className="font-bold text-primary">{traderCount} traders</span> up to <span className="font-bold text-amber-500">$14,720</span> in challenge fees
+              </p>
+            ) : (
+              <p className="text-sm text-foreground">
+                🎁 <span className="font-bold text-primary">{traderCount} traders</span> unlocked bonuses worth <span className="font-bold text-amber-500">$50,000+</span> through our alerts
+              </p>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3">
