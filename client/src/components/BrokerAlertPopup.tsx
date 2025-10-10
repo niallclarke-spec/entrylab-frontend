@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import { X, Gift, Trophy, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMutation } from "@tanstack/react-query";
@@ -54,8 +54,8 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
       }
 
       toast({
-        title: "Success!",
-        description: `You'll get exclusive ${brokerName} bonuses first!`,
+        title: "🎉 VIP Access Activated!",
+        description: `You'll get ${brokerName} bonuses & VIP competitions before anyone else!`,
       });
 
       // Mark as subscribed in localStorage
@@ -210,28 +210,47 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
           </button>
 
           <div className="space-y-5">
-          {/* Logo and Header */}
-          <div className="flex items-center gap-4">
+          {/* Logo and Header with Gradient Badge */}
+          <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
               <img 
                 src={brokerLogo} 
                 alt={brokerName}
-                className="w-16 h-16 object-contain rounded-lg bg-background p-2"
+                className="w-20 h-20 object-contain rounded-xl bg-background p-3 border border-border"
               />
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-bold text-foreground mb-1">
-                Never Miss {brokerName} Bonuses
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-primary/20 border border-amber-500/30 mb-2">
+                <Zap className="h-3.5 w-3.5 text-amber-500" />
+                <span className="text-xs font-semibold text-amber-500">EXCLUSIVE ACCESS</span>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground mb-1">
+                Get VIP Bonuses First
               </h3>
               <p className="text-sm text-muted-foreground">
-                Get exclusive deposit bonuses & breaking news
+                Join {traderCount}+ traders getting early access to {brokerName} deals
               </p>
             </div>
           </div>
 
-          <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
+          {/* Benefits Grid */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border border-amber-500/20 rounded-lg p-3">
+              <Gift className="h-5 w-5 text-amber-500 mb-2" />
+              <p className="text-xs font-semibold text-foreground">Deposit Bonuses</p>
+              <p className="text-xs text-muted-foreground">Up to 50% extra</p>
+            </div>
+            <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3">
+              <Trophy className="h-5 w-5 text-primary mb-2" />
+              <p className="text-xs font-semibold text-foreground">VIP Competitions</p>
+              <p className="text-xs text-muted-foreground">Win cash prizes</p>
+            </div>
+          </div>
+
+          {/* Social Proof */}
+          <div className="bg-primary/5 border border-primary/10 rounded-lg p-3 text-center">
             <p className="text-sm text-foreground">
-              <span className="font-bold text-primary">{traderCount} traders</span> received exclusive bonuses worth up to 35% from {brokerName} through our alerts
+              🎁 <span className="font-bold text-primary">{traderCount} traders</span> unlocked bonuses worth <span className="font-bold text-amber-500">$50,000+</span> through our alerts
             </p>
           </div>
 
@@ -243,6 +262,7 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
               onChange={(e) => setFirstName(e.target.value)}
               required
               data-testid="input-alert-firstname"
+              className="h-11"
             />
             <Input
               type="email"
@@ -251,14 +271,25 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
               onChange={(e) => setEmail(e.target.value)}
               required
               data-testid="input-alert-email"
+              className="h-11"
             />
             <Button
               type="submit"
-              className="w-full"
+              className="w-full h-11 text-base font-semibold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white border-0"
               disabled={subscribeMutation.isPending}
               data-testid="button-subscribe-alerts"
             >
-              {subscribeMutation.isPending ? "Subscribing..." : "Get Exclusive Alerts"}
+              {subscribeMutation.isPending ? (
+                <>
+                  <Zap className="h-4 w-4 mr-2 animate-pulse" />
+                  Activating VIP Access...
+                </>
+              ) : (
+                <>
+                  <Gift className="h-4 w-4 mr-2" />
+                  Unlock VIP Bonuses Now
+                </>
+              )}
             </Button>
           </form>
 
