@@ -110,13 +110,14 @@ function fetchWordPress(url: string, options: { method?: string; body?: any; req
   });
 }
 
-// Cached WordPress API fetcher
+// Cached WordPress API fetcher with stale-while-revalidate
 async function fetchWordPressWithCache(
   url: string, 
-  options: { method?: string; body?: any; requireAuth?: boolean; cacheTTL?: number } = {}
+  options: { method?: string; body?: any; requireAuth?: boolean; cacheTTL?: number; staleTTL?: number } = {}
 ): Promise<any> {
   const method = options.method || 'GET';
-  const cacheTTL = options.cacheTTL || 300; // 5 minutes default
+  const cacheTTL = options.cacheTTL || 600; // 10 minutes default (increased from 5)
+  const staleTTL = options.staleTTL || 1800; // 30 minutes stale-while-revalidate
   
   // Only cache GET requests
   if (method === 'GET') {
@@ -124,13 +125,25 @@ async function fetchWordPressWithCache(
     const cached = apiCache.get(cacheKey);
     
     if (cached) {
-      console.log(`[Cache HIT] ${url}`);
+      // Check if data is stale but still within stale-while-revalidate window
+      if (apiCache.isStale(cacheKey)) {
+        console.log(`[Cache STALE] ${url} - serving stale while revalidating`);
+        // Return stale data immediately, revalidate in background
+        fetchWordPress(url, options)
+          .then(freshData => {
+            apiCache.set(cacheKey, freshData, cacheTTL, staleTTL);
+            console.log(`[Cache REVALIDATED] ${url}`);
+          })
+          .catch(err => console.error(`[Cache REVALIDATION FAILED] ${url}:`, err.message));
+      } else {
+        console.log(`[Cache HIT] ${url}`);
+      }
       return cached;
     }
     
     console.log(`[Cache MISS] ${url}`);
     const data = await fetchWordPress(url, options);
-    apiCache.set(cacheKey, data, cacheTTL);
+    apiCache.set(cacheKey, data, cacheTTL, staleTTL);
     return data;
   }
   
@@ -229,7 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         url += `&categories=${category}`;
       }
       
-      const posts = await fetchWordPressWithCache(url, { cacheTTL: 300 }); // 5 min cache
+      const posts = await fetchWordPressWithCache(url, { cacheTTL: 600 }); // 10 min cache
       res.json(posts);
     } catch (error) {
       handleWordPressError(error, res, "fetch posts");
@@ -356,7 +369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { slug } = req.params;
       const posts = await fetchWordPressWithCache(
         `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed`,
-        { cacheTTL: 300 } // 5 min cache for individual articles
+        { cacheTTL: 600 } // 10 min cache for individual articles
       );
       
       if (posts.length === 0) {

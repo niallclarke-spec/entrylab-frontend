@@ -3,21 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-KPCJDF2M');</script>
-    <!-- End Google Tag Manager -->
+    
+    <!-- Critical Resource Hints - Connect early to external domains -->
+    <link rel="preconnect" href="https://admin.entrylab.io" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
     
-    <!-- WordPress API Preconnect - speeds up first API request by ~100-300ms -->
-    <link rel="preconnect" href="https://admin.entrylab.io" crossorigin>
-    <link rel="dns-prefetch" href="https://admin.entrylab.io">
+    <!-- Optimized Font Loading - swap prevents FOIT, media=print prevents render blocking -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet';this.media='all';" media="print">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap"></noscript>
+    
+    <!-- Inline Critical CSS for instant rendering -->
+    <style>
+      :root{--background:0 0% 100%;--foreground:220 15% 15%;--primary:271 91% 65%}
+      .dark{--background:220 15% 8%;--foreground:220 15% 92%;--primary:271 91% 65%}
+      *{box-sizing:border-box}
+      body{margin:0;font-family:Inter,system-ui,sans-serif;background:hsl(var(--background));color:hsl(var(--foreground));-webkit-font-smoothing:antialiased}
+      #root{min-height:100vh}
+    </style>
+    
+    <!-- Defer Google Tag Manager to not block rendering -->
+    <script>
+      (function() {
+        var gtmScript = document.createElement('script');
+        gtmScript.async = true;
+        gtmScript.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-KPCJDF2M';
+        var firstScript = document.getElementsByTagName('script')[0];
+        firstScript.parentNode.insertBefore(gtmScript, firstScript);
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
+      })();
+    </script>
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->

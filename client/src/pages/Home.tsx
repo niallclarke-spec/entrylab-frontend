@@ -1,14 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
 import { SEO } from "@/components/SEO";
 import { Hero } from "@/components/Hero";
-import { TrendingTopics } from "@/components/TrendingTopics";
-import { FeaturedBroker } from "@/components/FeaturedBroker";
-import { TrustSignals } from "@/components/TrustSignals";
 import { ArticleCard } from "@/components/ArticleCard";
-import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
-import { NewsletterCTA } from "@/components/NewsletterCTA";
 import { Footer } from "@/components/Footer";
 import { transformBroker } from "@/lib/transforms";
 import type { WordPressPost, Broker } from "@shared/schema";
@@ -16,6 +11,13 @@ import { trackPageView } from "@/lib/gtm";
 import { ArticleCardSkeletonList } from "@/components/skeletons/ArticleCardSkeleton";
 import { BrokerCardSkeletonList } from "@/components/skeletons/BrokerCardSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy load non-critical components for better initial load
+const TrendingTopics = lazy(() => import("@/components/TrendingTopics").then(m => ({ default: m.TrendingTopics })));
+const FeaturedBroker = lazy(() => import("@/components/FeaturedBroker").then(m => ({ default: m.FeaturedBroker })));
+const TrustSignals = lazy(() => import("@/components/TrustSignals").then(m => ({ default: m.TrustSignals })));
+const BrokerCardEnhanced = lazy(() => import("@/components/BrokerCardEnhanced").then(m => ({ default: m.BrokerCardEnhanced })));
+const NewsletterCTA = lazy(() => import("@/components/NewsletterCTA").then(m => ({ default: m.NewsletterCTA })));
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -135,25 +137,31 @@ export default function Home() {
             imageUrl={getFeaturedImage(featuredPost)}
           />
 
-          <TrendingTopics 
-            selectedCategory={selectedCategory} 
-            onCategorySelect={setSelectedCategory}
-          />
+          <Suspense fallback={<Skeleton className="h-20 w-full max-w-7xl mx-auto" />}>
+            <TrendingTopics 
+              selectedCategory={selectedCategory} 
+              onCategorySelect={setSelectedCategory}
+            />
+          </Suspense>
 
-          <TrustSignals />
+          <Suspense fallback={<Skeleton className="h-32 w-full max-w-7xl mx-auto" />}>
+            <TrustSignals />
+          </Suspense>
 
           {featuredBroker && (
-            <FeaturedBroker
-              name={featuredBroker.name}
-              logo={featuredBroker.logo}
-              tagline={featuredBroker.tagline || ""}
-              rating={featuredBroker.rating}
-              features={featuredBroker.features || []}
-              highlights={featuredBroker.highlights || []}
-              bonusOffer={featuredBroker.bonusOffer}
-              link={featuredBroker.link}
-              reviewLink={featuredBroker.reviewLink}
-            />
+            <Suspense fallback={<Skeleton className="h-96 w-full max-w-7xl mx-auto" />}>
+              <FeaturedBroker
+                name={featuredBroker.name}
+                logo={featuredBroker.logo}
+                tagline={featuredBroker.tagline || ""}
+                rating={featuredBroker.rating}
+                features={featuredBroker.features || []}
+                highlights={featuredBroker.highlights || []}
+                bonusOffer={featuredBroker.bonusOffer}
+                link={featuredBroker.link}
+                reviewLink={featuredBroker.reviewLink}
+              />
+            </Suspense>
           )}
 
           <section className="py-16 md:py-24">
@@ -197,28 +205,31 @@ export default function Home() {
                 </div>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {popularBrokers.map((broker, index) => (
-                    <BrokerCardEnhanced
-                      key={broker.id}
-                      name={broker.name}
-                      logo={broker.logo}
-                      verified={broker.verified}
-                      rating={broker.rating}
-                      pros={broker.pros}
-                      highlights={broker.highlights}
-                      link={broker.link}
-                      slug={broker.slug}
-                      type="broker"
-                      pageLocation="home"
-                      placementType="top_rated_card"
-                      position={index + 1}
-                    />
+                    <Suspense key={broker.id} fallback={<Skeleton className="h-72 w-full" />}>
+                      <BrokerCardEnhanced
+                        name={broker.name}
+                        logo={broker.logo}
+                        verified={broker.verified}
+                        rating={broker.rating}
+                        pros={broker.pros}
+                        highlights={broker.highlights}
+                        link={broker.link}
+                        slug={broker.slug}
+                        type="broker"
+                        pageLocation="home"
+                        placementType="top_rated_card"
+                        position={index + 1}
+                      />
+                    </Suspense>
                   ))}
                 </div>
               </div>
             </section>
           )}
 
-          <NewsletterCTA />
+          <Suspense fallback={<Skeleton className="h-96 w-full max-w-7xl mx-auto" />}>
+            <NewsletterCTA />
+          </Suspense>
         </>
       ) : (
         <div className="flex-1 flex items-center justify-center py-32">

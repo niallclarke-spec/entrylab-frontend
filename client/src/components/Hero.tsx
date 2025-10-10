@@ -2,6 +2,7 @@ import { Clock, User, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 interface HeroProps {
   title: string;
@@ -59,12 +60,13 @@ export function Hero({ title, excerpt, author, date, category, link, imageUrl }:
           {/* Featured Image */}
           {imageUrl && (
             <div className="relative h-[200px] sm:h-[250px] lg:h-[350px] rounded-xl lg:rounded-2xl overflow-hidden shadow-xl order-1 lg:order-2">
-              <img
+              <OptimizedImage
                 src={imageUrl}
                 alt={cleanTitle}
                 width="600"
                 height="350"
                 className="w-full h-full object-cover"
+                priority={true}
                 data-testid="img-hero-featured"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent"></div>
