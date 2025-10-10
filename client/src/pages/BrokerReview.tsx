@@ -725,6 +725,7 @@ export default function BrokerReview() {
           <BrokerAlertPopup
             brokerId={broker.id}
             brokerName={stripHtml(broker.name)}
+            brokerLogo={broker.logo}
             brokerType="broker"
           />
         </>
