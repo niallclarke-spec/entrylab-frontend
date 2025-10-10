@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -6,26 +7,73 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { HelmetProvider } from "react-helmet-async";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import Home from "@/pages/Home";
-import Article from "@/pages/Article";
-import Archive from "@/pages/Archive";
-import Brokers from "@/pages/Brokers";
-import PropFirms from "@/pages/PropFirms";
-import BrokerReview from "@/pages/BrokerReview";
-import PropFirmReview from "@/pages/PropFirmReview";
-import NotFound from "@/pages/not-found";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const Home = lazy(() => import("@/pages/Home"));
+const Article = lazy(() => import("@/pages/Article"));
+const Archive = lazy(() => import("@/pages/Archive"));
+const Brokers = lazy(() => import("@/pages/Brokers"));
+const PropFirms = lazy(() => import("@/pages/PropFirms"));
+const BrokerReview = lazy(() => import("@/pages/BrokerReview"));
+const PropFirmReview = lazy(() => import("@/pages/PropFirmReview"));
+const NotFound = lazy(() => import("@/pages/not-found"));
+
+function PageLoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="space-y-4 w-full max-w-4xl mx-auto px-4">
+        <Skeleton className="h-12 w-3/4" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-5/6" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    </div>
+  );
+}
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/article/:slug" component={Article} />
-      <Route path="/archive" component={Archive} />
-      <Route path="/brokers" component={Brokers} />
-      <Route path="/broker/:slug" component={BrokerReview} />
-      <Route path="/prop-firms/:category?" component={PropFirms} />
-      <Route path="/prop-firm/:slug" component={PropFirmReview} />
-      <Route component={NotFound} />
+      <Route path="/">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <Home />
+        </Suspense>
+      </Route>
+      <Route path="/article/:slug">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <Article />
+        </Suspense>
+      </Route>
+      <Route path="/archive">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <Archive />
+        </Suspense>
+      </Route>
+      <Route path="/brokers">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <Brokers />
+        </Suspense>
+      </Route>
+      <Route path="/broker/:slug">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <BrokerReview />
+        </Suspense>
+      </Route>
+      <Route path="/prop-firms/:category?">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <PropFirms />
+        </Suspense>
+      </Route>
+      <Route path="/prop-firm/:slug">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <PropFirmReview />
+        </Suspense>
+      </Route>
+      <Route>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <NotFound />
+        </Suspense>
+      </Route>
     </Switch>
   );
 }
