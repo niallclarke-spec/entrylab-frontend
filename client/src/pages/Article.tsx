@@ -316,6 +316,9 @@ export default function Article() {
           <img
             src={featuredImage}
             alt={stripHtml(post.title.rendered)}
+            width="1200"
+            height="400"
+            fetchPriority="high"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
