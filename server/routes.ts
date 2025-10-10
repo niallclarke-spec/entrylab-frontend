@@ -368,7 +368,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { slug } = req.params;
       const posts = await fetchWordPressWithCache(
-        `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed`,
+        `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed&acf_format=standard`,
         { cacheTTL: 600 } // 10 min cache for individual articles
       );
       
@@ -376,7 +376,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Post not found" });
       }
       
-      res.json(posts[0]);
+      const post = posts[0];
+      
+      // Check if article has a related broker (ACF relationship field)
+      if (post.acf?.related_broker) {
+        try {
+          // related_broker can be an ID or an array of IDs, get the first one
+          const brokerId = Array.isArray(post.acf.related_broker) 
+            ? post.acf.related_broker[0] 
+            : post.acf.related_broker;
+          
+          // Fetch the related broker details
+          const broker = await fetchWordPressWithCache(
+            `https://admin.entrylab.io/wp-json/wp/v2/popular_broker/${brokerId}?acf_format=standard`,
+            { cacheTTL: 600 }
+          );
+          
+          // Add broker to response
+          post.relatedBroker = broker;
+        } catch (brokerError) {
+          console.error("Error fetching related broker:", brokerError);
+          // Continue without broker if fetch fails
+        }
+      }
+      
+      res.json(post);
     } catch (error) {
       handleWordPressError(error, res, "fetch post");
     }
