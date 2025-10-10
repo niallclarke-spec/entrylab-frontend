@@ -63,6 +63,18 @@ export function ReviewModalSimple({
   useEffect(() => {
     if (!isOpen) return;
     
+    console.log("Modal opened - simple version", { 
+      brokerName, 
+      brokerId,
+      isDev 
+    });
+    
+    // reCAPTCHA is disabled in all environments - skip loading completely
+    // This is temporary until traffic increases
+    return;
+    
+    /* ORIGINAL reCAPTCHA LOADING CODE (disabled):
+    
     // Reset error state when modal opens
     setRecaptchaError(null);
     
@@ -75,9 +87,7 @@ export function ReviewModalSimple({
         return res.json();
       })
       .then(data => {
-        console.log("Modal opened - simple version", { 
-          brokerName, 
-          brokerId, 
+        console.log("reCAPTCHA site key loaded:", { 
           siteKey: data.siteKey 
         });
         setRecaptchaSiteKey(data.siteKey);
@@ -105,7 +115,8 @@ export function ReviewModalSimple({
     } else {
       setRecaptchaLoaded(true);
     }
-  }, [isOpen, brokerName, brokerId]);
+    */
+  }, [isOpen, brokerName, brokerId, isDev]);
 
   useEffect(() => {
     if (step === 6 && recaptchaLoaded && hasRecaptchaKey && recaptchaSiteKey && recaptchaRef.current && !recaptchaRef.current.hasChildNodes()) {
@@ -148,38 +159,11 @@ export function ReviewModalSimple({
   };
 
   const handleSubmit = async () => {
-    // Block submission if reCAPTCHA failed to load in production
-    if (!isDev && recaptchaError) {
-      toast({
-        title: "Cannot Submit",
-        description: "Security verification is required but unavailable. Please refresh and try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsSubmitting(true);
     
     try {
-      let recaptchaToken = '';
-      
-      // Get reCAPTCHA token in production only
-      if (!isDev) {
-        if (hasRecaptchaKey && window.grecaptcha) {
-          try {
-            recaptchaToken = window.grecaptcha.getResponse();
-            if (!recaptchaToken) {
-              throw new Error("Please complete the reCAPTCHA verification");
-            }
-          } catch (e) {
-            console.error("reCAPTCHA error:", e);
-            throw new Error("reCAPTCHA verification failed. Please try again.");
-          }
-        } else if (!hasRecaptchaKey) {
-          // In production, reCAPTCHA is required
-          throw new Error("Security verification is required. Please refresh and try again.");
-        }
-      }
+      // reCAPTCHA is disabled - send empty token
+      const recaptchaToken = '';
 
       const response = await fetch("/api/reviews/submit", {
         method: "POST",
@@ -205,11 +189,6 @@ export function ReviewModalSimple({
         description: "Thank you for sharing your experience. Your review will be published after approval.",
       });
 
-      // Reset reCAPTCHA if it exists
-      if (hasRecaptchaKey && window.grecaptcha) {
-        window.grecaptcha.reset();
-      }
-
       onClose();
       setStep(1);
       setFormData({
@@ -226,15 +205,6 @@ export function ReviewModalSimple({
         description: error.message || "Please try again later.",
         variant: "destructive",
       });
-      
-      // Reset reCAPTCHA on error
-      if (hasRecaptchaKey && window.grecaptcha) {
-        try {
-          window.grecaptcha.reset();
-        } catch (e) {
-          console.error("Failed to reset reCAPTCHA:", e);
-        }
-      }
     } finally {
       setIsSubmitting(false);
     }
@@ -416,18 +386,7 @@ export function ReviewModalSimple({
                 </label>
               </div>
               
-              {/* reCAPTCHA */}
-              {!isDev && (
-                <div className="flex flex-col items-center gap-3">
-                  {recaptchaError ? (
-                    <div className="w-full p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm text-destructive text-center">
-                      {recaptchaError}
-                    </div>
-                  ) : (
-                    <div ref={recaptchaRef} data-testid="recaptcha-container"></div>
-                  )}
-                </div>
-              )}
+              {/* reCAPTCHA DISABLED - Temporarily removed until traffic increases */}
               
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                 <p className="text-sm text-foreground">
@@ -464,7 +423,7 @@ export function ReviewModalSimple({
           ) : (
             <Button
               onClick={handleSubmit}
-              disabled={isSubmitting || (!isDev && recaptchaError !== null)}
+              disabled={isSubmitting}
               data-testid="button-submit-review"
             >
               {isSubmitting ? (
