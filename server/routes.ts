@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import https from "https";
 import { storage } from "./storage";
+import { db } from "./db";
+import { brokerAlerts, insertBrokerAlertSchema } from "../shared/schema";
 
 // Helper function to make WordPress API requests using native https module
 function fetchWordPress(url: string, options: { method?: string; body?: any; requireAuth?: boolean } = {}): Promise<any> {
@@ -333,7 +335,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/newsletter/subscribe", async (req, res) => {
     try {
-      const { email } = req.body;
+      const { email, source } = req.body;
       
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return res.status(400).json({ error: "Invalid email address" });
@@ -343,13 +345,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "https://admin.entrylab.io/wp-json/entrylab/v1/newsletter/subscribe",
         {
           method: 'POST',
-          body: { email }
+          body: { email, source: source || 'Unknown' }
         }
       );
       res.json(result);
     } catch (error) {
       console.error("Error subscribing to newsletter:", error);
       res.status(500).json({ error: "Failed to subscribe" });
+    }
+  });
+
+  // Broker-specific alert subscriptions
+  app.post("/api/broker-alerts/subscribe", async (req, res) => {
+    try {
+      const validationResult = insertBrokerAlertSchema.safeParse(req.body);
+      
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          error: "Invalid request data", 
+          details: validationResult.error.errors 
+        });
+      }
+
+      const { email, firstName, brokerId, brokerName } = validationResult.data;
+
+      // Also subscribe to WordPress newsletter with broker source
+      try {
+        await fetchWordPress(
+          "https://admin.entrylab.io/wp-json/entrylab/v1/newsletter/subscribe",
+          {
+            method: 'POST',
+            body: { email, source: brokerName }
+          }
+        );
+      } catch (wpError) {
+        console.error("Error subscribing to WordPress newsletter:", wpError);
+        // Continue even if WordPress newsletter fails
+      }
+
+      // Store in our database
+      await db.insert(brokerAlerts).values({
+        email,
+        firstName,
+        brokerId,
+        brokerName,
+      });
+
+      res.json({ 
+        success: true, 
+        message: `You'll be notified about exclusive ${brokerName} bonuses and news!` 
+      });
+    } catch (error) {
+      console.error("Error storing broker alert:", error);
+      res.status(500).json({ error: "Failed to subscribe to alerts" });
     }
   });
 
@@ -367,7 +415,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/reviews/submit", async (req, res) => {
     try {
-      const { rating, title, reviewText, name, email, newsletterOptin, brokerId, itemType, recaptchaToken } = req.body;
+      const { rating, title, reviewText, name, email, newsletterOptin, brokerId, brokerName, itemType, recaptchaToken } = req.body;
       
       // Verify reCAPTCHA
       const isValidCaptcha = await verifyRecaptcha(recaptchaToken);
@@ -418,7 +466,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "https://admin.entrylab.io/wp-json/entrylab/v1/newsletter/subscribe",
             {
               method: 'POST',
-              body: { email }
+              body: { email, source: brokerName ? `${brokerName} Review` : 'Review Page' }
             }
           );
         } catch (newsletterError) {

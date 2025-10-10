@@ -13,6 +13,7 @@ import { transformPropFirmDetailed } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
 import { ReviewModalSimple as ReviewModal } from "@/components/ReviewModalSimple";
+import { BrokerAlertPopup } from "@/components/BrokerAlertPopup";
 
 export default function PropFirmReview() {
   const params = useParams();
@@ -668,14 +669,21 @@ export default function PropFirmReview() {
       <Footer />
       
       {propFirm ? (
-        <ReviewModal
-          isOpen={isReviewModalOpen}
-          onClose={() => setIsReviewModalOpen(false)}
-          brokerName={stripHtml(propFirm.name)}
-          brokerLogo={propFirm.logo}
-          brokerId={propFirm.id}
-          itemType="prop-firm"
-        />
+        <>
+          <ReviewModal
+            isOpen={isReviewModalOpen}
+            onClose={() => setIsReviewModalOpen(false)}
+            brokerName={stripHtml(propFirm.name)}
+            brokerLogo={propFirm.logo}
+            brokerId={propFirm.id}
+            itemType="prop-firm"
+          />
+          <BrokerAlertPopup
+            brokerId={propFirm.id}
+            brokerName={stripHtml(propFirm.name)}
+            brokerType="prop-firm"
+          />
+        </>
       ) : null}
     </div>
   );
