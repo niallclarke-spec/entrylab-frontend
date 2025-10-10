@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { HelmetProvider } from "react-helmet-async";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
+import { autoPrefetchRoutes } from "@/lib/prefetch";
 
 const Home = lazy(() => import("@/pages/Home"));
 const Article = lazy(() => import("@/pages/Article"));
@@ -79,6 +80,11 @@ function Router() {
 }
 
 function App() {
+  // Auto-prefetch high-traffic routes after 2 seconds
+  useEffect(() => {
+    autoPrefetchRoutes(2000);
+  }, []);
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
