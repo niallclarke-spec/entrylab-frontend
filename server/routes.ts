@@ -371,6 +371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Also subscribe to WordPress newsletter with broker source
       try {
+        console.log(`[Broker Alert] Subscribing ${email} to newsletter with source: "${brokerName}"`);
         await fetchWordPress(
           "https://admin.entrylab.io/wp-json/entrylab/v1/newsletter/subscribe",
           {
@@ -378,6 +379,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             body: { email, source: brokerName }
           }
         );
+        console.log(`[Broker Alert] Successfully subscribed ${email} to newsletter with source: "${brokerName}"`);
       } catch (wpError) {
         console.error("Error subscribing to WordPress newsletter:", wpError);
         // Continue even if WordPress newsletter fails
