@@ -181,3 +181,14 @@ git push origin stable-YYYY-MM-DD
   - **Visual Consistency**: All article thumbnails have subtle gradient overlay (`bg-gradient-to-t from-black/20 to-transparent`)
   - **Implementation**: Absolute positioned div layer over thumbnail images in ArticleCard component
   - **Purpose**: Provides consistent premium visual treatment across all article cards
+- **Brand-Specific Statistics System** (October 10, 2025):
+  - **Dynamic Social Proof**: Broker alert popup displays brand-specific trader counts and dollar values that auto-increment daily
+  - **Configuration**: `client/src/lib/brandStats.ts` centralizes all brand statistics with base values and daily increments
+  - **Tracked Brands**:
+    - **Brokers**: HeroFX (72 traders/$37K, +2/+$726), GatesFX (12 traders/$11.2K, +1/+$241), Liquid Brokers (9 traders/$9.2K, +1/+$381)
+    - **Prop Firms**: FunderPro (44 traders/$8.7K, +2/+$178), TX3 Funding (8 traders/$1.1K, +1/+$97)
+  - **Default Fallbacks**: New brokers start at 11 traders/$1,700; new prop firms at 7 traders/$680
+  - **Calculations**: Base value + (days since Oct 10, 2025 × daily increment), with case-insensitive brand name matching
+  - **Formatting**: Dollar values display with thousand separators (e.g., $37,000)
+  - **Messaging**: Prop firms show "saved X traders up to $Y in challenge fees 💰"; brokers show "X traders unlocked bonuses worth $Y through our alerts 🎁"
+  - **Integration**: BrokerAlertPopup component automatically uses correct stats based on brand name and type
