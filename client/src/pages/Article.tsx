@@ -1,6 +1,6 @@
 import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
@@ -15,6 +15,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { transformBroker } from "@/lib/transforms";
 import type { WordPressPost, Broker } from "@shared/schema";
 import { trackPageView, trackArticleView } from "@/lib/gtm";
+
+// Lazy load broker popup for better performance
+const BrokerAlertPopup = lazy(() => import("@/components/BrokerAlertPopup").then(m => ({ default: m.BrokerAlertPopup })));
 
 export default function Article() {
   const params = useParams();
@@ -46,6 +49,9 @@ export default function Article() {
   const wpBrokers = wordpressBrokers?.map(transformBroker).filter((b): b is Broker => b !== null) || [];
   const featuredBroker = wpBrokers.find(b => b.featured);
   const popularBrokers = wpBrokers.slice(0, 3);
+  
+  // Transform related broker if it exists (from ACF relationship field)
+  const relatedBroker = (post as any)?.relatedBroker ? transformBroker((post as any).relatedBroker) : null;
 
   const getCategoryName = (p: WordPressPost) => p._embedded?.["wp:term"]?.[0]?.[0]?.name || "News";
   const getAuthorName = (p: WordPressPost) => p._embedded?.author?.[0]?.name || "EntryLab Team";
@@ -462,6 +468,27 @@ export default function Article() {
                 </p>
               </div>
 
+              {/* Mobile: Related Broker (if exists) */}
+              {relatedBroker && (
+                <div className="lg:hidden mt-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500/10">
+                      <ShieldCheck className="h-5 w-5 text-emerald-500" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-foreground">Featured in Article</h3>
+                  </div>
+                  <BrokerCardEnhanced
+                    name={relatedBroker.name}
+                    logo={relatedBroker.logo}
+                    verified={relatedBroker.verified}
+                    rating={relatedBroker.rating}
+                    pros={relatedBroker.pros}
+                    highlights={relatedBroker.highlights}
+                    link={relatedBroker.link}
+                  />
+                </div>
+              )}
+
               {/* Mobile: Popular Brokers Below Article */}
               {popularBrokers.length > 0 && (
                 <div className="lg:hidden mt-8 space-y-6">
@@ -497,6 +524,27 @@ export default function Article() {
             {/* Desktop: Sticky Sidebar */}
             <aside className="hidden lg:block">
               <div className="sticky top-24 space-y-8">
+                {/* Related Broker (from ACF field) */}
+                {relatedBroker && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-6">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/10">
+                        <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-foreground">Featured in Article</h3>
+                    </div>
+                    <BrokerCardEnhanced
+                      name={relatedBroker.name}
+                      logo={relatedBroker.logo}
+                      verified={relatedBroker.verified}
+                      rating={relatedBroker.rating}
+                      pros={relatedBroker.pros}
+                      highlights={relatedBroker.highlights}
+                      link={relatedBroker.link}
+                    />
+                  </div>
+                )}
+
                 {/* Popular Brokers */}
                 {popularBrokers.length > 0 && (
                   <div>
@@ -551,6 +599,18 @@ export default function Article() {
       </main>
 
       <Footer />
+      
+      {/* Broker Alert Popup - only for articles with related broker */}
+      {relatedBroker && (
+        <Suspense fallback={null}>
+          <BrokerAlertPopup
+            brokerId={relatedBroker.id}
+            brokerName={stripHtml(relatedBroker.name)}
+            brokerLogo={relatedBroker.logo}
+            brokerType="broker"
+          />
+        </Suspense>
+      )}
     </div>
   );
 }
