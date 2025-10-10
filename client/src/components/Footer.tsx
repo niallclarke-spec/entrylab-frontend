@@ -12,16 +12,16 @@ export function Footer() {
           </div>
           
           <div className="flex items-center gap-6">
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-twitter">
+            <a href="#" aria-label="Follow us on X (Twitter)" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-twitter">
               <SiX className="h-5 w-5" />
             </a>
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-facebook">
+            <a href="#" aria-label="Follow us on Facebook" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-facebook">
               <SiFacebook className="h-5 w-5" />
             </a>
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-linkedin">
+            <a href="#" aria-label="Follow us on LinkedIn" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-linkedin">
               <SiLinkedin className="h-5 w-5" />
             </a>
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-youtube">
+            <a href="#" aria-label="Follow us on YouTube" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-youtube">
               <SiYoutube className="h-5 w-5" />
             </a>
           </div>
