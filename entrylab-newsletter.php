@@ -15,6 +15,7 @@ function entrylab_create_newsletter_table() {
     $table_name = $wpdb->prefix . 'entrylab_newsletter';
     $charset_collate = $wpdb->get_charset_collate();
 
+    // Create table if it doesn't exist
     $sql = "CREATE TABLE IF NOT EXISTS $table_name (
         id bigint(20) NOT NULL AUTO_INCREMENT,
         email varchar(255) NOT NULL,
@@ -28,6 +29,48 @@ function entrylab_create_newsletter_table() {
 
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
+    
+    // Check if source column exists, if not add it (for existing installations)
+    $column_exists = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = %s 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = 'source'",
+        DB_NAME,
+        $table_name
+    ));
+    
+    if (empty($column_exists)) {
+        $wpdb->query("ALTER TABLE $table_name ADD COLUMN source varchar(255) DEFAULT 'Unknown' AFTER email");
+    }
+    
+    // Check if ip_address column exists, if not add it
+    $ip_column_exists = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = %s 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = 'ip_address'",
+        DB_NAME,
+        $table_name
+    ));
+    
+    if (empty($ip_column_exists)) {
+        $wpdb->query("ALTER TABLE $table_name ADD COLUMN ip_address varchar(45) DEFAULT NULL AFTER subscribed_at");
+    }
+    
+    // Check if status column exists, if not add it
+    $status_column_exists = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = %s 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = 'status'",
+        DB_NAME,
+        $table_name
+    ));
+    
+    if (empty($status_column_exists)) {
+        $wpdb->query("ALTER TABLE $table_name ADD COLUMN status varchar(20) DEFAULT 'active'");
+    }
 }
 register_activation_hook(__FILE__, 'entrylab_create_newsletter_table');
 add_action('after_setup_theme', 'entrylab_create_newsletter_table');
