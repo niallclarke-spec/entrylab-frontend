@@ -391,8 +391,8 @@ export function ReviewModalSimple({
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                 <p className="text-sm text-foreground">
                   ✓ Get early access to broker news you actually care about<br />
-                  ✓ Receieve exclusive access to broker and prop firm VIP competitions<br />
-                  ✓ We wont spam you
+                  ✓ Receive exclusive access to broker and prop firm VIP competitions<br />
+                  ✓ We won't spam you
                 </p>
               </div>
             </div>
