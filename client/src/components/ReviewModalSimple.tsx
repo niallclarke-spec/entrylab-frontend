@@ -190,6 +190,18 @@ export function ReviewModalSimple({
         description: "Thank you for sharing your experience. Your review will be published after approval.",
       });
 
+      // Track brand-specific GTM event
+      const eventName = `${brokerName.toLowerCase().replace(/\s+/g, '_')}_review_submitted`;
+      if (window.dataLayer) {
+        window.dataLayer.push({
+          event: eventName,
+          broker_name: brokerName,
+          broker_type: itemType,
+          broker_id: brokerId,
+          rating: formData.rating,
+        });
+      }
+
       onClose();
       setStep(1);
       setFormData({

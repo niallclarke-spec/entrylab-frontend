@@ -28,6 +28,16 @@ export function NewsletterCTA() {
         throw new Error("Subscription failed");
       }
 
+      // Track homepage-specific GTM event
+      if (window.dataLayer) {
+        window.dataLayer.push({
+          event: 'homepage_newsletter_signup',
+          email_domain: email.split('@')[1], // Track domain only for privacy
+          signup_location: 'home_page',
+        });
+      }
+
+      // Keep legacy tracking for backward compatibility
       trackNewsletterSignup(email, 'newsletter_cta');
 
       toast({
