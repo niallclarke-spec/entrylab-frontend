@@ -224,7 +224,7 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
                 <span className="text-xs font-semibold text-amber-500">EXCLUSIVE ACCESS</span>
               </div>
               <h3 className="text-2xl font-bold text-foreground mb-1">
-                Get VIP Bonuses First
+                {brokerType === "prop-firm" ? "Get VIP Discounts First" : "Get VIP Bonuses First"}
               </h3>
               <p className="text-sm text-muted-foreground">
                 Join {traderCount}+ traders getting early access to {brokerName} deals
@@ -296,7 +296,7 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
               ) : (
                 <>
                   <Gift className="h-4 w-4 mr-2" />
-                  Unlock VIP Bonuses Now
+                  {brokerType === "prop-firm" ? "Unlock VIP Discounts Now" : "Unlock VIP Bonuses Now"}
                 </>
               )}
             </Button>
