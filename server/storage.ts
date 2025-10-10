@@ -100,48 +100,63 @@ export class MemStorage implements IStorage {
   }
 
   async incrementArticleView(slug: string): Promise<number> {
-    // Try to increment existing record
-    const existing = await db.select().from(articleViews).where(eq(articleViews.articleSlug, slug)).limit(1);
-    
-    if (existing.length > 0) {
-      const updated = await db
-        .update(articleViews)
-        .set({ 
-          viewCount: sql`${articleViews.viewCount} + 1`,
-          lastViewed: new Date()
-        })
-        .where(eq(articleViews.articleSlug, slug))
-        .returning();
-      return updated[0].viewCount;
-    } else {
-      // Create new record
-      const created = await db
-        .insert(articleViews)
-        .values({ articleSlug: slug, viewCount: 1 })
-        .returning();
-      return created[0].viewCount;
+    try {
+      // Try to increment existing record
+      const existing = await db.select().from(articleViews).where(eq(articleViews.articleSlug, slug)).limit(1);
+      
+      if (existing.length > 0) {
+        const updated = await db
+          .update(articleViews)
+          .set({ 
+            viewCount: sql`${articleViews.viewCount} + 1`,
+            lastViewed: new Date()
+          })
+          .where(eq(articleViews.articleSlug, slug))
+          .returning();
+        return updated[0].viewCount;
+      } else {
+        // Create new record
+        const created = await db
+          .insert(articleViews)
+          .values({ articleSlug: slug, viewCount: 1 })
+          .returning();
+        return created[0].viewCount;
+      }
+    } catch (error) {
+      console.error('Article view tracking error (table may not exist):', error);
+      return 0;
     }
   }
 
   async getArticleViewCount(slug: string): Promise<number> {
-    const result = await db.select().from(articleViews).where(eq(articleViews.articleSlug, slug)).limit(1);
-    return result.length > 0 ? result[0].viewCount : 0;
+    try {
+      const result = await db.select().from(articleViews).where(eq(articleViews.articleSlug, slug)).limit(1);
+      return result.length > 0 ? result[0].viewCount : 0;
+    } catch (error) {
+      console.error('Article view count fetch error (table may not exist):', error);
+      return 0;
+    }
   }
 
   async getArticleViewCountsBatch(slugs: string[]): Promise<Record<string, number>> {
     if (slugs.length === 0) return {};
     
-    const results = await db
-      .select()
-      .from(articleViews)
-      .where(sql`${articleViews.articleSlug} = ANY(${slugs})`);
-    
-    const viewCounts: Record<string, number> = {};
-    results.forEach(result => {
-      viewCounts[result.articleSlug] = result.viewCount;
-    });
-    
-    return viewCounts;
+    try {
+      const results = await db
+        .select()
+        .from(articleViews)
+        .where(sql`${articleViews.articleSlug} = ANY(${slugs})`);
+      
+      const viewCounts: Record<string, number> = {};
+      results.forEach(result => {
+        viewCounts[result.articleSlug] = result.viewCount;
+      });
+      
+      return viewCounts;
+    } catch (error) {
+      console.error('Article view counts batch fetch error (table may not exist):', error);
+      return {};
+    }
   }
 }
 
