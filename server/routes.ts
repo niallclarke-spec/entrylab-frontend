@@ -4,6 +4,7 @@ import https from "https";
 import { storage } from "./storage";
 import { db } from "./db";
 import { brokerAlerts, insertBrokerAlertSchema } from "../shared/schema";
+import { apiCache } from "./cache";
 
 // Helper function to make WordPress API requests using native https module
 function fetchWordPress(url: string, options: { method?: string; body?: any; requireAuth?: boolean } = {}): Promise<any> {
@@ -109,6 +110,34 @@ function fetchWordPress(url: string, options: { method?: string; body?: any; req
   });
 }
 
+// Cached WordPress API fetcher
+async function fetchWordPressWithCache(
+  url: string, 
+  options: { method?: string; body?: any; requireAuth?: boolean; cacheTTL?: number } = {}
+): Promise<any> {
+  const method = options.method || 'GET';
+  const cacheTTL = options.cacheTTL || 300; // 5 minutes default
+  
+  // Only cache GET requests
+  if (method === 'GET') {
+    const cacheKey = url;
+    const cached = apiCache.get(cacheKey);
+    
+    if (cached) {
+      console.log(`[Cache HIT] ${url}`);
+      return cached;
+    }
+    
+    console.log(`[Cache MISS] ${url}`);
+    const data = await fetchWordPress(url, options);
+    apiCache.set(cacheKey, data, cacheTTL);
+    return data;
+  }
+  
+  // Don't cache non-GET requests
+  return fetchWordPress(url, options);
+}
+
 // Helper function to handle WordPress API errors
 function handleWordPressError(error: any, res: any, operation: string) {
   console.error(`Error ${operation}:`, error.message);
@@ -200,7 +229,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         url += `&categories=${category}`;
       }
       
-      const posts = await fetchWordPress(url);
+      const posts = await fetchWordPressWithCache(url, { cacheTTL: 300 }); // 5 min cache
       res.json(posts);
     } catch (error) {
       handleWordPressError(error, res, "fetch posts");
@@ -216,7 +245,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         url += `?slug=${slug}`;
       }
       
-      const categories = await fetchWordPress(url);
+      const categories = await fetchWordPressWithCache(url, { cacheTTL: 600 }); // 10 min cache
       res.json(categories);
     } catch (error) {
       handleWordPressError(error, res, "fetch categories");
@@ -225,8 +254,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/wordpress/brokers", async (req, res) => {
     try {
-      const brokers = await fetchWordPress(
-        "https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard"
+      const brokers = await fetchWordPressWithCache(
+        "https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard",
+        { cacheTTL: 600 } // 10 min cache for broker listings
       );
       res.json(brokers);
     } catch (error) {
@@ -236,8 +266,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/wordpress/prop-firms", async (req, res) => {
     try {
-      const propFirms = await fetchWordPress(
-        "https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard"
+      const propFirms = await fetchWordPressWithCache(
+        "https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard",
+        { cacheTTL: 600 } // 10 min cache for prop firm listings
       );
       res.json(propFirms);
     } catch (error) {
@@ -248,8 +279,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/prop-firm-categories", async (req, res) => {
     try {
       // WordPress uses "prop-firm-category" slug (with dashes)
-      const categories = await fetchWordPress(
-        "https://admin.entrylab.io/wp-json/wp/v2/prop-firm-category?per_page=100"
+      const categories = await fetchWordPressWithCache(
+        "https://admin.entrylab.io/wp-json/wp/v2/prop-firm-category?per_page=100",
+        { cacheTTL: 600 } // 10 min cache
       );
       res.json(categories);
     } catch (error) {
@@ -261,8 +293,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/broker/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
-      const brokers = await fetchWordPress(
-        `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`
+      const brokers = await fetchWordPressWithCache(
+        `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`,
+        { cacheTTL: 600 } // 10 min cache for individual broker
       );
       
       if (brokers.length === 0) {
@@ -278,8 +311,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/prop-firm/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
-      const propFirms = await fetchWordPress(
-        `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`
+      const propFirms = await fetchWordPressWithCache(
+        `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`,
+        { cacheTTL: 600 } // 10 min cache for individual prop firm
       );
       
       if (propFirms.length === 0) {
@@ -300,8 +334,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/trust-signals", async (req, res) => {
     try {
       // Fetch trust signals from WordPress options
-      const signals = await fetchWordPress(
-        "https://admin.entrylab.io/wp-json/entrylab/v1/trust-signals"
+      const signals = await fetchWordPressWithCache(
+        "https://admin.entrylab.io/wp-json/entrylab/v1/trust-signals",
+        { cacheTTL: 900 } // 15 min cache for trust signals
       );
       res.json(signals);
     } catch (error) {
@@ -319,8 +354,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/post/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
-      const posts = await fetchWordPress(
-        `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed`
+      const posts = await fetchWordPressWithCache(
+        `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed`,
+        { cacheTTL: 300 } // 5 min cache for individual articles
       );
       
       if (posts.length === 0) {
@@ -489,8 +525,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { itemId } = req.params;
       
       // Query WordPress for reviews where the ACF relationship field 'reviewed_item' matches the broker/prop firm ID
-      const reviews = await fetchWordPress(
-        `https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed`
+      const reviews = await fetchWordPressWithCache(
+        `https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed`,
+        { cacheTTL: 600 } // 10 min cache for reviews
       );
       
       // Filter reviews by the reviewed_item ACF field on the backend
