@@ -504,43 +504,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Article view tracking endpoints
-  app.post("/api/articles/:slug/view", async (req, res) => {
-    try {
-      const { slug } = req.params;
-      const viewCount = await storage.incrementArticleView(slug);
-      res.json({ viewCount });
-    } catch (error) {
-      console.error("Error tracking article view:", error);
-      res.status(500).json({ error: "Failed to track view" });
-    }
-  });
-
-  app.get("/api/articles/:slug/views", async (req, res) => {
-    try {
-      const { slug } = req.params;
-      const viewCount = await storage.getArticleViewCount(slug);
-      res.json({ viewCount });
-    } catch (error) {
-      console.error("Error fetching article views:", error);
-      res.status(500).json({ error: "Failed to fetch views" });
-    }
-  });
-
-  // Batch fetch view counts for multiple articles
-  app.post("/api/articles/views/batch", async (req, res) => {
-    try {
-      const { slugs } = req.body;
-      if (!Array.isArray(slugs)) {
-        return res.status(400).json({ error: "slugs must be an array" });
-      }
-      const viewCounts = await storage.getArticleViewCountsBatch(slugs);
-      res.json(viewCounts);
-    } catch (error) {
-      console.error("Error fetching batch views:", error);
-      res.status(500).json({ error: "Failed to fetch views" });
-    }
-  });
 
   const httpServer = createServer(app);
 
