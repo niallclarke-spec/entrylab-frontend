@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
+import { rateLimit } from "express-rate-limit";
 import { registerRoutes } from "./routes";
 import { log } from "./logger";
 
@@ -36,6 +37,24 @@ app.use((req, res, next) => {
 
   next();
 });
+
+// Rate limiting for API endpoints - 100 requests per 15 minutes per IP
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: 'Too many requests from this IP, please try again later.',
+  skip: (req) => {
+    // Skip rate limiting in development for easier testing
+    // Handle all localhost variations: ::1 (IPv6), 127.0.0.1 (IPv4), ::ffff:127.0.0.1 (IPv4-mapped IPv6)
+    const localhostIPs = ['::1', '127.0.0.1', '::ffff:127.0.0.1'];
+    return app.get("env") === "development" && localhostIPs.includes(req.ip || '');
+  }
+});
+
+// Apply rate limiting to all /api routes
+app.use('/api', apiLimiter);
 
 (async () => {
   const server = await registerRoutes(app);
