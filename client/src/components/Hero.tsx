@@ -64,7 +64,6 @@ export function Hero({ title, excerpt, author, date, category, link, imageUrl }:
                 alt={cleanTitle}
                 width="600"
                 height="350"
-                fetchPriority="high"
                 className="w-full h-full object-cover"
                 data-testid="img-hero-featured"
               />
