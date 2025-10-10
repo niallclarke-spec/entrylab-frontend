@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { getBrandStats, getBrandMessage } from "@/lib/brandStats";
 
 interface BrokerAlertPopupProps {
   brokerId: string;
@@ -19,17 +20,10 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
   const [email, setEmail] = useState("");
   const { toast } = useToast();
 
-  // Calculate dynamic trader count (72 + days since Oct 10, 2025 × 2)
-  const getTraderCount = () => {
-    const baseCount = 72;
-    const dailyIncrease = 2;
-    const launchDate = new Date('2025-10-10');
-    const today = new Date();
-    const daysSinceLaunch = Math.floor((today.getTime() - launchDate.getTime()) / (1000 * 60 * 60 * 24));
-    return baseCount + (daysSinceLaunch * dailyIncrease);
-  };
-
-  const traderCount = getTraderCount();
+  // Get brand-specific stats
+  const brandStats = getBrandStats(brokerName, brokerType);
+  const traderCount = brandStats.traderCount;
+  const dollarValue = brandStats.dollarValue;
 
   const subscribeMutation = useMutation({
     mutationFn: async () => {
@@ -261,15 +255,15 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
 
           {/* Social Proof */}
           <div className="bg-primary/5 border border-primary/10 rounded-lg p-3 text-center">
-            {brokerType === "prop-firm" ? (
-              <p className="text-sm text-foreground">
-                💰 We have saved <span className="font-bold text-primary">{traderCount} traders</span> up to <span className="font-bold text-amber-500">$14,720</span> in challenge fees
-              </p>
-            ) : (
-              <p className="text-sm text-foreground">
-                🎁 <span className="font-bold text-primary">{traderCount} traders</span> unlocked bonuses worth <span className="font-bold text-amber-500">$50,000+</span> through our alerts
-              </p>
-            )}
+            <p className="text-sm text-foreground">
+              <span className="font-bold text-primary">{traderCount} traders</span> {' '}
+              {brokerType === "prop-firm" ? (
+                <>we have saved up to <span className="font-bold text-amber-500">{dollarValue}</span> in challenge fees</>
+              ) : (
+                <>unlocked bonuses worth <span className="font-bold text-amber-500">{dollarValue}</span> through our alerts</>
+              )}
+              {brokerType === "prop-firm" ? ' 💰' : ' 🎁'}
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3">
