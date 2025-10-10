@@ -1,5 +1,5 @@
 import { useParams } from "wouter";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -9,12 +9,11 @@ import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { ArticleCard } from "@/components/ArticleCard";
 import { NewsletterCTA } from "@/components/NewsletterCTA";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Clock, User, Share2, BookOpen, TrendingUp, Building2, BarChart3, AlertCircle, ShieldCheck, Award, Eye } from "lucide-react";
+import { Loader2, Clock, User, Share2, BookOpen, TrendingUp, Building2, BarChart3, AlertCircle, ShieldCheck, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { transformBroker } from "@/lib/transforms";
 import type { WordPressPost, Broker } from "@shared/schema";
 import { trackPageView, trackArticleView } from "@/lib/gtm";
-import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function Article() {
   const params = useParams();
@@ -35,21 +34,6 @@ export default function Article() {
 
   const { data: posts } = useQuery<WordPressPost[]>({
     queryKey: ["/api/wordpress/posts"],
-  });
-
-  // Fetch view count
-  const { data: viewData } = useQuery<{ viewCount: number }>({
-    queryKey: [`/api/articles/${slug}/views`],
-    enabled: !!slug,
-  });
-
-  // Track view mutation
-  const viewMutation = useMutation({
-    mutationFn: () => apiRequest("POST", `/api/articles/${slug}/view`),
-    onSuccess: () => {
-      // Invalidate the view count query to refetch the updated count
-      queryClient.invalidateQueries({ queryKey: [`/api/articles/${slug}/views`] });
-    },
   });
 
   const stripHtml = (html: string) => {
@@ -79,11 +63,6 @@ export default function Article() {
         categories: categories,
         author: author,
       });
-
-      // Track article view
-      if (slug) {
-        viewMutation.mutate();
-      }
     }
   }, [post, slug]);
 
@@ -385,12 +364,6 @@ export default function Article() {
                         <Clock className="h-4 w-4" />
                         <span>{new Date(post.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
                       </div>
-                      {viewData && viewData.viewCount > 10 && (
-                        <div className="flex items-center gap-2" data-testid="text-view-count">
-                          <Eye className="h-4 w-4" />
-                          <span>{viewData.viewCount.toLocaleString()} views</span>
-                        </div>
-                      )}
                     </div>
                     <Button variant="outline" size="sm" className="gap-2 border-emerald-500/50 text-emerald-500 hover:bg-emerald-500/10">
                       <Share2 className="h-4 w-4" />
