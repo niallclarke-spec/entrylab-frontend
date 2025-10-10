@@ -37,8 +37,17 @@ export default function Archive() {
   const getAuthorName = (post: WordPressPost) => 
     post._embedded?.author?.[0]?.name || "EntryLab Team";
   
-  const getFeaturedImage = (post: WordPressPost) => 
-    post._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
+  const getFeaturedImage = (post: WordPressPost) => {
+    const media = post._embedded?.["wp:featuredmedia"]?.[0];
+    if (!media) return undefined;
+    const sizes = (media as any).media_details?.sizes;
+    if (sizes) {
+      if (sizes.large?.source_url) return sizes.large.source_url;
+      if (sizes.medium_large?.source_url) return sizes.medium_large.source_url;
+      if (sizes.medium?.source_url) return sizes.medium.source_url;
+    }
+    return media.source_url;
+  };
 
   const stripHtml = (html: string) => {
     const div = document.createElement("div");
