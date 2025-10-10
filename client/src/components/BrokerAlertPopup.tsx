@@ -15,6 +15,15 @@ interface BrokerAlertPopupProps {
   brokerType: "broker" | "prop-firm";
 }
 
+// Helper function to normalize brand names for GTM event names
+const normalizeEventName = (brandName: string): string => {
+  return brandName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '') // Remove all non-alphanumeric except spaces
+    .replace(/\s+/g, '_')         // Replace spaces with underscores
+    .replace(/^_+|_+$/g, '');     // Remove leading/trailing underscores
+};
+
 export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType }: BrokerAlertPopupProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [email, setEmail] = useState("");
@@ -36,8 +45,8 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
       return res.json();
     },
     onSuccess: () => {
-      // Track brand-specific GTM event
-      const eventName = `${brokerName.toLowerCase().replace(/\s+/g, '_')}_popup_signup`;
+      // Track brand-specific GTM event with sanitized event name
+      const eventName = `${normalizeEventName(brokerName)}_popup_signup`;
       if (window.dataLayer) {
         window.dataLayer.push({
           event: eventName,

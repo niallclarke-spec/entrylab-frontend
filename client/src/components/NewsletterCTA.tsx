@@ -28,17 +28,20 @@ export function NewsletterCTA() {
         throw new Error("Subscription failed");
       }
 
-      // Track homepage-specific GTM event
+      // Track homepage-specific GTM event with sanitized email domain
+      const trimmedEmail = email.trim();
+      const emailDomain = trimmedEmail.includes('@') ? trimmedEmail.split('@')[1] : 'unknown';
+      
       if (window.dataLayer) {
         window.dataLayer.push({
           event: 'homepage_newsletter_signup',
-          email_domain: email.split('@')[1], // Track domain only for privacy
+          email_domain: emailDomain,
           signup_location: 'home_page',
         });
       }
 
       // Keep legacy tracking for backward compatibility
-      trackNewsletterSignup(email, 'newsletter_cta');
+      trackNewsletterSignup(trimmedEmail, 'newsletter_cta');
 
       toast({
         title: "Subscribed!",
