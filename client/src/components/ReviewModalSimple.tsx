@@ -372,7 +372,7 @@ export function ReviewModalSimple({
 
           {step === 6 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-foreground">Almost Done!</h3>
+              <h3 className="text-lg font-medium text-foreground">Almost done | Your Review will be submitted after approval</h3>
               <div className="flex items-start gap-2">
                 <Checkbox
                   checked={formData.newsletterOptin}
@@ -382,7 +382,7 @@ export function ReviewModalSimple({
                   data-testid="checkbox-newsletter"
                 />
                 <label className="text-sm text-muted-foreground">
-                  Subscribe to our newsletter for forex market updates and broker news
+                  Join the list - one lucky subscriber wins a free funded challenge every week.
                 </label>
               </div>
               
@@ -390,9 +390,9 @@ export function ReviewModalSimple({
               
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                 <p className="text-sm text-foreground">
-                  ✓ Your review will be published after approval<br />
-                  ✓ You can unsubscribe from emails anytime<br />
-                  ✓ Your email stays private
+                  ✓ Get early access to broker news you actually care about<br />
+                  ✓ Receieve exclusive access to broker and prop firm VIP competitions<br />
+                  ✓ We wont spam you
                 </p>
               </div>
             </div>
