@@ -6,6 +6,7 @@ import { Link } from "wouter";
 import { useState } from "react";
 import logoImage from "@assets/logo.png";
 import { MarketTicker } from "@/components/MarketTicker";
+import { prefetchRoute } from "@/lib/prefetch";
 
 export function Navigation() {
   const { theme, setTheme } = useTheme();
@@ -25,6 +26,7 @@ export function Navigation() {
                   href="/brokers"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center"
                   data-testid="link-brokers"
+                  onMouseEnter={() => prefetchRoute('/brokers')}
                 >
                   Verified Brokers
                 </Link>
@@ -32,6 +34,7 @@ export function Navigation() {
                   href="/prop-firms"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center"
                   data-testid="link-prop-firms"
+                  onMouseEnter={() => prefetchRoute('/prop-firms')}
                 >
                   Verified Prop Firms
                 </Link>
@@ -39,6 +42,7 @@ export function Navigation() {
                   href="/archive"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
                   data-testid="link-news"
+                  onMouseEnter={() => prefetchRoute('/archive')}
                 >
                   <Newspaper className="h-4 w-4 text-emerald-500" />
                   News
@@ -82,6 +86,7 @@ export function Navigation() {
                 href="/brokers"
                 className="block py-2 text-sm text-muted-foreground hover:text-foreground"
                 data-testid="link-mobile-brokers"
+                onTouchStart={() => prefetchRoute('/brokers')}
               >
                 Verified Brokers
               </Link>
@@ -89,6 +94,7 @@ export function Navigation() {
                 href="/prop-firms"
                 className="block py-2 text-sm text-muted-foreground hover:text-foreground"
                 data-testid="link-mobile-prop-firms"
+                onTouchStart={() => prefetchRoute('/prop-firms')}
               >
                 Verified Prop Firms
               </Link>
@@ -96,6 +102,7 @@ export function Navigation() {
                 href="/archive"
                 className="block py-2 text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5"
                 data-testid="link-mobile-news"
+                onTouchStart={() => prefetchRoute('/archive')}
               >
                 <Newspaper className="h-4 w-4 text-emerald-500" />
                 News
