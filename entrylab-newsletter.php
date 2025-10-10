@@ -138,6 +138,12 @@ function entrylab_newsletter_admin_page() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'entrylab_newsletter';
     
+    // Handle manual database update
+    if (isset($_POST['update_database']) && check_admin_referer('entrylab_update_db')) {
+        entrylab_create_newsletter_table();
+        echo '<div class="notice notice-success is-dismissible"><p><strong>Database updated successfully!</strong> The source column has been added.</p></div>';
+    }
+    
     // Handle CSV export
     if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         $subscribers = $wpdb->get_results("SELECT * FROM $table_name ORDER BY subscribed_at DESC");
@@ -172,9 +178,19 @@ function entrylab_newsletter_admin_page() {
         <h1>Newsletter Subscribers</h1>
         <p>Total Subscribers: <strong><?php echo $total_count; ?></strong></p>
         
-        <a href="?page=entrylab-newsletter&export=csv" class="button button-primary" style="margin-bottom: 20px;">
-            Export to CSV
-        </a>
+        <div style="margin-bottom: 20px;">
+            <a href="?page=entrylab-newsletter&export=csv" class="button button-primary">
+                Export to CSV
+            </a>
+            
+            <form method="post" style="display: inline-block; margin-left: 10px;">
+                <?php wp_nonce_field('entrylab_update_db'); ?>
+                <button type="submit" name="update_database" class="button button-secondary" 
+                        onclick="return confirm('This will update the database table to add the source column. Continue?');">
+                    🔄 Update Database
+                </button>
+            </form>
+        </div>
         
         <table class="wp-list-table widefat fixed striped">
             <thead>
@@ -199,12 +215,12 @@ function entrylab_newsletter_admin_page() {
                         <tr>
                             <td><?php echo esc_html($subscriber->id); ?></td>
                             <td><?php echo esc_html($subscriber->email); ?></td>
-                            <td><strong><?php echo esc_html($subscriber->source); ?></strong></td>
+                            <td><strong><?php echo esc_html($subscriber->source ?? 'Unknown'); ?></strong></td>
                             <td><?php echo esc_html($subscriber->subscribed_at); ?></td>
-                            <td><?php echo esc_html($subscriber->ip_address); ?></td>
+                            <td><?php echo esc_html($subscriber->ip_address ?? 'N/A'); ?></td>
                             <td>
-                                <span class="status-<?php echo esc_attr($subscriber->status); ?>">
-                                    <?php echo esc_html(ucfirst($subscriber->status)); ?>
+                                <span class="status-<?php echo esc_attr($subscriber->status ?? 'active'); ?>">
+                                    <?php echo esc_html(ucfirst($subscriber->status ?? 'active')); ?>
                                 </span>
                             </td>
                         </tr>
