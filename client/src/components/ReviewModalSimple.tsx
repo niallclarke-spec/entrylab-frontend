@@ -372,17 +372,18 @@ export function ReviewModalSimple({
 
           {step === 6 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-foreground">Almost done | Your Review will be submitted after approval</h3>
+              <h3 className="text-lg font-medium text-foreground">Almost Done!</h3>
               <div className="flex items-start gap-2">
                 <Checkbox
                   checked={formData.newsletterOptin}
                   onCheckedChange={(checked) =>
                     setFormData({ ...formData, newsletterOptin: checked as boolean })
                   }
+                  className="border-green-500 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"
                   data-testid="checkbox-newsletter"
                 />
                 <label className="text-sm text-muted-foreground">
-                  Join the list - one lucky subscriber wins a free funded challenge every week.
+                  Subscribe — funded challenge giveaway every week!
                 </label>
               </div>
               
@@ -390,9 +391,9 @@ export function ReviewModalSimple({
               
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                 <p className="text-sm text-foreground">
-                  ✓ Get early access to broker news you actually care about<br />
-                  ✓ Receive exclusive access to broker and prop firm VIP competitions<br />
-                  ✓ We won't spam you
+                  ✔ Exclusive trader bonuses + competitions<br />
+                  ✔ VIP Prop Firm Discounts<br />
+                  ✔ No Spam Promise
                 </p>
               </div>
             </div>
