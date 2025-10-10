@@ -167,17 +167,48 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerType }: BrokerAle
   if (!isVisible) return null;
 
   const popupContent = (
-    <div className="fixed inset-0 z-[99999] flex items-end justify-end p-4 sm:p-6 pointer-events-none">
-      <div className="bg-card border border-border rounded-2xl shadow-2xl w-full sm:w-[400px] p-6 pointer-events-auto animate-in slide-in-from-bottom-4 duration-300">
-        <button
-          onClick={handleDismiss}
-          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
-          data-testid="button-close-alert-popup"
+    <>
+      {/* Dark Backdrop */}
+      <div 
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          zIndex: 9998,
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'flex-end',
+          padding: '1rem'
+        }}
+        onClick={handleDismiss}
+      >
+        {/* Popup Card */}
+        <div 
+          style={{
+            position: 'relative',
+            width: '100%',
+            maxWidth: '400px',
+            backgroundColor: 'hsl(var(--card))',
+            border: '1px solid hsl(var(--border))',
+            borderRadius: '1rem',
+            padding: '1.5rem',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)'
+          }}
+          className="animate-in slide-in-from-bottom-4 duration-300"
+          onClick={(e) => e.stopPropagation()}
         >
-          <X className="h-5 w-5" />
-        </button>
+          <button
+            onClick={handleDismiss}
+            className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+            data-testid="button-close-alert-popup"
+          >
+            <X className="h-5 w-5" />
+          </button>
 
-        <div className="space-y-4">
+          <div className="space-y-4">
           <div>
             <h3 className="text-xl font-bold text-foreground mb-2">
               Never Miss Exclusive Bonuses from {brokerName}
@@ -228,8 +259,9 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerType }: BrokerAle
             Maybe later
           </button>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 
   // Create portal for popup
