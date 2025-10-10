@@ -1,0 +1,45 @@
+nclude /var/www/entrylab/redirects.conf;
+
+    location / {
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/entrylab.io/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/entrylab.io/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+root@srv1049571:/var/www/entrylab# sudo sed -i 's/proxy_pass http:\/\/localhost:5000;/proxy_pass http:\/\/localhost:3000;/g' /etc/nginx/sites-available/entrylab.io
+root@srv1049571:/var/www/entrylab# grep proxy_pass /etc/nginx/sites-available/entrylab.io
+        proxy_pass http://localhost:3000;
+root@srv1049571:/var/www/entrylab# sudo nginx -s reload
+2025/10/10 12:34:38 [notice] 35162#35162: signal process started
+root@srv1049571:/var/www/entrylab# sudo tail -20 /var/log/nginx/error.log
+2025/10/10 12:28:34 [error] 34961#34961: *7113 no live upstreams while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /favicon.ico HTTP/1.1", upstream: "http://localhost/favicon.ico", host: "entrylab.io", referrer: "https://entrylab.io/"
+2025/10/10 12:34:57 [error] 35163#35163: *7116 connect() failed (111: Connection refused) while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /broker/gatesfx HTTP/1.1", upstream: "http://[::1]:3000/broker/gatesfx", host: "entrylab.io"
+2025/10/10 12:34:57 [error] 35163#35163: *7116 connect() failed (111: Connection refused) while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /@vite/client HTTP/1.1", upstream: "http://127.0.0.1:3000/@vite/client", host: "entrylab.io", referrer: "https://entrylab.io/broker/gatesfx"
+2025/10/10 12:34:57 [error] 35163#35163: *7116 no live upstreams while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /@vite/client HTTP/1.1", upstream: "http://localhost/@vite/client", host: "entrylab.io", referrer: "https://entrylab.io/broker/gatesfx"
+2025/10/10 12:34:57 [error] 35164#35164: *7117 connect() failed (111: Connection refused) while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /src/main.tsx?v=Owa40QswJuaXD8I_TLvna HTTP/1.1", upstream: "http://[::1]:3000/src/main.tsx?v=Owa40QswJuaXD8I_TLvna", host: "entrylab.io", referrer: "https://entrylab.io/broker/gatesfx"
+2025/10/10 12:34:57 [error] 35164#35164: *7117 connect() failed (111: Connection refused) while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /src/main.tsx?v=Owa40QswJuaXD8I_TLvna HTTP/1.1", upstream: "http://127.0.0.1:3000/src/main.tsx?v=Owa40QswJuaXD8I_TLvna", host: "entrylab.io", referrer: "https://entrylab.io/broker/gatesfx"
+2025/10/10 12:34:57 [error] 35163#35163: *7116 no live upstreams while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /@react-refresh HTTP/1.1", upstream: "http://localhost/@react-refresh", host: "entrylab.io", referrer: "https://entrylab.io/broker/gatesfx"
+2025/10/10 12:34:57 [error] 35163#35163: *7116 no live upstreams while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /favicon.ico HTTP/1.1", upstream: "http://localhost/favicon.ico", host: "entrylab.io", referrer: "https://entrylab.io/broker/gatesfx"
+2025/10/10 12:34:59 [error] 35163#35163: *7116 no live upstreams while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /broker/gatesfx HTTP/1.1", upstream: "http://localhost/broker/gatesfx", host: "entrylab.io"
+2025/10/10 12:35:00 [error] 35163#35163: *7116 no live upstreams while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /favicon.ico HTTP/1.1", upstream: "http://localhost/favicon.ico", host: "entrylab.io", referrer: "https://entrylab.io/broker/gatesfx"
+2025/10/10 12:35:02 [error] 35163#35163: *7116 no live upstreams while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /broker/gatesfx HTTP/1.1", upstream: "http://localhost/broker/gatesfx", host: "entrylab.io"
+2025/10/10 12:35:02 [error] 35163#35163: *7116 no live upstreams while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /favicon.ico HTTP/1.1", upstream: "http://localhost/favicon.ico", host: "entrylab.io", referrer: "https://entrylab.io/broker/gatesfx"
+2025/10/10 12:35:19 [error] 35163#35163: *7116 connect() failed (111: Connection refused) while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /@vite/client HTTP/1.1", upstream: "http://127.0.0.1:3000/@vite/client", host: "entrylab.io", referrer: "https://entrylab.io/broker/gatesfx"
+2025/10/10 12:35:19 [error] 35163#35163: *7116 connect() failed (111: Connection refused) while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /@vite/client HTTP/1.1", upstream: "http://[::1]:3000/@vite/client", host: "entrylab.io", referrer: "https://entrylab.io/broker/gatesfx"
+2025/10/10 12:35:19 [error] 35164#35164: *7117 connect() failed (111: Connection refused) while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /src/main.tsx?v=OvqXTYiDrOCbb6IQRaZmU HTTP/1.1", upstream: "http://127.0.0.1:3000/src/main.tsx?v=OvqXTYiDrOCbb6IQRaZmU", host: "entrylab.io", referrer: "https://entrylab.io/broker/gatesfx"
+2025/10/10 12:35:19 [error] 35164#35164: *7117 connect() failed (111: Connection refused) while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /src/main.tsx?v=OvqXTYiDrOCbb6IQRaZmU HTTP/1.1", upstream: "http://[::1]:3000/src/main.tsx?v=OvqXTYiDrOCbb6IQRaZmU", host: "entrylab.io", referrer: "https://entrylab.io/broker/gatesfx"
+2025/10/10 12:35:19 [error] 35163#35163: *7123 no live upstreams while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /@react-refresh HTTP/1.1", upstream: "http://localhost/@react-refresh", host: "entrylab.io", referrer: "https://entrylab.io/broker/gatesfx"
+2025/10/10 12:35:19 [error] 35164#35164: *7117 no live upstreams while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /favicon.ico HTTP/1.1", upstream: "http://localhost/favicon.ico", host: "entrylab.io", referrer: "https://entrylab.io/broker/gatesfx"
+2025/10/10 12:35:23 [error] 35164#35164: *7117 no live upstreams while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET / HTTP/1.1", upstream: "http://localhost/", host: "entrylab.io"
+2025/10/10 12:35:23 [error] 35164#35164: *7117 no live upstreams while connecting to upstream, client: 51.187.52.66, server: entrylab.io, request: "GET /favicon.ico HTTP/1.1", upstream: "http://localhost/favicon.ico", host: "entrylab.io", referrer: "https://entrylab.io/"
+root@srv1049571:/var/www/entrylab# 

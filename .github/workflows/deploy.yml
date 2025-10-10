@@ -23,5 +23,7 @@ jobs:
           git reset --hard origin/main
           npm install
           npm run build
-          pm2 start npm --name "entrylab" -- start || pm2 restart entrylab
+          pm2 delete entrylab || true
+          NODE_ENV=production PORT=3000 pm2 start dist/index.js --name entrylab --cwd /var/www/entrylab
+          pm2 save
           echo "✅ Deployment complete!"
