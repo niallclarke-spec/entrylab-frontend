@@ -1,6 +1,6 @@
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
@@ -12,8 +12,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { transformBrokerDetailed } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
-import { ReviewModalSimple as ReviewModal } from "@/components/ReviewModalSimple";
-import { BrokerAlertPopup } from "@/components/BrokerAlertPopup";
+
+// Lazy load modals and popups for better performance
+const ReviewModal = lazy(() => import("@/components/ReviewModalSimple").then(m => ({ default: m.ReviewModalSimple })));
+const BrokerAlertPopup = lazy(() => import("@/components/BrokerAlertPopup").then(m => ({ default: m.BrokerAlertPopup })));
 
 export default function BrokerReview() {
   const params = useParams();
@@ -713,23 +715,27 @@ export default function BrokerReview() {
       
       {broker ? (
         <>
-          <ReviewModal
-            isOpen={isReviewModalOpen}
-            onClose={() => {
-              console.log("Closing review modal");
-              setIsReviewModalOpen(false);
-            }}
-            brokerName={stripHtml(broker.name)}
-            brokerLogo={broker.logo}
-            brokerId={broker.id}
-            itemType="broker"
-          />
-          <BrokerAlertPopup
-            brokerId={broker.id}
-            brokerName={stripHtml(broker.name)}
-            brokerLogo={broker.logo}
-            brokerType="broker"
-          />
+          <Suspense fallback={null}>
+            <ReviewModal
+              isOpen={isReviewModalOpen}
+              onClose={() => {
+                console.log("Closing review modal");
+                setIsReviewModalOpen(false);
+              }}
+              brokerName={stripHtml(broker.name)}
+              brokerLogo={broker.logo}
+              brokerId={broker.id}
+              itemType="broker"
+            />
+          </Suspense>
+          <Suspense fallback={null}>
+            <BrokerAlertPopup
+              brokerId={broker.id}
+              brokerName={stripHtml(broker.name)}
+              brokerLogo={broker.logo}
+              brokerType="broker"
+            />
+          </Suspense>
         </>
       ) : null}
     </div>

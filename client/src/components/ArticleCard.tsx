@@ -2,6 +2,7 @@ import { Clock, User, BookOpen } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 interface ArticleCardProps {
   title: string;
@@ -36,11 +37,9 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
       <Link href={link} className="flex flex-col h-full">
         {imageUrl && (
           <div className="relative w-full h-40 overflow-hidden rounded-t-md bg-muted">
-            <img
+            <OptimizedImage
               src={imageUrl}
               alt={title}
-              loading="lazy"
-              decoding="async"
               width="400"
               height="160"
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
