@@ -6,6 +6,13 @@ import { registerRoutes } from "./routes";
 import { log } from "./logger";
 
 const app = express();
+
+// Trust proxy in both development and production
+// Replit's development environment is behind a proxy that sets X-Forwarded-For headers
+// In production, we're behind Nginx reverse proxy
+// Trust only the first proxy (1) for security
+app.set('trust proxy', 1);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
