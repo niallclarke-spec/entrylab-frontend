@@ -109,7 +109,9 @@ export default function BrokerReview() {
               <div className="flex items-center gap-4 mb-6">
                 <img 
                   src={broker.logo} 
-                  alt={stripHtml(broker.name)} 
+                  alt={stripHtml(broker.name)}
+                  width="120"
+                  height="64"
                   className="h-16 w-auto object-contain bg-white rounded-lg p-2"
                   data-testid="img-broker-logo"
                 />

@@ -109,7 +109,9 @@ export default function PropFirmReview() {
               <div className="flex items-center gap-4 mb-6">
                 <img 
                   src={propFirm.logo} 
-                  alt={stripHtml(propFirm.name)} 
+                  alt={stripHtml(propFirm.name)}
+                  width="120"
+                  height="64"
                   className="h-16 w-auto object-contain bg-white rounded-lg p-2"
                   data-testid="img-prop-firm-logo"
                 />
