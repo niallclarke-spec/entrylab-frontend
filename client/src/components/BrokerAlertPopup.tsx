@@ -10,10 +10,11 @@ import { useToast } from "@/hooks/use-toast";
 interface BrokerAlertPopupProps {
   brokerId: string;
   brokerName: string;
+  brokerLogo: string;
   brokerType: "broker" | "prop-firm";
 }
 
-export function BrokerAlertPopup({ brokerId, brokerName, brokerType }: BrokerAlertPopupProps) {
+export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType }: BrokerAlertPopupProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
@@ -179,8 +180,8 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerType }: BrokerAle
           backgroundColor: 'rgba(0, 0, 0, 0.8)',
           zIndex: 9998,
           display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'flex-end',
+          alignItems: 'center',
+          justifyContent: 'center',
           padding: '1rem'
         }}
         onClick={handleDismiss}
@@ -190,14 +191,14 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerType }: BrokerAle
           style={{
             position: 'relative',
             width: '100%',
-            maxWidth: '400px',
+            maxWidth: '450px',
             backgroundColor: 'hsl(var(--card))',
             border: '1px solid hsl(var(--border))',
             borderRadius: '1rem',
-            padding: '1.5rem',
+            padding: '2rem',
             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)'
           }}
-          className="animate-in slide-in-from-bottom-4 duration-300"
+          className="animate-in zoom-in-95 duration-300"
           onClick={(e) => e.stopPropagation()}
         >
           <button
@@ -208,14 +209,24 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerType }: BrokerAle
             <X className="h-5 w-5" />
           </button>
 
-          <div className="space-y-4">
-          <div>
-            <h3 className="text-xl font-bold text-foreground mb-2">
-              Never Miss Exclusive Bonuses from {brokerName}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Get notified when we uncover deposit bonuses or breaking news about {brokerName}
-            </p>
+          <div className="space-y-5">
+          {/* Logo and Header */}
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0">
+              <img 
+                src={brokerLogo} 
+                alt={brokerName}
+                className="w-16 h-16 object-contain rounded-lg bg-background p-2"
+              />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-foreground mb-1">
+                Never Miss {brokerName} Bonuses
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Get exclusive deposit bonuses & breaking news
+              </p>
+            </div>
           </div>
 
           <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">

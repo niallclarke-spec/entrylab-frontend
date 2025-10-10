@@ -681,6 +681,7 @@ export default function PropFirmReview() {
           <BrokerAlertPopup
             brokerId={propFirm.id}
             brokerName={stripHtml(propFirm.name)}
+            brokerLogo={propFirm.logo}
             brokerType="prop-firm"
           />
         </>
