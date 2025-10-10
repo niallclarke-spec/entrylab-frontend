@@ -22,5 +22,5 @@ jobs:
           git pull origin main
           npm install
           npm run build
-          pm2 restart entrylab
+          pm2 start npm --name "entrylab" -- start || pm2 restart entrylab
           echo "✅ Deployment complete!"
