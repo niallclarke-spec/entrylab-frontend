@@ -32,6 +32,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Design System
 - **Theme**: Dark/light mode toggle with localStorage persistence (dark mode default).
+- **Branding**: Custom favicon system with EntryLab purple (#8B5CF6) "E" logo in SVG format (16x16, 32x32, 180x180 for Apple devices), theme-color meta tag for browser chrome.
 - **Component Patterns**: Compound components, Radix UI Slot pattern, `class-variance-authority` for variants, responsive design, dynamic content parsing.
 
 ### Deployment & Analytics
@@ -53,9 +54,10 @@ Preferred communication style: Simple, everyday language.
 ### Performance Optimizations
 - **WordPress API Caching**: In-memory cache layer with TTL (5-15 min based on content type) reduces API latency from 690ms to <5ms on cache hits.
 - **Static Asset Caching**: Production cache-control headers (1 year for hashed JS/CSS, 30 days for images, 1 year for fonts, no-cache for HTML).
-- **Image Optimizations**: Explicit dimensions for CLS prevention, lazy loading for below-fold images, `fetchPriority="high"` for above-fold images, `decode="async"` for better rendering.
+- **Image Optimizations**: WordPress media_details integration for optimized image sizes (large→medium_large→medium priority), responsive srcset generation from URL patterns, `fetchPriority="high"` for LCP images, lazy loading for below-fold content.
 - **Loading Skeletons**: Structured content placeholders on Home, Article, and Archive pages for improved perceived performance during API fetches.
 - **Font Loading**: `font-display: swap` to prevent invisible text during font load.
+- **Mobile Performance**: Responsive image serving (300px mobile, 768px tablet, 1024px desktop), preconnect to critical domains, async GTM loading, inline critical CSS.
 
 ## External Dependencies
 
