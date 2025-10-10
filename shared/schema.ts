@@ -17,20 +17,6 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
-export const articleViews = pgTable("article_views", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  articleSlug: text("article_slug").notNull().unique(),
-  viewCount: integer("view_count").notNull().default(0),
-  lastViewed: timestamp("last_viewed").defaultNow(),
-});
-
-export const insertArticleViewSchema = createInsertSchema(articleViews).pick({
-  articleSlug: true,
-});
-
-export type InsertArticleView = z.infer<typeof insertArticleViewSchema>;
-export type ArticleView = typeof articleViews.$inferSelect;
-
 export interface WordPressPost {
   id: number;
   slug: string;
