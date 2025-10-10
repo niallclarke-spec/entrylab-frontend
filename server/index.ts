@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
+import compression from "compression";
 import { rateLimit } from "express-rate-limit";
 import { registerRoutes } from "./routes";
 import { log } from "./logger";
@@ -7,6 +8,20 @@ import { log } from "./logger";
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Enable gzip/brotli compression for all responses (reduces payload size by 70-80%)
+app.use(compression({
+  level: 6, // Balanced compression level (1=fastest, 9=best compression)
+  threshold: 1024, // Only compress responses larger than 1KB
+  filter: (req, res) => {
+    // Don't compress if client doesn't accept encoding
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    // Use compression filter to decide
+    return compression.filter(req, res);
+  }
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();
