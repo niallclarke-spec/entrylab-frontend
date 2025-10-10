@@ -1,8 +1,7 @@
-import { Clock, User, BookOpen, Eye } from "lucide-react";
+import { Clock, User, BookOpen } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
 
 interface ArticleCardProps {
   title: string;
@@ -31,12 +30,6 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
 
   const cleanExcerpt = stripHtml(excerpt);
   const readingTime = calculateReadingTime(cleanExcerpt);
-
-  // Fetch view count for this article
-  const { data: viewData } = useQuery<{ viewCount: number }>({
-    queryKey: [`/api/articles/${slug}/views`],
-    enabled: !!slug,
-  });
 
   return (
     <Card className="hover-elevate active-elevate-2 h-full flex flex-col group" data-testid={`card-article-${title.substring(0, 20)}`}>
@@ -83,12 +76,6 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
             <Clock className="h-3.5 w-3.5" />
             <span>{new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
           </div>
-          {viewData && viewData.viewCount > 10 && (
-            <div className="flex items-center gap-1.5 ml-auto" data-testid="text-view-count">
-              <Eye className="h-3.5 w-3.5" />
-              <span>{viewData.viewCount.toLocaleString()}</span>
-            </div>
-          )}
         </CardFooter>
       </Link>
     </Card>
