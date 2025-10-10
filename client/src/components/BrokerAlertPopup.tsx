@@ -36,10 +36,11 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
       return res.json();
     },
     onSuccess: () => {
-      // Track GTM event
+      // Track brand-specific GTM event
+      const eventName = `${brokerName.toLowerCase().replace(/\s+/g, '_')}_popup_signup`;
       if (window.dataLayer) {
         window.dataLayer.push({
-          event: "broker_alert_signup",
+          event: eventName,
           broker_name: brokerName,
           broker_type: brokerType,
           broker_id: brokerId,
