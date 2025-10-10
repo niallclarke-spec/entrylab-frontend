@@ -168,6 +168,12 @@ async function verifyRecaptcha(token: string): Promise<boolean> {
     });
 
     const data = await response.json();
+    console.log('[reCAPTCHA] Verification response:', JSON.stringify(data));
+    
+    if (!data.success) {
+      console.warn('[reCAPTCHA] Verification failed. Errors:', data['error-codes']);
+    }
+    
     return data.success === true;
   } catch (error) {
     console.error('reCAPTCHA verification failed:', error);
