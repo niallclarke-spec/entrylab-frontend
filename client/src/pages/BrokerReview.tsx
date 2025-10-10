@@ -13,6 +13,7 @@ import { transformBrokerDetailed } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
 import { ReviewModalSimple as ReviewModal } from "@/components/ReviewModalSimple";
+import { BrokerAlertPopup } from "@/components/BrokerAlertPopup";
 
 export default function BrokerReview() {
   const params = useParams();
@@ -709,17 +710,24 @@ export default function BrokerReview() {
       <Footer />
       
       {broker ? (
-        <ReviewModal
-          isOpen={isReviewModalOpen}
-          onClose={() => {
-            console.log("Closing review modal");
-            setIsReviewModalOpen(false);
-          }}
-          brokerName={stripHtml(broker.name)}
-          brokerLogo={broker.logo}
-          brokerId={broker.id}
-          itemType="broker"
-        />
+        <>
+          <ReviewModal
+            isOpen={isReviewModalOpen}
+            onClose={() => {
+              console.log("Closing review modal");
+              setIsReviewModalOpen(false);
+            }}
+            brokerName={stripHtml(broker.name)}
+            brokerLogo={broker.logo}
+            brokerId={broker.id}
+            itemType="broker"
+          />
+          <BrokerAlertPopup
+            brokerId={broker.id}
+            brokerName={stripHtml(broker.name)}
+            brokerType="broker"
+          />
+        </>
       ) : null}
     </div>
   );

@@ -21,7 +21,7 @@ export function NewsletterCTA() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, source: "Home Page" }),
       });
 
       if (!response.ok) {

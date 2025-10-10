@@ -173,6 +173,7 @@ export function ReviewModalSimple({
         body: JSON.stringify({
           ...formData,
           brokerId,
+          brokerName,
           itemType,
           recaptchaToken,
         }),
