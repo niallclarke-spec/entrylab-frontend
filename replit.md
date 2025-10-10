@@ -50,6 +50,13 @@ Preferred communication style: Simple, everyday language.
 - **Article Thumbnails**: Subtle gradient overlay for visual consistency.
 - **Brand-Specific Statistics**: Dynamic social proof for broker alert popups, auto-incrementing trader counts and dollar values based on `brandStats.ts` configuration.
 
+### Performance Optimizations
+- **WordPress API Caching**: In-memory cache layer with TTL (5-15 min based on content type) reduces API latency from 690ms to <5ms on cache hits.
+- **Static Asset Caching**: Production cache-control headers (1 year for hashed JS/CSS, 30 days for images, 1 year for fonts, no-cache for HTML).
+- **Image Optimizations**: Explicit dimensions for CLS prevention, lazy loading for below-fold images, `fetchPriority="high"` for above-fold images, `decode="async"` for better rendering.
+- **Loading Skeletons**: Structured content placeholders on Home, Article, and Archive pages for improved perceived performance during API fetches.
+- **Font Loading**: `font-display: swap` to prevent invisible text during font load.
+
 ## External Dependencies
 
 ### Third-Party Services
