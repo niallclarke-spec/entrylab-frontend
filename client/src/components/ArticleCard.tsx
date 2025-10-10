@@ -40,6 +40,7 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
               src={imageUrl}
               alt={title}
               loading="lazy"
+              decoding="async"
               width="400"
               height="160"
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
