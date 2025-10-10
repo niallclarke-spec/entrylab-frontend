@@ -62,74 +62,24 @@ export function OptimizedImage({
   priority = false,
   "data-testid": testId 
 }: OptimizedImageProps) {
-  const [imageSrc, setImageSrc] = useState<string>(src);
-  const [srcSet, setSrcSet] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-
-  useEffect(() => {
-    const isWordPressImage = src.includes('admin.entrylab.io');
-    
-    if (isWordPressImage) {
-      // Generate responsive srcset
-      const responsiveSrcSet = getWordPressSrcSet(src);
-      setSrcSet(responsiveSrcSet);
-      
-      // Try WebP format first for better compression
-      const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
-      const webpSrcSet = responsiveSrcSet.replace(/\.(jpg|jpeg|png)/gi, '.webp');
-      
-      const img = new Image();
-      img.onload = () => {
-        setImageSrc(webpSrc);
-        setSrcSet(webpSrcSet);
-        setIsLoading(false);
-      };
-      img.onerror = () => {
-        // Fallback to original format
-        setImageSrc(src);
-        setSrcSet(responsiveSrcSet);
-        setIsLoading(false);
-      };
-      img.src = webpSrc;
-    } else {
-      setImageSrc(src);
-      setIsLoading(false);
-    }
-  }, [src]);
-
-  const handleImageError = () => {
-    // If image fails to load, fallback to original source
-    if (!hasError && imageSrc !== src) {
-      setHasError(true);
-      setImageSrc(src);
-      setSrcSet(""); // Clear srcset on error
-    }
-  };
-
+  const isWordPressImage = src.includes('admin.entrylab.io');
+  
+  // Generate srcset immediately (no async state changes)
+  const srcSet = isWordPressImage ? getWordPressSrcSet(src) : "";
+  
   return (
-    <>
-      {isLoading && (
-        <div 
-          className={`${className} animate-pulse bg-muted`}
-          style={{ width, height }}
-        />
-      )}
-      <img
-        src={imageSrc}
-        srcSet={srcSet || undefined}
-        sizes={srcSet ? "(max-width: 640px) 300px, (max-width: 1024px) 768px, 1024px" : undefined}
-        alt={alt}
-        width={width}
-        height={height}
-        loading={priority ? "eager" : "lazy"}
-        decoding="async"
-        {...(priority && { fetchpriority: "high" as any })}
-        className={`${className} ${isLoading ? 'hidden' : ''}`}
-        data-testid={testId}
-        onLoad={() => setIsLoading(false)}
-        onError={handleImageError}
-      />
-    </>
+    <img
+      src={src}
+      srcSet={srcSet || undefined}
+      sizes={srcSet ? "(max-width: 640px) 300px, (max-width: 1024px) 768px, 1024px" : undefined}
+      alt={alt}
+      width={width}
+      height={height}
+      loading={priority ? "eager" : "lazy"}
+      decoding="async"
+      {...(priority && { fetchpriority: "high" as any })}
+      className={className}
+      data-testid={testId}
+    />
   );
 }

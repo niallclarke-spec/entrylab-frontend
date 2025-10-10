@@ -49,7 +49,17 @@ export default function Article() {
 
   const getCategoryName = (p: WordPressPost) => p._embedded?.["wp:term"]?.[0]?.[0]?.name || "News";
   const getAuthorName = (p: WordPressPost) => p._embedded?.author?.[0]?.name || "EntryLab Team";
-  const getFeaturedImage = (p: WordPressPost) => p._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
+  const getFeaturedImage = (p: WordPressPost) => {
+    const media = p._embedded?.["wp:featuredmedia"]?.[0];
+    if (!media) return undefined;
+    const sizes = (media as any).media_details?.sizes;
+    if (sizes) {
+      if (sizes.large?.source_url) return sizes.large.source_url;
+      if (sizes.medium_large?.source_url) return sizes.medium_large.source_url;
+      if (sizes.medium?.source_url) return sizes.medium.source_url;
+    }
+    return media.source_url;
+  };
 
   useEffect(() => {
     if (post) {
