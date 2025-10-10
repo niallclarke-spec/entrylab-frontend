@@ -64,6 +64,7 @@ export function Navigation() {
                 size="icon"
                 variant="ghost"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
                 data-testid="button-theme-toggle"
               >
                 {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -73,6 +74,7 @@ export function Navigation() {
                 variant="ghost"
                 className="md:hidden"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
                 data-testid="button-menu-toggle"
               >
                 <Menu className="h-5 w-5" />
