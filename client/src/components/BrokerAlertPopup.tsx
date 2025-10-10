@@ -16,7 +16,6 @@ interface BrokerAlertPopupProps {
 
 export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType }: BrokerAlertPopupProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const { toast } = useToast();
 
@@ -36,7 +35,7 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
     mutationFn: async () => {
       const res = await apiRequest("POST", "/api/broker-alerts/subscribe", {
         email,
-        firstName,
+        firstName: "",
         brokerId,
         brokerName,
       });
@@ -73,10 +72,10 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstName.trim() || !email.trim()) {
+    if (!email.trim()) {
       toast({
         title: "Missing information",
-        description: "Please enter your name and email",
+        description: "Please enter your email",
         variant: "destructive",
       });
       return;
@@ -238,7 +237,7 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
             <div className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border border-amber-500/20 rounded-lg p-3">
               <Gift className="h-5 w-5 text-amber-500 mb-2" />
               <p className="text-xs font-semibold text-foreground">Deposit Bonuses</p>
-              <p className="text-xs text-muted-foreground">Up to 50% extra</p>
+              <p className="text-xs text-muted-foreground">Up to 25% extra</p>
             </div>
             <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3">
               <Trophy className="h-5 w-5 text-primary mb-2" />
@@ -256,15 +255,6 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <Input
-              type="text"
-              placeholder="First Name"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              required
-              data-testid="input-alert-firstname"
-              className="h-11"
-            />
-            <Input
               type="email"
               placeholder="Email Address"
               value={email}
@@ -275,7 +265,7 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
             />
             <Button
               type="submit"
-              className="w-full h-11 text-base font-semibold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white border-0"
+              className="w-full h-11 text-base font-semibold bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0"
               disabled={subscribeMutation.isPending}
               data-testid="button-subscribe-alerts"
             >
