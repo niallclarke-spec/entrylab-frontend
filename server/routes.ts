@@ -135,7 +135,13 @@ function handleWordPressError(error: any, res: any, operation: string) {
 }
 
 // Helper function to verify reCAPTCHA token
+// DISABLED: reCAPTCHA verification temporarily disabled until traffic increases
 async function verifyRecaptcha(token: string): Promise<boolean> {
+  console.log('[reCAPTCHA] Verification disabled - accepting all submissions');
+  return true;
+  
+  // Original implementation (commented out):
+  /*
   const secretKey = process.env.RECAPTCHA_SECRET_KEY;
   const isProduction = process.env.NODE_ENV === 'production';
   
@@ -179,6 +185,7 @@ async function verifyRecaptcha(token: string): Promise<boolean> {
     console.error('reCAPTCHA verification failed:', error);
     return false;
   }
+  */
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {

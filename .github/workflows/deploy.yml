@@ -19,8 +19,11 @@ jobs:
         script_stop: true
         script: |
           cd /var/www/entrylab
-          git pull origin main
+          git fetch --all
+          git reset --hard origin/main
           npm install
           npm run build
-          pm2 restart entrylab
+          pm2 delete entrylab || true
+          NODE_ENV=production PORT=3000 pm2 start dist/index.js --name entrylab --cwd /var/www/entrylab
+          pm2 save
           echo "✅ Deployment complete!"
