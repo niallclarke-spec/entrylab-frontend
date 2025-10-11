@@ -108,14 +108,22 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType,
     const alreadySubscribed = localStorage.getItem(`broker-alert-subscribed-${brokerId}`);
     const dismissedAt = localStorage.getItem(`broker-alert-dismissed-${brokerId}`);
     
+    console.log(`[BrokerAlertPopup] Initializing for ${brokerName} (ID: ${brokerId})`);
+    console.log(`[BrokerAlertPopup] Scroll threshold: ${scrollThreshold}%`);
+    console.log(`[BrokerAlertPopup] Already subscribed:`, alreadySubscribed);
+    console.log(`[BrokerAlertPopup] Dismissed at:`, dismissedAt);
+    
     if (alreadySubscribed) {
+      console.log(`[BrokerAlertPopup] Blocked: Already subscribed`);
       return;
     }
 
     // Check 24-hour cooldown
     if (dismissedAt) {
       const hoursSinceDismissed = (Date.now() - parseInt(dismissedAt)) / (1000 * 60 * 60);
+      console.log(`[BrokerAlertPopup] Hours since dismissed:`, hoursSinceDismissed);
       if (hoursSinceDismissed < 24) {
+        console.log(`[BrokerAlertPopup] Blocked: 24-hour cooldown active`);
         return;
       }
     }
@@ -127,8 +135,14 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType,
     const handleScroll = () => {
       const scrollPercentage = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
       
+      // Debug: Log scroll percentage every 10%
+      if (scrollPercentage % 10 < 1) {
+        console.log(`[BrokerAlertPopup] Scroll: ${scrollPercentage.toFixed(1)}% (threshold: ${scrollThreshold}%)`);
+      }
+      
       if (scrollPercentage >= scrollThreshold && !scrollTriggered) {
         scrollTriggered = true;
+        console.log(`[BrokerAlertPopup] ✅ Scroll threshold reached! Showing popup`);
         setIsVisible(true);
         
         // Track popup view
