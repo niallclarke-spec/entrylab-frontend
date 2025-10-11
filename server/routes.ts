@@ -657,6 +657,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Dynamic Sitemap XML
+  app.get('/sitemap.xml', async (_req, res) => {
+    try {
+      // Fetch all posts, brokers, and prop firms
+      const [posts, brokers, propFirms] = await Promise.all([
+        fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&per_page=100'),
+        fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100'),
+        fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100')
+      ]);
+
+      const baseUrl = 'https://entrylab.io';
+      const currentDate = new Date().toISOString();
+
+      // Build sitemap XML
+      let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n';
+      sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+
+      // Homepage
+      sitemap += `  <url>\n`;
+      sitemap += `    <loc>${baseUrl}/</loc>\n`;
+      sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
+      sitemap += `    <changefreq>daily</changefreq>\n`;
+      sitemap += `    <priority>1.0</priority>\n`;
+      sitemap += `  </url>\n`;
+
+      // Archive page
+      sitemap += `  <url>\n`;
+      sitemap += `    <loc>${baseUrl}/archive</loc>\n`;
+      sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
+      sitemap += `    <changefreq>daily</changefreq>\n`;
+      sitemap += `    <priority>0.9</priority>\n`;
+      sitemap += `  </url>\n`;
+
+      // Brokers index
+      sitemap += `  <url>\n`;
+      sitemap += `    <loc>${baseUrl}/brokers</loc>\n`;
+      sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
+      sitemap += `    <changefreq>weekly</changefreq>\n`;
+      sitemap += `    <priority>0.9</priority>\n`;
+      sitemap += `  </url>\n`;
+
+      // Prop Firms index
+      sitemap += `  <url>\n`;
+      sitemap += `    <loc>${baseUrl}/prop-firms</loc>\n`;
+      sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
+      sitemap += `    <changefreq>weekly</changefreq>\n`;
+      sitemap += `    <priority>0.9</priority>\n`;
+      sitemap += `  </url>\n`;
+
+      // Articles
+      posts.forEach((post: any) => {
+        const modifiedDate = new Date(post.modified).toISOString();
+        sitemap += `  <url>\n`;
+        sitemap += `    <loc>${baseUrl}/article/${post.slug}</loc>\n`;
+        sitemap += `    <lastmod>${modifiedDate}</lastmod>\n`;
+        sitemap += `    <changefreq>monthly</changefreq>\n`;
+        sitemap += `    <priority>0.8</priority>\n`;
+        sitemap += `  </url>\n`;
+      });
+
+      // Brokers
+      brokers.forEach((broker: any) => {
+        const modifiedDate = new Date(broker.modified).toISOString();
+        sitemap += `  <url>\n`;
+        sitemap += `    <loc>${baseUrl}/broker/${broker.slug}</loc>\n`;
+        sitemap += `    <lastmod>${modifiedDate}</lastmod>\n`;
+        sitemap += `    <changefreq>monthly</changefreq>\n`;
+        sitemap += `    <priority>0.7</priority>\n`;
+        sitemap += `  </url>\n`;
+      });
+
+      // Prop Firms
+      propFirms.forEach((firm: any) => {
+        const modifiedDate = new Date(firm.modified).toISOString();
+        sitemap += `  <url>\n`;
+        sitemap += `    <loc>${baseUrl}/prop-firm/${firm.slug}</loc>\n`;
+        sitemap += `    <lastmod>${modifiedDate}</lastmod>\n`;
+        sitemap += `    <changefreq>monthly</changefreq>\n`;
+        sitemap += `    <priority>0.7</priority>\n`;
+        sitemap += `  </url>\n`;
+      });
+
+      sitemap += '</urlset>';
+
+      res.header('Content-Type', 'application/xml');
+      res.send(sitemap);
+    } catch (error) {
+      console.error('Error generating sitemap:', error);
+      res.status(500).send('Error generating sitemap');
+    }
+  });
+
 
   const httpServer = createServer(app);
 
