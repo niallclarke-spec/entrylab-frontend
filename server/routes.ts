@@ -658,8 +658,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Dynamic Sitemap XML
+  // Dynamic Sitemap XML - CRITICAL: Set headers FIRST before any async operations
   app.get('/sitemap.xml', async (_req, res) => {
+    // Set XML headers IMMEDIATELY - this prevents Express from serving HTML
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('X-Robots-Tag', 'noindex'); // Don't index the sitemap itself
+    res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+    
     try {
       // Fetch all posts, brokers, and prop firms
       const [posts, brokers, propFirms] = await Promise.all([
@@ -742,11 +747,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       sitemap += '</urlset>';
 
-      res.header('Content-Type', 'application/xml');
+      // Headers already set at the top of route
       res.send(sitemap);
     } catch (error) {
       console.error('Error generating sitemap:', error);
-      res.status(500).send('Error generating sitemap');
+      
+      // Even on error, send valid XML (not HTML)
+      const errorSitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://entrylab.io/</loc>
+    <lastmod>${new Date().toISOString()}</lastmod>
+    <priority>1.0</priority>
+  </url>
+</urlset>`;
+      
+      res.status(500).send(errorSitemap);
     }
   });
 
