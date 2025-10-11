@@ -485,6 +485,10 @@ export default function Article() {
                     pros={relatedBroker.pros}
                     highlights={relatedBroker.highlights}
                     link={relatedBroker.link}
+                    slug={relatedBroker.slug}
+                    type="broker"
+                    pageLocation="article"
+                    placementType="featured_widget"
                   />
                 </div>
               )}
@@ -499,7 +503,7 @@ export default function Article() {
                     <h3 className="text-2xl font-bold text-foreground">Top Rated Brokers</h3>
                   </div>
                   <div className="grid gap-4">
-                    {popularBrokers.map((broker) => (
+                    {popularBrokers.map((broker, index) => (
                       <BrokerCardEnhanced
                         key={broker.id}
                         name={broker.name}
@@ -509,6 +513,11 @@ export default function Article() {
                         pros={broker.pros}
                         highlights={broker.highlights}
                         link={broker.link}
+                        slug={broker.slug}
+                        type="broker"
+                        pageLocation="article"
+                        placementType="top_rated_card"
+                        position={index + 1}
                       />
                     ))}
                   </div>
@@ -541,6 +550,10 @@ export default function Article() {
                       pros={relatedBroker.pros}
                       highlights={relatedBroker.highlights}
                       link={relatedBroker.link}
+                      slug={relatedBroker.slug}
+                      type="broker"
+                      pageLocation="article"
+                      placementType="featured_widget"
                     />
                   </div>
                 )}
@@ -555,7 +568,7 @@ export default function Article() {
                       <h3 className="text-2xl font-bold text-foreground">Top Rated Brokers</h3>
                     </div>
                     <div className="space-y-4">
-                      {popularBrokers.map((broker) => (
+                      {popularBrokers.map((broker, index) => (
                         <BrokerCardEnhanced
                           key={broker.id}
                           name={broker.name}
@@ -565,6 +578,11 @@ export default function Article() {
                           pros={broker.pros}
                           highlights={broker.highlights}
                           link={broker.link}
+                          slug={broker.slug}
+                          type="broker"
+                          pageLocation="article"
+                          placementType="top_rated_card"
+                          position={index + 1}
                         />
                       ))}
                     </div>
