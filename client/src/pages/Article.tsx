@@ -94,6 +94,14 @@ export default function Article() {
     return Math.max(1, Math.ceil(words / 200));
   };
 
+  // SEO: Use Yoast fields if available, otherwise auto-generate
+  const seoTitle = (post as any)?.yoast_head_json?.title || 
+                   `${stripHtml(post?.title?.rendered || '')} | EntryLab`;
+  const seoDescription = (post as any)?.yoast_head_json?.og_description || 
+                         (post as any)?.yoast_head_json?.description ||
+                         stripHtml(post?.excerpt?.rendered || '').substring(0, 155) ||
+                         `Read ${stripHtml(post?.title?.rendered || '')} on EntryLab - Forex broker news and trading analysis.`;
+
   const addAffiliateLinks = (content: string): string => {
     // Build keyword map from brokers and prop firms
     const affiliateKeywords: { name: string; url: string }[] = [];
@@ -343,9 +351,6 @@ export default function Article() {
   const featuredImage = getFeaturedImage(post);
   const readingTime = calculateReadingTime(stripHtml(post.content.rendered));
   
-  const seoTitle = stripHtml(post.title.rendered) + " | EntryLab";
-  const seoDescription = stripHtml(post.excerpt.rendered).substring(0, 160) || 
-    stripHtml(post.content.rendered).substring(0, 160);
   const seoImage = featuredImage || "https://entrylab.io/og-image.jpg";
   const seoUrl = `https://entrylab.io/article/${post.slug}`;
 
