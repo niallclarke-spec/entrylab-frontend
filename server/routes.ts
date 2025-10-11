@@ -378,6 +378,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const post = posts[0];
       
+      // Debug: Log ACF data to see what fields exist
+      console.log(`[DEBUG] Post ACF data for ${slug}:`, JSON.stringify(post.acf, null, 2));
+      
       // Check if article has a related broker (ACF relationship field)
       if (post.acf?.related_broker) {
         try {
@@ -386,11 +389,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ? post.acf.related_broker[0] 
             : post.acf.related_broker;
           
+          console.log(`[DEBUG] Found related_broker field, ID: ${brokerId}`);
+          
           // Fetch the related broker details
           const broker = await fetchWordPressWithCache(
             `https://admin.entrylab.io/wp-json/wp/v2/popular_broker/${brokerId}?acf_format=standard`,
             { cacheTTL: 600 }
           );
+          
+          console.log(`[DEBUG] Fetched broker:`, broker?.title?.rendered || 'No broker found');
           
           // Add broker to response
           post.relatedBroker = broker;
@@ -398,6 +405,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error("Error fetching related broker:", brokerError);
           // Continue without broker if fetch fails
         }
+      } else {
+        console.log(`[DEBUG] No related_broker field found for ${slug}`);
       }
       
       res.json(post);
