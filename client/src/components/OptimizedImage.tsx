@@ -89,7 +89,7 @@ export function OptimizedImage({
       height={height}
       loading={priority ? "eager" : "lazy"}
       decoding="async"
-      {...(priority && { fetchPriority: "high" as any })}
+      {...(priority && { fetchpriority: "high" as any })}
       className={className}
       data-testid={testId}
     />
