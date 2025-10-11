@@ -42,9 +42,9 @@ export default function Archive() {
     if (!media) return undefined;
     const sizes = (media as any).media_details?.sizes;
     if (sizes) {
-      if (sizes.large?.source_url) return sizes.large.source_url;
       if (sizes.medium_large?.source_url) return sizes.medium_large.source_url;
       if (sizes.medium?.source_url) return sizes.medium.source_url;
+      if (sizes.large?.source_url) return sizes.large.source_url;
     }
     return media.source_url;
   };

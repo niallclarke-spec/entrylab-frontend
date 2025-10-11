@@ -81,13 +81,13 @@ export default function Home() {
     const media = post._embedded?.["wp:featuredmedia"]?.[0];
     if (!media) return undefined;
     
-    // Try to get optimized size instead of full-size
-    // Priority: large (1024px) > medium_large (768px) > full
+    // Use smaller sizes for thumbnails to improve PageSpeed
+    // Priority: medium_large (768px) > medium (300px) > large
     const sizes = (media as any).media_details?.sizes;
     if (sizes) {
-      if (sizes.large?.source_url) return sizes.large.source_url;
       if (sizes.medium_large?.source_url) return sizes.medium_large.source_url;
       if (sizes.medium?.source_url) return sizes.medium.source_url;
+      if (sizes.large?.source_url) return sizes.large.source_url;
     }
     
     return media.source_url; // Fallback to full size
