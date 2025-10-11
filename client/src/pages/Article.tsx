@@ -4,6 +4,7 @@ import { useEffect, lazy, Suspense } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import { InlineBrokerCard } from "@/components/InlineBrokerCard";
 import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { ArticleCard } from "@/components/ArticleCard";
@@ -59,11 +60,13 @@ export default function Article() {
     const media = p._embedded?.["wp:featuredmedia"]?.[0];
     if (!media) return undefined;
     const sizes = (media as any).media_details?.sizes;
-    if (sizes) {
-      if (sizes.medium_large?.source_url) return sizes.medium_large.source_url;
-      if (sizes.medium?.source_url) return sizes.medium.source_url;
-      if (sizes.large?.source_url) return sizes.large.source_url;
-    }
+    
+    // Use medium_large as baseline - WordPress standard for article featured images
+    // OptimizedImage component handles responsive srcset for different viewports
+    if (sizes?.medium_large?.source_url) return sizes.medium_large.source_url;
+    if (sizes?.large?.source_url) return sizes.large.source_url;
+    if (sizes?.medium?.source_url) return sizes.medium.source_url;
+    
     return media.source_url;
   };
 
@@ -365,18 +368,21 @@ export default function Article() {
         publishedTime={post.date}
         modifiedTime={post.modified}
         author={getAuthorName(post)}
+        preloadImage={featuredImage}
       />
       <Navigation />
       
       {/* Hero Section */}
       {featuredImage && (
         <div className="w-full h-[300px] md:h-[400px] overflow-hidden bg-muted relative">
-          <img
+          <OptimizedImage
             src={featuredImage}
             alt={stripHtml(post.title.rendered)}
             width="1200"
             height="400"
             className="w-full h-full object-cover"
+            priority={true}
+            data-testid="img-article-hero"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
         </div>
