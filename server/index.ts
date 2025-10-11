@@ -4,6 +4,7 @@ import compression from "compression";
 import { rateLimit } from "express-rate-limit";
 import { registerRoutes } from "./routes";
 import { log } from "./logger";
+import { initTelegramBot } from "./telegram";
 
 const app = express();
 
@@ -119,6 +120,9 @@ const apiLimiter = rateLimit({
 app.use('/api', apiLimiter);
 
 (async () => {
+  // Initialize Telegram bot
+  initTelegramBot();
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

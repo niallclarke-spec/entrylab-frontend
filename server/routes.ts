@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { db } from "./db";
 import { brokerAlerts, insertBrokerAlertSchema } from "../shared/schema";
 import { apiCache } from "./cache";
+import { sendReviewNotification, sendTelegramMessage, getTelegramBot } from "./telegram";
 
 // Helper function to make WordPress API requests using native https module
 function fetchWordPress(url: string, options: { method?: string; body?: any; requireAuth?: boolean } = {}): Promise<any> {
@@ -749,6 +750,172 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Telegram webhook endpoint - receives commands from Telegram
+  app.post("/api/telegram/webhook", async (req, res) => {
+    try {
+      const update = req.body;
+      const TELEGRAM_CHANNEL_ID = process.env.TELEGRAM_CHANNEL_ID;
+      const bot = getTelegramBot();
+      
+      // Handle callback queries (button clicks)
+      if (update.callback_query) {
+        const callbackData = update.callback_query.data;
+        const chatId = update.callback_query.message.chat.id.toString();
+        
+        // SECURITY: Verify request is from authorized channel
+        if (chatId !== TELEGRAM_CHANNEL_ID) {
+          console.warn(`Unauthorized callback query from chat ${chatId}`);
+          bot?.answerCallbackQuery(update.callback_query.id, { text: 'Unauthorized' });
+          return res.sendStatus(403);
+        }
+        
+        // Acknowledge the callback without broadcasting to channel
+        bot?.answerCallbackQuery(update.callback_query.id, { text: `Processing: ${callbackData}` });
+        console.log(`Processed callback query: ${callbackData}`);
+        return res.sendStatus(200);
+      }
+      
+      // Handle text messages (commands)
+      if (update.message && update.message.text) {
+        const text = update.message.text;
+        const chatId = update.message.chat.id.toString();
+        
+        // SECURITY: Verify request is from authorized channel
+        if (chatId !== TELEGRAM_CHANNEL_ID) {
+          console.warn(`Unauthorized command from chat ${chatId}: ${text}`);
+          return res.sendStatus(403);
+        }
+        
+        // Parse commands like /approve_123, /reject_123, /view_123
+        const approveMatch = text.match(/^\/approve_(\d+)$/);
+        const rejectMatch = text.match(/^\/reject_(\d+)$/);
+        const viewMatch = text.match(/^\/view_(\d+)$/);
+        
+        if (approveMatch) {
+          const postId = approveMatch[1];
+          try {
+            // Update WordPress post status to 'publish'
+            const result = await fetchWordPress(
+              `https://admin.entrylab.io/wp-json/wp/v2/posts/${postId}`,
+              {
+                method: 'POST',
+                body: { status: 'publish' },
+                requireAuth: true
+              }
+            );
+            
+            await sendTelegramMessage(
+              `✅ *Review Approved!*\n\nPost ID: ${postId}\nThe review has been published successfully.\n\n🔗 [View Live Post](https://admin.entrylab.io/wp-admin/post.php?post=${postId}&action=edit)`,
+              'Markdown'
+            );
+          } catch (error: any) {
+            console.error('Error approving review:', error);
+            const errorMsg = (error.message || 'Unknown error').replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
+            await sendTelegramMessage(`❌ *Error approving review ${postId}*\n\n${errorMsg}`, 'Markdown');
+          }
+        } else if (rejectMatch) {
+          const postId = rejectMatch[1];
+          try {
+            // Move post to trash
+            const result = await fetchWordPress(
+              `https://admin.entrylab.io/wp-json/wp/v2/posts/${postId}`,
+              {
+                method: 'DELETE',
+                requireAuth: true
+              }
+            );
+            
+            await sendTelegramMessage(
+              `🗑️ *Review Rejected*\n\nPost ID: ${postId}\nThe review has been moved to trash.`
+            );
+          } catch (error: any) {
+            console.error('Error rejecting review:', error);
+            const errorMsg = (error.message || 'Unknown error').replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
+            await sendTelegramMessage(`❌ *Error rejecting review ${postId}*\n\n${errorMsg}`, 'Markdown');
+          }
+        } else if (viewMatch) {
+          const postId = viewMatch[1];
+          try {
+            // Fetch full post details
+            const post = await fetchWordPress(
+              `https://admin.entrylab.io/wp-json/wp/v2/posts/${postId}`,
+              { requireAuth: true }
+            );
+            
+            const title = post.title?.rendered || 'Untitled';
+            const content = post.content?.rendered || '';
+            const plainContent = content.replace(/<[^>]*>/g, '').substring(0, 500);
+            
+            await sendTelegramMessage(
+              `📄 *Full Review Details*\n\n*Title:* ${title}\n\n*Content:*\n${plainContent}${content.length > 500 ? '...' : ''}\n\n[Edit in WordPress](https://admin.entrylab.io/wp-admin/post.php?post=${postId}&action=edit)`,
+              'Markdown'
+            );
+          } catch (error: any) {
+            console.error('Error fetching review:', error);
+            const errorMsg = (error.message || 'Unknown error').replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
+            await sendTelegramMessage(`❌ *Error fetching review ${postId}*\n\n${errorMsg}`, 'Markdown');
+          }
+        }
+      }
+      
+      res.sendStatus(200);
+    } catch (error) {
+      console.error('Telegram webhook error:', error);
+      res.sendStatus(500);
+    }
+  });
+
+  // Test endpoint to manually trigger a review notification
+  app.post("/api/telegram/test-notification", async (req, res) => {
+    try {
+      await sendReviewNotification({
+        postId: 9999,
+        brokerName: "Test Broker",
+        rating: 4.5,
+        author: "Test User",
+        excerpt: "This is a test review notification to verify the Telegram bot integration is working correctly.",
+        reviewLink: "https://admin.entrylab.io/wp-admin/post.php?post=9999&action=edit"
+      });
+      
+      res.json({ success: true, message: "Test notification sent to Telegram channel" });
+    } catch (error: any) {
+      console.error('Test notification error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // WordPress review webhook - receives notifications when new reviews are submitted
+  app.post("/api/wordpress/review-webhook", async (req, res) => {
+    try {
+      const { post_id, post_title, post_status, post_type, acf } = req.body;
+      
+      // Only notify for pending reviews
+      if (post_status !== 'pending' || (post_type !== 'broker_review' && post_type !== 'prop_firm_review')) {
+        return res.sendStatus(200);
+      }
+      
+      // Extract review data from ACF fields
+      const brokerName = acf?.broker_name || acf?.prop_firm_name || 'Unknown';
+      const rating = parseFloat(acf?.rating || acf?.overall_rating || '0');
+      const reviewerName = acf?.reviewer_name || 'Anonymous';
+      const reviewText = acf?.review_text || acf?.experience_text || '';
+      
+      // Send Telegram notification
+      await sendReviewNotification({
+        postId: post_id,
+        brokerName,
+        rating,
+        author: reviewerName,
+        excerpt: reviewText,
+        reviewLink: `https://admin.entrylab.io/wp-admin/post.php?post=${post_id}&action=edit`
+      });
+      
+      res.sendStatus(200);
+    } catch (error) {
+      console.error('WordPress review webhook error:', error);
+      res.sendStatus(500);
+    }
+  });
 
   const httpServer = createServer(app);
 
