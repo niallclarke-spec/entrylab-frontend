@@ -13,6 +13,7 @@ interface BrokerAlertPopupProps {
   brokerName: string;
   brokerLogo: string;
   brokerType: "broker" | "prop-firm";
+  scrollThreshold?: number; // Optional scroll percentage (default: 60)
 }
 
 // Helper function to normalize brand names for GTM event names
@@ -24,7 +25,7 @@ const normalizeEventName = (brandName: string): string => {
     .replace(/^_+|_+$/g, '');     // Remove leading/trailing underscores
 };
 
-export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType }: BrokerAlertPopupProps) {
+export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType, scrollThreshold = 60 }: BrokerAlertPopupProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [email, setEmail] = useState("");
   const { toast } = useToast();
@@ -122,11 +123,11 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
     let scrollTriggered = false;
     let timeTriggered = false;
 
-    // Scroll depth trigger (60%)
+    // Scroll depth trigger (customizable threshold)
     const handleScroll = () => {
       const scrollPercentage = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
       
-      if (scrollPercentage >= 60 && !scrollTriggered) {
+      if (scrollPercentage >= scrollThreshold && !scrollTriggered) {
         scrollTriggered = true;
         setIsVisible(true);
         
@@ -136,7 +137,7 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
             event: "broker_alert_popup_view",
             broker_name: brokerName,
             broker_type: brokerType,
-            trigger: "scroll_60%",
+            trigger: `scroll_${scrollThreshold}%`,
           });
         }
       }
@@ -166,7 +167,7 @@ export function BrokerAlertPopup({ brokerId, brokerName, brokerLogo, brokerType 
       window.removeEventListener("scroll", handleScroll);
       clearTimeout(timeoutId);
     };
-  }, [brokerId, brokerName, brokerType]);
+  }, [brokerId, brokerName, brokerType, scrollThreshold]);
 
   if (!isVisible) return null;
 

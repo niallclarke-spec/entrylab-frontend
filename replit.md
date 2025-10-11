@@ -18,12 +18,13 @@ Preferred communication style: Simple, everyday language.
 - **Color Palette**: EntryLab purple, gold for ratings, green/red for market indicators.
 - **Key UI Elements**: Navigation, hero with forex animation, various article/broker card types, featured broker showcase, market ticker, newsletter CTA, trending topics filter, trust signals, single article template, archive page with search and filtering.
 - **Review System**: A 6-step review modal for brokers/prop firms, creating WordPress review posts via authenticated REST API (spam protection temporarily disabled).
+- **Broker-Contextual Articles**: ACF relationship field (`related_broker`) links articles to specific brokers. Articles with related brokers display BrokerCardEnhanced in sidebar (desktop) or inline (mobile), plus BrokerAlertPopup with 80% scroll threshold (vs 60% on review pages).
 
 ### Backend
 - **Runtime**: Node.js with Express.js.
 - **API Design**: RESTful API proxying requests to WordPress.
 - **Authentication**: WordPress Application Password for REST API write operations.
-- **Key API Endpoints**: Endpoints for WordPress posts, categories, brokers, prop firms, trust signals, and review submission/fetching.
+- **Key API Endpoints**: Endpoints for WordPress posts, categories, brokers, prop firms, trust signals, and review submission/fetching. Article endpoint detects ACF `related_broker` field, extracts broker ID from post object/array, and fetches full broker details.
 
 ### Data Layer
 - **Database**: Drizzle ORM for PostgreSQL.
