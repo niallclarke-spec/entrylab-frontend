@@ -30,6 +30,46 @@ app.use(compression({
   }
 }));
 
+// Security headers middleware
+app.use((req, res, next) => {
+  // Content Security Policy - prevents XSS attacks
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "font-src 'self' https://fonts.gstatic.com; " +
+    "img-src 'self' data: https: blob:; " +
+    "connect-src 'self' https://admin.entrylab.io https://www.google-analytics.com https://finnhub.io; " +
+    "frame-ancestors 'none'; " +
+    "base-uri 'self'; " +
+    "form-action 'self'"
+  );
+  
+  // Strict-Transport-Security - enforces HTTPS
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  
+  // X-Frame-Options - prevents clickjacking
+  res.setHeader('X-Frame-Options', 'DENY');
+  
+  // X-Content-Type-Options - prevents MIME type sniffing
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  
+  // Cross-Origin-Opener-Policy - improves origin isolation
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  
+  // Cross-Origin-Resource-Policy
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  
+  // Referrer-Policy - controls referrer information
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  
+  // Permissions-Policy - restricts browser features
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
