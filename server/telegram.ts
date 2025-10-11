@@ -34,6 +34,11 @@ export async function sendReviewNotification(reviewData: {
     return;
   }
 
+  // Telegram has a 4096 character limit, so we'll show up to 1000 chars of review
+  const reviewContent = reviewData.excerpt.length > 1000 
+    ? reviewData.excerpt.substring(0, 1000) + '...' 
+    : reviewData.excerpt;
+
   const message = `
 🔔 *New Review Submitted!*
 
@@ -41,10 +46,10 @@ export async function sendReviewNotification(reviewData: {
 ⭐ *Rating:* ${reviewData.rating}/5
 👤 *Author:* ${escapeMarkdown(reviewData.author)}
 
-📝 *Preview:*
-${escapeMarkdown(reviewData.excerpt.substring(0, 150))}${reviewData.excerpt.length > 150 ? '...' : ''}
+📝 *Review:*
+${escapeMarkdown(reviewContent)}
 
-🔗 [View Full Review](${reviewData.reviewLink})
+🔗 [View in WordPress](${reviewData.reviewLink})
 
 *Commands:*
 \`/approve_${reviewData.postId}\` - Publish this review
