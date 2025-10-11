@@ -17,14 +17,15 @@ Preferred communication style: Simple, everyday language.
 - **Typography**: Inter (headlines/body), JetBrains Mono (financial data).
 - **Color Palette**: EntryLab purple, gold for ratings, green/red for market indicators.
 - **Key UI Elements**: Navigation, hero with forex animation, various article/broker card types, featured broker showcase, market ticker, newsletter CTA, trending topics filter, trust signals, single article template, archive page with search and filtering.
-- **Review System**: A 6-step review modal for brokers/prop firms, creating WordPress review posts via authenticated REST API (spam protection temporarily disabled).
+- **Review System**: A 6-step review modal for brokers/prop firms, creating WordPress review posts via authenticated REST API (spam protection temporarily disabled). Telegram bot integration for review moderation directly from Telegram channel.
 - **Broker-Contextual Articles**: ACF relationship field (`related_broker`) links articles to specific brokers. Articles with related brokers display BrokerCardEnhanced in sidebar (desktop) or inline (mobile), plus BrokerAlertPopup with 80% scroll threshold (vs 60% on review pages).
 
 ### Backend
 - **Runtime**: Node.js with Express.js.
 - **API Design**: RESTful API proxying requests to WordPress.
 - **Authentication**: WordPress Application Password for REST API write operations.
-- **Key API Endpoints**: Endpoints for WordPress posts, categories, brokers, prop firms, trust signals, and review submission/fetching. Article endpoint detects ACF `related_broker` field, extracts broker ID from post object/array, and fetches full broker details.
+- **Telegram Bot Integration**: Webhook-based bot for review moderation. Receives notifications when new reviews are submitted to WordPress, sends formatted alerts to Telegram channel with inline approve/reject buttons. Commands `/approve_[ID]`, `/reject_[ID]`, `/view_[ID]` update WordPress post status directly from Telegram. Security enforced via `TELEGRAM_CHANNEL_ID` authentication.
+- **Key API Endpoints**: Endpoints for WordPress posts, categories, brokers, prop firms, trust signals, and review submission/fetching. Article endpoint detects ACF `related_broker` field, extracts broker ID from post object/array, and fetches full broker details. Telegram webhook endpoint at `/api/telegram/webhook` for command processing, WordPress review webhook at `/api/wordpress/review-webhook` for new review notifications.
 
 ### Data Layer
 - **Database**: Drizzle ORM for PostgreSQL.
@@ -65,9 +66,39 @@ Preferred communication style: Simple, everyday language.
 ### Third-Party Services
 - **Content Management**: WordPress REST API.
 - **Database**: PostgreSQL (Neon serverless).
+- **Telegram Bot API**: Webhook integration for review moderation, notification delivery, and command processing.
 
 ### Key NPM Packages
 - **UI & Styling**: `@radix-ui/*`, `tailwindcss`, `class-variance-authority`, `lucide-react`, `react-icons`.
 - **Data Fetching & Forms**: `@tanstack/react-query`, `react-hook-form`, `@hookform/resolvers`, `zod`, `drizzle-zod`.
 - **Development Tools**: `vite`, `@vitejs/plugin-react`, `tsx`, `esbuild`.
 - **Utilities**: `date-fns`, `clsx`/`tailwind-merge`, `cmdk`, `embla-carousel-react`, `nanoid`.
+- **Telegram Integration**: `node-telegram-bot-api` for webhook-based bot commands and notifications.
+
+## Telegram Review Bot
+
+### Architecture
+- **Webhook Mode**: Receives commands via POST `/api/telegram/webhook` (no polling).
+- **Security**: All webhook requests validated against `TELEGRAM_CHANNEL_ID` environment variable. Unauthorized chat IDs receive 403 response.
+- **Command Processing**: Text commands (`/approve_ID`, `/reject_ID`, `/view_ID`) and inline button callbacks update WordPress post status via REST API.
+- **Notification Flow**: WordPress → `/api/wordpress/review-webhook` → Telegram notification with inline buttons.
+
+### Setup & Configuration
+1. **Secrets Required**: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHANNEL_ID`, `WORDPRESS_USERNAME`, `WORDPRESS_PASSWORD` (stored as Replit Secrets).
+2. **Webhook Registration**: Run `tsx server/setup-telegram-webhook.ts` after deployment to register webhook URL with Telegram API.
+3. **WordPress Integration**: WordPress sends POST request to `/api/wordpress/review-webhook` when new review is submitted (status: pending).
+
+### Available Commands
+- `/approve_[ID]` - Publishes review (sets post status to "publish")
+- `/reject_[ID]` - Moves review to trash (sets post status to "trash")
+- `/view_[ID]` - Displays full review content with WordPress edit link
+
+### Security Features
+- Chat ID authentication for all webhook requests
+- Markdown escaping for error messages to prevent parse failures
+- Callback queries acknowledged without channel broadcast (no spam)
+- WordPress credentials stored as environment secrets, never exposed in logs
+
+### Testing
+- Manual test endpoint: `POST /api/telegram/test-notification` sends sample review notification to channel
+- Logs: All commands logged to console with `[Telegram Bot]` prefix for debugging
