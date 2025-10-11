@@ -378,18 +378,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const post = posts[0];
       
-      // Debug: Log ACF data to see what fields exist
-      console.log(`[DEBUG] Post ACF data for ${slug}:`, JSON.stringify(post.acf, null, 2));
-      
       // Check if article has a related broker (ACF relationship field)
       if (post.acf?.related_broker) {
         try {
-          // related_broker can be an ID or an array of IDs, get the first one
-          const brokerId = Array.isArray(post.acf.related_broker) 
-            ? post.acf.related_broker[0] 
-            : post.acf.related_broker;
+          // related_broker can be:
+          // - A single ID number
+          // - An array of IDs
+          // - An array of post objects with ID property
+          // - A single post object with ID property
+          let brokerId;
           
-          console.log(`[DEBUG] Found related_broker field, ID: ${brokerId}`);
+          const relatedBroker = post.acf.related_broker;
+          
+          if (Array.isArray(relatedBroker)) {
+            // It's an array - get the first item
+            const firstItem = relatedBroker[0];
+            brokerId = typeof firstItem === 'object' && firstItem.ID ? firstItem.ID : firstItem;
+          } else if (typeof relatedBroker === 'object' && relatedBroker.ID) {
+            // It's a single object with ID property
+            brokerId = relatedBroker.ID;
+          } else {
+            // It's a single ID
+            brokerId = relatedBroker;
+          }
           
           // Fetch the related broker details
           const broker = await fetchWordPressWithCache(
@@ -397,16 +408,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             { cacheTTL: 600 }
           );
           
-          console.log(`[DEBUG] Fetched broker:`, broker?.title?.rendered || 'No broker found');
-          
           // Add broker to response
           post.relatedBroker = broker;
         } catch (brokerError) {
           console.error("Error fetching related broker:", brokerError);
           // Continue without broker if fetch fails
         }
-      } else {
-        console.log(`[DEBUG] No related_broker field found for ${slug}`);
       }
       
       res.json(post);
