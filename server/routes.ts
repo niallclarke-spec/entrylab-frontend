@@ -117,8 +117,8 @@ async function fetchWordPressWithCache(
   options: { method?: string; body?: any; requireAuth?: boolean; cacheTTL?: number; staleTTL?: number } = {}
 ): Promise<any> {
   const method = options.method || 'GET';
-  const cacheTTL = options.cacheTTL || 600; // 10 minutes default (increased from 5)
-  const staleTTL = options.staleTTL || 1800; // 30 minutes stale-while-revalidate
+  const cacheTTL = options.cacheTTL || 900; // 15 minutes default (increased from 10)
+  const staleTTL = options.staleTTL || 3600; // 60 minutes stale-while-revalidate (increased from 30)
   
   // Only cache GET requests
   if (method === 'GET') {
@@ -155,6 +155,9 @@ async function fetchWordPressWithCache(
 // Helper function to handle WordPress API errors
 function handleWordPressError(error: any, res: any, operation: string) {
   console.error(`Error ${operation}:`, error.message);
+  
+  // Set cache headers for error responses too (5 min browser cache)
+  res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
   
   // Determine appropriate status code
   let statusCode = 500;
@@ -243,7 +246,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         url += `&categories=${category}`;
       }
       
-      const posts = await fetchWordPressWithCache(url, { cacheTTL: 600 }); // 10 min cache
+      const posts = await fetchWordPressWithCache(url); // Use 15 min default cache
+      
+      // Set browser cache headers (5 min) to reduce repeat requests
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json(posts);
     } catch (error) {
       handleWordPressError(error, res, "fetch posts");
@@ -259,7 +265,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         url += `?slug=${slug}`;
       }
       
-      const categories = await fetchWordPressWithCache(url, { cacheTTL: 600 }); // 10 min cache
+      const categories = await fetchWordPressWithCache(url); // Use 15 min default cache
+      
+      // Set browser cache headers (5 min) to reduce repeat requests
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json(categories);
     } catch (error) {
       handleWordPressError(error, res, "fetch categories");
@@ -269,9 +278,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/brokers", async (req, res) => {
     try {
       const brokers = await fetchWordPressWithCache(
-        "https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard",
-        { cacheTTL: 600 } // 10 min cache for broker listings
+        "https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard"
+        // Use 15 min default cache
       );
+      
+      // Set browser cache headers (5 min) to reduce repeat requests
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json(brokers);
     } catch (error) {
       handleWordPressError(error, res, "fetch brokers");
@@ -281,9 +293,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/prop-firms", async (req, res) => {
     try {
       const propFirms = await fetchWordPressWithCache(
-        "https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard",
-        { cacheTTL: 600 } // 10 min cache for prop firm listings
+        "https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard"
+        // Use 15 min default cache
       );
+      
+      // Set browser cache headers (5 min) to reduce repeat requests
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json(propFirms);
     } catch (error) {
       handleWordPressError(error, res, "fetch prop firms");
@@ -294,12 +309,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // WordPress uses "prop-firm-category" slug (with dashes)
       const categories = await fetchWordPressWithCache(
-        "https://admin.entrylab.io/wp-json/wp/v2/prop-firm-category?per_page=100",
-        { cacheTTL: 600 } // 10 min cache
+        "https://admin.entrylab.io/wp-json/wp/v2/prop-firm-category?per_page=100"
+        // Use 15 min default cache
       );
+      
+      // Set browser cache headers (5 min) to reduce repeat requests
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json(categories);
     } catch (error) {
       console.error("Error fetching WordPress prop firm categories:", error);
+      // Set browser cache headers even for error responses
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json([]); // Return empty array instead of error for graceful degradation
     }
   });
@@ -308,9 +328,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { slug } = req.params;
       const brokers = await fetchWordPressWithCache(
-        `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`,
-        { cacheTTL: 600 } // 10 min cache for individual broker
+        `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`
+        // Use 15 min default cache
       );
+      
+      // Set browser cache headers (5 min) to reduce repeat requests
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       
       if (brokers.length === 0) {
         return res.status(404).json({ error: "Broker not found" });
@@ -326,9 +349,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { slug } = req.params;
       const propFirms = await fetchWordPressWithCache(
-        `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`,
-        { cacheTTL: 600 } // 10 min cache for individual prop firm
+        `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`
+        // Use 15 min default cache
       );
+      
+      // Set browser cache headers (5 min) to reduce repeat requests
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       
       if (propFirms.length === 0) {
         return res.status(404).json({ error: "Prop firm not found" });
@@ -349,12 +375,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Fetch trust signals from WordPress options
       const signals = await fetchWordPressWithCache(
-        "https://admin.entrylab.io/wp-json/entrylab/v1/trust-signals",
-        { cacheTTL: 900 } // 15 min cache for trust signals
+        "https://admin.entrylab.io/wp-json/entrylab/v1/trust-signals"
+        // Use 15 min default cache
       );
+      
+      // Set browser cache headers (5 min) to reduce repeat requests
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json(signals);
     } catch (error) {
       console.error("Error fetching trust signals:", error);
+      // Set browser cache headers even for fallback responses
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       // Return defaults on error
       res.json([
         { icon: "users", value: "50,000+", label: "Active Traders" },
@@ -369,11 +400,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { slug } = req.params;
       const posts = await fetchWordPressWithCache(
-        `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed&acf_format=standard`,
-        { cacheTTL: 600 } // 10 min cache for individual articles
+        `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed&acf_format=standard`
+        // Use 15 min default cache
       );
       
       if (posts.length === 0) {
+        res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
         return res.status(404).json({ error: "Post not found" });
       }
       
@@ -405,8 +437,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Fetch the related broker details
           const broker = await fetchWordPressWithCache(
-            `https://admin.entrylab.io/wp-json/wp/v2/popular_broker/${brokerId}?acf_format=standard`,
-            { cacheTTL: 600 }
+            `https://admin.entrylab.io/wp-json/wp/v2/popular_broker/${brokerId}?acf_format=standard`
+            // Use 15 min default cache
           );
           
           // Add broker to response
@@ -417,6 +449,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Set browser cache headers (5 min) to reduce repeat requests
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json(post);
     } catch (error) {
       handleWordPressError(error, res, "fetch post");
@@ -580,8 +614,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Query WordPress for reviews where the ACF relationship field 'reviewed_item' matches the broker/prop firm ID
       const reviews = await fetchWordPressWithCache(
-        `https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed`,
-        { cacheTTL: 600 } // 10 min cache for reviews
+        `https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed`
+        // Use 15 min default cache
       );
       
       // Filter reviews by the reviewed_item ACF field on the backend
@@ -594,9 +628,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return reviewedItem?.ID?.toString() === itemId || reviewedItem?.toString() === itemId;
       });
       
+      // Set browser cache headers (5 min) to reduce repeat requests
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json(filteredReviews);
     } catch (error) {
       console.error("Error fetching reviews:", error);
+      // Set browser cache headers even for error responses
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json([]); // Return empty array on error
     }
   });
