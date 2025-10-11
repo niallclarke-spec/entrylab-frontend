@@ -475,7 +475,7 @@ export default function Article() {
                     <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500/10">
                       <ShieldCheck className="h-5 w-5 text-emerald-500" />
                     </div>
-                    <h3 className="text-2xl font-bold text-foreground">Featured in Article</h3>
+                    <h3 className="text-2xl font-bold text-foreground">Featured Broker</h3>
                   </div>
                   <BrokerCardEnhanced
                     name={relatedBroker.name}
@@ -531,7 +531,7 @@ export default function Article() {
                       <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/10">
                         <ShieldCheck className="h-4 w-4 text-emerald-500" />
                       </div>
-                      <h3 className="text-2xl font-bold text-foreground">Featured in Article</h3>
+                      <h3 className="text-2xl font-bold text-foreground">Featured Broker</h3>
                     </div>
                     <BrokerCardEnhanced
                       name={relatedBroker.name}
