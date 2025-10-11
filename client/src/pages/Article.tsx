@@ -608,6 +608,7 @@ export default function Article() {
             brokerName={stripHtml(relatedBroker.name)}
             brokerLogo={relatedBroker.logo}
             brokerType="broker"
+            scrollThreshold={80}
           />
         </Suspense>
       )}
