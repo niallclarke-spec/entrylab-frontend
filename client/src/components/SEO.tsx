@@ -9,6 +9,7 @@ interface SEOProps {
   publishedTime?: string;
   modifiedTime?: string;
   author?: string;
+  preloadImage?: string;
 }
 
 export function SEO({
@@ -20,12 +21,23 @@ export function SEO({
   publishedTime,
   modifiedTime,
   author,
+  preloadImage,
 }: SEOProps) {
   return (
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
       <meta name="robots" content="index, follow" />
+      
+      {/* Preload LCP image for faster rendering */}
+      {preloadImage && (
+        <link 
+          rel="preload" 
+          as="image" 
+          href={preloadImage}
+          fetchPriority="high"
+        />
+      )}
       
       {/* Open Graph */}
       <meta property="og:title" content={title} />

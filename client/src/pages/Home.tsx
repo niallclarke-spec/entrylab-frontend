@@ -80,18 +80,18 @@ export default function Home() {
   const getFeaturedImage = (post: WordPressPost) => {
     const media = post._embedded?.["wp:featuredmedia"]?.[0];
     if (!media) return undefined;
-    
-    // Use smaller sizes for thumbnails to improve PageSpeed
-    // Priority: medium_large (768px) > medium (300px) > large
     const sizes = (media as any).media_details?.sizes;
-    if (sizes) {
-      if (sizes.medium_large?.source_url) return sizes.medium_large.source_url;
-      if (sizes.medium?.source_url) return sizes.medium.source_url;
-      if (sizes.large?.source_url) return sizes.large.source_url;
-    }
     
-    return media.source_url; // Fallback to full size
+    // Use medium_large as baseline - WordPress standard for article featured images
+    // OptimizedImage component handles responsive srcset for different viewports
+    if (sizes?.medium_large?.source_url) return sizes.medium_large.source_url;
+    if (sizes?.large?.source_url) return sizes.large.source_url;
+    if (sizes?.medium?.source_url) return sizes.medium.source_url;
+    
+    return media.source_url;
   };
+
+  const featuredImage = featuredPost ? getFeaturedImage(featuredPost) : undefined;
 
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
@@ -100,6 +100,7 @@ export default function Home() {
         description="Stay informed with the latest forex broker news, prop firm updates, and trading analysis. Unbiased reviews and market insights for traders worldwide."
         url="https://entrylab.io"
         type="website"
+        preloadImage={featuredImage}
       />
       <Navigation />
 
