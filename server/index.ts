@@ -40,7 +40,7 @@ app.use((req, res, next) => {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
     "font-src 'self' https://fonts.gstatic.com; " +
     "img-src 'self' data: https: blob:; " +
-    "connect-src 'self' https://admin.entrylab.io https://www.google-analytics.com https://finnhub.io; " +
+    "connect-src 'self' https://www.google-analytics.com https://finnhub.io; " +
     "frame-ancestors 'none'; " +
     "base-uri 'self'; " +
     "form-action 'self'"
