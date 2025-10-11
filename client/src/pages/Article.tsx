@@ -225,7 +225,7 @@ export default function Article() {
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(contentWithAffiliateLinks, 'text/html');
-    const allElements = Array.from(doc.querySelectorAll('p, h1, h2, h3, h4, h5, h6, ul, ol, blockquote'));
+    const allElements = Array.from(doc.querySelectorAll('p, h1, h2, h3, h4, h5, h6, ul, ol, blockquote, table, figure, div.wp-block-table, div.wp-block-image, pre'));
 
     if (allElements.length < 3) {
       return (
