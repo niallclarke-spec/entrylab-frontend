@@ -261,13 +261,10 @@ export async function getBrokerSchema(slug: string) {
 // Prop firm review schema generator
 export async function getPropFirmSchema(slug: string) {
   try {
-    const url = `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`;
-    console.log('[Structured Data] Fetching prop firm:', url);
     const propFirms = await fetchWordPressWithCache(
-      url,
+      `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`,
       { cacheTTL: 900, staleTTL: 3600 }
     );
-    console.log('[Structured Data] Prop firm response:', propFirms);
 
     if (!propFirms || propFirms.length === 0) return null;
 
