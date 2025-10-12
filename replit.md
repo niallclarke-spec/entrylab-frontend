@@ -3,6 +3,18 @@
 ## Overview
 EntryLab is a full-stack web application designed as a Forex News & Trading Intelligence Hub. It aggregates and displays forex broker news, prop firm updates, and trading analysis, fetching content from a WordPress backend. The platform aims to provide traders with a clean, professional interface for broker information, articles, and market data, inspired by Bloomberg and CoinDesk, with a focus on business vision and market potential.
 
+## Recent Changes (October 12, 2025)
+
+### Telegram Bot Review Moderation - Fixed & Optimized
+- **Inline Button Integration**: Added clickable buttons (✅ Approve, ❌ Reject, 👁️ View Details) directly in Telegram channel notifications for one-click review moderation
+- **Fixed Endpoint Issue**: Corrected API endpoints from `/posts/{ID}` to `/review/{ID}` for proper custom post type handling
+- **Direct Notification Flow**: Notifications now sent directly from Replit after review creation (bypasses WordPress webhook timing issues)
+- **Enhanced Security**: All callback queries validated against `TELEGRAM_CHANNEL_ID` with proper error handling and markdown escaping
+
+### UI/UX Fixes
+- **Featured Broker Widget**: Fixed "Read Review" button to use internal navigation instead of external link (uses `<Link>` from wouter instead of `<a target="_blank">`)
+- **Review Link Consistency**: All broker review links now properly route to `/broker/{slug}` within the application
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
@@ -85,8 +97,8 @@ Preferred communication style: Simple, everyday language.
 ### Architecture
 - **Webhook Mode**: Receives commands via POST `/api/telegram/webhook` (no polling).
 - **Security**: All webhook requests validated against `TELEGRAM_CHANNEL_ID` environment variable. Unauthorized chat IDs receive 403 response.
-- **Command Processing**: Text commands (`/approve_ID`, `/reject_ID`, `/view_ID`) and inline button callbacks update WordPress post status via REST API.
-- **Notification Flow**: WordPress → `/api/wordpress/review-webhook` → Telegram notification with inline buttons.
+- **Inline Button Commands**: Telegram notifications include inline buttons (✅ Approve, ❌ Reject, 👁️ View Details) that work directly in channels. Button callbacks update WordPress review post type (`/wp-json/wp/v2/review/{ID}`) status via REST API.
+- **Notification Flow**: Replit sends notification directly after review creation → Telegram channel with inline buttons → User clicks button → Webhook processes callback → WordPress updated.
 
 ### Setup & Configuration
 1. **Secrets Required**: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHANNEL_ID`, `WORDPRESS_USERNAME`, `WORDPRESS_PASSWORD` (stored as Replit Secrets).
@@ -94,9 +106,14 @@ Preferred communication style: Simple, everyday language.
 3. **WordPress Integration**: WordPress sends POST request to `/api/wordpress/review-webhook` when new review is submitted (status: pending).
 
 ### Available Commands
-- `/approve_[ID]` - Publishes review (sets post status to "publish")
-- `/reject_[ID]` - Moves review to trash (sets post status to "trash")
-- `/view_[ID]` - Displays full review content with WordPress edit link
+- Inline Buttons (preferred method):
+  - ✅ **Approve** - Publishes review (sets post status to "publish")
+  - ❌ **Reject** - Moves review to trash (sets post status to "trash")
+  - 👁️ **View Details** - Displays full review content with WordPress edit link
+- Text Commands (fallback):
+  - `/approve_[ID]` - Publishes review
+  - `/reject_[ID]` - Moves review to trash
+  - `/view_[ID]` - Displays full review details
 
 ### Security Features
 - Chat ID authentication for all webhook requests
