@@ -1116,6 +1116,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Structured data injection middleware for SEO
+  // This must run BEFORE Vite/static middleware to inject server-side structured data
+  
+  console.log('[SERVER] Registering SEO middleware');
+  
+  const { generateStructuredData } = await import("./structured-data");
+  
+  console.log('[SERVER] SEO middleware import successful');
+  
+  app.use(async (req, res, next) => {
+    const url = req.originalUrl || req.url;
+    
+    console.log('[SEO MIDDLEWARE] Request URL:', url);
+    
+    // Only process HTML requests for specific page types
+    const isHtmlRequest = !url.includes('.') || url.endsWith('.html');
+    const needsStructuredData = url.startsWith('/article/') || 
+                                url.startsWith('/broker/') || 
+                                url.startsWith('/prop-firm/');
+    
+    if (isHtmlRequest && needsStructuredData) {
+      console.log('[SEO MIDDLEWARE] Will inject structured data for:', url);
+      // Wrap res.end to intercept HTML response (Vite uses res.end, not res.send)
+      const originalEnd = res.end;
+      const originalSend = res.send;
+      
+      // Intercept res.end
+      res.end = function(chunk?: any, encoding?: any, callback?: any) {
+        if (typeof chunk === 'string' && chunk.includes('id="ssr-structured-data"')) {
+          console.log('[SEO] Replacing placeholder with structured data');
+          generateStructuredData(url)
+            .then(structuredData => {
+              const modifiedHtml = chunk.replace('<script id="ssr-structured-data"></script>', structuredData);
+              originalEnd.call(res, modifiedHtml, encoding, callback);
+            })
+            .catch(error => {
+              console.error('[Structured Data] Injection error:', error);
+              originalEnd.call(res, chunk, encoding, callback);
+            });
+        } else {
+          originalEnd.call(res, chunk, encoding, callback);
+        }
+        
+        return res;
+      };
+      
+      // Also intercept res.send for production static serving
+      res.send = function(data: any) {
+        if (typeof data === 'string' && data.includes('id="ssr-structured-data"')) {
+          console.log('[SEO] Replacing placeholder with structured data (send)');
+          generateStructuredData(url)
+            .then(structuredData => {
+              const modifiedHtml = data.replace('<script id="ssr-structured-data"></script>', structuredData);
+              res.type('html');
+              originalSend.call(res, modifiedHtml);
+            })
+            .catch(error => {
+              console.error('[Structured Data] Injection error:', error);
+              originalSend.call(res, data);
+            });
+        } else {
+          originalSend.call(res, data);
+        }
+        
+        return res;
+      };
+    }
+    
+    next();
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
