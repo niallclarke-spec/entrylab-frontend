@@ -1,9 +1,9 @@
 import https from 'https';
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const WEBHOOK_URL = process.env.REPLIT_DEV_DOMAIN 
-  ? `https://${process.env.REPLIT_DEV_DOMAIN}/api/telegram/webhook`
-  : 'https://entrylab.io/api/telegram/webhook'; // Production URL
+
+// Force production URL - set TELEGRAM_WEBHOOK_URL env var to override
+const WEBHOOK_URL = process.env.TELEGRAM_WEBHOOK_URL || 'https://entrylab.io/api/telegram/webhook';
 
 async function setWebhook() {
   if (!TELEGRAM_BOT_TOKEN) {
