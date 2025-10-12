@@ -943,6 +943,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { post_id, post_title, post_status, post_type, acf } = req.body;
       
+      // Debug logging
+      console.log('[WordPress Webhook] Received data:', JSON.stringify({ post_id, post_type, post_status, acf }, null, 2));
+      
       // Only notify for pending reviews
       if (post_status !== 'pending' || (post_type !== 'broker_review' && post_type !== 'prop_firm_review' && post_type !== 'review')) {
         return res.sendStatus(200);
@@ -953,7 +956,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let brokerName = 'Unknown';
       if (post_type === 'review' && acf?.reviewed_item) {
         const reviewedItem = Array.isArray(acf.reviewed_item) ? acf.reviewed_item[0] : acf.reviewed_item;
-        brokerName = reviewedItem?.post_title || 'Unknown';
+        console.log('[Broker Extraction] reviewedItem:', reviewedItem);
+        
+        // Handle both string ID and object formats
+        if (typeof reviewedItem === 'string' || typeof reviewedItem === 'number') {
+          // Just an ID - fetch broker name from WordPress
+          try {
+            const brokerData = await fetchWordPress(`https://admin.entrylab.io/wp-json/wp/v2/popular_broker/${reviewedItem}?acf_format=standard`);
+            brokerName = brokerData.title?.rendered || brokerData.acf?.name || 'Unknown';
+            console.log('[Broker Extraction] Fetched broker name:', brokerName);
+          } catch (err) {
+            console.error('[Broker Extraction] Failed to fetch broker:', err);
+          }
+        } else if (reviewedItem?.post_title) {
+          brokerName = reviewedItem.post_title;
+        }
       } else {
         brokerName = acf?.broker_name || acf?.prop_firm_name || 'Unknown';
       }
@@ -961,6 +978,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const rating = parseFloat(acf?.rating || acf?.overall_rating || '0');
       const reviewerName = acf?.reviewer_name || 'Anonymous';
       const reviewText = acf?.review_text || acf?.experience_text || '';
+      
+      console.log('[Telegram Notification] Sending:', { brokerName, rating, reviewerName });
       
       // Send Telegram notification
       await sendReviewNotification({
