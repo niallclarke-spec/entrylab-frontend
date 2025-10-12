@@ -1133,8 +1133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Only process HTML requests for specific page types
     const isHtmlRequest = !url.includes('.') || url.endsWith('.html');
     const needsStructuredData = url.startsWith('/article/') || 
-                                url.startsWith('/broker/') || 
-                                url.startsWith('/prop-firm/');
+                                url.startsWith('/broker/');
     
     if (isHtmlRequest && needsStructuredData) {
       console.log('[SEO MIDDLEWARE] Will inject structured data for:', url);

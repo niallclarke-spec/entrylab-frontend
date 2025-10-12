@@ -179,38 +179,12 @@ export default function PropFirmReview() {
   const seoTitle = `${stripHtml(displayFirm.name)} Review 2025 | EntryLab`;
   const seoDescription = displayFirm.tagline || `Comprehensive review of ${stripHtml(displayFirm.name)}. Read about funding, profit splits, evaluation process, and more.`;
 
-  // Breadcrumbs for structured data
-  const breadcrumbs = [
-    { name: "Home", url: "https://entrylab.io" },
-    { name: "Prop Firms", url: "https://entrylab.io/prop-firms" },
-    { name: stripHtml(displayFirm.name), url: `https://entrylab.io/prop-firm/${displayFirm.slug}` }
-  ];
-
-  // FAQ structured data
-  const faqStructuredData = faqs.map(faq => ({
-    question: faq.q,
-    answer: faq.a
-  }));
-
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
         title={seoTitle}
         description={seoDescription}
         url={`https://entrylab.io/prop-firm/${displayFirm.slug}`}
-        breadcrumbs={breadcrumbs}
-        reviewData={{
-          itemName: stripHtml(displayFirm.name),
-          itemType: "Organization",
-          rating: {
-            ratingValue: displayFirm.rating,
-            bestRating: 5,
-            worstRating: 1
-          },
-          author: "EntryLab",
-          datePublished: new Date().toISOString()
-        }}
-        faq={faqStructuredData}
       />
       <Navigation />
 
