@@ -868,9 +868,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (approveMatch) {
           const postId = approveMatch[1];
           try {
-            // Update WordPress post status to 'publish'
+            // Update WordPress review status to 'publish'
             const result = await fetchWordPress(
-              `https://admin.entrylab.io/wp-json/wp/v2/posts/${postId}`,
+              `https://admin.entrylab.io/wp-json/wp/v2/review/${postId}`,
               {
                 method: 'POST',
                 body: { status: 'publish' },
@@ -890,9 +890,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else if (rejectMatch) {
           const postId = rejectMatch[1];
           try {
-            // Move post to trash
+            // Move review to trash
             const result = await fetchWordPress(
-              `https://admin.entrylab.io/wp-json/wp/v2/posts/${postId}`,
+              `https://admin.entrylab.io/wp-json/wp/v2/review/${postId}`,
               {
                 method: 'DELETE',
                 requireAuth: true
@@ -910,9 +910,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else if (viewMatch) {
           const postId = viewMatch[1];
           try {
-            // Fetch full post details
+            // Fetch full review details
             const post = await fetchWordPress(
-              `https://admin.entrylab.io/wp-json/wp/v2/posts/${postId}`,
+              `https://admin.entrylab.io/wp-json/wp/v2/review/${postId}`,
               { requireAuth: true }
             );
             
