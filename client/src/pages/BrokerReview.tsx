@@ -299,25 +299,24 @@ export default function BrokerReview() {
             <div className="space-y-8">
               {/* Pros & Cons - Market Chart Inspired */}
               {(broker.pros.length > 0 || broker.cons && broker.cons.length > 0) && (
-                <div className="space-y-4">
-                  <h2 className="text-2xl font-bold">Pros & Cons</h2>
+                <Card className="relative overflow-hidden p-6">
+                  <h2 className="text-2xl font-bold mb-6">Pros & Cons</h2>
                   
-                  <Card className="relative overflow-hidden p-6">
-                    {/* Chart-line background pattern */}
-                    <div className="absolute inset-0 opacity-5">
-                      <svg className="w-full h-full" preserveAspectRatio="none">
-                        <path d="M0,50 Q250,30 500,50 T1000,50" stroke="currentColor" fill="none" strokeWidth="1" className="text-primary"/>
-                        <path d="M0,80 Q250,60 500,80 T1000,80" stroke="currentColor" fill="none" strokeWidth="1" className="text-primary"/>
-                      </svg>
-                    </div>
+                  {/* Chart-line background pattern */}
+                  <div className="absolute inset-0 opacity-5">
+                    <svg className="w-full h-full" preserveAspectRatio="none">
+                      <path d="M0,50 Q250,30 500,50 T1000,50" stroke="currentColor" fill="none" strokeWidth="1" className="text-primary"/>
+                      <path d="M0,80 Q250,60 500,80 T1000,80" stroke="currentColor" fill="none" strokeWidth="1" className="text-primary"/>
+                    </svg>
+                  </div>
 
-                    {/* Balance Indicator */}
-                    <div className="relative mb-6">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Activity className="h-5 w-5 text-primary" />
-                          <span className="text-sm font-semibold text-muted-foreground">Balance Score</span>
-                        </div>
+                  {/* Broker Analysis Indicator */}
+                  <div className="relative mb-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Activity className="h-5 w-5 text-primary" />
+                        <span className="text-sm font-semibold text-muted-foreground">Broker Analysis</span>
+                      </div>
                         <div className="flex items-center gap-3 text-xs font-mono">
                           <span className="text-emerald-500">{broker.pros.length} Pros</span>
                           <span className="text-muted-foreground">•</span>
@@ -379,7 +378,6 @@ export default function BrokerReview() {
                       )}
                     </div>
                   </Card>
-                </div>
               )}
 
               {/* Broker Details Grid */}
