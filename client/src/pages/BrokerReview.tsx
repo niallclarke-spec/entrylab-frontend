@@ -297,78 +297,83 @@ export default function BrokerReview() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-[1fr_350px] gap-8">
             <div className="space-y-8">
-              {/* Pros & Cons - Premium Finance Style */}
+              {/* Pros & Cons - Market Chart Inspired */}
               {(broker.pros.length > 0 || broker.cons && broker.cons.length > 0) && (
                 <div className="space-y-4">
                   <h2 className="text-2xl font-bold">Pros & Cons</h2>
                   
-                  <Card className="relative overflow-hidden">
-                    <div className="grid md:grid-cols-2">
-                      {/* Pros Section */}
+                  <Card className="relative overflow-hidden p-6">
+                    {/* Chart-line background pattern */}
+                    <div className="absolute inset-0 opacity-5">
+                      <svg className="w-full h-full" preserveAspectRatio="none">
+                        <path d="M0,50 Q250,30 500,50 T1000,50" stroke="currentColor" fill="none" strokeWidth="1" className="text-primary"/>
+                        <path d="M0,80 Q250,60 500,80 T1000,80" stroke="currentColor" fill="none" strokeWidth="1" className="text-primary"/>
+                      </svg>
+                    </div>
+
+                    {/* Balance Indicator */}
+                    <div className="relative mb-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Activity className="h-5 w-5 text-primary" />
+                          <span className="text-sm font-semibold text-muted-foreground">Balance Score</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs font-mono">
+                          <span className="text-emerald-500">{broker.pros.length} Pros</span>
+                          <span className="text-muted-foreground">•</span>
+                          <span className="text-destructive">{broker.cons?.length || 0} Cons</span>
+                        </div>
+                      </div>
+                      <div className="relative h-2 bg-muted/30 rounded-full overflow-hidden">
+                        <div 
+                          className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-500 to-primary rounded-full transition-all"
+                          style={{ width: `${(broker.pros.length / (broker.pros.length + (broker.cons?.length || 0))) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Condensed Pros & Cons */}
+                    <div className="relative space-y-6">
+                      {/* Pros Pills */}
                       {broker.pros.length > 0 && (
-                        <div className="relative p-6">
-                          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-emerald-500/10 to-transparent" />
-                          <div className="relative">
-                            <div className="flex items-center gap-3 mb-6">
-                              <div className="relative p-0.5 rounded-xl bg-gradient-to-br from-emerald-500/40 to-primary/40">
-                                <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-card backdrop-blur-sm">
-                                  <Check className="h-6 w-6 text-emerald-500" />
-                                </div>
-                              </div>
-                              <h3 className="text-lg font-bold text-emerald-500">Strengths</h3>
-                            </div>
-                            <ul className="space-y-3">
-                              {broker.pros.map((pro, index) => (
-                                <li 
-                                  key={index} 
-                                  className="flex items-start gap-3 group" 
-                                  data-testid={`text-pro-${index}`}
-                                >
-                                  <div className="relative p-0.5 rounded-full bg-gradient-to-br from-emerald-500/50 to-primary/50 flex-shrink-0 mt-0.5">
-                                    <div className="flex items-center justify-center w-5 h-5 rounded-full bg-card backdrop-blur-sm">
-                                      <span className="text-xs font-bold text-emerald-500">{index + 1}</span>
-                                    </div>
-                                  </div>
-                                  <span className="text-sm leading-relaxed">{pro}</span>
-                                </li>
-                              ))}
-                            </ul>
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <Check className="h-4 w-4 text-emerald-500" />
+                            <h3 className="text-sm font-bold text-emerald-500 uppercase tracking-wide">Strengths</h3>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {broker.pros.map((pro, index) => (
+                              <Badge 
+                                key={index}
+                                className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                data-testid={`text-pro-${index}`}
+                              >
+                                <Check className="h-3 w-3 mr-1.5" />
+                                {pro}
+                              </Badge>
+                            ))}
                           </div>
                         </div>
                       )}
 
-                      {/* Gradient Divider */}
-                      <div className="hidden md:block absolute left-1/2 top-6 bottom-6 w-px bg-gradient-to-b from-primary/30 via-purple-500/50 to-primary/30 -translate-x-1/2" />
-
-                      {/* Cons Section */}
+                      {/* Cons Pills */}
                       {broker.cons && broker.cons.length > 0 && (
-                        <div className="relative p-6">
-                          <div className="absolute inset-0 bg-gradient-to-bl from-primary/10 via-destructive/10 to-transparent" />
-                          <div className="relative">
-                            <div className="flex items-center gap-3 mb-6">
-                              <div className="relative p-0.5 rounded-xl bg-gradient-to-br from-destructive/40 to-primary/40">
-                                <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-card backdrop-blur-sm">
-                                  <X className="h-6 w-6 text-destructive" />
-                                </div>
-                              </div>
-                              <h3 className="text-lg font-bold text-destructive">Limitations</h3>
-                            </div>
-                            <ul className="space-y-3">
-                              {broker.cons.map((con, index) => (
-                                <li 
-                                  key={index} 
-                                  className="flex items-start gap-3 group" 
-                                  data-testid={`text-con-${index}`}
-                                >
-                                  <div className="relative p-0.5 rounded-full bg-gradient-to-br from-destructive/50 to-primary/50 flex-shrink-0 mt-0.5">
-                                    <div className="flex items-center justify-center w-5 h-5 rounded-full bg-card backdrop-blur-sm">
-                                      <span className="text-xs font-bold text-destructive">{index + 1}</span>
-                                    </div>
-                                  </div>
-                                  <span className="text-sm leading-relaxed">{con}</span>
-                                </li>
-                              ))}
-                            </ul>
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <X className="h-4 w-4 text-destructive" />
+                            <h3 className="text-sm font-bold text-destructive uppercase tracking-wide">Limitations</h3>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {broker.cons.map((con, index) => (
+                              <Badge 
+                                key={index}
+                                className="bg-destructive/10 text-destructive border-destructive/20"
+                                data-testid={`text-con-${index}`}
+                              >
+                                <X className="h-3 w-3 mr-1.5" />
+                                {con}
+                              </Badge>
+                            ))}
                           </div>
                         </div>
                       )}
