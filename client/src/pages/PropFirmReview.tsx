@@ -7,7 +7,7 @@ import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, MessageSquare, Target, Users, Clock, Percent, Calendar, TrendingDown, Scale, CheckCircle2, XCircle, AlertCircle, BarChart3, Trophy, LineChart } from "lucide-react";
+import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, Info, ArrowUp, MessageSquare, Target, Clock, Percent, Calendar, Scale, CheckCircle2, BarChart3 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { transformPropFirmDetailed } from "@/lib/transforms";
@@ -16,42 +16,59 @@ import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
 import { ReviewModalSimple as ReviewModal } from "@/components/ReviewModalSimple";
 import { BrokerAlertPopup } from "@/components/BrokerAlertPopup";
 
-// Dummy data for funding programs (will be ACF fields later)
-const fundingPrograms = [
-  { size: "$10K", fee: "$89", profitTarget: "8%", dailyLoss: "5%", totalLoss: "10%", popular: false },
-  { size: "$25K", fee: "$149", profitTarget: "8%", dailyLoss: "5%", totalLoss: "10%", popular: false },
-  { size: "$50K", fee: "$249", profitTarget: "8%", dailyLoss: "5%", totalLoss: "10%", popular: true },
-  { size: "$100K", fee: "$449", profitTarget: "8%", dailyLoss: "5%", totalLoss: "10%", popular: false },
-  { size: "$200K", fee: "$849", profitTarget: "8%", dailyLoss: "5%", totalLoss: "10%", popular: false },
+// Dummy data for model types (will be ACF fields later)
+const modelTypes = [
+  { 
+    name: "2-Step Challenge", 
+    description: "Complete two evaluation phases before getting funded",
+    fee: "From $89",
+    profitTarget: "Phase 1: 8% | Phase 2: 5%",
+    popular: true
+  },
+  { 
+    name: "1-Step Challenge", 
+    description: "Single evaluation phase for faster funding",
+    fee: "From $129",
+    profitTarget: "10% profit target",
+    popular: false
+  },
+  { 
+    name: "Instant Funding", 
+    description: "Get funded immediately, no evaluation needed",
+    fee: "From $299",
+    profitTarget: "No profit target",
+    popular: false
+  },
 ];
 
-// Dummy data for challenge phases
-const challengePhases = [
-  { phase: 1, name: "Evaluation Phase", target: "8% profit", maxDays: "Unlimited", minDays: "4", dailyLoss: "5%", totalLoss: "10%" },
-  { phase: 2, name: "Verification Phase", target: "5% profit", maxDays: "Unlimited", minDays: "4", dailyLoss: "5%", totalLoss: "10%" },
-  { phase: 3, name: "Funded Account", target: "No target", maxDays: "Unlimited", minDays: "N/A", dailyLoss: "5%", totalLoss: "10%" },
-];
+// Dummy data for challenge phases per model
+const challengePhasesByModel = {
+  "2-Step Challenge": [
+    { phase: 1, name: "Phase 1", target: "8%", maxDays: "Unlimited", minDays: "4", dailyLoss: "5%", totalLoss: "10%" },
+    { phase: 2, name: "Phase 2", target: "5%", maxDays: "Unlimited", minDays: "4", dailyLoss: "5%", totalLoss: "10%" },
+    { phase: 3, name: "Funded", target: "None", maxDays: "Unlimited", minDays: "N/A", dailyLoss: "5%", totalLoss: "10%" },
+  ],
+  "1-Step Challenge": [
+    { phase: 1, name: "Evaluation", target: "10%", maxDays: "30", minDays: "5", dailyLoss: "5%", totalLoss: "10%" },
+    { phase: 2, name: "Funded", target: "None", maxDays: "Unlimited", minDays: "N/A", dailyLoss: "5%", totalLoss: "10%" },
+  ],
+  "Instant Funding": [
+    { phase: 1, name: "Funded", target: "None", maxDays: "Unlimited", minDays: "N/A", dailyLoss: "3%", totalLoss: "6%" },
+  ],
+};
 
-// Dummy data for trading rules
-const tradingRules = [
-  { icon: TrendingDown, title: "Max Daily Loss", value: "5%", description: "Maximum loss per day from daily balance", color: "destructive" },
-  { icon: AlertCircle, title: "Max Total Loss", value: "10%", description: "Maximum total drawdown from starting balance", color: "destructive" },
-  { icon: Target, title: "Profit Target", value: "8%", description: "Profit goal for challenge phase", color: "emerald" },
-  { icon: Calendar, title: "Minimum Days", value: "4 days", description: "Minimum trading days required", color: "blue" },
-  { icon: Users, title: "Copy Trading", value: "Allowed", description: "Use expert advisors and copy trading", color: "emerald" },
-  { icon: Clock, title: "News Trading", value: "Allowed", description: "Trade during high-impact news events", color: "emerald" },
-];
-
-// Dummy data for profit splits
-const profitSplits = [
-  { phase: "Initial", split: "80%", withdrawal: "Bi-weekly", notes: "First funded payout" },
-  { phase: "After 1st Payout", split: "85%", withdrawal: "Bi-weekly", notes: "Increased profit share" },
-  { phase: "After 3rd Payout", split: "90%", withdrawal: "Weekly", notes: "Maximum profit share" },
-];
+// Dummy data for profit splits (more generic)
+const profitSplitInfo = {
+  initial: "80%",
+  increased: "85%",
+  maximum: "90%",
+  withdrawalFrequency: "Bi-weekly to Weekly",
+  description: "Profit share increases with consistent performance and number of payouts"
+};
 
 // Dummy comparison data
 const competitorComparison = [
-  { firm: "Current Firm", profitSplit: "90%", challenge: "$249", evaluation: "2-step", payoutTime: "24h", rating: 4.8, popular: true },
+  { firm: "This Prop Firm", profitSplit: "90%", challenge: "$89", evaluation: "2-step", payoutTime: "24h", rating: 4.8, popular: true },
   { firm: "Competitor A", profitSplit: "80%", challenge: "$299", evaluation: "2-step", payoutTime: "14 days", rating: 4.5, popular: false },
   { firm: "Competitor B", profitSplit: "85%", challenge: "$199", evaluation: "1-step", payoutTime: "7 days", rating: 4.3, popular: false },
   { firm: "Competitor C", profitSplit: "75%", challenge: "$350", evaluation: "2-step", payoutTime: "30 days", rating: 4.1, popular: false },
@@ -73,6 +90,7 @@ export default function PropFirmReview() {
   const params = useParams();
   const slug = params.slug;
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [selectedModel, setSelectedModel] = useState(modelTypes[0].name);
 
   const { data: wpPropFirm, isLoading } = useQuery<any>({
     queryKey: ["/api/wordpress/prop-firm", slug],
@@ -346,52 +364,43 @@ export default function PropFirmReview() {
           <div className="grid lg:grid-cols-[1fr_350px] gap-8">
             <div className="space-y-8">
               
-              {/* Funding Programs */}
+              {/* Model Types */}
               <div>
-                <h2 className="text-2xl font-bold mb-6">Funding Programs</h2>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {fundingPrograms.map((program, index) => (
-                    <Card key={index} className={`relative p-6 ${program.popular ? 'border-primary border-2' : ''}`}>
-                      {program.popular && (
+                <h2 className="text-2xl font-bold mb-6">Model Types</h2>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {modelTypes.map((model, index) => (
+                    <Card 
+                      key={index} 
+                      className={`relative p-6 cursor-pointer transition-all ${model.popular ? 'border-primary border-2' : ''} ${selectedModel === model.name ? 'ring-2 ring-primary' : ''}`}
+                      onClick={() => setSelectedModel(model.name)}
+                    >
+                      {model.popular && (
                         <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
                           Most Popular
                         </Badge>
                       )}
-                      <div className="text-center mb-4">
-                        <h3 className="text-3xl font-bold text-primary">{program.size}</h3>
-                        <p className="text-sm text-muted-foreground mt-1">Account Size</p>
-                      </div>
-                      <div className="space-y-3 mb-6">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Challenge Fee:</span>
-                          <span className="font-semibold">{program.fee}</span>
+                      <h3 className="text-lg font-bold mb-2">{model.name}</h3>
+                      <p className="text-sm text-muted-foreground mb-4">{model.description}</p>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Fee:</span>
+                          <span className="font-semibold">{model.fee}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Profit Target:</span>
-                          <span className="font-semibold text-emerald-500">{program.profitTarget}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Max Daily Loss:</span>
-                          <span className="font-semibold text-destructive">{program.dailyLoss}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Max Total Loss:</span>
-                          <span className="font-semibold text-destructive">{program.totalLoss}</span>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Target:</span>
+                          <span className="font-semibold text-emerald-500">{model.profitTarget}</span>
                         </div>
                       </div>
-                      <Button className="w-full" variant={program.popular ? "default" : "outline"}>
-                        Select {program.size}
-                      </Button>
                     </Card>
                   ))}
                 </div>
               </div>
 
-              {/* Challenge Phases */}
+              {/* Challenge Phases for Selected Model */}
               <Card className="p-6">
-                <h2 className="text-2xl font-bold mb-6">Challenge Phases</h2>
+                <h2 className="text-2xl font-bold mb-6">Challenge Phases - {selectedModel}</h2>
                 <div className="space-y-4">
-                  {challengePhases.map((phase) => (
+                  {challengePhasesByModel[selectedModel as keyof typeof challengePhasesByModel]?.map((phase) => (
                     <div key={phase.phase} className="relative pl-8">
                       <div className="absolute left-0 top-1 flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold">
                         {phase.phase}
@@ -426,54 +435,45 @@ export default function PropFirmReview() {
                 </div>
               </Card>
 
-              {/* Trading Rules */}
-              <div>
-                <h2 className="text-2xl font-bold mb-6">Trading Rules</h2>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {tradingRules.map((rule, index) => {
-                    const Icon = rule.icon;
-                    const colorClasses = rule.color === 'destructive' ? 'text-destructive bg-destructive/10' :
-                                        rule.color === 'emerald' ? 'text-emerald-500 bg-emerald-500/10' :
-                                        rule.color === 'blue' ? 'text-blue-500 bg-blue-500/10' : '';
-                    return (
-                      <Card key={index} className="p-4">
-                        <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${colorClasses} mb-3`}>
-                          <Icon className="h-5 w-5" />
-                        </div>
-                        <h3 className="font-bold mb-1">{rule.title}</h3>
-                        <p className="text-2xl font-bold mb-2">{rule.value}</p>
-                        <p className="text-xs text-muted-foreground">{rule.description}</p>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Profit Splits & Scaling */}
+              {/* Profit Splits & Scaling - More Generic */}
               <Card className="p-6">
                 <h2 className="text-2xl font-bold mb-6">Profit Splits & Scaling</h2>
+                
+                <div className="grid sm:grid-cols-3 gap-4 mb-6">
+                  <div className="p-4 rounded-lg bg-muted/50 text-center">
+                    <div className="text-3xl font-bold text-primary mb-1">{profitSplitInfo.initial}</div>
+                    <div className="text-sm text-muted-foreground">Initial Split</div>
+                  </div>
+                  <div className="p-4 rounded-lg bg-muted/50 text-center">
+                    <div className="text-3xl font-bold text-primary mb-1">{profitSplitInfo.increased}</div>
+                    <div className="text-sm text-muted-foreground">Increased Split</div>
+                  </div>
+                  <div className="p-4 rounded-lg bg-muted/50 text-center">
+                    <div className="text-3xl font-bold text-primary mb-1">{profitSplitInfo.maximum}</div>
+                    <div className="text-sm text-muted-foreground">Maximum Split</div>
+                  </div>
+                </div>
+
                 <div className="space-y-4">
-                  {profitSplits.map((split, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-                      <div className="flex-1">
-                        <h3 className="font-bold mb-1">{split.phase}</h3>
-                        <p className="text-sm text-muted-foreground">{split.notes}</p>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-primary">{split.split}</div>
-                        <div className="text-xs text-muted-foreground">{split.withdrawal}</div>
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-primary/5 border border-primary/20">
+                    <div className="flex items-center gap-3">
+                      <Calendar className="h-5 w-5 text-primary" />
+                      <div>
+                        <h4 className="font-semibold">Withdrawal Frequency</h4>
+                        <p className="text-sm text-muted-foreground">{profitSplitInfo.withdrawalFrequency}</p>
                       </div>
                     </div>
-                  ))}
-                </div>
-                <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
-                  <div className="flex items-start gap-3">
-                    <Scale className="h-5 w-5 text-primary mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold mb-1">Scaling Plan</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Increase your account size by 20% after every 3 consecutive profitable payouts, up to a maximum of $2 million in total capital.
-                      </p>
+                  </div>
+
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <Scale className="h-5 w-5 text-primary mt-0.5" />
+                      <div>
+                        <h4 className="font-semibold mb-1">How Scaling Works</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {profitSplitInfo.description}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -494,8 +494,8 @@ export default function PropFirmReview() {
                   <div className="relative mb-6">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <Activity className="h-5 w-5 text-primary" />
-                        <span className="text-sm font-semibold text-muted-foreground">Overall Rating</span>
+                        <BarChart3 className="h-5 w-5 text-primary" />
+                        <span className="text-sm font-semibold text-muted-foreground">Broker Analysis</span>
                       </div>
                       <div className="flex items-center gap-3 text-xs font-mono">
                         <span className="text-emerald-500">{displayFirm.pros.length} Pros</span>
@@ -559,7 +559,7 @@ export default function PropFirmReview() {
 
               {/* Comparison Table */}
               <Card className="p-6">
-                <h2 className="text-2xl font-bold mb-6">How We Compare</h2>
+                <h2 className="text-2xl font-bold mb-6">How Prop Firm Compares</h2>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
@@ -605,28 +605,6 @@ export default function PropFirmReview() {
                   </table>
                 </div>
               </Card>
-
-              {/* Success Metrics */}
-              <div className="grid sm:grid-cols-3 gap-4">
-                <Card className="p-6 text-center">
-                  <Trophy className="h-8 w-8 text-amber-500 mx-auto mb-3" />
-                  <div className="text-3xl font-bold mb-1">45%</div>
-                  <div className="text-sm text-muted-foreground">Success Rate</div>
-                  <p className="text-xs text-muted-foreground mt-2">Above industry avg of 10-15%</p>
-                </Card>
-                <Card className="p-6 text-center">
-                  <Users className="h-8 w-8 text-primary mx-auto mb-3" />
-                  <div className="text-3xl font-bold mb-1">2,340</div>
-                  <div className="text-sm text-muted-foreground">Active Traders</div>
-                  <p className="text-xs text-muted-foreground mt-2">Join our growing community</p>
-                </Card>
-                <Card className="p-6 text-center">
-                  <DollarSign className="h-8 w-8 text-emerald-500 mx-auto mb-3" />
-                  <div className="text-3xl font-bold mb-1">$12M+</div>
-                  <div className="text-sm text-muted-foreground">Total Payouts</div>
-                  <p className="text-xs text-muted-foreground mt-2">Paid to successful traders</p>
-                </Card>
-              </div>
 
               {/* FAQ Section */}
               <Card className="p-6">
