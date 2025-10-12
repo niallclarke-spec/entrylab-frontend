@@ -297,70 +297,83 @@ export default function BrokerReview() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-[1fr_350px] gap-8">
             <div className="space-y-8">
-              {/* Pros & Cons */}
+              {/* Pros & Cons - Premium Finance Style */}
               {(broker.pros.length > 0 || broker.cons && broker.cons.length > 0) && (
                 <div className="space-y-4">
                   <h2 className="text-2xl font-bold">Pros & Cons</h2>
                   
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {/* Pros Card */}
-                    {broker.pros.length > 0 && (
-                      <Card className="relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-50" />
+                  <Card className="relative overflow-hidden">
+                    <div className="grid md:grid-cols-2">
+                      {/* Pros Section */}
+                      {broker.pros.length > 0 && (
                         <div className="relative p-6">
-                          <div className="flex items-center gap-3 mb-5">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500/20">
-                              <Check className="h-5 w-5 text-emerald-500" />
-                            </div>
-                            <h3 className="text-lg font-bold text-emerald-500">Pros</h3>
-                          </div>
-                          <ul className="space-y-3">
-                            {broker.pros.map((pro, index) => (
-                              <li 
-                                key={index} 
-                                className="flex items-start gap-3 group/item" 
-                                data-testid={`text-pro-${index}`}
-                              >
-                                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500/20 mt-0.5 flex-shrink-0">
-                                  <Check className="h-3 w-3 text-emerald-500" />
+                          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-emerald-500/10 to-transparent" />
+                          <div className="relative">
+                            <div className="flex items-center gap-3 mb-6">
+                              <div className="relative p-0.5 rounded-xl bg-gradient-to-br from-emerald-500/40 to-primary/40">
+                                <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-card backdrop-blur-sm">
+                                  <Check className="h-6 w-6 text-emerald-500" />
                                 </div>
-                                <span className="text-sm leading-relaxed">{pro}</span>
-                              </li>
-                            ))}
-                          </ul>
+                              </div>
+                              <h3 className="text-lg font-bold text-emerald-500">Strengths</h3>
+                            </div>
+                            <ul className="space-y-3">
+                              {broker.pros.map((pro, index) => (
+                                <li 
+                                  key={index} 
+                                  className="flex items-start gap-3 group" 
+                                  data-testid={`text-pro-${index}`}
+                                >
+                                  <div className="relative p-0.5 rounded-full bg-gradient-to-br from-emerald-500/50 to-primary/50 flex-shrink-0 mt-0.5">
+                                    <div className="flex items-center justify-center w-5 h-5 rounded-full bg-card backdrop-blur-sm">
+                                      <span className="text-xs font-bold text-emerald-500">{index + 1}</span>
+                                    </div>
+                                  </div>
+                                  <span className="text-sm leading-relaxed">{pro}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
                         </div>
-                      </Card>
-                    )}
+                      )}
 
-                    {/* Cons Card */}
-                    {broker.cons && broker.cons.length > 0 && (
-                      <Card className="relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-gradient-to-br from-destructive/10 to-transparent opacity-50" />
+                      {/* Gradient Divider */}
+                      <div className="hidden md:block absolute left-1/2 top-6 bottom-6 w-px bg-gradient-to-b from-primary/30 via-purple-500/50 to-primary/30 -translate-x-1/2" />
+
+                      {/* Cons Section */}
+                      {broker.cons && broker.cons.length > 0 && (
                         <div className="relative p-6">
-                          <div className="flex items-center gap-3 mb-5">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-destructive/20">
-                              <X className="h-5 w-5 text-destructive" />
-                            </div>
-                            <h3 className="text-lg font-bold text-destructive">Cons</h3>
-                          </div>
-                          <ul className="space-y-3">
-                            {broker.cons.map((con, index) => (
-                              <li 
-                                key={index} 
-                                className="flex items-start gap-3 group/item" 
-                                data-testid={`text-con-${index}`}
-                              >
-                                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-destructive/20 mt-0.5 flex-shrink-0">
-                                  <X className="h-3 w-3 text-destructive" />
+                          <div className="absolute inset-0 bg-gradient-to-bl from-primary/10 via-destructive/10 to-transparent" />
+                          <div className="relative">
+                            <div className="flex items-center gap-3 mb-6">
+                              <div className="relative p-0.5 rounded-xl bg-gradient-to-br from-destructive/40 to-primary/40">
+                                <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-card backdrop-blur-sm">
+                                  <X className="h-6 w-6 text-destructive" />
                                 </div>
-                                <span className="text-sm leading-relaxed">{con}</span>
-                              </li>
-                            ))}
-                          </ul>
+                              </div>
+                              <h3 className="text-lg font-bold text-destructive">Limitations</h3>
+                            </div>
+                            <ul className="space-y-3">
+                              {broker.cons.map((con, index) => (
+                                <li 
+                                  key={index} 
+                                  className="flex items-start gap-3 group" 
+                                  data-testid={`text-con-${index}`}
+                                >
+                                  <div className="relative p-0.5 rounded-full bg-gradient-to-br from-destructive/50 to-primary/50 flex-shrink-0 mt-0.5">
+                                    <div className="flex items-center justify-center w-5 h-5 rounded-full bg-card backdrop-blur-sm">
+                                      <span className="text-xs font-bold text-destructive">{index + 1}</span>
+                                    </div>
+                                  </div>
+                                  <span className="text-sm leading-relaxed">{con}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
                         </div>
-                      </Card>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  </Card>
                 </div>
               )}
 
