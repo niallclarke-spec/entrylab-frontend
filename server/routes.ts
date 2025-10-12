@@ -7,6 +7,9 @@ import { brokerAlerts, insertBrokerAlertSchema } from "../shared/schema";
 import { apiCache } from "./cache";
 import { sendReviewNotification, sendTelegramMessage, getTelegramBot } from "./telegram";
 
+// Cache key for published reviews - used for cache invalidation after approval/rejection
+const REVIEWS_CACHE_KEY = 'https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed';
+
 // Helper function to make WordPress API requests using native https module
 function fetchWordPress(url: string, options: { method?: string; body?: any; requireAuth?: boolean } = {}): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -632,33 +635,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { itemId } = req.params;
       
-      console.log(`[Reviews Debug] Fetching reviews for broker ID: ${itemId}`);
-      
       // Query WordPress for reviews where the ACF relationship field 'reviewed_item' matches the broker/prop firm ID
       const reviews = await fetchWordPressWithCache(
-        `https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed`
+        REVIEWS_CACHE_KEY
         // Use 15 min default cache
       );
-      
-      console.log(`[Reviews Debug] Total published reviews: ${reviews.length}`);
       
       // Filter reviews by the reviewed_item ACF field on the backend
       const filteredReviews = reviews.filter((review: any) => {
         const reviewedItem = review.acf?.reviewed_item;
-        console.log(`[Reviews Debug] Review ${review.id} - reviewed_item:`, reviewedItem, `(type: ${typeof reviewedItem})`);
         
         // Handle both single item and array formats
         if (Array.isArray(reviewedItem)) {
-          const matches = reviewedItem.some((item: any) => item.ID?.toString() === itemId || item?.toString() === itemId);
-          console.log(`[Reviews Debug] Review ${review.id} - array match result:`, matches);
-          return matches;
+          return reviewedItem.some((item: any) => item.ID?.toString() === itemId || item?.toString() === itemId);
         }
-        const matches = reviewedItem?.ID?.toString() === itemId || reviewedItem?.toString() === itemId;
-        console.log(`[Reviews Debug] Review ${review.id} - match result:`, matches);
-        return matches;
+        return reviewedItem?.ID?.toString() === itemId || reviewedItem?.toString() === itemId;
       });
-      
-      console.log(`[Reviews Debug] Filtered reviews count: ${filteredReviews.length}`);
       
       // Set browser cache headers (5 min) to reduce repeat requests
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
@@ -878,8 +870,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             );
             
             // Clear the reviews cache so the new approved review appears immediately
-            const cacheKey = `https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed`;
-            apiCache.delete(cacheKey);
+            apiCache.delete(REVIEWS_CACHE_KEY);
             console.log('[Cache] Cleared reviews cache after approval (button)');
             
             await sendTelegramMessage(
@@ -905,8 +896,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             );
             
             // Clear the reviews cache so the rejected review is removed immediately
-            const cacheKey = `https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed`;
-            apiCache.delete(cacheKey);
+            apiCache.delete(REVIEWS_CACHE_KEY);
             console.log('[Cache] Cleared reviews cache after rejection (button)');
             
             await sendTelegramMessage(
@@ -979,8 +969,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             );
             
             // Clear the reviews cache so the new approved review appears immediately
-            const cacheKey = `https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed`;
-            apiCache.delete(cacheKey);
+            apiCache.delete(REVIEWS_CACHE_KEY);
             console.log('[Cache] Cleared reviews cache after approval');
             
             await sendTelegramMessage(
@@ -1005,8 +994,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             );
             
             // Clear the reviews cache so the rejected review is removed immediately
-            const cacheKey = `https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed`;
-            apiCache.delete(cacheKey);
+            apiCache.delete(REVIEWS_CACHE_KEY);
             console.log('[Cache] Cleared reviews cache after rejection');
             
             await sendTelegramMessage(
