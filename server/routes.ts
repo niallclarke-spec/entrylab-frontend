@@ -6,6 +6,7 @@ import { db } from "./db";
 import { brokerAlerts, insertBrokerAlertSchema } from "../shared/schema";
 import { apiCache } from "./cache";
 import { sendReviewNotification, sendTelegramMessage, getTelegramBot } from "./telegram";
+import { generateStructuredData } from "./structured-data";
 
 // Cache key for published reviews - used for cache invalidation after approval/rejection
 const REVIEWS_CACHE_KEY = 'https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed';
@@ -1118,12 +1119,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Structured data injection middleware for SEO
   // This must run BEFORE Vite/static middleware to inject server-side structured data
-  
-  console.log('[SERVER] Registering SEO middleware');
-  
-  const { generateStructuredData } = await import("./structured-data");
-  
-  console.log('[SERVER] SEO middleware import successful');
   
   app.use(async (req, res, next) => {
     const url = req.originalUrl || req.url;
