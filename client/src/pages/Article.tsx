@@ -357,6 +357,17 @@ export default function Article() {
   const seoImage = featuredImage || "https://entrylab.io/og-image.jpg";
   const seoUrl = `https://entrylab.io/article/${post.slug}`;
 
+  // Extract categories and tags for structured data
+  const categories = post._embedded?.["wp:term"]?.[0]?.map((term: any) => term.name) || [];
+  const tags = post._embedded?.["wp:term"]?.[1]?.map((term: any) => term.name) || [];
+  
+  // Breadcrumbs for structured data
+  const breadcrumbs = [
+    { name: "Home", url: "https://entrylab.io" },
+    { name: "Articles", url: "https://entrylab.io/archive" },
+    { name: stripHtml(post.title.rendered), url: seoUrl }
+  ];
+
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
       <SEO
@@ -369,6 +380,9 @@ export default function Article() {
         modifiedTime={post.modified}
         author={getAuthorName(post)}
         preloadImage={featuredImage}
+        categories={categories}
+        tags={tags}
+        breadcrumbs={breadcrumbs}
       />
       <Navigation />
       
