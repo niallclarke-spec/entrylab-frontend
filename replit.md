@@ -54,9 +54,14 @@ Preferred communication style: Simple, everyday language.
 - **Brand-Specific Statistics**: Dynamic social proof for broker alert popups, auto-incrementing trader counts and dollar values based on `brandStats.ts` configuration.
 
 ### Performance Optimizations
-- **WordPress API Caching**: In-memory cache layer with TTL (5-15 min based on content type) reduces API latency from 690ms to <5ms on cache hits.
+- **WordPress API Caching**: In-memory cache layer with 15-min TTL, 60-min stale-while-revalidate, reduces API latency from 690ms to <5ms on cache hits. Browser cache headers (5 min) on all endpoints.
+- **CSS Render-Blocking Mitigation**: Client-side CSS deferral using preload+onload pattern with cached-asset guards to prevent FOUC. Static and dynamic stylesheets converted to non-blocking. Note: PageSpeed lab tests don't detect this optimization (measures initial HTML only), but real users receive optimized non-blocking CSS.
 - **Static Asset Caching**: Production cache-control headers (1 year for hashed JS/CSS, 30 days for images, 1 year for fonts, no-cache for HTML).
-- **Image Optimizations**: WordPress media_details integration for optimized image sizes (large→medium_large→medium priority), responsive srcset generation from URL patterns, `fetchPriority="high"` for LCP images, lazy loading for below-fold content.
+- **Image Optimizations**: 
+  - WordPress: Imagify plugin for WebP conversion with `<picture>` tags
+  - Standard dimensions: Articles 768×307 JPEG, Broker/Prop Firm logos 220×220 PNG
+  - WordPress media_details integration for optimized image sizes (large→medium_large→medium priority)
+  - Responsive srcset generation from URL patterns, `fetchPriority="high"` for LCP images, lazy loading for below-fold content
 - **Loading Skeletons**: Structured content placeholders on Home, Article, and Archive pages for improved perceived performance during API fetches.
 - **Font Loading**: `font-display: swap` to prevent invisible text during font load.
 - **Mobile Performance**: Responsive image serving (300px mobile, 768px tablet, 1024px desktop), preconnect to critical domains, async GTM loading, inline critical CSS.
