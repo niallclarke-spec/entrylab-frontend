@@ -837,6 +837,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const callbackData = update.callback_query.data;
         const chatId = update.callback_query.message.chat.id.toString();
         
+        console.log(`[Telegram Bot] Button clicked: ${callbackData} from chat ${chatId}`);
+        
         // SECURITY: Verify request is from authorized channel
         if (chatId !== TELEGRAM_CHANNEL_ID) {
           console.warn(`Unauthorized callback query from chat ${chatId}`);
@@ -844,9 +846,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.sendStatus(403);
         }
         
-        // Acknowledge the callback without broadcasting to channel
-        bot?.answerCallbackQuery(update.callback_query.id, { text: `Processing: ${callbackData}` });
-        console.log(`Processed callback query: ${callbackData}`);
+        // Parse callback data (approve_123, reject_123, view_123)
+        const approveMatch = callbackData?.match(/^approve_(\d+)$/);
+        const rejectMatch = callbackData?.match(/^reject_(\d+)$/);
+        const viewMatch = callbackData?.match(/^view_(\d+)$/);
+        
+        if (approveMatch) {
+          const postId = approveMatch[1];
+          bot?.answerCallbackQuery(update.callback_query.id, { text: '✅ Approving review...' });
+          
+          try {
+            await fetchWordPress(
+              `https://admin.entrylab.io/wp-json/wp/v2/review/${postId}`,
+              {
+                method: 'POST',
+                body: { status: 'publish' },
+                requireAuth: true
+              }
+            );
+            
+            await sendTelegramMessage(
+              `✅ *Review Approved!*\n\nPost ID: ${postId}\nThe review has been published successfully.\n\n🔗 [View Live Post](https://admin.entrylab.io/wp-admin/post.php?post=${postId}&action=edit)`,
+              'Markdown'
+            );
+          } catch (error: any) {
+            console.error('Error approving review:', error);
+            const errorMsg = (error.message || 'Unknown error').replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
+            await sendTelegramMessage(`❌ *Error approving review ${postId}*\n\n${errorMsg}`, 'Markdown');
+          }
+        } else if (rejectMatch) {
+          const postId = rejectMatch[1];
+          bot?.answerCallbackQuery(update.callback_query.id, { text: '🗑️ Rejecting review...' });
+          
+          try {
+            await fetchWordPress(
+              `https://admin.entrylab.io/wp-json/wp/v2/review/${postId}`,
+              {
+                method: 'DELETE',
+                requireAuth: true
+              }
+            );
+            
+            await sendTelegramMessage(
+              `🗑️ *Review Rejected*\n\nPost ID: ${postId}\nThe review has been moved to trash.`
+            );
+          } catch (error: any) {
+            console.error('Error rejecting review:', error);
+            const errorMsg = (error.message || 'Unknown error').replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
+            await sendTelegramMessage(`❌ *Error rejecting review ${postId}*\n\n${errorMsg}`, 'Markdown');
+          }
+        } else if (viewMatch) {
+          const postId = viewMatch[1];
+          bot?.answerCallbackQuery(update.callback_query.id, { text: '👁️ Fetching details...' });
+          
+          try {
+            const post = await fetchWordPress(
+              `https://admin.entrylab.io/wp-json/wp/v2/review/${postId}`,
+              { requireAuth: true }
+            );
+            
+            const title = post.title?.rendered || 'Untitled';
+            const acf = post.acf || {};
+            const reviewText = acf.review_text || 'No review text';
+            
+            const escapeText = (text: string) => text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
+            
+            await sendTelegramMessage(
+              `📄 *Full Review Details*\n\n*Title:* ${escapeText(title)}\n*Rating:* ${acf.rating}/5\n*Author:* ${escapeText(acf.reviewer_name || 'Anonymous')}\n\n*Review:*\n${escapeText(reviewText.substring(0, 500))}${reviewText.length > 500 ? '...' : ''}\n\n[Edit in WordPress](https://admin.entrylab.io/wp-admin/post.php?post=${postId}&action=edit)`,
+              'Markdown'
+            );
+          } catch (error: any) {
+            console.error('Error fetching review:', error);
+            const errorMsg = (error.message || 'Unknown error').replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
+            await sendTelegramMessage(`❌ *Error fetching review ${postId}*\n\n${errorMsg}`, 'Markdown');
+          }
+        } else {
+          bot?.answerCallbackQuery(update.callback_query.id, { text: 'Unknown command' });
+        }
+        
         return res.sendStatus(200);
       }
       

@@ -61,6 +61,17 @@ ${escapeMarkdown(reviewContent)}
     await bot.sendMessage(TELEGRAM_CHANNEL_ID, message, {
       parse_mode: 'Markdown',
       disable_web_page_preview: false,
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: '✅ Approve', callback_data: `approve_${reviewData.postId}` },
+            { text: '❌ Reject', callback_data: `reject_${reviewData.postId}` }
+          ],
+          [
+            { text: '👁️ View Details', callback_data: `view_${reviewData.postId}` }
+          ]
+        ]
+      }
     });
     console.log(`Review notification sent for post ${reviewData.postId}`);
   } catch (error) {
