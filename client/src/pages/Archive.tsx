@@ -88,6 +88,10 @@ export default function Archive() {
         description="Browse our complete collection of forex broker news, prop firm updates, and trading analysis. Find the insights you need for successful trading."
         url="https://entrylab.io/archive"
         type="website"
+        breadcrumbs={[
+          { name: "Home", url: "https://entrylab.io" },
+          { name: "Archive", url: "https://entrylab.io/archive" }
+        ]}
       />
       <Navigation />
       

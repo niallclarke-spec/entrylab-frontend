@@ -101,6 +101,9 @@ export default function Home() {
         url="https://entrylab.io"
         type="website"
         preloadImage={featuredImage}
+        breadcrumbs={[
+          { name: "Home", url: "https://entrylab.io" }
+        ]}
       />
       <Navigation />
 

@@ -88,12 +88,31 @@ export default function BrokerReview() {
   const seoTitle = broker.seoTitle || `${stripHtml(broker.name)} Review 2025 | EntryLab`;
   const seoDescription = broker.seoDescription || broker.tagline || `Comprehensive review of ${stripHtml(broker.name)}. Read about spreads, regulation, platforms, and more.`;
 
+  // Breadcrumbs for structured data
+  const breadcrumbs = [
+    { name: "Home", url: "https://entrylab.io" },
+    { name: "Brokers", url: "https://entrylab.io/brokers" },
+    { name: stripHtml(broker.name), url: `https://entrylab.io/broker/${broker.slug}` }
+  ];
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
         title={seoTitle}
         description={seoDescription}
         url={`https://entrylab.io/broker/${broker.slug}`}
+        breadcrumbs={breadcrumbs}
+        reviewData={{
+          itemName: stripHtml(broker.name),
+          itemType: "FinancialService",
+          rating: {
+            ratingValue: broker.rating,
+            bestRating: 5,
+            worstRating: 1
+          },
+          author: "EntryLab",
+          datePublished: broker.lastUpdated?.toISOString() || new Date().toISOString()
+        }}
       />
       <Navigation />
 

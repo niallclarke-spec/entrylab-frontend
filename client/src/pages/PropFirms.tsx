@@ -96,6 +96,14 @@ export default function PropFirms() {
         title={pageTitle}
         description={pageDescription}
         url={pageUrl}
+        breadcrumbs={urlCategory ? [
+          { name: "Home", url: "https://entrylab.io" },
+          { name: "Prop Firms", url: "https://entrylab.io/prop-firms" },
+          { name: urlCategory.name, url: pageUrl }
+        ] : [
+          { name: "Home", url: "https://entrylab.io" },
+          { name: "Prop Firms", url: "https://entrylab.io/prop-firms" }
+        ]}
       />
       <Navigation />
       
