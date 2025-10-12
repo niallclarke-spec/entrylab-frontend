@@ -2,7 +2,7 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
 import { SEO } from "@/components/SEO";
-import { ConversionHero } from "@/components/ConversionHero";
+import { Hero } from "@/components/Hero";
 import { ArticleCard } from "@/components/ArticleCard";
 import { Footer } from "@/components/Footer";
 import { transformBroker } from "@/lib/transforms";
@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy load non-critical components for better initial load
 const TrendingTopics = lazy(() => import("@/components/TrendingTopics").then(m => ({ default: m.TrendingTopics })));
+const FeaturedBroker = lazy(() => import("@/components/FeaturedBroker").then(m => ({ default: m.FeaturedBroker })));
 const TrustSignals = lazy(() => import("@/components/TrustSignals").then(m => ({ default: m.TrustSignals })));
 const BrokerCardEnhanced = lazy(() => import("@/components/BrokerCardEnhanced").then(m => ({ default: m.BrokerCardEnhanced })));
 const NewsletterCTA = lazy(() => import("@/components/NewsletterCTA").then(m => ({ default: m.NewsletterCTA })));
@@ -62,10 +63,10 @@ export default function Home() {
   const brokers = wpBrokers.length > 0 ? wpBrokers : (fallbackBrokers || []);
 
   const featuredPost = posts?.[0];
-  const latestPosts = posts?.slice(0, 6) || [];
+  const latestPosts = posts?.slice(1, 7) || [];
   
-  // Sort brokers by rating for top brokers in hero
-  const topBrokers = [...brokers].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+  // Featured broker shows in featured section, all brokers show in popular section
+  const featuredBroker = brokers.find(b => b.featured);
   const popularBrokers = brokers;
 
   const getCategoryName = (post: WordPressPost) => {
@@ -137,9 +138,17 @@ export default function Home() {
             </div>
           </section>
         </>
-      ) : topBrokers.length > 0 ? (
+      ) : featuredPost ? (
         <>
-          <ConversionHero topBrokers={topBrokers} />
+          <Hero
+            title={featuredPost.title.rendered}
+            excerpt={featuredPost.excerpt.rendered}
+            author={getAuthorName(featuredPost)}
+            date={featuredPost.date}
+            category={getCategoryName(featuredPost)}
+            link={`/article/${featuredPost.slug}`}
+            imageUrl={getFeaturedImage(featuredPost)}
+          />
 
           <Suspense fallback={<Skeleton className="h-20 w-full max-w-7xl mx-auto" />}>
             <TrendingTopics 
@@ -151,6 +160,22 @@ export default function Home() {
           <Suspense fallback={<Skeleton className="h-32 w-full max-w-7xl mx-auto" />}>
             <TrustSignals />
           </Suspense>
+
+          {featuredBroker && (
+            <Suspense fallback={<Skeleton className="h-96 w-full max-w-7xl mx-auto" />}>
+              <FeaturedBroker
+                name={featuredBroker.name}
+                logo={featuredBroker.logo}
+                tagline={featuredBroker.tagline || ""}
+                rating={featuredBroker.rating}
+                features={featuredBroker.features || []}
+                highlights={featuredBroker.highlights || []}
+                bonusOffer={featuredBroker.bonusOffer}
+                link={featuredBroker.link}
+                reviewLink={featuredBroker.reviewLink}
+              />
+            </Suspense>
+          )}
 
           <section className="py-16 md:py-24">
             <div className="max-w-7xl mx-auto px-6">
