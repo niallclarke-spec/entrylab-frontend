@@ -49,6 +49,138 @@
       .prose td,.prose th{border:1px solid hsl(var(--border));padding:0.75em}
     </style>
     
+    <!-- Defer CSS to prevent render blocking - Handle both static and dynamic CSS -->
+    <script>
+      (function() {
+        var originalSetAttribute = Element.prototype.setAttribute;
+        
+        // Convert static stylesheets that exist in HTML
+        function convertExistingStylesheets() {
+          var links = document.querySelectorAll('link[rel="stylesheet"]');
+          for (var i = 0; i < links.length; i++) {
+            var link = links[i];
+            if (link.href && link.href.includes('/assets/')) {
+              var crossorigin = link.crossOrigin || 'anonymous';
+              
+              // Check if stylesheet is already loaded (cached)
+              var isLoaded = false;
+              try {
+                isLoaded = link.sheet !== null && link.sheet !== undefined;
+              } catch (e) {
+                // Cross-origin check failed, assume not loaded
+                isLoaded = false;
+              }
+              
+              if (isLoaded) {
+                // Already loaded (cached) - leave as stylesheet, no action needed
+                // Cached CSS doesn't block rendering
+                continue;
+              }
+              
+              // Not loaded yet - attach onload handler BEFORE converting
+              var loadHandler = function() {
+                this.onload = null;
+                originalSetAttribute.call(this, 'rel', 'stylesheet');
+              };
+              
+              link.onload = loadHandler;
+              
+              // Convert to preload
+              originalSetAttribute.call(link, 'rel', 'preload');
+              originalSetAttribute.call(link, 'as', 'style');
+              originalSetAttribute.call(link, 'crossorigin', crossorigin);
+            }
+          }
+        }
+        
+        // Run immediately for static links in <head>
+        convertExistingStylesheets();
+        
+        // Also run after DOM loads in case more static links exist
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', convertExistingStylesheets);
+        }
+        
+        // Override createElement for dynamically added CSS
+        var originalCreateElement = document.createElement;
+        document.createElement = function(tagName) {
+          var element = originalCreateElement.call(document, tagName);
+          
+          if (tagName.toLowerCase() === 'link') {
+            var deferApplied = false;
+            var pendingRel = null;
+            var pendingHref = null;
+            
+            var applyDefer = function() {
+              if (!deferApplied && pendingRel === 'stylesheet' && pendingHref && pendingHref.includes('/assets/')) {
+                deferApplied = true;
+                
+                // Check if already loaded (cached)
+                var isLoaded = false;
+                try {
+                  isLoaded = element.sheet !== null && element.sheet !== undefined;
+                } catch (e) {
+                  isLoaded = false;
+                }
+                
+                if (isLoaded) {
+                  // Already cached - don't convert, leave as stylesheet
+                  return;
+                }
+                
+                // Not cached - attach onload BEFORE converting
+                element.onload = function() {
+                  this.onload = null;
+                  originalSetAttribute.call(this, 'rel', 'stylesheet');
+                };
+                
+                // Now convert to preload
+                originalSetAttribute.call(element, 'rel', 'preload');
+                originalSetAttribute.call(element, 'as', 'style');
+                if (element.crossOrigin === null || element.crossOrigin === '') {
+                  originalSetAttribute.call(element, 'crossorigin', 'anonymous');
+                }
+              }
+            };
+            
+            element.setAttribute = function(name, value) {
+              if (name === 'rel') {
+                pendingRel = value;
+                applyDefer();
+                if (deferApplied && value === 'stylesheet') return;
+              } else if (name === 'href') {
+                pendingHref = value;
+                applyDefer();
+              }
+              originalSetAttribute.call(element, name, value);
+            };
+            
+            Object.defineProperty(element, 'rel', {
+              get: function() { return element.getAttribute('rel'); },
+              set: function(value) {
+                pendingRel = value;
+                applyDefer();
+                if (!deferApplied || value !== 'stylesheet') {
+                  originalSetAttribute.call(element, 'rel', value);
+                }
+              }
+            });
+            
+            Object.defineProperty(element, 'href', {
+              get: function() { return element.getAttribute('href'); },
+              set: function(value) {
+                pendingHref = value;
+                applyDefer();
+                originalSetAttribute.call(element, 'href', value);
+              }
+            });
+          }
+          
+          return element;
+        };
+      })();
+    </script>
+    
     
     <!-- Defer Google Tag Manager to not block rendering -->
     <script>
