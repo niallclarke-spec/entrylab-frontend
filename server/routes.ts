@@ -585,6 +585,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log('[Review Submit] WordPress response:', JSON.stringify(result, null, 2));
 
+      // Send Telegram notification
+      try {
+        const acf = result.acf || {};
+        const reviewedItem = acf.reviewed_item ? (Array.isArray(acf.reviewed_item) ? acf.reviewed_item[0] : acf.reviewed_item) : null;
+        const brokerNameForTelegram = reviewedItem?.post_title || brokerName || 'Unknown';
+        
+        await sendReviewNotification({
+          postId: result.id,
+          brokerName: brokerNameForTelegram,
+          rating: parseFloat(acf.rating || rating || '0'),
+          author: acf.reviewer_name || name || 'Anonymous',
+          excerpt: (acf.review_text || reviewText || '').substring(0, 200),
+          reviewLink: `https://admin.entrylab.io/wp-admin/post.php?post=${result.id}&action=edit`
+        });
+        console.log('[Telegram] Review notification sent for post', result.id);
+      } catch (telegramError) {
+        console.error('[Telegram] Failed to send notification:', telegramError);
+        // Don't fail the review submission if Telegram fails
+      }
+
       // If user opted into newsletter, subscribe them
       if (newsletterOptin && email) {
         try {
