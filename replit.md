@@ -15,12 +15,19 @@ EntryLab is a full-stack web application designed as a Forex News & Trading Inte
 - **Featured Broker Widget**: Fixed "Read Review" button to use internal navigation instead of external link (uses `<Link>` from wouter instead of `<a target="_blank">`)
 - **Review Link Consistency**: All broker review links now properly route to `/broker/{slug}` within the application
 
+### Review Cache Invalidation Fix ✅
+- **Instant Review Visibility**: Fixed issue where approved reviews took 15 minutes to appear on broker pages due to API caching
+- **Automatic Cache Clearing**: Added cache invalidation logic that clears the reviews cache immediately after approve/reject actions via Telegram
+- **Shared Cache Key**: Implemented `REVIEWS_CACHE_KEY` constant to prevent drift between cache fetch and invalidation paths
+- **Works for All Moderation Methods**: Cache clears for both inline button clicks and text commands (`/approve_ID`, `/reject_ID`)
+
 ### ✅ Production Deployment Complete
 - All Telegram bot fixes complete and tested on production
 - Featured broker navigation working correctly
 - Telegram webhook registered and operational on entrylab.io
 - Environment variables (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHANNEL_ID`) configured in production `.env` file
 - Review notifications with inline buttons working perfectly on production
+- Review visibility issue resolved - approved reviews appear immediately
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
