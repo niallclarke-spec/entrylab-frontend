@@ -782,14 +782,18 @@ export default function PropFirmReview() {
           isOpen={isReviewModalOpen} 
           onClose={() => setIsReviewModalOpen(false)} 
           brokerName={displayFirm.name}
-          brokerId={wpPropFirm?.id?.toString()}
+          brokerLogo={displayFirm.logo}
+          brokerId={wpPropFirm?.id?.toString() || ''}
+          itemType="prop-firm"
         />
       )}
 
-      {displayFirm.slug && (
+      {wpPropFirm?.id && (
         <BrokerAlertPopup 
+          brokerId={wpPropFirm.id.toString()}
           brokerName={displayFirm.name}
-          brokerSlug={displayFirm.slug}
+          brokerLogo={displayFirm.logo}
+          brokerType="prop-firm"
           scrollThreshold={60}
         />
       )}
