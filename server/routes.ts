@@ -632,21 +632,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { itemId } = req.params;
       
+      console.log(`[Reviews Debug] Fetching reviews for broker ID: ${itemId}`);
+      
       // Query WordPress for reviews where the ACF relationship field 'reviewed_item' matches the broker/prop firm ID
       const reviews = await fetchWordPressWithCache(
         `https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed`
         // Use 15 min default cache
       );
       
+      console.log(`[Reviews Debug] Total published reviews: ${reviews.length}`);
+      
       // Filter reviews by the reviewed_item ACF field on the backend
       const filteredReviews = reviews.filter((review: any) => {
         const reviewedItem = review.acf?.reviewed_item;
+        console.log(`[Reviews Debug] Review ${review.id} - reviewed_item:`, reviewedItem, `(type: ${typeof reviewedItem})`);
+        
         // Handle both single item and array formats
         if (Array.isArray(reviewedItem)) {
-          return reviewedItem.some((item: any) => item.ID?.toString() === itemId || item?.toString() === itemId);
+          const matches = reviewedItem.some((item: any) => item.ID?.toString() === itemId || item?.toString() === itemId);
+          console.log(`[Reviews Debug] Review ${review.id} - array match result:`, matches);
+          return matches;
         }
-        return reviewedItem?.ID?.toString() === itemId || reviewedItem?.toString() === itemId;
+        const matches = reviewedItem?.ID?.toString() === itemId || reviewedItem?.toString() === itemId;
+        console.log(`[Reviews Debug] Review ${review.id} - match result:`, matches);
+        return matches;
       });
+      
+      console.log(`[Reviews Debug] Filtered reviews count: ${filteredReviews.length}`);
       
       // Set browser cache headers (5 min) to reduce repeat requests
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
