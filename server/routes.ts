@@ -944,12 +944,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { post_id, post_title, post_status, post_type, acf } = req.body;
       
       // Only notify for pending reviews
-      if (post_status !== 'pending' || (post_type !== 'broker_review' && post_type !== 'prop_firm_review')) {
+      if (post_status !== 'pending' || (post_type !== 'broker_review' && post_type !== 'prop_firm_review' && post_type !== 'review')) {
         return res.sendStatus(200);
       }
       
       // Extract review data from ACF fields
-      const brokerName = acf?.broker_name || acf?.prop_firm_name || 'Unknown';
+      // For 'review' post type, extract broker name from reviewed_item
+      let brokerName = 'Unknown';
+      if (post_type === 'review' && acf?.reviewed_item) {
+        const reviewedItem = Array.isArray(acf.reviewed_item) ? acf.reviewed_item[0] : acf.reviewed_item;
+        brokerName = reviewedItem?.post_title || 'Unknown';
+      } else {
+        brokerName = acf?.broker_name || acf?.prop_firm_name || 'Unknown';
+      }
+      
       const rating = parseFloat(acf?.rating || acf?.overall_rating || '0');
       const reviewerName = acf?.reviewer_name || 'Anonymous';
       const reviewText = acf?.review_text || acf?.experience_text || '';
