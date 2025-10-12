@@ -51,6 +51,10 @@ export default function Brokers() {
         title="Broker Reviews | EntryLab"
         description="Compare and review the top forex brokers. Find verified brokers with competitive spreads, fast execution, and trusted regulation."
         url="https://entrylab.io/brokers"
+        breadcrumbs={[
+          { name: "Home", url: "https://entrylab.io" },
+          { name: "Brokers", url: "https://entrylab.io/brokers" }
+        ]}
       />
       <Navigation />
       
