@@ -299,41 +299,69 @@ export default function BrokerReview() {
             <div className="space-y-8">
               {/* Pros & Cons */}
               {(broker.pros.length > 0 || broker.cons && broker.cons.length > 0) && (
-                <Card className="p-6">
-                  <h2 className="text-2xl font-bold mb-6">Pros & Cons</h2>
+                <div className="space-y-4">
+                  <h2 className="text-2xl font-bold">Pros & Cons</h2>
+                  
                   <div className="grid md:grid-cols-2 gap-6">
+                    {/* Pros Card */}
                     {broker.pros.length > 0 && (
-                      <div>
-                        <h3 className="font-semibold text-emerald-500 mb-3 flex items-center gap-2">
-                          <Check className="h-5 w-5" /> Pros
-                        </h3>
-                        <ul className="space-y-2">
-                          {broker.pros.map((pro, index) => (
-                            <li key={index} className="flex items-start gap-2 text-sm" data-testid={`text-pro-${index}`}>
-                              <Check className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                              <span>{pro}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                      <Card className="relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-50" />
+                        <div className="relative p-6">
+                          <div className="flex items-center gap-3 mb-5">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500/20">
+                              <Check className="h-5 w-5 text-emerald-500" />
+                            </div>
+                            <h3 className="text-lg font-bold text-emerald-500">Pros</h3>
+                          </div>
+                          <ul className="space-y-3">
+                            {broker.pros.map((pro, index) => (
+                              <li 
+                                key={index} 
+                                className="flex items-start gap-3 group/item" 
+                                data-testid={`text-pro-${index}`}
+                              >
+                                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500/20 mt-0.5 flex-shrink-0">
+                                  <Check className="h-3 w-3 text-emerald-500" />
+                                </div>
+                                <span className="text-sm leading-relaxed">{pro}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </Card>
                     )}
+
+                    {/* Cons Card */}
                     {broker.cons && broker.cons.length > 0 && (
-                      <div>
-                        <h3 className="font-semibold text-destructive mb-3 flex items-center gap-2">
-                          <X className="h-5 w-5" /> Cons
-                        </h3>
-                        <ul className="space-y-2">
-                          {broker.cons.map((con, index) => (
-                            <li key={index} className="flex items-start gap-2 text-sm" data-testid={`text-con-${index}`}>
-                              <X className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
-                              <span>{con}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                      <Card className="relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-destructive/10 to-transparent opacity-50" />
+                        <div className="relative p-6">
+                          <div className="flex items-center gap-3 mb-5">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-destructive/20">
+                              <X className="h-5 w-5 text-destructive" />
+                            </div>
+                            <h3 className="text-lg font-bold text-destructive">Cons</h3>
+                          </div>
+                          <ul className="space-y-3">
+                            {broker.cons.map((con, index) => (
+                              <li 
+                                key={index} 
+                                className="flex items-start gap-3 group/item" 
+                                data-testid={`text-con-${index}`}
+                              >
+                                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-destructive/20 mt-0.5 flex-shrink-0">
+                                  <X className="h-3 w-3 text-destructive" />
+                                </div>
+                                <span className="text-sm leading-relaxed">{con}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </Card>
                     )}
                   </div>
-                </Card>
+                </div>
               )}
 
               {/* Broker Details Grid */}
