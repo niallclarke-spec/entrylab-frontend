@@ -828,6 +828,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/telegram/webhook", async (req, res) => {
     try {
       const update = req.body;
+      console.log('[Telegram Bot] Webhook received update:', JSON.stringify(update, null, 2));
       const TELEGRAM_CHANNEL_ID = process.env.TELEGRAM_CHANNEL_ID;
       const bot = getTelegramBot();
       
