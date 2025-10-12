@@ -877,6 +877,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             );
             
+            // Clear the reviews cache so the new approved review appears immediately
+            const cacheKey = `https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed`;
+            apiCache.delete(cacheKey);
+            console.log('[Cache] Cleared reviews cache after approval (button)');
+            
             await sendTelegramMessage(
               `✅ *Review Approved!*\n\nPost ID: ${postId}\nThe review has been published successfully.\n\n🔗 [View Live Post](https://admin.entrylab.io/wp-admin/post.php?post=${postId}&action=edit)`,
               'Markdown'
@@ -898,6 +903,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 requireAuth: true
               }
             );
+            
+            // Clear the reviews cache so the rejected review is removed immediately
+            const cacheKey = `https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed`;
+            apiCache.delete(cacheKey);
+            console.log('[Cache] Cleared reviews cache after rejection (button)');
             
             await sendTelegramMessage(
               `🗑️ *Review Rejected*\n\nPost ID: ${postId}\nThe review has been moved to trash.`
@@ -968,6 +978,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             );
             
+            // Clear the reviews cache so the new approved review appears immediately
+            const cacheKey = `https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed`;
+            apiCache.delete(cacheKey);
+            console.log('[Cache] Cleared reviews cache after approval');
+            
             await sendTelegramMessage(
               `✅ *Review Approved!*\n\nPost ID: ${postId}\nThe review has been published successfully.\n\n🔗 [View Live Post](https://admin.entrylab.io/wp-admin/post.php?post=${postId}&action=edit)`,
               'Markdown'
@@ -988,6 +1003,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 requireAuth: true
               }
             );
+            
+            // Clear the reviews cache so the rejected review is removed immediately
+            const cacheKey = `https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed`;
+            apiCache.delete(cacheKey);
+            console.log('[Cache] Cleared reviews cache after rejection');
             
             await sendTelegramMessage(
               `🗑️ *Review Rejected*\n\nPost ID: ${postId}\nThe review has been moved to trash.`
