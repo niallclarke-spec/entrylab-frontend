@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { trackAffiliateClick } from "@/lib/gtm";
+import { Link } from "wouter";
 
 interface FeaturedBrokerProps {
   name: string;
@@ -90,10 +91,10 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
                     className="w-full" 
                     data-testid="button-read-review"
                   >
-                    <a href={reviewLink} target="_blank" rel="noopener noreferrer">
+                    <Link href={reviewLink}>
                       <FileText className="mr-2 h-4 w-4" />
                       Read Review
-                    </a>
+                    </Link>
                   </Button>
                 )}
               </div>
