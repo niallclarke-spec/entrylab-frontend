@@ -61,11 +61,12 @@ export default function Article() {
     if (!media) return undefined;
     const sizes = (media as any).media_details?.sizes;
     
-    // Use medium_large as baseline - WordPress standard for article featured images
-    // OptimizedImage component handles responsive srcset for different viewports
-    if (sizes?.medium_large?.source_url) return sizes.medium_large.source_url;
+    // Use FULL SIZE for hero images to avoid blurriness from stretching
+    // Hero section is 1200px+ wide, so we need original resolution
+    // Only fallback to smaller sizes if full size unavailable
+    if (media.source_url) return media.source_url;
     if (sizes?.large?.source_url) return sizes.large.source_url;
-    if (sizes?.medium?.source_url) return sizes.medium.source_url;
+    if (sizes?.medium_large?.source_url) return sizes.medium_large.source_url;
     
     return media.source_url;
   };
