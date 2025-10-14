@@ -244,7 +244,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/posts", async (req, res) => {
     try {
       const { category } = req.query;
-      let url = "https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&per_page=10&orderby=date&order=desc";
+      let url = "https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&acf_format=standard&per_page=10&orderby=date&order=desc";
       
       if (category) {
         url += `&categories=${category}`;
