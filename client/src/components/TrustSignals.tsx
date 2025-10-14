@@ -19,7 +19,7 @@ export function TrustSignals() {
 
   return (
     <section className="relative overflow-hidden bg-slate-900/60 border-y border-white/5">
-      {/* Subtle texture overlay - different from hero */}
+      {/* Subtle texture overlay */}
       <div className="absolute inset-0 opacity-[0.03]" style={{
         backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.05) 10px, rgba(255,255,255,.05) 11px)`,
       }} />
@@ -43,16 +43,16 @@ export function TrustSignals() {
               return (
                 <div 
                   key={index} 
-                  className="relative p-4 rounded-lg bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all group"
+                  className="relative p-5 rounded-lg bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all group"
                   data-testid={`signal-${index}`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col items-center text-center gap-3">
                     <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                       <Icon className="h-5 w-5 text-primary" />
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-xl font-bold text-white truncate">{signal.value}</p>
-                      <p className="text-xs text-white/50 truncate">{signal.label}</p>
+                    <div>
+                      <p className="text-2xl font-bold text-white mb-1">{signal.value}</p>
+                      <p className="text-xs text-white/50 leading-tight">{signal.label}</p>
                     </div>
                   </div>
                 </div>
@@ -60,7 +60,7 @@ export function TrustSignals() {
             })}
           </div>
           
-          {/* Right: Compact narrative (no CTA) */}
+          {/* Right: Compact narrative */}
           <div className="lg:max-w-xs text-white/80 lg:text-right">
             <p className="text-sm leading-relaxed">
               Join thousands of traders who trust our unbiased reviews and expert market analysis
