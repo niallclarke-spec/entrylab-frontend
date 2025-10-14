@@ -560,8 +560,8 @@ export default function Article() {
               {/* Mobile: Related Broker (if exists) */}
               {relatedBroker && (
                 <div className="lg:hidden mt-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500/10">
+                  <div className="flex items-start gap-3 mb-6">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500/10 mt-1">
                       <ShieldCheck className="h-5 w-5 text-emerald-500" />
                     </div>
                     <h3 className="text-2xl font-bold text-foreground">Featured Broker</h3>
@@ -625,8 +625,8 @@ export default function Article() {
                 {/* Related Broker (from ACF field) */}
                 {relatedBroker && (
                   <div>
-                    <div className="flex items-center gap-2 mb-6">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/10">
+                    <div className="flex items-start gap-2 mb-6">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/10 mt-1">
                         <ShieldCheck className="h-4 w-4 text-emerald-500" />
                       </div>
                       <h3 className="text-2xl font-bold text-foreground">Featured Broker</h3>
@@ -650,8 +650,8 @@ export default function Article() {
                 {/* Popular Brokers */}
                 {popularBrokers.length > 0 && (
                   <div>
-                    <div className="flex items-center gap-2 mb-6">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                    <div className="flex items-start gap-2 mb-6">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 mt-1">
                         <Award className="h-4 w-4 text-primary" />
                       </div>
                       <h3 className="text-2xl font-bold text-foreground">Top Rated Brokers</h3>
