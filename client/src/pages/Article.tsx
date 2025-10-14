@@ -300,7 +300,7 @@ export default function Article() {
         {/* Hero Image Skeleton */}
         <Skeleton className="w-full h-[300px] md:h-[400px]" />
         
-        <main className="flex-1 -mt-20 relative z-10">
+        <main className="flex-1 relative z-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
             <div className="grid lg:grid-cols-[1fr_350px] gap-8 xl:gap-12">
               {/* Main Content */}
@@ -387,23 +387,64 @@ export default function Article() {
       />
       <Navigation />
       
-      {/* Hero Section */}
+      {/* Hero Section - Branded News Mockup */}
       {featuredImage && (
-        <div className="w-full h-[300px] md:h-[400px] overflow-hidden bg-muted relative">
-          <OptimizedImage
-            src={featuredImage}
-            alt={stripHtml(post.title.rendered)}
-            width="1200"
-            height="400"
-            className="w-full h-full object-cover"
-            priority={true}
-            data-testid="img-article-hero"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+        <div className="w-full bg-gradient-to-br from-primary/10 via-background to-background py-12 md:py-16 relative overflow-hidden">
+          {/* Decorative Grid Pattern */}
+          <div className="absolute inset-0 opacity-5" style={{
+            backgroundImage: `linear-gradient(rgba(139, 92, 246, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.3) 1px, transparent 1px)`,
+            backgroundSize: '50px 50px'
+          }} />
+          
+          {/* Decorative News Icons */}
+          <div className="absolute top-8 left-8 text-primary/20 hidden lg:block">
+            <TrendingUp className="h-16 w-16" />
+          </div>
+          <div className="absolute bottom-8 right-8 text-primary/20 hidden lg:block">
+            <BarChart3 className="h-16 w-16" />
+          </div>
+          
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+            {/* Browser Mockup Frame */}
+            <div className="bg-card rounded-xl shadow-2xl overflow-hidden border border-primary/20">
+              {/* Browser Chrome */}
+              <div className="bg-muted/50 px-4 py-3 flex items-center gap-2 border-b border-border/50">
+                <div className="flex gap-2">
+                  <div className="h-3 w-3 rounded-full bg-red-500/80" />
+                  <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
+                  <div className="h-3 w-3 rounded-full bg-green-500/80" />
+                </div>
+                <div className="flex-1 flex items-center justify-center gap-2">
+                  <div className="bg-background/50 rounded px-3 py-1 text-xs text-muted-foreground flex items-center gap-2 max-w-md w-full">
+                    <Building2 className="h-3 w-3 text-primary" />
+                    <span className="truncate">entrylab.io/article/{post.slug}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Image Content Area */}
+              <div className="relative aspect-[16/9] md:aspect-[21/9] bg-muted">
+                <OptimizedImage
+                  src={featuredImage}
+                  alt={stripHtml(post.title.rendered)}
+                  width="1920"
+                  height="800"
+                  className="w-full h-full object-cover"
+                  priority={true}
+                  data-testid="img-article-hero"
+                />
+                {/* Premium Overlay Badge */}
+                <div className="absolute top-4 right-4 bg-primary/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+                  <Award className="h-3 w-3" />
+                  Premium Analysis
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
-      <main className="flex-1 -mt-20 relative z-10">
+      <main className="flex-1 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
           <div className="grid lg:grid-cols-[1fr_350px] gap-8 xl:gap-12">
             {/* Main Content */}
