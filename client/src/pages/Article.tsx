@@ -441,9 +441,9 @@ export default function Article() {
                   </div>
                 </div>
 
-                {/* Excerpt */}
+                {/* Excerpt - Custom ACF field or fallback to excerpt */}
                 <p className="text-lg text-white/80 leading-relaxed max-w-2xl">
-                  {stripHtml(post.excerpt.rendered).substring(0, 180)}...
+                  {(post as any).acf?.hero_preview_text || stripHtml(post.excerpt.rendered).substring(0, 180) + '...'}
                 </p>
 
                 {/* Forex News Icons Row */}
