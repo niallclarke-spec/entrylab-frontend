@@ -69,6 +69,12 @@ export default function Home() {
   const featuredBroker = brokers.find(b => b.featured);
   const popularBrokers = brokers;
 
+  const stripHtml = (html: string) => {
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return div.textContent || div.innerText || "";
+  };
+
   const getCategoryName = (post: WordPressPost) => {
     return post._embedded?.["wp:term"]?.[0]?.[0]?.name || "News";
   };
@@ -195,7 +201,7 @@ export default function Home() {
                   <ArticleCard
                     key={post.id}
                     title={post.title.rendered}
-                    excerpt={(post as any).acf?.article_description || post.excerpt.rendered}
+                    excerpt={stripHtml((post as any).acf?.article_description || post.excerpt.rendered)}
                     author={getAuthorName(post)}
                     date={post.date}
                     category={getCategoryName(post)}
