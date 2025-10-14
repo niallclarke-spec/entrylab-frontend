@@ -387,56 +387,108 @@ export default function Article() {
       />
       <Navigation />
       
-      {/* Hero Section - Branded News Mockup */}
+      {/* Hero Section - Custom Article Card Layout */}
       {featuredImage && (
-        <div className="w-full bg-gradient-to-br from-primary/10 via-background to-background py-12 md:py-16 relative overflow-hidden">
+        <div className="w-full bg-gradient-to-br from-primary/10 via-background to-background py-12 md:py-20 relative overflow-hidden border-b">
           {/* Decorative Grid Pattern */}
           <div className="absolute inset-0 opacity-5" style={{
             backgroundImage: `linear-gradient(rgba(139, 92, 246, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.3) 1px, transparent 1px)`,
             backgroundSize: '50px 50px'
           }} />
           
-          {/* Decorative News Icons */}
-          <div className="absolute top-8 left-8 text-primary/20 hidden lg:block">
-            <TrendingUp className="h-16 w-16" />
-          </div>
-          <div className="absolute bottom-8 right-8 text-primary/20 hidden lg:block">
-            <BarChart3 className="h-16 w-16" />
-          </div>
-          
           <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
-            {/* Browser Mockup Frame */}
-            <div className="bg-card rounded-xl shadow-2xl overflow-hidden border border-primary/20">
-              {/* Browser Chrome */}
-              <div className="bg-muted/50 px-4 py-3 flex items-center gap-2 border-b border-border/50">
-                <div className="flex gap-2">
-                  <div className="h-3 w-3 rounded-full bg-red-500/80" />
-                  <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
-                  <div className="h-3 w-3 rounded-full bg-green-500/80" />
-                </div>
-                <div className="flex-1 flex items-center justify-center gap-2">
-                  <div className="bg-background/50 rounded px-3 py-1 text-xs text-muted-foreground flex items-center gap-2 max-w-md w-full">
-                    <Building2 className="h-3 w-3 text-primary" />
-                    <span className="truncate">entrylab.io/article/{post.slug}</span>
+            <div className="grid lg:grid-cols-[60%_40%] gap-8 items-center">
+              {/* Left: Featured Image (60%) */}
+              <div className="relative">
+                {/* Image Card with Frame */}
+                <div className="bg-card rounded-xl shadow-2xl overflow-hidden border border-primary/20 relative">
+                  {/* Browser Chrome Top Bar */}
+                  <div className="bg-muted/50 px-4 py-3 flex items-center gap-2 border-b border-border/50">
+                    <div className="flex gap-2">
+                      <div className="h-3 w-3 rounded-full bg-red-500/80" />
+                      <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
+                      <div className="h-3 w-3 rounded-full bg-green-500/80" />
+                    </div>
+                    <div className="flex-1 flex items-center justify-center">
+                      <div className="bg-background/50 rounded px-3 py-1 text-xs text-muted-foreground flex items-center gap-2 max-w-xs w-full">
+                        <Building2 className="h-3 w-3 text-primary" />
+                        <span className="truncate">entrylab.io</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Featured Image */}
+                  <div className="relative aspect-[16/10] bg-muted">
+                    <OptimizedImage
+                      src={featuredImage}
+                      alt={stripHtml(post.title.rendered)}
+                      width="1600"
+                      height="1000"
+                      className="w-full h-full object-cover"
+                      priority={true}
+                      data-testid="img-article-hero"
+                    />
+                    {/* Purple Accent Corner */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/40 to-transparent pointer-events-none" />
                   </div>
                 </div>
+                
+                {/* Decorative News Icon */}
+                <div className="absolute -bottom-4 -left-4 text-primary/20 hidden lg:block">
+                  <TrendingUp className="h-24 w-24" />
+                </div>
               </div>
-              
-              {/* Image Content Area */}
-              <div className="relative aspect-[16/9] md:aspect-[21/9] bg-muted">
-                <OptimizedImage
-                  src={featuredImage}
-                  alt={stripHtml(post.title.rendered)}
-                  width="1920"
-                  height="800"
-                  className="w-full h-full object-cover"
-                  priority={true}
-                  data-testid="img-article-hero"
+
+              {/* Right: Article Info (40%) */}
+              <div className="space-y-6">
+                {/* Category Badge */}
+                <Badge 
+                  variant="secondary" 
+                  className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20"
+                >
+                  <BookOpen className="h-3 w-3 mr-1.5" />
+                  {getCategoryName(post)}
+                </Badge>
+
+                {/* Title */}
+                <h1 
+                  className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight" 
+                  dangerouslySetInnerHTML={{ __html: post.title.rendered }} 
                 />
-                {/* Premium Overlay Badge */}
-                <div className="absolute top-4 right-4 bg-primary/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
-                  <Award className="h-3 w-3" />
-                  Premium Analysis
+
+                {/* Meta Info */}
+                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span>{getAuthorName(post)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    <span>{readingTime} min read</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="gap-1 border-primary/30 text-primary">
+                      <Award className="h-3 w-3" />
+                      Premium Analysis
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Excerpt */}
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  {stripHtml(post.excerpt.rendered).substring(0, 150)}...
+                </p>
+
+                {/* Trust Indicators */}
+                <div className="flex flex-wrap gap-4 pt-4 border-t">
+                  <div className="flex items-center gap-2 text-sm">
+                    <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                    <span className="text-muted-foreground">Verified Analysis</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <AlertCircle className="h-4 w-4 text-primary" />
+                    <span className="text-muted-foreground">Expert Insights</span>
+                  </div>
                 </div>
               </div>
             </div>
