@@ -621,7 +621,8 @@ export default function Article() {
 
             {/* Desktop: Sticky Sidebar */}
             <aside className="hidden lg:block">
-              <div className="sticky top-24 space-y-8">
+              {/* Match trending topics spacing (mb-8 = 32px) + badges height (~40px) */}
+              <div className="sticky top-24 space-y-8" style={{ marginTop: '72px' }}>
                 {/* Related Broker (from ACF field) */}
                 {relatedBroker && (
                   <div>
