@@ -441,9 +441,10 @@ export default function Article() {
                   </div>
                 </div>
 
-                {/* Article Description - Custom ACF field or fallback to excerpt */}
+                {/* Article Description - Custom ACF field or fallback to excerpt (capped at 155 chars) */}
                 <p className="text-lg text-white/80 leading-relaxed max-w-2xl">
-                  {(post as any).acf?.article_description || stripHtml(post.excerpt.rendered).substring(0, 180) + '...'}
+                  {(post as any).acf?.article_description?.substring(0, 155) || stripHtml(post.excerpt.rendered).substring(0, 155)}
+                  {((post as any).acf?.article_description?.length > 155 || stripHtml(post.excerpt.rendered).length > 155) ? '...' : ''}
                 </p>
 
                 {/* Forex News Icons Row */}
@@ -676,7 +677,7 @@ export default function Article() {
                         <ArticleCard
                           key={relatedPost.id}
                           title={relatedPost.title.rendered}
-                          excerpt={relatedPost.excerpt.rendered}
+                          excerpt={(relatedPost as any).acf?.article_description || relatedPost.excerpt.rendered}
                           author={getAuthorName(relatedPost)}
                           date={relatedPost.date}
                           category={getCategoryName(relatedPost)}
