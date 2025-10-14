@@ -387,23 +387,23 @@ export default function Article() {
       />
       <Navigation />
       
-      {/* Hero Section - Clean Purple Banner */}
+      {/* Hero Section - Dark Moody Purple Banner */}
       {featuredImage && (
-        <div className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-primary/80 border-b">
+        <div className="relative overflow-hidden bg-gradient-to-br from-purple-950 via-indigo-950 to-slate-950 border-b">
           {/* Decorative Background Pattern */}
           <div className="absolute inset-0 opacity-10" style={{
-            backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(rgba(139, 92, 246, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.2) 1px, transparent 1px)`,
             backgroundSize: '50px 50px'
           }} />
           
           {/* Forex News Graphics */}
-          <div className="absolute top-8 left-8 text-white/10 hidden lg:block">
+          <div className="absolute top-8 left-8 text-primary/10 hidden lg:block">
             <TrendingUp className="h-32 w-32" />
           </div>
-          <div className="absolute bottom-8 right-8 text-white/10 hidden lg:block">
+          <div className="absolute bottom-8 right-8 text-primary/10 hidden lg:block">
             <BarChart3 className="h-32 w-32" />
           </div>
-          <div className="absolute top-1/2 left-1/4 text-white/5 hidden xl:block">
+          <div className="absolute top-1/2 left-1/4 text-primary/5 hidden xl:block">
             <Building2 className="h-24 w-24" />
           </div>
           
@@ -412,7 +412,7 @@ export default function Article() {
               {/* Left: Article Info (60%) */}
               <div className="space-y-6 text-white">
                 {/* Category Badge */}
-                <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/30 backdrop-blur-sm">
+                <Badge className="bg-primary/20 text-purple-300 border-primary/30 hover:bg-primary/30 backdrop-blur-sm">
                   <BookOpen className="h-3 w-3 mr-1.5" />
                   {getCategoryName(post)}
                 </Badge>
@@ -449,7 +449,7 @@ export default function Article() {
                 {/* Forex News Icons Row */}
                 <div className="flex flex-wrap gap-6 pt-4">
                   <div className="flex items-center gap-2">
-                    <div className="h-10 w-10 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 backdrop-blur-sm flex items-center justify-center">
                       <TrendingUp className="h-5 w-5 text-emerald-400" />
                     </div>
                     <div>
@@ -458,7 +458,7 @@ export default function Article() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-10 w-10 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 backdrop-blur-sm flex items-center justify-center">
                       <BarChart3 className="h-5 w-5 text-blue-400" />
                     </div>
                     <div>
@@ -467,7 +467,7 @@ export default function Article() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-10 w-10 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 backdrop-blur-sm flex items-center justify-center">
                       <ShieldCheck className="h-5 w-5 text-emerald-400" />
                     </div>
                     <div>
@@ -478,15 +478,15 @@ export default function Article() {
                 </div>
               </div>
 
-              {/* Right: Featured Image (40%) */}
+              {/* Right: Featured Image (40%) - Reduced Height */}
               <div className="relative lg:ml-auto w-full lg:w-auto">
-                <div className="relative rounded-xl overflow-hidden shadow-2xl border-4 border-white/20 bg-card">
-                  <div className="relative aspect-[4/3] bg-muted">
+                <div className="relative rounded-xl overflow-hidden shadow-2xl border-4 border-primary/30 bg-card">
+                  <div className="relative aspect-[16/9] md:aspect-[16/10] bg-muted">
                     <OptimizedImage
                       src={featuredImage}
                       alt={stripHtml(post.title.rendered)}
                       width="800"
-                      height="600"
+                      height="450"
                       className="w-full h-full object-cover"
                       priority={true}
                       data-testid="img-article-hero"
@@ -494,7 +494,7 @@ export default function Article() {
                   </div>
                 </div>
                 {/* Decorative glow */}
-                <div className="absolute -inset-4 bg-white/20 rounded-xl blur-2xl -z-10" />
+                <div className="absolute -inset-4 bg-primary/20 rounded-xl blur-2xl -z-10" />
               </div>
             </div>
           </div>
