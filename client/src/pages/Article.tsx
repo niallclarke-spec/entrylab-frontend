@@ -453,8 +453,8 @@ export default function Article() {
 
                 {/* Article Description - Custom ACF field or fallback to excerpt (capped at 155 chars) */}
                 <p className="text-lg text-white/80 leading-relaxed max-w-2xl">
-                  {(post as any).acf?.article_description?.substring(0, 155) || stripHtml(post.excerpt.rendered).substring(0, 155)}
-                  {((post as any).acf?.article_description?.length > 155 || stripHtml(post.excerpt.rendered).length > 155) ? '...' : ''}
+                  {stripHtml((post as any).acf?.article_description || post.excerpt.rendered).substring(0, 155)}
+                  {stripHtml((post as any).acf?.article_description || post.excerpt.rendered).length > 155 ? '...' : ''}
                 </p>
 
                 {/* Forex News Icons Row */}
