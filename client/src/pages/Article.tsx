@@ -408,9 +408,9 @@ export default function Article() {
           </div>
           
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-16">
-            <div className="grid lg:grid-cols-[60%_40%] gap-8 items-center">
-              {/* Left: Article Info (60%) */}
-              <div className="space-y-6 text-white">
+            <div className="grid lg:grid-cols-[55%_45%] gap-8 items-center">
+              {/* Article Info (60% desktop, full width mobile - shows second on mobile) */}
+              <div className="space-y-6 text-white order-2 lg:order-1">
                 {/* Category Badge */}
                 <Badge className="bg-primary/20 text-purple-300 border-primary/30 hover:bg-primary/30 backdrop-blur-sm">
                   <BookOpen className="h-3 w-3 mr-1.5" />
@@ -478,15 +478,15 @@ export default function Article() {
                 </div>
               </div>
 
-              {/* Right: Featured Image (40%) - Reduced Height */}
-              <div className="relative lg:ml-auto w-full lg:w-auto">
+              {/* Featured Image (45% desktop - 10% bigger, shows first on mobile) */}
+              <div className="relative lg:ml-auto w-full lg:w-auto order-1 lg:order-2">
                 <div className="relative rounded-xl overflow-hidden shadow-2xl border-4 border-primary/30 bg-card">
                   <div className="relative aspect-[16/9] md:aspect-[16/10] bg-muted">
                     <OptimizedImage
                       src={featuredImage}
                       alt={stripHtml(post.title.rendered)}
-                      width="800"
-                      height="450"
+                      width="900"
+                      height="500"
                       className="w-full h-full object-cover"
                       priority={true}
                       data-testid="img-article-hero"
