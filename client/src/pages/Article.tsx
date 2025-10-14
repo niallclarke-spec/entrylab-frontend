@@ -688,7 +688,7 @@ export default function Article() {
                         <ArticleCard
                           key={relatedPost.id}
                           title={relatedPost.title.rendered}
-                          excerpt={(relatedPost as any).acf?.article_description || relatedPost.excerpt.rendered}
+                          excerpt={stripHtml((relatedPost as any).acf?.article_description || relatedPost.excerpt.rendered)}
                           author={getAuthorName(relatedPost)}
                           date={relatedPost.date}
                           category={getCategoryName(relatedPost)}
