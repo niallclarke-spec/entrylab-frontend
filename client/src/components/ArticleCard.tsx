@@ -31,6 +31,11 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
 
   const cleanExcerpt = stripHtml(excerpt);
   const readingTime = calculateReadingTime(cleanExcerpt);
+  
+  // Cap at 155 characters (optimal for SEO meta descriptions)
+  const truncatedExcerpt = cleanExcerpt.length > 155 
+    ? cleanExcerpt.substring(0, 155) + '...'
+    : cleanExcerpt;
 
   return (
     <Card className="hover-elevate active-elevate-2 h-full flex flex-col group" data-testid={`card-article-${title.substring(0, 20)}`}>
@@ -64,7 +69,7 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
         </CardHeader>
         <CardContent className="flex-1 pt-0">
           <p className="text-sm text-muted-foreground line-clamp-2" data-testid="text-article-excerpt">
-            {cleanExcerpt}
+            {truncatedExcerpt}
           </p>
         </CardContent>
         <CardFooter className="flex items-center gap-3 text-xs text-muted-foreground pt-3 border-t bg-muted/20">

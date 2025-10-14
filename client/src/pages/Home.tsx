@@ -195,7 +195,7 @@ export default function Home() {
                   <ArticleCard
                     key={post.id}
                     title={post.title.rendered}
-                    excerpt={post.excerpt.rendered}
+                    excerpt={(post as any).acf?.article_description || post.excerpt.rendered}
                     author={getAuthorName(post)}
                     date={post.date}
                     category={getCategoryName(post)}
