@@ -461,6 +461,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Fetch media by ID (fallback when _embed doesn't work)
+  app.get("/api/wordpress/media/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const media = await fetchWordPressWithCache(
+        `https://admin.entrylab.io/wp-json/wp/v2/media/${id}`
+        // Use 15 min default cache
+      );
+      
+      // Set browser cache headers (5 min) to reduce repeat requests
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      res.json(media);
+    } catch (error) {
+      handleWordPressError(error, res, "fetch media");
+    }
+  });
+
   app.post("/api/newsletter/subscribe", async (req, res) => {
     try {
       const { email, source } = req.body;

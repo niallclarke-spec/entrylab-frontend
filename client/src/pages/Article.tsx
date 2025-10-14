@@ -71,6 +71,13 @@ export default function Article() {
     return media.source_url;
   };
 
+  // Fetch featured media separately if _embed fails but featured_media ID exists
+  const shouldFetchMedia = post && post.featured_media && !getFeaturedImage(post);
+  const { data: featuredMediaData } = useQuery({
+    queryKey: [`/api/wordpress/media/${post?.featured_media}`],
+    enabled: !!shouldFetchMedia,
+  });
+
   useEffect(() => {
     if (post) {
       const title = stripHtml(post.title.rendered);
@@ -352,7 +359,10 @@ export default function Article() {
     );
   }
 
-  const featuredImage = getFeaturedImage(post);
+  // Use embedded image first, fallback to separately fetched media
+  const featuredImage = getFeaturedImage(post) || 
+    (featuredMediaData as any)?.source_url || 
+    (featuredMediaData as any)?.media_details?.sizes?.large?.source_url;
   const readingTime = calculateReadingTime(stripHtml(post.content.rendered));
   
   const seoImage = featuredImage || "https://entrylab.io/og-image.jpg";
