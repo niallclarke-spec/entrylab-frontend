@@ -501,52 +501,6 @@ export default function Article() {
           <div className="grid lg:grid-cols-[1fr_350px] gap-8 xl:gap-12">
             {/* Main Content */}
             <article className="min-w-0">
-              {/* Article Header with Subtle Top Glow */}
-              <div className="bg-card rounded-xl p-6 md:p-8 mb-8 relative shadow-lg before:absolute before:inset-0 before:rounded-xl before:pointer-events-none before:bg-gradient-to-b before:from-primary/20 before:to-transparent before:h-[25%]">
-                {/* Unified top accent line that wraps corners */}
-                <div 
-                  className="absolute top-0 left-0 right-0 h-[2px] rounded-t-xl pointer-events-none"
-                  style={{
-                    background: 'linear-gradient(90deg, transparent 0%, rgba(168, 85, 247, 0.8) 5%, rgba(168, 85, 247, 1) 50%, rgba(168, 85, 247, 0.8) 95%, transparent 100%)'
-                  }}
-                />
-                
-                <div className="relative">
-                  <div className="flex items-center gap-2 flex-wrap mb-4">
-                    <Badge 
-                      variant="secondary" 
-                      data-testid="badge-category"
-                      className="bg-emerald-500 text-white hover:bg-emerald-600 border-0"
-                    >
-                      {getCategoryName(post)}
-                    </Badge>
-                    <Badge variant="outline" className="gap-1 border-primary/30 text-primary">
-                      <BookOpen className="h-3 w-3" />
-                      {readingTime} min read
-                    </Badge>
-                  </div>
-                  
-                  <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight mb-6" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
-                  
-                  <div className="flex items-center justify-between flex-wrap gap-4 pt-4 border-t bg-muted/60 -mx-6 md:-mx-8 px-6 md:px-8 pb-4 -mb-6 md:-mb-8 rounded-b-xl">
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        <span>{getAuthorName(post)}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        <span>{new Date(post.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="gap-2 border-emerald-500/50 text-emerald-500 hover:bg-emerald-500/10">
-                      <Share2 className="h-4 w-4" />
-                      Share
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
               {/* Trending Topics */}
               <div className="mb-8">
                 <div className="flex items-center gap-3 md:gap-4 overflow-x-auto scrollbar-hide pb-2">
