@@ -18,54 +18,25 @@ export function TrustSignals() {
   });
 
   return (
-    <section className="relative overflow-hidden bg-slate-900/60 border-y border-white/5">
-      {/* Subtle texture overlay */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.05) 10px, rgba(255,255,255,.05) 11px)`,
-      }} />
-      
-      <div className="relative max-w-7xl mx-auto px-6 py-12">
-        {/* Eyebrow label for visual separation */}
-        <div className="flex items-center gap-2 mb-8">
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-            <Shield className="h-3.5 w-3.5 text-emerald-400" />
-            <span className="text-xs font-medium text-white/60 uppercase tracking-wider">Trusted Platform</span>
-          </div>
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        </div>
-
-        <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-center">
-          {/* Left: Stats in horizontal strip */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {signals.map((signal, index) => {
-              const Icon = iconMap[signal.icon] || Users;
-              return (
-                <div 
-                  key={index} 
-                  className="relative p-5 rounded-lg bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all group"
-                  data-testid={`signal-${index}`}
-                >
-                  <div className="flex flex-col items-center text-center gap-3">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                      <Icon className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-white mb-1">{signal.value}</p>
-                      <p className="text-xs text-white/50 leading-tight">{signal.label}</p>
-                    </div>
-                  </div>
+    <section className="border-y border-white/5 bg-slate-950/50">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
+          {signals.map((signal, index) => {
+            const Icon = iconMap[signal.icon] || Users;
+            return (
+              <div 
+                key={index} 
+                className="flex items-center gap-3"
+                data-testid={`signal-${index}`}
+              >
+                <Icon className="h-5 w-5 text-primary flex-shrink-0" />
+                <div>
+                  <span className="text-lg font-bold text-white">{signal.value}</span>
+                  <span className="text-sm text-white/50 ml-2">{signal.label}</span>
                 </div>
-              );
-            })}
-          </div>
-          
-          {/* Right: Compact narrative */}
-          <div className="lg:max-w-xs text-white/80 lg:text-right">
-            <p className="text-sm leading-relaxed">
-              Join thousands of traders who trust our unbiased reviews and expert market analysis
-            </p>
-          </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
