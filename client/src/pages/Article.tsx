@@ -83,8 +83,9 @@ export default function Article() {
       const title = stripHtml(post.title.rendered);
       const categories = post._embedded?.["wp:term"]?.[0]?.map((term: any) => term.name) || [];
       const author = getAuthorName(post);
+      const categorySlug = post._embedded?.["wp:term"]?.[0]?.[0]?.slug || "uncategorized";
       
-      trackPageView(`/article/${slug}`, `${title} | EntryLab`);
+      trackPageView(`/${categorySlug}/${slug}`, `${title} | EntryLab`);
       trackArticleView({
         article_title: title,
         article_slug: slug || '',

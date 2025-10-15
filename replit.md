@@ -3,7 +3,17 @@
 ## Overview
 EntryLab is a full-stack web application designed as a Forex News & Trading Intelligence Hub. It aggregates and displays forex broker news, prop firm updates, and trading analysis, fetching content from a WordPress backend. The platform aims to provide traders with a clean, professional interface for broker information, articles, and market data, inspired by Bloomberg and CoinDesk, with a focus on business vision and market potential.
 
-## Recent Changes (October 12, 2025)
+## Recent Changes (October 15, 2025)
+
+### SEO-Optimized Category-Based URLs ✅
+- **URL Structure**: Migrated from `/article/:slug` to `/:category/:slug` format for better SEO and topical authority
+- **301 Redirects**: Backend redirect handler preserves SEO equity from old URLs with permanent 301 redirects to new category-based paths
+- **Helper Functions**: Created `articleUtils.ts` with `getArticleUrl()` and `getCategorySlug()` for consistent URL generation across all components
+- **GTM Tracking Updated**: Analytics now track category-based paths (`/broker-news/:slug` instead of `/article/:slug`)
+- **All Links Updated**: ArticleCard, InlineBrokerCard, and all other article link components now use category slugs in URLs
+- **SEO Benefits**: Category keywords in URLs improve topical authority, match user search patterns, and optimize for voice search/featured snippets
+
+## Previous Changes (October 12, 2025)
 
 ### Telegram Bot Review Moderation - Fixed & Optimized ✅
 - **Inline Button Integration**: Added clickable buttons (✅ Approve, ❌ Reject, 👁️ View Details) directly in Telegram channel notifications for one-click review moderation
