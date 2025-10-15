@@ -32,9 +32,9 @@ export function TrustSignals() {
           
           {/* Left: Featured Stat Callout */}
           <div className="relative">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
-              <Shield className="h-4 w-4 text-emerald-400" />
-              <span className="text-sm font-medium text-emerald-300">Why Traders Trust Us</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6">
+              <Award className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-primary">Why Traders Trust Us</span>
             </div>
             
             <div className="space-y-6">
