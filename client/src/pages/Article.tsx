@@ -492,7 +492,7 @@ export default function Article() {
               {/* Featured Image (45% desktop - 10% bigger, shows first on mobile) */}
               <div className="relative lg:ml-auto w-full lg:w-auto order-1 lg:order-2">
                 <div className="relative rounded-lg overflow-hidden shadow-2xl border-2 border-primary/30 bg-card">
-                  <div className="relative aspect-[16/9] bg-muted">
+                  <div className="relative aspect-[16/10] md:aspect-[16/9] bg-muted">
                     <OptimizedImage
                       src={featuredImage}
                       alt={stripHtml(post.title.rendered)}
