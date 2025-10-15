@@ -20,20 +20,9 @@ function getWordPressSrcSet(src: string): string {
   const match = src.match(urlPattern);
   
   if (!match) {
-    // No size suffix - generate srcset assuming WordPress default sizes exist
-    const extensionMatch = src.match(/\.(jpg|jpeg|png|webp)$/i);
-    if (!extensionMatch) return "";
-    
-    const extension = extensionMatch[0];
-    const baseUrl = src.replace(extension, '');
-    
-    // Generate common WordPress sizes (may 404 if they don't exist, but browser will fallback)
-    return [
-      `${baseUrl}-300x169${extension} 300w`,
-      `${baseUrl}-768x432${extension} 768w`,
-      `${baseUrl}-1024x576${extension} 1024w`,
-      `${src} 1920w`
-    ].join(', ');
+    // No size suffix - this is likely the original/full size image
+    // Don't generate srcset as we don't know what sizes exist
+    return "";
   }
 
   const currentWidth = parseInt(match[2]);
