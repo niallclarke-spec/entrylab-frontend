@@ -478,6 +478,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Redirect old /article/:slug URLs to new /:category/:slug URLs (301 permanent redirect)
+  app.get("/article/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      console.log(`[Redirect] Old URL detected: /article/${slug}`);
+      
+      // Fetch post to get its category
+      const posts = await fetchWordPressWithCache(
+        `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed`
+      );
+      
+      if (posts.length === 0) {
+        console.log(`[Redirect] Post not found: ${slug}`);
+        return res.status(404).send('Article not found');
+      }
+      
+      const post = posts[0];
+      const categorySlug = post._embedded?.["wp:term"]?.[0]?.[0]?.slug || "uncategorized";
+      const newUrl = `/${categorySlug}/${slug}`;
+      
+      console.log(`[Redirect] 301 redirect: /article/${slug} → ${newUrl}`);
+      res.redirect(301, newUrl);
+    } catch (error) {
+      console.error("[Redirect] Error:", error);
+      res.status(500).send('Redirect failed');
+    }
+  });
+
   app.post("/api/newsletter/subscribe", async (req, res) => {
     try {
       const { email, source } = req.body;
