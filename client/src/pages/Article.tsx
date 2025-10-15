@@ -417,10 +417,10 @@ export default function Article() {
             <Building2 className="h-24 w-24" />
           </div>
           
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-16">
-            <div className="grid lg:grid-cols-[55%_45%] gap-8 items-center">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12">
+            <div className="grid lg:grid-cols-[55%_45%] gap-6 items-center">
               {/* Article Info (60% desktop, full width mobile - shows second on mobile) */}
-              <div className="space-y-6 text-white order-2 lg:order-1">
+              <div className="space-y-4 text-white order-2 lg:order-1">
                 {/* Category Badge */}
                 <Badge className="bg-primary/20 text-purple-300 border-primary/30 hover:bg-primary/30 backdrop-blur-sm">
                   <BookOpen className="h-3 w-3 mr-1.5" />
@@ -429,7 +429,7 @@ export default function Article() {
 
                 {/* Title */}
                 <h1 
-                  className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight" 
+                  className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight" 
                   dangerouslySetInnerHTML={{ __html: post.title.rendered }} 
                 />
 
@@ -452,16 +452,16 @@ export default function Article() {
                 </div>
 
                 {/* Article Description - Custom ACF field or fallback to excerpt (capped at 155 chars) */}
-                <p className="text-lg text-white/80 leading-relaxed max-w-2xl">
+                <p className="text-base md:text-lg text-white/80 leading-relaxed max-w-2xl">
                   {stripHtml((post as any).acf?.article_description || post.excerpt.rendered).substring(0, 155)}
                   {stripHtml((post as any).acf?.article_description || post.excerpt.rendered).length > 155 ? '...' : ''}
                 </p>
 
                 {/* Forex News Icons Row */}
-                <div className="flex flex-wrap gap-6 pt-4">
+                <div className="flex flex-wrap gap-4 pt-2">
                   <div className="flex items-center gap-2">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 backdrop-blur-sm flex items-center justify-center">
-                      <TrendingUp className="h-5 w-5 text-emerald-400" />
+                    <div className="h-8 w-8 rounded-lg bg-primary/10 backdrop-blur-sm flex items-center justify-center">
+                      <TrendingUp className="h-4 w-4 text-emerald-400" />
                     </div>
                     <div>
                       <div className="text-xs text-white/70">Market</div>
@@ -469,8 +469,8 @@ export default function Article() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 backdrop-blur-sm flex items-center justify-center">
-                      <BarChart3 className="h-5 w-5 text-blue-400" />
+                    <div className="h-8 w-8 rounded-lg bg-primary/10 backdrop-blur-sm flex items-center justify-center">
+                      <BarChart3 className="h-4 w-4 text-blue-400" />
                     </div>
                     <div>
                       <div className="text-xs text-white/70">Expert</div>
@@ -478,8 +478,8 @@ export default function Article() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 backdrop-blur-sm flex items-center justify-center">
-                      <ShieldCheck className="h-5 w-5 text-emerald-400" />
+                    <div className="h-8 w-8 rounded-lg bg-primary/10 backdrop-blur-sm flex items-center justify-center">
+                      <ShieldCheck className="h-4 w-4 text-emerald-400" />
                     </div>
                     <div>
                       <div className="text-xs text-white/70">Verified</div>
@@ -491,8 +491,8 @@ export default function Article() {
 
               {/* Featured Image (45% desktop - 10% bigger, shows first on mobile) */}
               <div className="relative lg:ml-auto w-full lg:w-auto order-1 lg:order-2">
-                <div className="relative rounded-xl overflow-hidden shadow-2xl border-4 border-primary/30 bg-card">
-                  <div className="relative aspect-[16/9] md:aspect-[16/10] bg-muted">
+                <div className="relative rounded-lg overflow-hidden shadow-2xl border-2 border-primary/30 bg-card">
+                  <div className="relative aspect-[16/9] bg-muted">
                     <OptimizedImage
                       src={featuredImage}
                       alt={stripHtml(post.title.rendered)}
@@ -505,7 +505,7 @@ export default function Article() {
                   </div>
                 </div>
                 {/* Decorative glow */}
-                <div className="absolute -inset-4 bg-primary/20 rounded-xl blur-2xl -z-10" />
+                <div className="absolute -inset-3 bg-primary/20 rounded-lg blur-xl -z-10" />
               </div>
             </div>
           </div>
