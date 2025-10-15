@@ -14,6 +14,7 @@ import { Clock, User, Share2, BookOpen, TrendingUp, Building2, BarChart3, AlertC
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { transformBroker } from "@/lib/transforms";
+import { getArticleUrl, getCategoryName } from "@/lib/articleUtils";
 import type { WordPressPost, Broker } from "@shared/schema";
 import { trackPageView, trackArticleView } from "@/lib/gtm";
 
@@ -54,7 +55,6 @@ export default function Article() {
   // Transform related broker if it exists (from ACF relationship field)
   const relatedBroker = (post as any)?.relatedBroker ? transformBroker((post as any).relatedBroker) : null;
 
-  const getCategoryName = (p: WordPressPost) => p._embedded?.["wp:term"]?.[0]?.[0]?.name || "News";
   const getAuthorName = (p: WordPressPost) => p._embedded?.author?.[0]?.name || "EntryLab Team";
   const getFeaturedImage = (p: WordPressPost) => {
     const media = p._embedded?.["wp:featuredmedia"]?.[0];
@@ -743,7 +743,7 @@ export default function Article() {
                           author={getAuthorName(relatedPost)}
                           date={relatedPost.date}
                           category={getCategoryName(relatedPost)}
-                          link={`/article/${relatedPost.slug}`}
+                          link={getArticleUrl(relatedPost)}
                           imageUrl={getFeaturedImage(relatedPost)}
                           slug={relatedPost.slug}
                         />

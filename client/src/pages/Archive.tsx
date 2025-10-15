@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search } from "lucide-react";
 import type { WordPressPost } from "@shared/schema";
+import { getArticleUrl, getCategoryName, getCategorySlug } from "@/lib/articleUtils";
 import { trackPageView, trackSearch, trackCategoryFilter } from "@/lib/gtm";
 import { EXCLUDED_CATEGORIES } from "@/lib/constants";
 import { ArticleCardSkeletonList } from "@/components/skeletons/ArticleCardSkeleton";
@@ -27,12 +28,6 @@ export default function Archive() {
   const { data: posts, isLoading } = useQuery<WordPressPost[]>({
     queryKey: ["/api/wordpress/posts"],
   });
-
-  const getCategoryName = (post: WordPressPost) => 
-    post._embedded?.["wp:term"]?.[0]?.[0]?.name || "News";
-  
-  const getCategorySlug = (post: WordPressPost) => 
-    post._embedded?.["wp:term"]?.[0]?.[0]?.slug || "";
 
   const getAuthorName = (post: WordPressPost) => 
     post._embedded?.author?.[0]?.name || "EntryLab Team";
@@ -159,7 +154,7 @@ export default function Archive() {
                   author={getAuthorName(post)}
                   date={post.date}
                   category={getCategoryName(post)}
-                  link={`/article/${post.slug}`}
+                  link={getArticleUrl(post)}
                   imageUrl={getFeaturedImage(post)}
                   slug={post.slug}
                 />
