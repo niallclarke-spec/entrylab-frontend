@@ -6,6 +6,7 @@ import { Hero } from "@/components/Hero";
 import { ArticleCard } from "@/components/ArticleCard";
 import { Footer } from "@/components/Footer";
 import { transformBroker } from "@/lib/transforms";
+import { getArticleUrl, getCategoryName } from "@/lib/articleUtils";
 import type { WordPressPost, Broker } from "@shared/schema";
 import { trackPageView } from "@/lib/gtm";
 import { ArticleCardSkeletonList } from "@/components/skeletons/ArticleCardSkeleton";
@@ -73,10 +74,6 @@ export default function Home() {
     const div = document.createElement("div");
     div.innerHTML = html;
     return div.textContent || div.innerText || "";
-  };
-
-  const getCategoryName = (post: WordPressPost) => {
-    return post._embedded?.["wp:term"]?.[0]?.[0]?.name || "News";
   };
 
   const getAuthorName = (post: WordPressPost) => {
@@ -155,7 +152,7 @@ export default function Home() {
             author={getAuthorName(featuredPost)}
             date={featuredPost.date}
             category={getCategoryName(featuredPost)}
-            link={`/article/${featuredPost.slug}`}
+            link={getArticleUrl(featuredPost)}
             imageUrl={getFeaturedImage(featuredPost)}
           />
 
@@ -205,7 +202,7 @@ export default function Home() {
                     author={getAuthorName(post)}
                     date={post.date}
                     category={getCategoryName(post)}
-                    link={`/article/${post.slug}`}
+                    link={getArticleUrl(post)}
                     imageUrl={getFeaturedImage(post)}
                     slug={post.slug}
                   />

@@ -40,11 +40,6 @@ function Router() {
           <Home />
         </Suspense>
       </Route>
-      <Route path="/article/:slug">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <Article />
-        </Suspense>
-      </Route>
       <Route path="/archive">
         <Suspense fallback={<PageLoadingFallback />}>
           <Archive />
@@ -68,6 +63,11 @@ function Router() {
       <Route path="/prop-firm/:slug">
         <Suspense fallback={<PageLoadingFallback />}>
           <PropFirmReview />
+        </Suspense>
+      </Route>
+      <Route path="/:category/:slug">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <Article />
         </Suspense>
       </Route>
       <Route>
