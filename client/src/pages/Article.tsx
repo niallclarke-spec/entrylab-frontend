@@ -512,6 +512,57 @@ export default function Article() {
         </div>
       )}
 
+      {/* Fallback Title Section (when no featured image) */}
+      {!featuredImage && (
+        <div className="relative overflow-hidden bg-gradient-to-br from-purple-950 via-indigo-950 to-slate-950 border-b">
+          {/* Decorative Background Pattern */}
+          <div className="absolute inset-0 opacity-10" style={{
+            backgroundImage: `linear-gradient(rgba(139, 92, 246, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.2) 1px, transparent 1px)`,
+            backgroundSize: '50px 50px'
+          }} />
+          
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12">
+            <div className="space-y-4 text-white max-w-4xl">
+              {/* Category Badge */}
+              <Badge className="bg-primary/20 text-purple-300 border-primary/30 hover:bg-primary/30 backdrop-blur-sm">
+                <BookOpen className="h-3 w-3 mr-1.5" />
+                {getCategoryName(post)}
+              </Badge>
+
+              {/* Title */}
+              <h1 
+                className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight" 
+                dangerouslySetInnerHTML={{ __html: post.title.rendered }} 
+              />
+
+              {/* Meta Info */}
+              <div className="flex flex-wrap items-center gap-4 text-sm text-white/90">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  <span>{getAuthorName(post)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  <span>{readingTime} min read</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge className="gap-1 bg-emerald-500/20 text-emerald-300 border-emerald-400/30 hover:bg-emerald-500/30">
+                    <Award className="h-3 w-3" />
+                    Premium Analysis
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Article Description */}
+              <p className="text-base md:text-lg text-white/80 leading-relaxed">
+                {stripHtml((post as any).acf?.article_description || post.excerpt.rendered).substring(0, 155)}
+                {stripHtml((post as any).acf?.article_description || post.excerpt.rendered).length > 155 ? '...' : ''}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <main className="flex-1 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
           <div className="grid lg:grid-cols-[1fr_350px] gap-8 xl:gap-12">
