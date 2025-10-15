@@ -7,5 +7,6 @@ export const EXCLUDED_CATEGORIES: readonly string[] = [
   'uncategorized', 
   'uncategorised',
   'prop-firm-updates',
-  'broker-closures'
+  'broker-closures',
+  'market-analysis'
 ];
