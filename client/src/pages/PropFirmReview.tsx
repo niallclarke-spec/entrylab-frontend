@@ -82,9 +82,13 @@ export default function PropFirmReview() {
     );
   }
 
-  // SEO with fallbacks: Custom ACF fields OR auto-generated defaults
-  const seoTitle = propFirm.seoTitle || `${stripHtml(propFirm.name)} Review 2025 | EntryLab`;
-  const seoDescription = propFirm.seoDescription || propFirm.tagline || `Comprehensive review of ${stripHtml(propFirm.name)}. Read about funding, profit splits, evaluation process, and more.`;
+  // SEO with fallbacks: Yoast SEO fields OR auto-generated defaults
+  const seoTitle = (wpPropFirm as any)?.yoast_head_json?.title || 
+                   `${stripHtml(propFirm.name)} Review 2025 | EntryLab`;
+  const seoDescription = (wpPropFirm as any)?.yoast_head_json?.og_description || 
+                         (wpPropFirm as any)?.yoast_head_json?.description ||
+                         propFirm.tagline || 
+                         `Comprehensive review of ${stripHtml(propFirm.name)}. Read about funding, profit splits, evaluation process, and more.`;
 
   return (
     <div className="min-h-screen flex flex-col">
