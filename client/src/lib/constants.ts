@@ -8,5 +8,6 @@ export const EXCLUDED_CATEGORIES: readonly string[] = [
   'uncategorised',
   'prop-firm-updates',
   'broker-closures',
-  'market-analysis'
+  'market-analysis',
+  'top-cfd-brokers', // CPT category for Popular Brokers
 ];
