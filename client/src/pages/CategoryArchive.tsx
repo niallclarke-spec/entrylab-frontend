@@ -7,11 +7,13 @@ import { SEO } from "@/components/SEO";
 import { ArticleCard } from "@/components/ArticleCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Search, ArrowLeft } from "lucide-react";
 import type { WordPressPost } from "@shared/schema";
 import { getArticleUrl, getCategoryName, getCategorySlug } from "@/lib/articleUtils";
 import { trackPageView, trackSearch } from "@/lib/gtm";
 import { ArticleCardSkeletonList } from "@/components/skeletons/ArticleCardSkeleton";
+import { EXCLUDED_CATEGORIES } from "@/lib/constants";
 
 export default function CategoryArchive() {
   const params = useParams();
@@ -29,6 +31,10 @@ export default function CategoryArchive() {
   const { data: posts, isLoading: postsLoading } = useQuery<WordPressPost[]>({
     queryKey: [`/api/wordpress/posts?category=${categorySlug}`],
     enabled: !!categorySlug,
+  });
+
+  const { data: allCategories } = useQuery<any[]>({
+    queryKey: ["/api/wordpress/categories"],
   });
 
   useEffect(() => {
@@ -152,7 +158,7 @@ export default function CategoryArchive() {
           </div>
 
           {/* Search Bar */}
-          <div className="max-w-2xl mx-auto mb-12">
+          <div className="max-w-2xl mx-auto mb-8">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
@@ -164,6 +170,32 @@ export default function CategoryArchive() {
                 data-testid="input-search-articles"
               />
             </div>
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex flex-wrap gap-2 justify-center mb-12">
+            <Link href="/archive">
+              <Badge
+                variant="outline"
+                className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
+                data-testid="badge-category-all"
+              >
+                All Posts
+              </Badge>
+            </Link>
+            {(allCategories || [])
+              .filter(cat => !EXCLUDED_CATEGORIES.includes(cat.slug.toLowerCase()))
+              .map((cat) => (
+                <Link key={cat.slug} href={`/${cat.slug}`}>
+                  <Badge
+                    variant={cat.slug === categorySlug ? "default" : "outline"}
+                    className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
+                    data-testid={`badge-category-${cat.slug}`}
+                  >
+                    {cat.name}
+                  </Badge>
+                </Link>
+              ))}
           </div>
 
           {/* Posts Grid */}
