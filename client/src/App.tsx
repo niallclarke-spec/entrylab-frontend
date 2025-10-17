@@ -43,7 +43,7 @@ function Router() {
       </Route>
       <Route path="/news">
         <Suspense fallback={<PageLoadingFallback />}>
-          <Archive />
+          <CategoryArchive />
         </Suspense>
       </Route>
       <Route path="/brokers">
