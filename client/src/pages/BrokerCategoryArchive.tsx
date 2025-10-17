@@ -13,8 +13,11 @@ import { transformBroker } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 
 export default function BrokerCategoryArchive() {
-  const { slug } = useParams();
+  const params = useParams();
   const [, setLocation] = useLocation();
+  
+  // Extract slug from params or from URL
+  const slug = params.slug || window.location.pathname.slice(1);
 
   useEffect(() => {
     trackPageView(`/${slug}`, `${slug} | EntryLab`);
