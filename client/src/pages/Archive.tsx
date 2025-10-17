@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
@@ -117,22 +118,29 @@ export default function Archive() {
             </div>
           </div>
 
-          {/* Category Filter */}
+          {/* Category Links */}
           <div className="flex flex-wrap gap-2 justify-center mb-12">
-            {allCategories.map((category) => (
-              <Badge
-                key={category.slug}
-                variant={selectedCategory === category.slug ? "default" : "outline"}
-                className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
-                onClick={() => {
-                  setSelectedCategory(category.slug);
-                  trackCategoryFilter('article', category.name);
-                }}
-                data-testid={`badge-category-${category.slug}`}
-              >
-                {category.name}
-              </Badge>
-            ))}
+            <Badge
+              variant={selectedCategory === "all" ? "default" : "outline"}
+              className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
+              onClick={() => setSelectedCategory("all")}
+              data-testid="badge-category-all"
+            >
+              All Posts
+            </Badge>
+            {(categories || [])
+              .filter(cat => !EXCLUDED_CATEGORIES.includes(cat.slug.toLowerCase()))
+              .map((category) => (
+                <Link key={category.slug} href={`/${category.slug}`}>
+                  <Badge
+                    variant="outline"
+                    className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
+                    data-testid={`badge-category-${category.slug}`}
+                  >
+                    {category.name}
+                  </Badge>
+                </Link>
+              ))}
           </div>
 
           {/* Posts Grid */}

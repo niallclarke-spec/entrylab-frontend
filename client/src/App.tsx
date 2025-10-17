@@ -13,6 +13,7 @@ import { autoPrefetchRoutes } from "@/lib/prefetch";
 const Home = lazy(() => import("@/pages/Home"));
 const Article = lazy(() => import("@/pages/Article"));
 const Archive = lazy(() => import("@/pages/Archive"));
+const CategoryArchive = lazy(() => import("@/pages/CategoryArchive"));
 const Brokers = lazy(() => import("@/pages/Brokers"));
 const PropFirms = lazy(() => import("@/pages/PropFirms"));
 const BrokerReview = lazy(() => import("@/pages/BrokerReview"));
@@ -63,6 +64,13 @@ function Router() {
       <Route path="/prop-firm/:slug">
         <Suspense fallback={<PageLoadingFallback />}>
           <PropFirmReview />
+        </Suspense>
+      </Route>
+      {/* Dynamic category archive route - catches single-segment URLs like /broker-news */}
+      {/* Must come after specific routes (/brokers, /archive) but before article route */}
+      <Route path="/:slug">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <CategoryArchive />
         </Suspense>
       </Route>
       <Route path="/:category/:slug">
