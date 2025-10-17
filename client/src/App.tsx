@@ -73,6 +73,12 @@ function Router() {
           <Article />
         </Suspense>
       </Route>
+      {/* Broker category archives - specific slugs for broker categories */}
+      <Route path="/top-cfd-brokers">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <BrokerCategoryArchive />
+        </Suspense>
+      </Route>
       {/* Combined route for /news and category archives - single Suspense boundary prevents remounting */}
       <Route path="/:slug">
         <Suspense fallback={<PageLoadingFallback />}>

@@ -1,11 +1,12 @@
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
-import { Loader2, Shield, Star, Award } from "lucide-react";
+import { Loader2, Shield, Star, Award, ArrowRight, Newspaper } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { trackPageView } from "@/lib/gtm";
 import { transformBroker } from "@/lib/transforms";
@@ -13,10 +14,16 @@ import type { Broker } from "@shared/schema";
 
 export default function BrokerCategoryArchive() {
   const { slug } = useParams();
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
-    trackPageView(`/broker-categories/${slug}`, `${slug} | Broker Categories`);
+    trackPageView(`/${slug}`, `${slug} | EntryLab`);
   }, [slug]);
+
+  // Fetch broker categories
+  const { data: brokerCategories } = useQuery<any[]>({
+    queryKey: ["/api/wordpress/broker-categories"],
+  });
 
   // Fetch category content (brokers in this category)
   const { data: categoryContent, isLoading } = useQuery<any>({
@@ -30,6 +37,24 @@ export default function BrokerCategoryArchive() {
   const avgRating = brokers.length > 0 
     ? (brokers.reduce((sum: number, b: Broker) => sum + b.rating, 0) / brokers.length).toFixed(1)
     : "0.0";
+
+  // Filter categories to show only those with brokers assigned
+  // Look for categories that are likely broker categories (you can customize this filter)
+  const filteredCategories = (brokerCategories || []).filter((cat: any) => {
+    // Show categories that have the word "broker" or "cfd" or "forex" etc.
+    const lowerName = cat.name.toLowerCase();
+    const lowerSlug = cat.slug.toLowerCase();
+    return (
+      lowerName.includes('broker') || 
+      lowerSlug.includes('broker') ||
+      lowerName.includes('cfd') ||
+      lowerSlug.includes('cfd') ||
+      lowerName.includes('forex') ||
+      lowerSlug.includes('forex') ||
+      lowerName.includes('trading') ||
+      lowerSlug.includes('trading')
+    );
+  });
 
   // Format category name for display (e.g., "top-cfd-brokers" -> "Top CFD Brokers")
   const categoryName = slug
@@ -53,11 +78,11 @@ export default function BrokerCategoryArchive() {
       <SEO
         title={`${categoryName} | EntryLab`}
         description={`Discover the ${categoryName.toLowerCase()}. Compare verified brokers with competitive spreads, fast execution, and trusted regulation.`}
-        url={`https://entrylab.io/broker-categories/${slug}`}
+        url={`https://entrylab.io/${slug}`}
         breadcrumbs={[
           { name: "Home", url: "https://entrylab.io" },
           { name: "Brokers", url: "https://entrylab.io/brokers" },
-          { name: categoryName, url: `https://entrylab.io/broker-categories/${slug}` }
+          { name: categoryName, url: `https://entrylab.io/${slug}` }
         ]}
       />
       <Navigation />
@@ -79,13 +104,12 @@ export default function BrokerCategoryArchive() {
             
             {/* Subheading */}
             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              {brokers.length > 0 
-                ? `Compare ${brokers.length} verified broker${brokers.length !== 1 ? 's' : ''} in this category`
-                : 'No brokers found in this category'}
+              Top verified CFD brokers. Compare trusted trading platforms with low spreads, fast withdrawals, and verified trader reviews.
             </p>
 
+            {/* Stats */}
             {brokers.length > 0 && (
-              <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8">
+              <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 mb-10">
                 <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-card/50 backdrop-blur-sm border">
                   <div className="flex items-center justify-center">
                     <Shield className="h-5 w-5 text-emerald-500" />
@@ -107,6 +131,23 @@ export default function BrokerCategoryArchive() {
                 </div>
               </div>
             )}
+
+            {/* Category Tabs - Only Broker Categories */}
+            {filteredCategories.length > 0 && (
+              <div className="flex flex-wrap gap-2 justify-center">
+                {filteredCategories.map((cat: any) => (
+                  <Badge
+                    key={cat.slug}
+                    variant={cat.slug === slug ? "default" : "outline"}
+                    className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
+                    onClick={() => setLocation(`/${cat.slug}`)}
+                    data-testid={`badge-category-${cat.slug}`}
+                  >
+                    {cat.name}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -116,26 +157,49 @@ export default function BrokerCategoryArchive() {
           
           {/* Brokers Grid */}
           {brokers.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {brokers.map((broker: Broker, index: number) => (
-                <BrokerCardEnhanced
-                  key={broker.id}
-                  name={broker.name}
-                  logo={broker.logo}
-                  verified={broker.verified}
-                  rating={broker.rating}
-                  pros={broker.pros}
-                  highlights={broker.highlights}
-                  link={broker.link}
-                  featured={broker.featured}
-                  slug={broker.slug}
-                  type="broker"
-                  pageLocation="archive"
-                  placementType="broker_list_card"
-                  position={index + 1}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-12">
+                {brokers.map((broker: Broker, index: number) => (
+                  <BrokerCardEnhanced
+                    key={broker.id}
+                    name={broker.name}
+                    logo={broker.logo}
+                    verified={broker.verified}
+                    rating={broker.rating}
+                    pros={broker.pros}
+                    highlights={broker.highlights}
+                    link={broker.link}
+                    featured={broker.featured}
+                    slug={broker.slug}
+                    type="broker"
+                    pageLocation="archive"
+                    placementType="broker_list_card"
+                    position={index + 1}
+                  />
+                ))}
+              </div>
+
+              {/* CTA to News */}
+              <div className="border-t pt-12">
+                <p className="text-center text-sm text-muted-foreground mb-3">
+                  Looking for latest market insights?
+                </p>
+                <div className="flex flex-wrap gap-3 justify-center">
+                  <Button 
+                    asChild 
+                    variant="ghost" 
+                    className="gap-2"
+                    data-testid="button-see-latest-news"
+                  >
+                    <a href="/news">
+                      <Newspaper className="h-4 w-4" />
+                      See Latest FX News
+                      <ArrowRight className="h-4 w-4" />
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            </>
           ) : (
             <div className="text-center py-16">
               <p className="text-muted-foreground">No brokers found in this category.</p>
