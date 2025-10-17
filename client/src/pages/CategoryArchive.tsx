@@ -241,82 +241,61 @@ export default function CategoryArchive() {
               </p>
             </div>
           ) : (
-            <div className="space-y-12">
-              {/* Brokers Section */}
-              {filteredBrokers.length > 0 && (
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground mb-6">Brokers</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredBrokers.map((broker, index) => (
-                      <BrokerCardEnhanced
-                        key={broker.id}
-                        name={broker.name}
-                        logo={broker.logo}
-                        verified={broker.verified}
-                        rating={broker.rating}
-                        pros={broker.pros}
-                        highlights={broker.highlights}
-                        link={broker.link}
-                        featured={broker.featured}
-                        slug={broker.slug}
-                        type="broker"
-                        pageLocation="archive"
-                        placementType="broker_list_card"
-                        position={index + 1}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Brokers */}
+              {filteredBrokers.map((broker, index) => (
+                <BrokerCardEnhanced
+                  key={`broker-${broker.id}`}
+                  name={broker.name}
+                  logo={broker.logo}
+                  verified={broker.verified}
+                  rating={broker.rating}
+                  pros={broker.pros}
+                  highlights={broker.highlights}
+                  link={broker.link}
+                  featured={broker.featured}
+                  slug={broker.slug}
+                  type="broker"
+                  pageLocation="archive"
+                  placementType="broker_list_card"
+                  position={index + 1}
+                />
+              ))}
 
-              {/* Prop Firms Section */}
-              {filteredPropFirms.length > 0 && (
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground mb-6">Prop Firms</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredPropFirms.map((firm, index) => (
-                      <BrokerCardEnhanced
-                        key={firm.id}
-                        name={firm.name}
-                        logo={firm.logo}
-                        verified={firm.verified}
-                        rating={firm.rating}
-                        pros={firm.pros}
-                        highlights={firm.highlights}
-                        link={firm.link}
-                        featured={firm.featured}
-                        slug={firm.slug}
-                        type="prop-firm"
-                        pageLocation="archive"
-                        placementType="broker_list_card"
-                        position={index + 1}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Prop Firms */}
+              {filteredPropFirms.map((firm, index) => (
+                <BrokerCardEnhanced
+                  key={`firm-${firm.id}`}
+                  name={firm.name}
+                  logo={firm.logo}
+                  verified={firm.verified}
+                  rating={firm.rating}
+                  pros={firm.pros}
+                  highlights={firm.highlights}
+                  link={firm.link}
+                  featured={firm.featured}
+                  slug={firm.slug}
+                  type="prop-firm"
+                  pageLocation="archive"
+                  placementType="broker_list_card"
+                  position={index + filteredBrokers.length + 1}
+                />
+              ))}
 
-              {/* Articles Section */}
-              {filteredPosts.length > 0 && (
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground mb-6">Articles</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredPosts.map((post) => (
-                      <ArticleCard
-                        key={post.id}
-                        title={post.title.rendered}
-                        excerpt={stripHtml((post as any).acf?.article_description || post.excerpt.rendered)}
-                        author={getAuthorName(post)}
-                        date={post.date}
-                        category={getCategoryName(post)}
-                        link={getArticleUrl(post)}
-                        imageUrl={getFeaturedImage(post)}
-                        slug={post.slug}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Articles */}
+              {filteredPosts.map((post) => (
+                <ArticleCard
+                  key={`post-${post.id}`}
+                  title={post.title.rendered}
+                  excerpt={stripHtml((post as any).acf?.article_description || post.excerpt.rendered)}
+                  author={getAuthorName(post)}
+                  date={post.date}
+                  category={getCategoryName(post)}
+                  link={getArticleUrl(post)}
+                  imageUrl={getFeaturedImage(post)}
+                  slug={post.slug}
+                />
+              ))}
             </div>
           )}
         </div>
