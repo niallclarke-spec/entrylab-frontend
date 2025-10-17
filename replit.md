@@ -3,7 +3,17 @@
 ## Overview
 EntryLab is a full-stack web application designed as a Forex News & Trading Intelligence Hub. It aggregates and displays forex broker news, prop firm updates, and trading analysis, fetching content from a WordPress backend. The platform aims to provide traders with a clean, professional interface for broker information, articles, and market data, inspired by Bloomberg and CoinDesk, with a focus on business vision and market potential.
 
-## Recent Changes (October 15, 2025)
+## Recent Changes (October 17, 2025)
+
+### Category Archive Pages with Yoast SEO ✅
+- **Dynamic Category Archives**: Implemented dedicated category archive pages (e.g., `/broker-news`, `/broker-guides`) that automatically pull content from WordPress categories
+- **Yoast SEO Integration**: CategoryArchive.tsx component uses Yoast SEO fields (`yoast_head_json.title`, `og_description`) for meta tags and page titles, following same pattern as Article/Broker/PropFirm pages
+- **Smart Backend Filtering**: Posts API endpoint converts category slugs to IDs via WordPress API, then filters posts by category ID for accurate results
+- **Dynamic Routing**: App.tsx uses `/:slug` catch-all route for category pages, placed after specific routes but before article routes to prevent conflicts
+- **Future-Proof**: Any new category added to WordPress automatically gets its own archive page without code changes
+- **Fallback Handling**: Auto-generates titles/descriptions when Yoast fields are empty, gracefully handles non-existent categories
+
+## Previous Changes (October 15, 2025)
 
 ### SEO-Optimized Category-Based URLs ✅
 - **URL Structure**: Migrated from `/article/:slug` to `/:category/:slug` format for better SEO and topical authority
