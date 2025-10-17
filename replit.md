@@ -1,62 +1,7 @@
 # Forex News & Trading Intelligence Hub
 
 ## Overview
-EntryLab is a full-stack web application designed as a Forex News & Trading Intelligence Hub. It aggregates and displays forex broker news, prop firm updates, and trading analysis, fetching content from a WordPress backend. The platform aims to provide traders with a clean, professional interface for broker information, articles, and market data, inspired by Bloomberg and CoinDesk, with a focus on business vision and market potential.
-
-## Recent Changes (October 17, 2025)
-
-### Recent Posts Feature & Smooth Tab Navigation ✅
-- **Recent Posts Tab**: Renamed "All Posts" to "Recent Posts" at `/news` route, limited to 9 most recent articles for curated, focused content
-- **Unified Component Architecture**: CategoryArchive.tsx now handles both `/news` and category-specific archives (e.g., `/broker-news`) in a single component instance
-- **Smooth Navigation**: Tab switching between Recent Posts and category archives no longer remounts component - only content updates, eliminating "page reload" feeling
-- **Highlighted Tab State**: Active tab now uses `variant="default"` (filled badge) to clearly indicate current selection
-- **Optimized Routing**: Single `/:slug` route handles both /news and category pages, with article route (`/:category/:slug`) correctly ordered before it to prevent interception
-- **Improved CTA UX**: Directory CTAs changed to ghost variant buttons with clear actionable text ("Browse Broker Reviews" / "Browse Prop Firm Reviews") and contextual helper text ("Looking for in-depth reviews?")
-- **Streamlined UI**: Removed redundant back button since tabs provide complete navigation
-
-### Category Archive Pages with Yoast SEO ✅
-- **Dynamic Category Archives**: Implemented dedicated category archive pages (e.g., `/broker-news`, `/broker-guides`) that automatically pull content from WordPress categories
-- **Yoast SEO Integration**: CategoryArchive.tsx component uses Yoast SEO fields (`yoast_head_json.title`, `og_description`) for meta tags and page titles, following same pattern as Article/Broker/PropFirm pages
-- **Smart Backend Filtering**: Posts API endpoint converts category slugs to IDs via WordPress API, then filters posts by category ID for accurate results
-- **Dynamic Routing**: App.tsx uses `/:slug` catch-all route for category pages, placed after specific routes but before article routes to prevent conflicts
-- **Future-Proof**: Any new category added to WordPress automatically gets its own archive page without code changes
-- **Fallback Handling**: Auto-generates titles/descriptions when Yoast fields are empty, gracefully handles non-existent categories
-
-## Previous Changes (October 15, 2025)
-
-### SEO-Optimized Category-Based URLs ✅
-- **URL Structure**: Migrated from `/article/:slug` to `/:category/:slug` format for better SEO and topical authority
-- **301 Redirects**: Backend redirect handler preserves SEO equity from old URLs with permanent 301 redirects to new category-based paths
-- **Helper Functions**: Created `articleUtils.ts` with `getArticleUrl()` and `getCategorySlug()` for consistent URL generation across all components
-- **GTM Tracking Updated**: Analytics now track category-based paths (`/broker-news/:slug` instead of `/article/:slug`)
-- **All Links Updated**: ArticleCard, InlineBrokerCard, and all other article link components now use category slugs in URLs
-- **SEO Benefits**: Category keywords in URLs improve topical authority, match user search patterns, and optimize for voice search/featured snippets
-
-## Previous Changes (October 12, 2025)
-
-### Telegram Bot Review Moderation - Fixed & Optimized ✅
-- **Inline Button Integration**: Added clickable buttons (✅ Approve, ❌ Reject, 👁️ View Details) directly in Telegram channel notifications for one-click review moderation
-- **Fixed Endpoint Issue**: Corrected API endpoints from `/posts/{ID}` to `/review/{ID}` for proper custom post type handling
-- **Direct Notification Flow**: Notifications now sent directly from Replit after review creation (bypasses WordPress webhook timing issues)
-- **Enhanced Security**: All callback queries validated against `TELEGRAM_CHANNEL_ID` with proper error handling and markdown escaping
-
-### UI/UX Fixes ✅
-- **Featured Broker Widget**: Fixed "Read Review" button to use internal navigation instead of external link (uses `<Link>` from wouter instead of `<a target="_blank">`)
-- **Review Link Consistency**: All broker review links now properly route to `/broker/{slug}` within the application
-
-### Review Cache Invalidation Fix ✅
-- **Instant Review Visibility**: Fixed issue where approved reviews took 15 minutes to appear on broker pages due to API caching
-- **Automatic Cache Clearing**: Added cache invalidation logic that clears the reviews cache immediately after approve/reject actions via Telegram
-- **Shared Cache Key**: Implemented `REVIEWS_CACHE_KEY` constant to prevent drift between cache fetch and invalidation paths
-- **Works for All Moderation Methods**: Cache clears for both inline button clicks and text commands (`/approve_ID`, `/reject_ID`)
-
-### ✅ Production Deployment Complete
-- All Telegram bot fixes complete and tested on production
-- Featured broker navigation working correctly
-- Telegram webhook registered and operational on entrylab.io
-- Environment variables (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHANNEL_ID`) configured in production `.env` file
-- Review notifications with inline buttons working perfectly on production
-- Review visibility issue resolved - approved reviews appear immediately
+EntryLab is a full-stack web application serving as a Forex News & Trading Intelligence Hub. It aggregates and displays forex broker news, prop firm updates, and trading analysis, sourcing content from a WordPress backend. Inspired by Bloomberg and CoinDesk, the platform provides traders with a professional interface for broker information, articles, and market data, focusing on business vision and market potential.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -64,106 +9,41 @@ Preferred communication style: Simple, everyday language.
 ## System Architecture
 
 ### Frontend
-- **Framework**: React 18 with TypeScript, Vite.
-- **Routing**: `wouter` for client-side routing.
-- **State Management**: React Query for server state, React Context API for theme.
-- **UI Components**: Shadcn UI (Radix UI primitives) with "new-york" style preset.
-- **Styling**: Tailwind CSS, CSS variables for theming (dark mode default), custom design system.
-- **Typography**: Inter (headlines/body), JetBrains Mono (financial data).
-- **Color Palette**: EntryLab purple, gold for ratings, green/red for market indicators.
-- **Key UI Elements**: Navigation, hero with forex animation, various article/broker card types, featured broker showcase, market ticker, newsletter CTA, trending topics filter, trust signals, single article template, archive page with search and filtering.
-- **Review System**: A 6-step review modal for brokers/prop firms, creating WordPress review posts via authenticated REST API (spam protection temporarily disabled). Telegram bot integration for review moderation directly from Telegram channel.
-- **Broker-Contextual Articles**: ACF relationship field (`related_broker`) links articles to specific brokers. Articles with related brokers display BrokerCardEnhanced in sidebar (desktop) or inline (mobile), plus BrokerAlertPopup with 80% scroll threshold (vs 60% on review pages).
+-   **Frameworks & Libraries**: React 18 with TypeScript, Vite, `wouter` for routing, React Query for server state, React Context API for theme management.
+-   **UI/UX**: Shadcn UI (Radix UI primitives) with "new-york" style preset, Tailwind CSS for styling, custom design system with CSS variables for theming (dark mode default). Typography uses Inter for headlines/body and JetBrains Mono for financial data.
+-   **Key Features**: Dynamic category archive pages with Yoast SEO integration, SEO-optimized category-based URLs (`/:category/:slug`), a 6-step review modal for brokers/prop firms, and broker-contextual article displays.
+-   **Performance**: WordPress API caching with 15-min TTL, client-side CSS deferral, static asset caching, image optimizations (WebP conversion, responsive `srcset`), loading skeletons, and `font-display: swap`.
 
 ### Backend
-- **Runtime**: Node.js with Express.js.
-- **API Design**: RESTful API proxying requests to WordPress.
-- **Authentication**: WordPress Application Password for REST API write operations.
-- **Telegram Bot Integration**: Webhook-based bot for review moderation. Receives notifications when new reviews are submitted to WordPress, sends formatted alerts to Telegram channel with inline approve/reject buttons. Commands `/approve_[ID]`, `/reject_[ID]`, `/view_[ID]` update WordPress post status directly from Telegram. Security enforced via `TELEGRAM_CHANNEL_ID` authentication.
-- **Key API Endpoints**: Endpoints for WordPress posts, categories, brokers, prop firms, trust signals, and review submission/fetching. Article endpoint detects ACF `related_broker` field, extracts broker ID from post object/array, and fetches full broker details. Telegram webhook endpoint at `/api/telegram/webhook` for command processing, WordPress review webhook at `/api/wordpress/review-webhook` for new review notifications.
+-   **Runtime**: Node.js with Express.js.
+-   **API Design**: RESTful API proxying and extending WordPress functionality.
+-   **Authentication**: WordPress Application Passwords for secure REST API write operations.
+-   **Telegram Bot Integration**: Webhook-based bot for review moderation, sending notifications with inline approve/reject buttons to a Telegram channel when new reviews are submitted.
+-   **Key Endpoints**: Handles WordPress posts, categories, brokers, prop firms, trust signals, review submission/fetching, and Telegram/WordPress webhooks.
 
 ### Data Layer
-- **Database**: Drizzle ORM for PostgreSQL.
-- **Data Models**: User, Broker, WordPressPost (interfaces for REST API response).
-- **Current Data Sources**: WordPress REST API for articles, categories, brokers, prop firms, and ACF Options.
+-   **Database**: PostgreSQL via Drizzle ORM.
+-   **Data Sources**: Primarily the WordPress REST API for all content types (articles, categories, brokers, prop firms) and ACF Options.
 
 ### Design System
-- **Theme**: Dark/light mode toggle with localStorage persistence (dark mode default).
-- **Branding**: Custom favicon system with EntryLab purple (#8B5CF6) "E" logo in SVG format (16x16, 32x32, 180x180 for Apple devices), theme-color meta tag for browser chrome.
-- **Component Patterns**: Compound components, Radix UI Slot pattern, `class-variance-authority` for variants, responsive design, dynamic content parsing.
+-   **Theming**: Dark/light mode toggle with localStorage persistence (dark mode default).
+-   **Branding**: Custom favicon system and color palette (EntryLab purple, gold, green/red for market indicators).
+-   **Component Patterns**: Utilizes compound components, Radix UI Slot pattern, `class-variance-authority` for variants, and responsive design.
 
 ### Deployment & Analytics
-- **Deployment**: Frontend on `entrylab.io`, Backend (WordPress) on `admin.entrylab.io`, hosted on Hostinger VPS with PM2 and Nginx.
-- **Analytics**: Google Tag Manager for granular placement tracking, enhanced affiliate click tracking, and brand-specific email submission/review tracking.
-- **Production Deployment**: Uses PM2 with `NODE_ENV=production` and `PORT=3000`, Nginx reverse proxy.
-- **GitHub Actions Auto-Deployment**: Workflow for continuous deployment to main branch.
-- **Emergency Rollback System**: Git tags for stable checkpoints with defined rollback procedures.
-
-### Development Tools
-- **Code Quality**: `ErrorBoundary` for React errors, shared transformation functions for WordPress data (`transformBroker`, `transformPropFirm`), `handleWordPressError` for consistent API error handling, native lazy loading and intrinsic sizing for image optimization.
-- **Broker Review Page**: Quick Stats Bar with 6 stat tiles (N/A fallbacks), conditional CTA section based on regulation status.
-- **Newsletter CTA**: Redesigned with dark premium aesthetic, simplified benefits, and GTM tracking.
-- **Category Filtering**: Centralized `EXCLUDED_CATEGORIES` list for consistent filtering across components.
-- **Article View Counter**: PostgreSQL `article_views` table, API endpoints for incrementing/fetching counts, displayed when > 10 views.
-- **Article Thumbnails**: Subtle gradient overlay for visual consistency.
-- **Brand-Specific Statistics**: Dynamic social proof for broker alert popups, auto-incrementing trader counts and dollar values based on `brandStats.ts` configuration.
-
-### Performance Optimizations
-- **WordPress API Caching**: In-memory cache layer with 15-min TTL, 60-min stale-while-revalidate, reduces API latency from 690ms to <5ms on cache hits. Browser cache headers (5 min) on all endpoints.
-- **CSS Render-Blocking Mitigation**: Client-side CSS deferral using preload+onload pattern with cached-asset guards to prevent FOUC. Static and dynamic stylesheets converted to non-blocking. Note: PageSpeed lab tests don't detect this optimization (measures initial HTML only), but real users receive optimized non-blocking CSS.
-- **Static Asset Caching**: Production cache-control headers (1 year for hashed JS/CSS, 30 days for images, 1 year for fonts, no-cache for HTML).
-- **Image Optimizations**: 
-  - WordPress: Imagify plugin for WebP conversion with `<picture>` tags
-  - Standard dimensions: Articles 768×307 JPEG, Broker/Prop Firm logos 220×220 PNG
-  - WordPress media_details integration for optimized image sizes (large→medium_large→medium priority)
-  - Responsive srcset generation from URL patterns, `fetchPriority="high"` for LCP images, lazy loading for below-fold content
-- **Loading Skeletons**: Structured content placeholders on Home, Article, and Archive pages for improved perceived performance during API fetches.
-- **Font Loading**: `font-display: swap` to prevent invisible text during font load.
-- **Mobile Performance**: Responsive image serving (300px mobile, 768px tablet, 1024px desktop), preconnect to critical domains, async GTM loading, inline critical CSS.
+-   **Deployment**: Frontend on `entrylab.io`, Backend (WordPress) on `admin.entrylab.io`, hosted on Hostinger VPS with PM2 and Nginx.
+-   **Analytics**: Google Tag Manager for granular tracking, including affiliate clicks and review submissions.
+-   **CI/CD**: GitHub Actions for continuous deployment to the main branch.
 
 ## External Dependencies
 
 ### Third-Party Services
-- **Content Management**: WordPress REST API.
-- **Database**: PostgreSQL (Neon serverless).
-- **Telegram Bot API**: Webhook integration for review moderation, notification delivery, and command processing.
+-   **Content Management**: WordPress REST API.
+-   **Database**: PostgreSQL (Neon serverless).
+-   **Messaging/Bots**: Telegram Bot API for review moderation and notifications.
 
 ### Key NPM Packages
-- **UI & Styling**: `@radix-ui/*`, `tailwindcss`, `class-variance-authority`, `lucide-react`, `react-icons`.
-- **Data Fetching & Forms**: `@tanstack/react-query`, `react-hook-form`, `@hookform/resolvers`, `zod`, `drizzle-zod`.
-- **Development Tools**: `vite`, `@vitejs/plugin-react`, `tsx`, `esbuild`.
-- **Utilities**: `date-fns`, `clsx`/`tailwind-merge`, `cmdk`, `embla-carousel-react`, `nanoid`.
-- **Telegram Integration**: `node-telegram-bot-api` for webhook-based bot commands and notifications.
-
-## Telegram Review Bot
-
-### Architecture
-- **Webhook Mode**: Receives commands via POST `/api/telegram/webhook` (no polling).
-- **Security**: All webhook requests validated against `TELEGRAM_CHANNEL_ID` environment variable. Unauthorized chat IDs receive 403 response.
-- **Inline Button Commands**: Telegram notifications include inline buttons (✅ Approve, ❌ Reject, 👁️ View Details) that work directly in channels. Button callbacks update WordPress review post type (`/wp-json/wp/v2/review/{ID}`) status via REST API.
-- **Notification Flow**: Replit sends notification directly after review creation → Telegram channel with inline buttons → User clicks button → Webhook processes callback → WordPress updated.
-
-### Setup & Configuration
-1. **Secrets Required**: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHANNEL_ID`, `WORDPRESS_USERNAME`, `WORDPRESS_PASSWORD` (stored as Replit Secrets).
-2. **Webhook Registration**: Run `tsx server/setup-telegram-webhook.ts` after deployment to register webhook URL with Telegram API.
-3. **WordPress Integration**: WordPress sends POST request to `/api/wordpress/review-webhook` when new review is submitted (status: pending).
-
-### Available Commands
-- Inline Buttons (preferred method):
-  - ✅ **Approve** - Publishes review (sets post status to "publish")
-  - ❌ **Reject** - Moves review to trash (sets post status to "trash")
-  - 👁️ **View Details** - Displays full review content with WordPress edit link
-- Text Commands (fallback):
-  - `/approve_[ID]` - Publishes review
-  - `/reject_[ID]` - Moves review to trash
-  - `/view_[ID]` - Displays full review details
-
-### Security Features
-- Chat ID authentication for all webhook requests
-- Markdown escaping for error messages to prevent parse failures
-- Callback queries acknowledged without channel broadcast (no spam)
-- WordPress credentials stored as environment secrets, never exposed in logs
-
-### Testing
-- Manual test endpoint: `POST /api/telegram/test-notification` sends sample review notification to channel
-- Logs: All commands logged to console with `[Telegram Bot]` prefix for debugging
+-   **UI & Styling**: `@radix-ui/*`, `tailwindcss`, `class-variance-authority`, `lucide-react`, `react-icons`.
+-   **Data Management**: `@tanstack/react-query`, `react-hook-form`, `zod`, `drizzle-zod`.
+-   **Utilities**: `date-fns`, `clsx`/`tailwind-merge`, `cmdk`, `embla-carousel-react`, `nanoid`.
+-   **Telegram Integration**: `node-telegram-bot-api`.
