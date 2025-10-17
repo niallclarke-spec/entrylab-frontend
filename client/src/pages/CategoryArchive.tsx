@@ -30,7 +30,7 @@ export default function CategoryArchive() {
   const category = categoryData?.[0];
 
   const { data: posts, isLoading: postsLoading } = useQuery<WordPressPost[]>({
-    queryKey: isAllPosts ? ["/api/wordpress/posts"] : [`/api/wordpress/posts?category=${categorySlug}`],
+    queryKey: isAllPosts ? ["/api/wordpress/posts?per_page=9"] : [`/api/wordpress/posts?category=${categorySlug}`],
     enabled: !!categorySlug,
   });
 
@@ -40,7 +40,7 @@ export default function CategoryArchive() {
 
   useEffect(() => {
     if (isAllPosts) {
-      trackPageView("/news", "News & Articles | EntryLab");
+      trackPageView("/news", "Recent Posts | EntryLab");
     } else if (category) {
       const title = category.yoast_head_json?.title || `${category.name} | EntryLab`;
       trackPageView(`/${categorySlug}`, title);
@@ -119,10 +119,10 @@ export default function CategoryArchive() {
 
   // SEO with fallbacks: Yoast SEO fields OR auto-generated defaults
   const seoTitle = isAllPosts 
-    ? "News & Articles | EntryLab - Forex Broker & Prop Firm Updates"
+    ? "Recent Posts | EntryLab - Latest Forex & Trading News"
     : (category?.yoast_head_json?.title || `${category?.name || 'Category'} | EntryLab - Forex News & Analysis`);
   const seoDescription = isAllPosts
-    ? "Browse our complete collection of forex broker news, prop firm updates, and trading analysis. Find the insights you need for successful trading."
+    ? "The latest forex broker news, prop firm updates, and trading analysis. Stay informed with our most recent posts."
     : (category?.yoast_head_json?.og_description || 
        category?.yoast_head_json?.description ||
        category?.description || 
@@ -137,7 +137,7 @@ export default function CategoryArchive() {
         type="website"
         breadcrumbs={[
           { name: "Home", url: "https://entrylab.io" },
-          { name: isAllPosts ? "News" : (category?.name || 'Category'), url: isAllPosts ? "https://entrylab.io/news" : `https://entrylab.io/${categorySlug}` }
+          { name: isAllPosts ? "Recent Posts" : (category?.name || 'Category'), url: isAllPosts ? "https://entrylab.io/news" : `https://entrylab.io/${categorySlug}` }
         ]}
       />
       <Navigation />
@@ -156,12 +156,12 @@ export default function CategoryArchive() {
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4" data-testid="text-category-name">
-              {isAllPosts ? "News & Articles" : (category?.name || 'Category')}
+              {isAllPosts ? "Recent Posts" : (category?.name || 'Category')}
             </h1>
             {(isAllPosts || category?.description) && (
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 {isAllPosts 
-                  ? "Browse our complete collection of forex broker news, prop firm updates, and trading analysis"
+                  ? "The latest forex broker news, prop firm updates, and trading analysis"
                   : category.description
                 }
               </p>
@@ -187,11 +187,11 @@ export default function CategoryArchive() {
           <div className="flex flex-wrap gap-2 justify-center mb-8">
             <Link href="/news">
               <Badge
-                variant="outline"
+                variant={isAllPosts ? "default" : "outline"}
                 className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
                 data-testid="badge-category-all"
               >
-                All Posts
+                Recent Posts
               </Badge>
             </Link>
             {(allCategories || [])
