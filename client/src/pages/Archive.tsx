@@ -147,30 +147,37 @@ export default function Archive() {
               ))}
           </div>
 
-          {/* Directory Buttons */}
-          <div className="flex flex-wrap gap-4 justify-center mb-12">
-            <Link href="/brokers">
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="gap-2 border-2 border-emerald-500/50 hover:border-emerald-500 hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                data-testid="button-brokers-directory"
-              >
-                <Shield className="h-5 w-5" />
-                Verified Brokers
-              </Button>
-            </Link>
-            <Link href="/prop-firms">
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="gap-2 border-2 border-primary/50 hover:border-primary hover:bg-primary/10 text-primary"
-                data-testid="button-prop-firms-directory"
-              >
-                <TrendingUp className="h-5 w-5" />
-                Verified Prop Firms
-              </Button>
-            </Link>
+          {/* Directory Links - Subtle secondary CTA */}
+          <div className="mb-12">
+            <p className="text-center text-sm text-muted-foreground mb-3">
+              Looking for in-depth reviews?
+            </p>
+            <div className="flex flex-wrap gap-3 justify-center">
+              <Link href="/brokers">
+                <Button 
+                  variant="ghost" 
+                  size="default"
+                  className="gap-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+                  data-testid="button-brokers-directory"
+                >
+                  <Shield className="h-4 w-4" />
+                  Browse Broker Reviews
+                  <span className="text-xs text-muted-foreground ml-1">→</span>
+                </Button>
+              </Link>
+              <Link href="/prop-firms">
+                <Button 
+                  variant="ghost" 
+                  size="default"
+                  className="gap-2 text-primary hover:bg-primary/10"
+                  data-testid="button-prop-firms-directory"
+                >
+                  <TrendingUp className="h-4 w-4" />
+                  Browse Prop Firm Reviews
+                  <span className="text-xs text-muted-foreground ml-1">→</span>
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Posts Grid */}
