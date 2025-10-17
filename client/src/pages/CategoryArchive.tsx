@@ -5,17 +5,15 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { ArticleCard } from "@/components/ArticleCard";
-import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, ArrowLeft } from "lucide-react";
-import type { WordPressPost, Broker } from "@shared/schema";
+import { Search, ArrowLeft, Shield, TrendingUp } from "lucide-react";
+import type { WordPressPost } from "@shared/schema";
 import { getArticleUrl, getCategoryName, getCategorySlug } from "@/lib/articleUtils";
 import { trackPageView, trackSearch } from "@/lib/gtm";
 import { ArticleCardSkeletonList } from "@/components/skeletons/ArticleCardSkeleton";
 import { EXCLUDED_CATEGORIES } from "@/lib/constants";
-import { transformBroker } from "@/lib/transforms";
 
 export default function CategoryArchive() {
   const params = useParams();
@@ -30,24 +28,14 @@ export default function CategoryArchive() {
 
   const category = categoryData?.[0];
 
-  // Fetch all content types for this category
-  const { data: categoryContent, isLoading: contentLoading } = useQuery<{
-    posts: any[];
-    brokers: any[];
-    propFirms: any[];
-  }>({
-    queryKey: [`/api/wordpress/category-content?category=${categorySlug}`],
+  const { data: posts, isLoading: postsLoading } = useQuery<WordPressPost[]>({
+    queryKey: [`/api/wordpress/posts?category=${categorySlug}`],
     enabled: !!categorySlug,
   });
 
   const { data: allCategories } = useQuery<any[]>({
     queryKey: ["/api/wordpress/categories"],
   });
-
-  // Transform data
-  const posts = categoryContent?.posts || [];
-  const brokers = categoryContent?.brokers?.map(transformBroker).filter((b): b is Broker => b !== null) || [];
-  const propFirms = categoryContent?.propFirms?.map(transformBroker).filter((b): b is Broker => b !== null) || [];
 
   useEffect(() => {
     if (category) {
@@ -77,38 +65,21 @@ export default function CategoryArchive() {
     return div.textContent || div.innerText || "";
   };
 
-  // Filter all content types by search query
-  const filteredPosts = posts.filter(post => {
+  const filteredPosts = posts?.filter(post => {
     const matchesSearch = searchQuery === "" || 
       stripHtml(post.title.rendered).toLowerCase().includes(searchQuery.toLowerCase()) ||
       stripHtml(post.excerpt.rendered).toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSearch;
-  });
-
-  const filteredBrokers = brokers.filter(broker => {
-    const matchesSearch = searchQuery === "" || 
-      broker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      broker.tagline?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
-  });
-
-  const filteredPropFirms = propFirms.filter(firm => {
-    const matchesSearch = searchQuery === "" || 
-      firm.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      firm.tagline?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
-  });
-
-  const totalResults = filteredPosts.length + filteredBrokers.length + filteredPropFirms.length;
+  }) || [];
 
   useEffect(() => {
     if (searchQuery) {
       const timer = setTimeout(() => {
-        trackSearch(searchQuery, totalResults, categorySlug || 'category');
+        trackSearch(searchQuery, filteredPosts.length, categorySlug || 'category');
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [searchQuery, totalResults, categorySlug]);
+  }, [searchQuery, filteredPosts.length, categorySlug]);
 
   if (categoryLoading) {
     return (
@@ -202,7 +173,7 @@ export default function CategoryArchive() {
           </div>
 
           {/* Category Tabs */}
-          <div className="flex flex-wrap gap-2 justify-center mb-12">
+          <div className="flex flex-wrap gap-2 justify-center mb-8">
             <Link href="/archive">
               <Badge
                 variant="outline"
@@ -227,65 +198,50 @@ export default function CategoryArchive() {
               ))}
           </div>
 
-          {/* Content Grid */}
-          {contentLoading ? (
+          {/* Directory Buttons */}
+          <div className="flex flex-wrap gap-4 justify-center mb-12">
+            <Link href="/brokers">
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="gap-2 border-2 border-emerald-500/50 hover:border-emerald-500 hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                data-testid="button-brokers-directory"
+              >
+                <Shield className="h-5 w-5" />
+                Verified Brokers
+              </Button>
+            </Link>
+            <Link href="/prop-firms">
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="gap-2 border-2 border-primary/50 hover:border-primary hover:bg-primary/10 text-primary"
+                data-testid="button-prop-firms-directory"
+              >
+                <TrendingUp className="h-5 w-5" />
+                Verified Prop Firms
+              </Button>
+            </Link>
+          </div>
+
+          {/* Posts Grid */}
+          {postsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <ArticleCardSkeletonList count={9} />
             </div>
-          ) : totalResults === 0 ? (
+          ) : filteredPosts.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-muted-foreground">
                 {searchQuery 
-                  ? "No content found matching your search." 
-                  : `No content in ${category.name} yet.`}
+                  ? "No articles found matching your search." 
+                  : `No articles in ${category.name} yet.`}
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Brokers */}
-              {filteredBrokers.map((broker, index) => (
-                <BrokerCardEnhanced
-                  key={`broker-${broker.id}`}
-                  name={broker.name}
-                  logo={broker.logo}
-                  verified={broker.verified}
-                  rating={broker.rating}
-                  pros={broker.pros}
-                  highlights={broker.highlights}
-                  link={broker.link}
-                  featured={broker.featured}
-                  slug={broker.slug}
-                  type="broker"
-                  pageLocation="archive"
-                  placementType="broker_list_card"
-                  position={index + 1}
-                />
-              ))}
-
-              {/* Prop Firms */}
-              {filteredPropFirms.map((firm, index) => (
-                <BrokerCardEnhanced
-                  key={`firm-${firm.id}`}
-                  name={firm.name}
-                  logo={firm.logo}
-                  verified={firm.verified}
-                  rating={firm.rating}
-                  pros={firm.pros}
-                  highlights={firm.highlights}
-                  link={firm.link}
-                  featured={firm.featured}
-                  slug={firm.slug}
-                  type="prop-firm"
-                  pageLocation="archive"
-                  placementType="broker_list_card"
-                  position={index + filteredBrokers.length + 1}
-                />
-              ))}
-
-              {/* Articles */}
               {filteredPosts.map((post) => (
                 <ArticleCard
-                  key={`post-${post.id}`}
+                  key={post.id}
                   title={post.title.rendered}
                   excerpt={stripHtml((post as any).acf?.article_description || post.excerpt.rendered)}
                   author={getAuthorName(post)}
