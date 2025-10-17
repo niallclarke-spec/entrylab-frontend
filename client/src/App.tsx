@@ -41,11 +41,6 @@ function Router() {
           <Home />
         </Suspense>
       </Route>
-      <Route path="/news">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <CategoryArchive />
-        </Suspense>
-      </Route>
       <Route path="/brokers">
         <Suspense fallback={<PageLoadingFallback />}>
           <Brokers />
@@ -66,8 +61,7 @@ function Router() {
           <PropFirmReview />
         </Suspense>
       </Route>
-      {/* Dynamic category archive route - catches single-segment URLs like /broker-news */}
-      {/* Must come after specific routes (/brokers, /archive) but before article route */}
+      {/* Combined route for /news and category archives - single Suspense boundary prevents remounting */}
       <Route path="/:slug">
         <Suspense fallback={<PageLoadingFallback />}>
           <CategoryArchive />
