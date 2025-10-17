@@ -110,19 +110,19 @@ export function TrendingTopics({ selectedCategory, onCategorySelect }: TrendingT
               const { icon: Icon, color } = getIconAndColor(category.slug, index);
               const isSelected = selectedCategory === category.slug;
               return (
-                <Badge
-                  key={category.id}
-                  className={`gap-2 px-4 py-2 backdrop-blur-sm cursor-pointer transition-all ${
-                    isSelected 
-                      ? 'bg-primary/20 text-primary border-primary/40 hover:bg-primary/30' 
-                      : 'bg-white/5 text-white/80 border-white/10 hover:bg-white/10'
-                  }`}
-                  onClick={() => onCategorySelect(category.slug)}
-                  data-testid={`badge-trending-${category.slug}`}
-                >
-                  <Icon className={`h-4 w-4 ${isSelected ? 'text-primary' : color}`} />
-                  {category.name}
-                </Badge>
+                <Link key={category.id} href={`/${category.slug}`}>
+                  <Badge
+                    className={`gap-2 px-4 py-2 backdrop-blur-sm cursor-pointer transition-all ${
+                      isSelected 
+                        ? 'bg-primary/20 text-primary border-primary/40 hover:bg-primary/30' 
+                        : 'bg-white/5 text-white/80 border-white/10 hover:bg-white/10'
+                    }`}
+                    data-testid={`badge-trending-${category.slug}`}
+                  >
+                    <Icon className={`h-4 w-4 ${isSelected ? 'text-primary' : color}`} />
+                    {category.name}
+                  </Badge>
+                </Link>
               );
             })}
           </div>

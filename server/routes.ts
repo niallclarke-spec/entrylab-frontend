@@ -244,10 +244,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/posts", async (req, res) => {
     try {
       const { category } = req.query;
-      let url = "https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&acf_format=standard&per_page=10&orderby=date&order=desc";
+      let url = "https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&acf_format=standard&per_page=100&orderby=date&order=desc";
       
       if (category) {
-        url += `&categories=${category}`;
+        // If category is a slug (string), first fetch the category to get its ID
+        if (typeof category === 'string' && isNaN(Number(category))) {
+          const categoryUrl = `https://admin.entrylab.io/wp-json/wp/v2/categories?slug=${category}`;
+          const categoryData = await fetchWordPressWithCache(categoryUrl);
+          
+          if (categoryData && categoryData.length > 0) {
+            url += `&categories=${categoryData[0].id}`;
+          }
+        } else {
+          // Category is already an ID
+          url += `&categories=${category}`;
+        }
       }
       
       const posts = await fetchWordPressWithCache(url); // Use 15 min default cache
