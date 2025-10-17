@@ -6,8 +6,9 @@ import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { ArticleCard } from "@/components/ArticleCard";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search } from "lucide-react";
+import { Search, Shield, TrendingUp } from "lucide-react";
 import type { WordPressPost } from "@shared/schema";
 import { getArticleUrl, getCategoryName, getCategorySlug } from "@/lib/articleUtils";
 import { trackPageView, trackSearch, trackCategoryFilter } from "@/lib/gtm";
@@ -118,8 +119,8 @@ export default function Archive() {
             </div>
           </div>
 
-          {/* Category Links */}
-          <div className="flex flex-wrap gap-2 justify-center mb-12">
+          {/* Category Tabs */}
+          <div className="flex flex-wrap gap-2 justify-center mb-8">
             <Badge
               variant={selectedCategory === "all" ? "default" : "outline"}
               className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
@@ -129,7 +130,10 @@ export default function Archive() {
               All Posts
             </Badge>
             {(categories || [])
-              .filter(cat => !EXCLUDED_CATEGORIES.includes(cat.slug.toLowerCase()))
+              .filter(cat => 
+                !EXCLUDED_CATEGORIES.includes(cat.slug.toLowerCase()) &&
+                cat.count > 0
+              )
               .map((category) => (
                 <Link key={category.slug} href={`/${category.slug}`}>
                   <Badge
@@ -141,6 +145,32 @@ export default function Archive() {
                   </Badge>
                 </Link>
               ))}
+          </div>
+
+          {/* Directory Buttons */}
+          <div className="flex flex-wrap gap-4 justify-center mb-12">
+            <Link href="/brokers">
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="gap-2 border-2 border-emerald-500/50 hover:border-emerald-500 hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                data-testid="button-brokers-directory"
+              >
+                <Shield className="h-5 w-5" />
+                Verified Brokers
+              </Button>
+            </Link>
+            <Link href="/prop-firms">
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="gap-2 border-2 border-primary/50 hover:border-primary hover:bg-primary/10 text-primary"
+                data-testid="button-prop-firms-directory"
+              >
+                <TrendingUp className="h-5 w-5" />
+                Verified Prop Firms
+              </Button>
+            </Link>
           </div>
 
           {/* Posts Grid */}
