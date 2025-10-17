@@ -20,14 +20,14 @@ export default function CategoryArchive() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: categoryData, isLoading: categoryLoading } = useQuery<any>({
-    queryKey: ["/api/wordpress/categories", categorySlug],
+    queryKey: [`/api/wordpress/categories?slug=${categorySlug}`],
     enabled: !!categorySlug,
   });
 
   const category = categoryData?.[0];
 
   const { data: posts, isLoading: postsLoading } = useQuery<WordPressPost[]>({
-    queryKey: ["/api/wordpress/posts", categorySlug],
+    queryKey: [`/api/wordpress/posts?category=${categorySlug}`],
     enabled: !!categorySlug,
   });
 
