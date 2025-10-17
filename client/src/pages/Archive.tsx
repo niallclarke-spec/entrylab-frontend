@@ -20,7 +20,7 @@ export default function Archive() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   useEffect(() => {
-    trackPageView("/archive", "Article Archive | EntryLab");
+    trackPageView("/news", "News & Articles | EntryLab");
   }, []);
 
   const { data: categories } = useQuery<any[]>({
@@ -81,13 +81,13 @@ export default function Archive() {
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
-        title="Article Archive | EntryLab - Forex Broker & Prop Firm News"
+        title="News & Articles | EntryLab - Forex Broker & Prop Firm Updates"
         description="Browse our complete collection of forex broker news, prop firm updates, and trading analysis. Find the insights you need for successful trading."
-        url="https://entrylab.io/archive"
+        url="https://entrylab.io/news"
         type="website"
         breadcrumbs={[
           { name: "Home", url: "https://entrylab.io" },
-          { name: "Archive", url: "https://entrylab.io/archive" }
+          { name: "News", url: "https://entrylab.io/news" }
         ]}
       />
       <Navigation />
@@ -97,7 +97,7 @@ export default function Archive() {
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-              Article Archive
+              News & Articles
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Browse our complete collection of forex broker news, prop firm updates, and trading analysis

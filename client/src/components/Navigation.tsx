@@ -39,10 +39,10 @@ export function Navigation() {
                   Verified Prop Firms
                 </Link>
                 <Link
-                  href="/archive"
+                  href="/news"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
                   data-testid="link-news"
-                  onMouseEnter={() => prefetchRoute('/archive')}
+                  onMouseEnter={() => prefetchRoute('/news')}
                 >
                   <Newspaper className="h-4 w-4 text-emerald-500" />
                   News
@@ -101,10 +101,10 @@ export function Navigation() {
                 Verified Prop Firms
               </Link>
               <Link
-                href="/archive"
+                href="/news"
                 className="block py-2 text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5"
                 data-testid="link-mobile-news"
-                onTouchStart={() => prefetchRoute('/archive')}
+                onTouchStart={() => prefetchRoute('/news')}
               >
                 <Newspaper className="h-4 w-4 text-emerald-500" />
                 News

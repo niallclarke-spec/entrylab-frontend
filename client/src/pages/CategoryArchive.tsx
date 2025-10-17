@@ -174,7 +174,7 @@ export default function CategoryArchive() {
 
           {/* Category Tabs */}
           <div className="flex flex-wrap gap-2 justify-center mb-8">
-            <Link href="/archive">
+            <Link href="/news">
               <Badge
                 variant="outline"
                 className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
