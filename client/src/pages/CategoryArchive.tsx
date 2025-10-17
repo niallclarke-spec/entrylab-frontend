@@ -184,7 +184,10 @@ export default function CategoryArchive() {
               </Badge>
             </Link>
             {(allCategories || [])
-              .filter(cat => !EXCLUDED_CATEGORIES.includes(cat.slug.toLowerCase()))
+              .filter(cat => 
+                !EXCLUDED_CATEGORIES.includes(cat.slug.toLowerCase()) &&
+                cat.count > 0 // Only show categories with posts
+              )
               .map((cat) => (
                 <Link key={cat.slug} href={`/${cat.slug}`}>
                   <Badge
