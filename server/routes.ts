@@ -375,6 +375,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/wordpress/broker-categories", async (req, res) => {
+    try {
+      // Fetch all categories - we'll filter on frontend to show only those with brokers
+      const categories = await fetchWordPressWithCache(
+        "https://admin.entrylab.io/wp-json/wp/v2/categories?per_page=100"
+        // Use 15 min default cache
+      );
+      
+      // Set browser cache headers (5 min) to reduce repeat requests
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching WordPress broker categories:", error);
+      // Set browser cache headers even for error responses
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      res.json([]); // Return empty array instead of error for graceful degradation
+    }
+  });
+
   app.get("/api/wordpress/prop-firm-categories", async (req, res) => {
     try {
       // WordPress uses "prop-firm-category" slug (with dashes)
