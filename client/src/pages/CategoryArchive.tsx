@@ -144,15 +144,6 @@ export default function CategoryArchive() {
       
       <main className="flex-1 py-12 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          {/* Back Button - Only show on category pages, not on /news */}
-          {!isAllPosts && (
-            <Link href="/news">
-              <Button variant="ghost" size="sm" className="mb-6" data-testid="button-back-archive-top">
-                <ArrowLeft className="mr-2 h-3 w-3" /> All Categories
-              </Button>
-            </Link>
-          )}
-
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4" data-testid="text-category-name">
