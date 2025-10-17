@@ -5,6 +5,15 @@ EntryLab is a full-stack web application designed as a Forex News & Trading Inte
 
 ## Recent Changes (October 17, 2025)
 
+### Recent Posts Feature & Smooth Tab Navigation ✅
+- **Recent Posts Tab**: Renamed "All Posts" to "Recent Posts" at `/news` route, limited to 9 most recent articles for curated, focused content
+- **Unified Component Architecture**: CategoryArchive.tsx now handles both `/news` and category-specific archives (e.g., `/broker-news`) in a single component instance
+- **Smooth Navigation**: Tab switching between Recent Posts and category archives no longer remounts component - only content updates, eliminating "page reload" feeling
+- **Highlighted Tab State**: Active tab now uses `variant="default"` (filled badge) to clearly indicate current selection
+- **Optimized Routing**: Single `/:slug` route handles both /news and category pages, with article route (`/:category/:slug`) correctly ordered before it to prevent interception
+- **Improved CTA UX**: Directory CTAs changed to ghost variant buttons with clear actionable text ("Browse Broker Reviews" / "Browse Prop Firm Reviews") and contextual helper text ("Looking for in-depth reviews?")
+- **Streamlined UI**: Removed redundant back button since tabs provide complete navigation
+
 ### Category Archive Pages with Yoast SEO ✅
 - **Dynamic Category Archives**: Implemented dedicated category archive pages (e.g., `/broker-news`, `/broker-guides`) that automatically pull content from WordPress categories
 - **Yoast SEO Integration**: CategoryArchive.tsx component uses Yoast SEO fields (`yoast_head_json.title`, `og_description`) for meta tags and page titles, following same pattern as Article/Broker/PropFirm pages
