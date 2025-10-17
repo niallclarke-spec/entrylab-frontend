@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -17,6 +17,7 @@ import { EXCLUDED_CATEGORIES } from "@/lib/constants";
 
 export default function CategoryArchive() {
   const params = useParams();
+  const [, setLocation] = useLocation();
   // Extract category slug from URL path (e.g., /broker-news -> broker-news)
   const categorySlug = params.slug || params.category || window.location.pathname.slice(1);
   const isAllPosts = categorySlug === 'news';
@@ -176,30 +177,29 @@ export default function CategoryArchive() {
 
           {/* Category Tabs */}
           <div className="flex flex-wrap gap-2 justify-center mb-8">
-            <Link href="/news">
-              <Badge
-                variant={isAllPosts ? "default" : "outline"}
-                className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
-                data-testid="badge-category-all"
-              >
-                Recent Posts
-              </Badge>
-            </Link>
+            <Badge
+              variant={isAllPosts ? "default" : "outline"}
+              className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
+              onClick={() => setLocation("/news")}
+              data-testid="badge-category-all"
+            >
+              Recent Posts
+            </Badge>
             {(allCategories || [])
               .filter(cat => 
                 !EXCLUDED_CATEGORIES.includes(cat.slug.toLowerCase()) &&
                 cat.count > 0 // Only show categories with posts
               )
               .map((cat) => (
-                <Link key={cat.slug} href={`/${cat.slug}`}>
-                  <Badge
-                    variant={cat.slug === categorySlug ? "default" : "outline"}
-                    className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
-                    data-testid={`badge-category-${cat.slug}`}
-                  >
-                    {cat.name}
-                  </Badge>
-                </Link>
+                <Badge
+                  key={cat.slug}
+                  variant={cat.slug === categorySlug ? "default" : "outline"}
+                  className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
+                  onClick={() => setLocation(`/${cat.slug}`)}
+                  data-testid={`badge-category-${cat.slug}`}
+                >
+                  {cat.name}
+                </Badge>
               ))}
           </div>
 
