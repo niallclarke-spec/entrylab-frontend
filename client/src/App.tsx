@@ -15,6 +15,7 @@ const Article = lazy(() => import("@/pages/Article"));
 const Archive = lazy(() => import("@/pages/Archive"));
 const CategoryArchive = lazy(() => import("@/pages/CategoryArchive"));
 const Brokers = lazy(() => import("@/pages/Brokers"));
+const BrokerCategoryArchive = lazy(() => import("@/pages/BrokerCategoryArchive"));
 const PropFirms = lazy(() => import("@/pages/PropFirms"));
 const BrokerReview = lazy(() => import("@/pages/BrokerReview"));
 const PropFirmReview = lazy(() => import("@/pages/PropFirmReview"));
@@ -44,6 +45,11 @@ function Router() {
       <Route path="/brokers">
         <Suspense fallback={<PageLoadingFallback />}>
           <Brokers />
+        </Suspense>
+      </Route>
+      <Route path="/broker-categories/:slug">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <BrokerCategoryArchive />
         </Suspense>
       </Route>
       <Route path="/broker/:slug">
