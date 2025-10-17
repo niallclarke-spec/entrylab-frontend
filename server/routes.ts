@@ -290,6 +290,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Aggregated category content endpoint - returns posts, brokers, and prop firms for a category
+  app.get("/api/wordpress/category-content", async (req, res) => {
+    try {
+      const { category } = req.query;
+      
+      if (!category) {
+        return res.status(400).json({ error: "Category parameter required" });
+      }
+
+      // First, get the category ID from the slug
+      let categoryId: number | null = null;
+      if (typeof category === 'string' && isNaN(Number(category))) {
+        const categoryUrl = `https://admin.entrylab.io/wp-json/wp/v2/categories?slug=${category}`;
+        const categoryData = await fetchWordPressWithCache(categoryUrl);
+        if (categoryData && categoryData.length > 0) {
+          categoryId = categoryData[0].id;
+        }
+      } else {
+        categoryId = Number(category);
+      }
+
+      if (!categoryId) {
+        return res.json({ posts: [], brokers: [], propFirms: [] });
+      }
+
+      // Fetch all content types in parallel
+      const [posts, brokers, propFirms] = await Promise.all([
+        // Posts with this category
+        fetchWordPressWithCache(
+          `https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&acf_format=standard&per_page=100&orderby=date&order=desc&categories=${categoryId}`
+        ).catch(() => []),
+        
+        // Brokers with this category
+        fetchWordPressWithCache(
+          `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard&categories=${categoryId}`
+        ).catch(() => []),
+        
+        // Prop firms with this category
+        fetchWordPressWithCache(
+          `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard&categories=${categoryId}`
+        ).catch(() => [])
+      ]);
+
+      // Set browser cache headers (5 min) to reduce repeat requests
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      res.json({
+        posts: posts || [],
+        brokers: brokers || [],
+        propFirms: propFirms || []
+      });
+    } catch (error) {
+      handleWordPressError(error, res, "fetch category content");
+    }
+  });
+
   app.get("/api/wordpress/brokers", async (req, res) => {
     try {
       const brokers = await fetchWordPressWithCache(

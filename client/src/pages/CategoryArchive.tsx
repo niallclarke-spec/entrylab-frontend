@@ -5,15 +5,17 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { ArticleCard } from "@/components/ArticleCard";
+import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, ArrowLeft } from "lucide-react";
-import type { WordPressPost } from "@shared/schema";
+import type { WordPressPost, Broker } from "@shared/schema";
 import { getArticleUrl, getCategoryName, getCategorySlug } from "@/lib/articleUtils";
 import { trackPageView, trackSearch } from "@/lib/gtm";
 import { ArticleCardSkeletonList } from "@/components/skeletons/ArticleCardSkeleton";
 import { EXCLUDED_CATEGORIES } from "@/lib/constants";
+import { transformBroker } from "@/lib/transforms";
 
 export default function CategoryArchive() {
   const params = useParams();
@@ -28,14 +30,24 @@ export default function CategoryArchive() {
 
   const category = categoryData?.[0];
 
-  const { data: posts, isLoading: postsLoading } = useQuery<WordPressPost[]>({
-    queryKey: [`/api/wordpress/posts?category=${categorySlug}`],
+  // Fetch all content types for this category
+  const { data: categoryContent, isLoading: contentLoading } = useQuery<{
+    posts: any[];
+    brokers: any[];
+    propFirms: any[];
+  }>({
+    queryKey: [`/api/wordpress/category-content?category=${categorySlug}`],
     enabled: !!categorySlug,
   });
 
   const { data: allCategories } = useQuery<any[]>({
     queryKey: ["/api/wordpress/categories"],
   });
+
+  // Transform data
+  const posts = categoryContent?.posts || [];
+  const brokers = categoryContent?.brokers?.map(transformBroker).filter((b): b is Broker => b !== null) || [];
+  const propFirms = categoryContent?.propFirms?.map(transformBroker).filter((b): b is Broker => b !== null) || [];
 
   useEffect(() => {
     if (category) {
@@ -65,21 +77,38 @@ export default function CategoryArchive() {
     return div.textContent || div.innerText || "";
   };
 
-  const filteredPosts = posts?.filter(post => {
+  // Filter all content types by search query
+  const filteredPosts = posts.filter(post => {
     const matchesSearch = searchQuery === "" || 
       stripHtml(post.title.rendered).toLowerCase().includes(searchQuery.toLowerCase()) ||
       stripHtml(post.excerpt.rendered).toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSearch;
-  }) || [];
+  });
+
+  const filteredBrokers = brokers.filter(broker => {
+    const matchesSearch = searchQuery === "" || 
+      broker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      broker.tagline?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSearch;
+  });
+
+  const filteredPropFirms = propFirms.filter(firm => {
+    const matchesSearch = searchQuery === "" || 
+      firm.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      firm.tagline?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSearch;
+  });
+
+  const totalResults = filteredPosts.length + filteredBrokers.length + filteredPropFirms.length;
 
   useEffect(() => {
     if (searchQuery) {
       const timer = setTimeout(() => {
-        trackSearch(searchQuery, filteredPosts.length, categorySlug || 'category');
+        trackSearch(searchQuery, totalResults, categorySlug || 'category');
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [searchQuery, filteredPosts.length, categorySlug]);
+  }, [searchQuery, totalResults, categorySlug]);
 
   if (categoryLoading) {
     return (
@@ -198,34 +227,96 @@ export default function CategoryArchive() {
               ))}
           </div>
 
-          {/* Posts Grid */}
-          {postsLoading ? (
+          {/* Content Grid */}
+          {contentLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <ArticleCardSkeletonList count={9} />
             </div>
-          ) : filteredPosts.length === 0 ? (
+          ) : totalResults === 0 ? (
             <div className="text-center py-20">
               <p className="text-muted-foreground">
                 {searchQuery 
-                  ? "No articles found matching your search." 
-                  : `No articles in ${category.name} yet.`}
+                  ? "No content found matching your search." 
+                  : `No content in ${category.name} yet.`}
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredPosts.map((post) => (
-                <ArticleCard
-                  key={post.id}
-                  title={post.title.rendered}
-                  excerpt={stripHtml((post as any).acf?.article_description || post.excerpt.rendered)}
-                  author={getAuthorName(post)}
-                  date={post.date}
-                  category={getCategoryName(post)}
-                  link={getArticleUrl(post)}
-                  imageUrl={getFeaturedImage(post)}
-                  slug={post.slug}
-                />
-              ))}
+            <div className="space-y-12">
+              {/* Brokers Section */}
+              {filteredBrokers.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground mb-6">Brokers</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredBrokers.map((broker, index) => (
+                      <BrokerCardEnhanced
+                        key={broker.id}
+                        name={broker.name}
+                        logo={broker.logo}
+                        verified={broker.verified}
+                        rating={broker.rating}
+                        pros={broker.pros}
+                        highlights={broker.highlights}
+                        link={broker.link}
+                        featured={broker.featured}
+                        slug={broker.slug}
+                        type="broker"
+                        pageLocation="archive"
+                        placementType="broker_list_card"
+                        position={index + 1}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Prop Firms Section */}
+              {filteredPropFirms.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground mb-6">Prop Firms</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredPropFirms.map((firm, index) => (
+                      <BrokerCardEnhanced
+                        key={firm.id}
+                        name={firm.name}
+                        logo={firm.logo}
+                        verified={firm.verified}
+                        rating={firm.rating}
+                        pros={firm.pros}
+                        highlights={firm.highlights}
+                        link={firm.link}
+                        featured={firm.featured}
+                        slug={firm.slug}
+                        type="prop-firm"
+                        pageLocation="archive"
+                        placementType="broker_list_card"
+                        position={index + 1}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Articles Section */}
+              {filteredPosts.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground mb-6">Articles</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredPosts.map((post) => (
+                      <ArticleCard
+                        key={post.id}
+                        title={post.title.rendered}
+                        excerpt={stripHtml((post as any).acf?.article_description || post.excerpt.rendered)}
+                        author={getAuthorName(post)}
+                        date={post.date}
+                        category={getCategoryName(post)}
+                        link={getArticleUrl(post)}
+                        imageUrl={getFeaturedImage(post)}
+                        slug={post.slug}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
