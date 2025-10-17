@@ -61,15 +61,16 @@ function Router() {
           <PropFirmReview />
         </Suspense>
       </Route>
+      {/* Article route must come BEFORE category archive to match 2-segment URLs first */}
+      <Route path="/:category/:slug">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <Article />
+        </Suspense>
+      </Route>
       {/* Combined route for /news and category archives - single Suspense boundary prevents remounting */}
       <Route path="/:slug">
         <Suspense fallback={<PageLoadingFallback />}>
           <CategoryArchive />
-        </Suspense>
-      </Route>
-      <Route path="/:category/:slug">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <Article />
         </Suspense>
       </Route>
       <Route>
