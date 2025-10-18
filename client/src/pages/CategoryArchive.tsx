@@ -121,7 +121,7 @@ export default function CategoryArchive() {
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 {isAllPosts 
                   ? "The latest forex broker news, prop firm updates, and trading analysis"
-                  : category.description
+                  : stripHtml(category.description)
                 }
               </p>
             )}
