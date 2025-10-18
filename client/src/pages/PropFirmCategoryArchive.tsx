@@ -9,10 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { trackPageView } from "@/lib/gtm";
-import { transformBroker } from "@/lib/transforms";
+import { transformPropFirm } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 
-export default function BrokerCategoryArchive() {
+export default function PropFirmCategoryArchive() {
   const params = useParams();
   const [, setLocation] = useLocation();
   
@@ -23,45 +23,30 @@ export default function BrokerCategoryArchive() {
     trackPageView(`/${slug}`, `${slug} | EntryLab`);
   }, [slug]);
 
-  // Fetch broker categories
-  const { data: brokerCategories } = useQuery<any[]>({
-    queryKey: ["/api/wordpress/broker-categories"],
+  // Fetch prop firm categories
+  const { data: propFirmCategories } = useQuery<any[]>({
+    queryKey: ["/api/wordpress/prop-firm-categories"],
   });
 
-  // Fetch category content (brokers in this category)
+  // Fetch category content (prop firms in this category)
   const { data: categoryContent, isLoading } = useQuery<any>({
     queryKey: [`/api/wordpress/category-content?category=${slug}`],
     enabled: !!slug,
   });
 
-  const brokers = categoryContent?.brokers?.map(transformBroker).filter((b: Broker | null): b is Broker => b !== null) || [];
+  const propFirms = categoryContent?.propFirms?.map(transformPropFirm).filter((p: Broker | null): p is Broker => p !== null) || [];
   
-  const totalVerified = brokers.filter((b: Broker) => b.verified).length;
-  const avgRating = brokers.length > 0 
-    ? (brokers.reduce((sum: number, b: Broker) => sum + b.rating, 0) / brokers.length).toFixed(1)
+  const totalVerified = propFirms.filter((p: Broker) => p.verified).length;
+  const avgRating = propFirms.length > 0 
+    ? (propFirms.reduce((sum: number, p: Broker) => sum + p.rating, 0) / propFirms.length).toFixed(1)
     : "0.0";
 
-  // Filter categories to show only those with brokers assigned
-  // Look for categories that are likely broker categories (you can customize this filter)
-  const filteredCategories = (brokerCategories || []).filter((cat: any) => {
-    // Show categories that have the word "broker" or "cfd" or "forex" etc.
-    const lowerName = cat.name.toLowerCase();
-    const lowerSlug = cat.slug.toLowerCase();
-    return (
-      lowerName.includes('broker') || 
-      lowerSlug.includes('broker') ||
-      lowerName.includes('cfd') ||
-      lowerSlug.includes('cfd') ||
-      lowerName.includes('forex') ||
-      lowerSlug.includes('forex') ||
-      lowerName.includes('trading') ||
-      lowerSlug.includes('trading')
-    );
-  });
+  // Filter categories to show only prop firm related categories
+  const filteredCategories = (propFirmCategories || []);
 
-  // Format category name for display (e.g., "top-cfd-brokers" -> "Top CFD Brokers")
+  // Format category name for display (e.g., "top-funded-traders" -> "Top Funded Traders")
   const categoryName = slug
-    ? slug.split('-').map(word => word.toUpperCase()).join(' ')
+    ? slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
     : '';
 
   if (isLoading) {
@@ -80,11 +65,11 @@ export default function BrokerCategoryArchive() {
     <div className="min-h-screen flex flex-col">
       <SEO
         title={`${categoryName} | EntryLab`}
-        description={`Discover the ${categoryName.toLowerCase()}. Compare verified brokers with competitive spreads, fast execution, and trusted regulation.`}
+        description={`Discover the ${categoryName.toLowerCase()}. Compare verified prop firms with competitive profit splits, fast payouts, and trusted trader reviews.`}
         url={`https://entrylab.io/${slug}`}
         breadcrumbs={[
           { name: "Home", url: "https://entrylab.io" },
-          { name: "Brokers", url: "https://entrylab.io/brokers" },
+          { name: "Prop Firms", url: "https://entrylab.io/prop-firms" },
           { name: categoryName, url: `https://entrylab.io/${slug}` }
         ]}
       />
@@ -95,7 +80,7 @@ export default function BrokerCategoryArchive() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-16">
           <div className="text-center">
             {/* Badge */}
-            <Badge className="mb-4 bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20">
+            <Badge className="mb-4 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
               <Award className="h-3 w-3 mr-1.5" />
               Curated Selection
             </Badge>
@@ -107,15 +92,15 @@ export default function BrokerCategoryArchive() {
             
             {/* Subheading */}
             <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto mb-6">
-              Top verified CFD brokers. Compare trusted trading platforms with low spreads, fast withdrawals, and verified trader reviews.
+              Top verified prop firms. Compare trusted funding programs with competitive profit splits, fast evaluations, and verified trader reviews.
             </p>
 
             {/* Stats */}
-            {brokers.length > 0 && (
+            {propFirms.length > 0 && (
               <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8">
                 <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-card/50 backdrop-blur-sm border">
                   <div className="flex items-center justify-center">
-                    <Shield className="h-5 w-5 text-emerald-500" />
+                    <Shield className="h-5 w-5 text-primary" />
                   </div>
                   <div className="text-left">
                     <div className="text-2xl font-bold text-foreground leading-none mb-1">{totalVerified}</div>
@@ -125,7 +110,7 @@ export default function BrokerCategoryArchive() {
                 
                 <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-card/50 backdrop-blur-sm border">
                   <div className="flex items-center justify-center">
-                    <Star className="h-5 w-5 text-emerald-500" />
+                    <Star className="h-5 w-5 text-primary" />
                   </div>
                   <div className="text-left">
                     <div className="text-2xl font-bold text-foreground leading-none mb-1">{avgRating}</div>
@@ -135,7 +120,7 @@ export default function BrokerCategoryArchive() {
               </div>
             )}
 
-            {/* Category Tabs - Only Broker Categories */}
+            {/* Category Tabs - Only Prop Firm Categories */}
             {filteredCategories.length > 0 && (
               <div className="flex flex-wrap gap-2 justify-center mt-6">
                 {filteredCategories.map((cat: any) => (
@@ -158,23 +143,23 @@ export default function BrokerCategoryArchive() {
       <main className="flex-1 py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           
-          {/* Brokers Grid */}
-          {brokers.length > 0 ? (
+          {/* Prop Firms Grid */}
+          {propFirms.length > 0 ? (
             <>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-12">
-                {brokers.map((broker: Broker, index: number) => (
+                {propFirms.map((propFirm: Broker, index: number) => (
                   <BrokerCardEnhanced
-                    key={broker.id}
-                    name={broker.name}
-                    logo={broker.logo}
-                    verified={broker.verified}
-                    rating={broker.rating}
-                    pros={broker.pros}
-                    highlights={broker.highlights}
-                    link={broker.link}
-                    featured={broker.featured}
-                    slug={broker.slug}
-                    type="broker"
+                    key={propFirm.id}
+                    name={propFirm.name}
+                    logo={propFirm.logo}
+                    verified={propFirm.verified}
+                    rating={propFirm.rating}
+                    pros={propFirm.pros}
+                    highlights={propFirm.highlights}
+                    link={propFirm.link}
+                    featured={propFirm.featured}
+                    slug={propFirm.slug}
+                    type="prop-firm"
                     pageLocation="archive"
                     placementType="broker_list_card"
                     position={index + 1}
@@ -205,7 +190,7 @@ export default function BrokerCategoryArchive() {
             </>
           ) : (
             <div className="text-center py-16">
-              <p className="text-muted-foreground">No brokers found in this category.</p>
+              <p className="text-muted-foreground">No prop firms found in this category.</p>
             </div>
           )}
         </div>
