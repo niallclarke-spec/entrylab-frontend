@@ -299,38 +299,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Category parameter required" });
       }
 
-      // First, get the category ID from the slug
+      // Try to find the category in multiple taxonomies
       let categoryId: number | null = null;
+      let brokerCategoryId: number | null = null;
+      let propFirmCategoryId: number | null = null;
+      
       if (typeof category === 'string' && isNaN(Number(category))) {
-        const categoryUrl = `https://admin.entrylab.io/wp-json/wp/v2/categories?slug=${category}`;
-        const categoryData = await fetchWordPressWithCache(categoryUrl);
+        // Try broker-category taxonomy first
+        const brokerCatData = await fetchWordPressWithCache(
+          `https://admin.entrylab.io/wp-json/wp/v2/broker-category?slug=${category}`
+        ).catch(() => null);
+        
+        if (brokerCatData && brokerCatData.length > 0) {
+          brokerCategoryId = brokerCatData[0].id;
+        }
+        
+        // Try prop-firm-category taxonomy
+        const propFirmCatData = await fetchWordPressWithCache(
+          `https://admin.entrylab.io/wp-json/wp/v2/prop-firm-category?slug=${category}`
+        ).catch(() => null);
+        
+        if (propFirmCatData && propFirmCatData.length > 0) {
+          propFirmCategoryId = propFirmCatData[0].id;
+        }
+        
+        // Try regular categories (for posts)
+        const categoryData = await fetchWordPressWithCache(
+          `https://admin.entrylab.io/wp-json/wp/v2/categories?slug=${category}`
+        ).catch(() => null);
+        
         if (categoryData && categoryData.length > 0) {
           categoryId = categoryData[0].id;
         }
       } else {
         categoryId = Number(category);
-      }
-
-      if (!categoryId) {
-        return res.json({ posts: [], brokers: [], propFirms: [] });
+        brokerCategoryId = Number(category);
+        propFirmCategoryId = Number(category);
       }
 
       // Fetch all content types in parallel
       const [posts, brokers, propFirms] = await Promise.all([
-        // Posts with this category
-        fetchWordPressWithCache(
-          `https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&acf_format=standard&per_page=100&orderby=date&order=desc&categories=${categoryId}`
-        ).catch(() => []),
+        // Posts with regular category
+        categoryId 
+          ? fetchWordPressWithCache(
+              `https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&acf_format=standard&per_page=100&orderby=date&order=desc&categories=${categoryId}`
+            ).catch(() => [])
+          : Promise.resolve([]),
         
-        // Brokers with this category
-        fetchWordPressWithCache(
-          `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard&categories=${categoryId}`
-        ).catch(() => []),
+        // Brokers with broker-category taxonomy
+        brokerCategoryId
+          ? fetchWordPressWithCache(
+              `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard&broker-category=${brokerCategoryId}`
+            ).catch(() => [])
+          : Promise.resolve([]),
         
-        // Prop firms with this category
-        fetchWordPressWithCache(
-          `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard&categories=${categoryId}`
-        ).catch(() => [])
+        // Prop firms with prop-firm-category taxonomy
+        propFirmCategoryId
+          ? fetchWordPressWithCache(
+              `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard&prop-firm-category=${propFirmCategoryId}`
+            ).catch(() => [])
+          : Promise.resolve([])
       ]);
 
       // Set browser cache headers (5 min) to reduce repeat requests
