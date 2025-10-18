@@ -312,6 +312,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (brokerCatData && brokerCatData.length > 0) {
           brokerCategoryId = brokerCatData[0].id;
+          console.log('[CATEGORY-CONTENT] Found broker category:', category, '-> ID:', brokerCategoryId);
         }
         
         // Try prop-firm-category taxonomy
@@ -321,6 +322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (propFirmCatData && propFirmCatData.length > 0) {
           propFirmCategoryId = propFirmCatData[0].id;
+          console.log('[CATEGORY-CONTENT] Found prop firm category:', category, '-> ID:', propFirmCategoryId);
         }
         
         // Try regular categories (for posts)
@@ -330,12 +332,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (categoryData && categoryData.length > 0) {
           categoryId = categoryData[0].id;
+          console.log('[CATEGORY-CONTENT] Found post category:', category, '-> ID:', categoryId);
         }
       } else {
         categoryId = Number(category);
         brokerCategoryId = Number(category);
         propFirmCategoryId = Number(category);
       }
+      
+      console.log('[CATEGORY-CONTENT] Final IDs - Posts:', categoryId, 'Brokers:', brokerCategoryId, 'PropFirms:', propFirmCategoryId);
 
       // Fetch all content types in parallel
       const [posts, brokers, propFirms] = await Promise.all([
