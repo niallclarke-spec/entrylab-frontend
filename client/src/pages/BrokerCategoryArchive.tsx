@@ -44,10 +44,9 @@ export default function BrokerCategoryArchive() {
   // Use all broker categories (already filtered on backend to only include categories with brokers)
   const filteredCategories = brokerCategories || [];
 
-  // Format category name for display (e.g., "top-cfd-brokers" -> "Top CFD Brokers")
-  const categoryName = slug
-    ? slug.split('-').map(word => word.toUpperCase()).join(' ')
-    : '';
+  // Find current category by slug and use WordPress name instead of generating from slug
+  const currentCategory = brokerCategories?.find((cat: any) => cat.slug === slug);
+  const categoryName = currentCategory?.name || slug.split('-').map(word => word.toUpperCase()).join(' ');
 
   if (isLoading) {
     return (
