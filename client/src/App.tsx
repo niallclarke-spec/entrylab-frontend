@@ -80,6 +80,11 @@ function Router() {
           <BrokerCategoryArchive />
         </Suspense>
       </Route>
+      <Route path="/top-3-cfd-brokers">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <BrokerCategoryArchive />
+        </Suspense>
+      </Route>
       {/* Combined route for /news and category archives - single Suspense boundary prevents remounting */}
       <Route path="/:slug">
         <Suspense fallback={<PageLoadingFallback />}>
