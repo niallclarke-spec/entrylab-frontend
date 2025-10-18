@@ -19,34 +19,31 @@ export default function CategoryArchive() {
   const params = useParams();
   const [, setLocation] = useLocation();
   // Extract category slug from URL path (e.g., /broker-news -> broker-news)
-  const categorySlug = params.slug || params.category || window.location.pathname.slice(1);
-  const isAllPosts = categorySlug === 'news';
+  const initialCategorySlug = params.slug || params.category || window.location.pathname.slice(1);
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategorySlug === 'news' ? 'all' : initialCategorySlug);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const { data: categoryData, isLoading: categoryLoading } = useQuery<any>({
-    queryKey: [`/api/wordpress/categories?slug=${categorySlug}`],
-    enabled: !!categorySlug && !isAllPosts,
-  });
-
-  const category = categoryData?.[0];
-
-  const { data: posts, isLoading: postsLoading } = useQuery<WordPressPost[]>({
-    queryKey: isAllPosts ? ["/api/wordpress/posts"] : [`/api/wordpress/posts?category=${categorySlug}`],
-    enabled: !!categorySlug,
-  });
 
   const { data: allCategories } = useQuery<any[]>({
     queryKey: ["/api/wordpress/categories"],
   });
+
+  // Fetch ALL posts once
+  const { data: allPosts, isLoading: postsLoading } = useQuery<WordPressPost[]>({
+    queryKey: ["/api/wordpress/posts"],
+  });
+
+  // Find the currently selected category
+  const category = allCategories?.find(cat => cat.slug === selectedCategory);
+  const isAllPosts = selectedCategory === 'all';
 
   useEffect(() => {
     if (isAllPosts) {
       trackPageView("/news", "Recent Posts | EntryLab");
     } else if (category) {
       const title = category.yoast_head_json?.title || `${category.name} | EntryLab`;
-      trackPageView(`/${categorySlug}`, title);
+      trackPageView(`/${selectedCategory}`, title);
     }
-  }, [category, categorySlug, isAllPosts]);
+  }, [category, selectedCategory, isAllPosts]);
 
   const getAuthorName = (post: WordPressPost) => 
     post._embedded?.author?.[0]?.name || "EntryLab Team";
@@ -69,54 +66,24 @@ export default function CategoryArchive() {
     return div.textContent || div.innerText || "";
   };
 
-  const filteredPosts = posts?.filter(post => {
+  // Filter posts by selected category and search
+  const filteredPosts = allPosts?.filter(post => {
+    const postCategory = getCategorySlug(post);
+    const matchesCategory = isAllPosts || postCategory === selectedCategory;
     const matchesSearch = searchQuery === "" || 
       stripHtml(post.title.rendered).toLowerCase().includes(searchQuery.toLowerCase()) ||
       stripHtml(post.excerpt.rendered).toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
+    return matchesCategory && matchesSearch;
   }) || [];
 
   useEffect(() => {
     if (searchQuery) {
       const timer = setTimeout(() => {
-        trackSearch(searchQuery, filteredPosts.length, categorySlug || 'category');
+        trackSearch(searchQuery, filteredPosts.length, selectedCategory || 'category');
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [searchQuery, filteredPosts.length, categorySlug]);
-
-  if (categoryLoading && !isAllPosts) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navigation />
-        <main className="flex-1 py-12 md:py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <ArticleCardSkeletonList count={9} />
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (!category && !isAllPosts) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navigation />
-        <main className="flex-1 flex items-center justify-center py-20">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">Category Not Found</h2>
-            <Link href="/news">
-              <Button data-testid="button-back-archive">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to News
-              </Button>
-            </Link>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+  }, [searchQuery, filteredPosts.length, selectedCategory]);
 
   // SEO with fallbacks: Yoast SEO fields OR auto-generated defaults
   const seoTitle = isAllPosts 
@@ -134,11 +101,11 @@ export default function CategoryArchive() {
       <SEO
         title={seoTitle}
         description={seoDescription}
-        url={isAllPosts ? "https://entrylab.io/news" : `https://entrylab.io/${categorySlug}`}
+        url={isAllPosts ? "https://entrylab.io/news" : `https://entrylab.io/${selectedCategory}`}
         type="website"
         breadcrumbs={[
           { name: "Home", url: "https://entrylab.io" },
-          { name: isAllPosts ? "Recent Posts" : (category?.name || 'Category'), url: isAllPosts ? "https://entrylab.io/news" : `https://entrylab.io/${categorySlug}` }
+          { name: isAllPosts ? "Recent Posts" : (category?.name || 'Category'), url: isAllPosts ? "https://entrylab.io/news" : `https://entrylab.io/${selectedCategory}` }
         ]}
       />
       <Navigation />
@@ -180,7 +147,7 @@ export default function CategoryArchive() {
             <Badge
               variant={isAllPosts ? "default" : "outline"}
               className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
-              onClick={() => setLocation("/news")}
+              onClick={() => setSelectedCategory('all')}
               data-testid="badge-category-all"
             >
               Recent Posts
@@ -193,9 +160,9 @@ export default function CategoryArchive() {
               .map((cat) => (
                 <Badge
                   key={cat.slug}
-                  variant={cat.slug === categorySlug ? "default" : "outline"}
+                  variant={cat.slug === selectedCategory ? "default" : "outline"}
                   className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
-                  onClick={() => setLocation(`/${cat.slug}`)}
+                  onClick={() => setSelectedCategory(cat.slug)}
                   data-testid={`badge-category-${cat.slug}`}
                 >
                   {cat.name}
