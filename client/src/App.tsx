@@ -17,6 +17,7 @@ const CategoryArchive = lazy(() => import("@/pages/CategoryArchive"));
 const Brokers = lazy(() => import("@/pages/Brokers"));
 const BrokerCategoryArchive = lazy(() => import("@/pages/BrokerCategoryArchive"));
 const PropFirms = lazy(() => import("@/pages/PropFirms"));
+const PropFirmCategoryArchive = lazy(() => import("@/pages/PropFirmCategoryArchive"));
 const BrokerReview = lazy(() => import("@/pages/BrokerReview"));
 const PropFirmReview = lazy(() => import("@/pages/PropFirmReview"));
 const NotFound = lazy(() => import("@/pages/not-found"));
