@@ -41,23 +41,8 @@ export default function BrokerCategoryArchive() {
     ? (brokers.reduce((sum: number, b: Broker) => sum + b.rating, 0) / brokers.length).toFixed(1)
     : "0.0";
 
-  // Filter categories to show only those with brokers assigned
-  // Look for categories that are likely broker categories (you can customize this filter)
-  const filteredCategories = (brokerCategories || []).filter((cat: any) => {
-    // Show categories that have the word "broker" or "cfd" or "forex" etc.
-    const lowerName = cat.name.toLowerCase();
-    const lowerSlug = cat.slug.toLowerCase();
-    return (
-      lowerName.includes('broker') || 
-      lowerSlug.includes('broker') ||
-      lowerName.includes('cfd') ||
-      lowerSlug.includes('cfd') ||
-      lowerName.includes('forex') ||
-      lowerSlug.includes('forex') ||
-      lowerName.includes('trading') ||
-      lowerSlug.includes('trading')
-    );
-  });
+  // Use all broker categories (already filtered on backend to only include categories with brokers)
+  const filteredCategories = brokerCategories || [];
 
   // Format category name for display (e.g., "top-cfd-brokers" -> "Top CFD Brokers")
   const categoryName = slug
