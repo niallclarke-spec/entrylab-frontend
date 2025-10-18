@@ -377,31 +377,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/wordpress/broker-categories", async (req, res) => {
     try {
-      // Fetch all categories
-      const allCategories = await fetchWordPressWithCache(
-        "https://admin.entrylab.io/wp-json/wp/v2/categories?per_page=100"
+      // Fetch from the new broker-category taxonomy
+      const categories = await fetchWordPressWithCache(
+        "https://admin.entrylab.io/wp-json/wp/v2/broker-category?per_page=100"
         // Use 15 min default cache
       );
       
-      // Fetch all brokers to get their category IDs
-      const brokers = await fetchWordPressWithCache(
-        "https://admin.entrylab.io/wp-json/wp/v2/popular_broker?per_page=100"
-      );
-      
-      // Get unique category IDs that have brokers assigned
-      const brokerCategoryIds = new Set<number>();
-      brokers.forEach((broker: any) => {
-        if (broker.categories && Array.isArray(broker.categories)) {
-          broker.categories.forEach((catId: number) => brokerCategoryIds.add(catId));
-        }
-      });
-      
-      // Filter categories to only those with brokers assigned
-      const brokerCategories = allCategories.filter((cat: any) => brokerCategoryIds.has(cat.id));
-      
       // Set browser cache headers (5 min) to reduce repeat requests
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      res.json(brokerCategories);
+      res.json(categories);
     } catch (error) {
       console.error("Error fetching WordPress broker categories:", error);
       // Set browser cache headers even for error responses
