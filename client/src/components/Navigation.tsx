@@ -23,20 +23,20 @@ export function Navigation() {
               </Link>
               <nav className="hidden md:flex items-center gap-6 mt-5">
                 <Link
-                  href="/brokers"
+                  href="/top-cfd-brokers"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center"
-                  data-testid="link-brokers"
-                  onMouseEnter={() => prefetchRoute('/brokers')}
+                  data-testid="link-top-cfd-brokers"
+                  onMouseEnter={() => prefetchRoute('/top-cfd-brokers')}
                 >
-                  Verified Brokers
+                  Top CFD Brokers
                 </Link>
                 <Link
-                  href="/prop-firms"
+                  href="/best-verified-propfirms"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center"
-                  data-testid="link-prop-firms"
-                  onMouseEnter={() => prefetchRoute('/prop-firms')}
+                  data-testid="link-best-prop-firms"
+                  onMouseEnter={() => prefetchRoute('/best-verified-propfirms')}
                 >
-                  Verified Prop Firms
+                  Best Prop Firms
                 </Link>
                 <Link
                   href="/news"
@@ -85,20 +85,20 @@ export function Navigation() {
           {mobileMenuOpen && (
             <nav className="md:hidden pb-4 space-y-2">
               <Link
-                href="/brokers"
+                href="/top-cfd-brokers"
                 className="block py-2 text-sm text-muted-foreground hover:text-foreground"
-                data-testid="link-mobile-brokers"
-                onTouchStart={() => prefetchRoute('/brokers')}
+                data-testid="link-mobile-top-cfd-brokers"
+                onTouchStart={() => prefetchRoute('/top-cfd-brokers')}
               >
-                Verified Brokers
+                Top CFD Brokers
               </Link>
               <Link
-                href="/prop-firms"
+                href="/best-verified-propfirms"
                 className="block py-2 text-sm text-muted-foreground hover:text-foreground"
-                data-testid="link-mobile-prop-firms"
-                onTouchStart={() => prefetchRoute('/prop-firms')}
+                data-testid="link-mobile-best-prop-firms"
+                onTouchStart={() => prefetchRoute('/best-verified-propfirms')}
               >
-                Verified Prop Firms
+                Best Prop Firms
               </Link>
               <Link
                 href="/news"

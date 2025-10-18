@@ -85,6 +85,12 @@ function Router() {
           <BrokerCategoryArchive />
         </Suspense>
       </Route>
+      {/* Prop firm category archives - specific slugs for prop firm categories */}
+      <Route path="/best-verified-propfirms">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <PropFirmCategoryArchive />
+        </Suspense>
+      </Route>
       {/* Combined route for /news and category archives - single Suspense boundary prevents remounting */}
       <Route path="/:slug">
         <Suspense fallback={<PageLoadingFallback />}>
