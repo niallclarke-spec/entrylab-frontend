@@ -31,7 +31,7 @@ export default function CategoryArchive() {
   const category = categoryData?.[0];
 
   const { data: posts, isLoading: postsLoading } = useQuery<WordPressPost[]>({
-    queryKey: isAllPosts ? ["/api/wordpress/posts?per_page=9"] : [`/api/wordpress/posts?category=${categorySlug}`],
+    queryKey: isAllPosts ? ["/api/wordpress/posts"] : [`/api/wordpress/posts?category=${categorySlug}`],
     enabled: !!categorySlug,
   });
 
