@@ -44,10 +44,9 @@ export default function PropFirmCategoryArchive() {
   // Filter categories to show only prop firm related categories
   const filteredCategories = (propFirmCategories || []);
 
-  // Format category name for display (e.g., "top-funded-traders" -> "Top Funded Traders")
-  const categoryName = slug
-    ? slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
-    : '';
+  // Find current category by slug and use WordPress name instead of generating from slug
+  const currentCategory = propFirmCategories?.find((cat: any) => cat.slug === slug);
+  const categoryName = currentCategory?.name || slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
   if (isLoading) {
     return (
