@@ -1,22 +1,15 @@
 /**
  * Categories to exclude from public display
  * 
- * IMPORTANT: WordPress uses shared categories across all post types (posts, brokers, prop firms).
- * This list should include:
- * 1. Internal/non-public categories
- * 2. Categories used ONLY by Custom Post Types (brokers/prop firms)
+ * IMPORTANT: This list should ONLY include:
+ * 1. Internal/system categories (like "Uncategorized")
+ * 2. Categories that should NEVER appear in article navigation
  * 
- * When creating new categories for CPTs, add them here to prevent them from appearing in article category filters.
+ * Standard WordPress categories (wp/v2/categories) are automatically separated from
+ * CPT taxonomies (broker-category, prop-firm-category), so we don't need to exclude them here.
  */
 export const EXCLUDED_CATEGORIES: readonly string[] = [
-  // Internal categories
-  'trading-alerts',
+  // Internal WordPress categories
   'uncategorized', 
   'uncategorised',
-  'prop-firm-updates',
-  'broker-closures',
-  'market-analysis',
-  
-  // CPT-only categories (add new broker/prop firm categories here)
-  'top-cfd-brokers', // Popular Brokers CPT category
 ];
