@@ -1,0 +1,134 @@
+// Register Popular Brokers Custom Post Type
+function register_popular_brokers_cpt() {
+    register_post_type('popular_broker', [
+        'label' => 'Popular Brokers',
+        'public' => true,
+        'show_in_rest' => true,
+        'supports' => ['title', 'thumbnail'],
+		'taxonomies' => ['category'],
+        'menu_icon' => 'dashicons-chart-line',
+        'show_in_menu' => true,
+    ]);
+}
+add_action('init', 'register_popular_brokers_cpt');
+
+
+// Force ACF to expose fields in REST API for Prop Firms
+add_action('acf/init', function() {
+    acf_update_setting('rest_api_enabled', true);
+    acf_update_setting('rest_api_format', 'standard');
+});
+
+// Add ACF fields to REST API response for prop firms
+add_filter('rest_prepare_popular_prop_firm', function($response, $post) {
+    $acf_fields = get_fields($post->ID);
+    if ($acf_fields) {
+        $response->data['acf'] = $acf_fields;
+    }
+    return $response;
+}, 10, 2);
+
+// Register Popular Prop Firms Custom Post Type
+function register_popular_prop_firms_cpt() {
+    register_post_type('popular_prop_firm', [
+        'label' => 'Popular Prop Firms',
+        'public' => true,
+        'show_in_rest' => true,
+        'supports' => ['title', 'thumbnail'],
+        'menu_icon' => 'dashicons-chart-line',
+        'show_in_menu' => true,
+    ]);
+}
+add_action('init', 'register_popular_prop_firms_cpt');
+
+
+// Force ACF to expose fields in REST API
+add_action('acf/init', function() {
+    acf_update_setting('rest_api_enabled', true);
+    acf_update_setting('rest_api_format', 'standard');
+});
+
+// Add ACF fields to REST API response
+add_filter('rest_prepare_popular_broker', function($response, $post) {
+    $acf_fields = get_fields($post->ID);
+    if ($acf_fields) {
+        $response->data['acf'] = $acf_fields;
+    }
+    return $response;
+}, 10, 2);
+
+// Trust Signals API with ACF
+add_action('rest_api_init', function () {
+    register_rest_route('entrylab/v1', '/trust-signals', array(
+        'methods' => 'GET',
+        'callback' => function() {
+            $signals = array();
+            
+            for ($i = 1; $i <= 4; $i++) {
+                $icon = get_field('signal_' . $i . '_icon', 'option');
+                $value = get_field('signal_' . $i . '_value', 'option');
+                $label = get_field('signal_' . $i . '_label', 'option');
+                
+                if ($icon || $value || $label) {
+                    $signals[] = array(
+                        'icon' => $icon ?: 'users',
+                        'value' => $value ?: '',
+                        'label' => $label ?: '',
+                    );
+                }
+            }
+            
+            // Fallback defaults if ACF not configured
+            if (empty($signals)) {
+                $signals = array(
+                    array('icon' => 'users', 'value' => '50,000+', 'label' => 'Active Traders'),
+                    array('icon' => 'trending', 'value' => '$2.5B+', 'label' => 'Trading Volume'),
+                    array('icon' => 'award', 'value' => '100+', 'label' => 'Verified Brokers'),
+                    array('icon' => 'shield', 'value' => '2020', 'label' => 'Trusted Since'),
+                );
+            }
+            
+            return rest_ensure_response($signals);
+        },
+        'permission_callback' => '__return_true'
+    ));
+});
+
+// Send webhook when review ACF fields are saved
+add_action('acf/save_post', 'send_review_webhook', 20);
+function send_review_webhook($post_id) {
+    // Only for review post type
+    if (get_post_type($post_id) !== 'review') return;
+    
+    // Only for pending reviews
+    if (get_post_status($post_id) !== 'pending') return;
+    
+    $webhook_url = 'https://9b12ce45-31d9-4b50-87c5-98489c4b96d6-00-114m0wx76i1g8.riker.replit.dev/api/wordpress/review-webhook';
+    
+    // Get ACF fields - they are now saved!
+    $acf_fields = array(
+        'rating' => get_field('rating', $post_id),
+        'review_title' => get_field('review_title', $post_id),
+        'review_text' => get_field('review_text', $post_id),
+        'reviewer_name' => get_field('reviewer_name', $post_id),
+        'reviewer_email' => get_field('reviewer_email', $post_id),
+        'reviewed_item' => get_field('reviewed_item', $post_id),
+        'newsletter_optin' => get_field('newsletter_optin', $post_id)
+    );
+    
+    $post = get_post($post_id);
+    
+    $data = array(
+        'post_id' => $post_id,
+        'post_title' => $post->post_title,
+        'post_status' => get_post_status($post_id),
+        'post_type' => 'review',
+        'acf' => $acf_fields
+    );
+    
+    wp_remote_post($webhook_url, array(
+        'body' => json_encode($data),
+        'headers' => array('Content-Type' => 'application/json'),
+        'timeout' => 10
+    ));
+}
