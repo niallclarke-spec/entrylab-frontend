@@ -19,8 +19,8 @@ export default function CategoryArchive() {
   const params = useParams();
   const [, setLocation] = useLocation();
   // Extract category slug from URL path (e.g., /broker-news -> broker-news)
-  const initialCategorySlug = params.slug || params.category || window.location.pathname.slice(1);
-  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategorySlug === 'news' ? 'all' : initialCategorySlug);
+  const categorySlug = params.slug || params.category || window.location.pathname.slice(1);
+  const selectedCategory = categorySlug === 'news' ? 'all' : categorySlug;
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: allCategories } = useQuery<any[]>({
@@ -147,7 +147,7 @@ export default function CategoryArchive() {
             <Badge
               variant={isAllPosts ? "default" : "outline"}
               className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
-              onClick={() => setSelectedCategory('all')}
+              onClick={() => setLocation('/news')}
               data-testid="badge-category-all"
             >
               Recent Posts
@@ -162,7 +162,7 @@ export default function CategoryArchive() {
                   key={cat.slug}
                   variant={cat.slug === selectedCategory ? "default" : "outline"}
                   className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
-                  onClick={() => setSelectedCategory(cat.slug)}
+                  onClick={() => setLocation(`/${cat.slug}`)}
                   data-testid={`badge-category-${cat.slug}`}
                 >
                   {cat.name}
