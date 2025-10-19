@@ -96,12 +96,14 @@ export default function CategoryArchive() {
        category?.description || 
        `Browse the latest ${category?.name?.toLowerCase() || 'articles'} from EntryLab. Expert analysis and insights for forex traders.`);
 
+  const canonicalUrl = isAllPosts ? "https://entrylab.io/news" : `https://entrylab.io/${selectedCategory}`;
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
         title={seoTitle}
         description={seoDescription}
-        url={isAllPosts ? "https://entrylab.io/news" : `https://entrylab.io/${selectedCategory}`}
+        url={canonicalUrl}
         type="website"
         breadcrumbs={[
           { name: "Home", url: "https://entrylab.io" },
