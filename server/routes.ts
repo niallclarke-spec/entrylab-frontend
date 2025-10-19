@@ -596,6 +596,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Redirect /home to / (301 permanent redirect)
+  app.get("/home", (req, res) => {
+    console.log('[Redirect] /home → /');
+    res.redirect(301, '/');
+  });
+
   // Redirect old /article/:slug URLs to new /:category/:slug URLs (301 permanent redirect)
   app.get("/article/:slug", async (req, res) => {
     try {
@@ -924,7 +930,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       sitemap += `  </url>\n`;
 
       // Category archive pages (broker-news, prop-firm-news, etc)
-      const excludedCategories = ['uncategorized'];
+      const excludedCategories = ['uncategorized', 'uncategorised', 'home'];
       categories.forEach((category: any) => {
         if (category.count > 0 && !excludedCategories.includes(category.slug.toLowerCase())) {
           sitemap += `  <url>\n`;

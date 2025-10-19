@@ -12,4 +12,6 @@ export const EXCLUDED_CATEGORIES: readonly string[] = [
   // Internal WordPress categories
   'uncategorized', 
   'uncategorised',
+  // Prevent /home from showing as a category page (should redirect to /)
+  'home',
 ];
