@@ -30,9 +30,9 @@ export function serveStatic(app: Express) {
       else if (/\.(woff|woff2|ttf|eot|otf)$/i.test(relativePath)) {
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
       }
-      // HTML files - no cache (always revalidate)
+      // HTML files - cache for 10 min, allow stale-while-revalidate for better SEO
       else if (/\.html$/i.test(relativePath)) {
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Cache-Control', 'public, max-age=600, stale-while-revalidate=86400');
       }
       // Default for other static assets - 1 day cache
       else {
@@ -43,7 +43,7 @@ export function serveStatic(app: Express) {
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Cache-Control', 'public, max-age=600, stale-while-revalidate=86400');
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
