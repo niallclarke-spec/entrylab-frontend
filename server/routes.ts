@@ -892,11 +892,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
     
     try {
-      // Fetch all posts, brokers, and prop firms
-      const [posts, brokers, propFirms] = await Promise.all([
+      // Fetch all posts, brokers, prop firms, and categories
+      const [posts, brokers, propFirms, categories] = await Promise.all([
         fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&per_page=100'),
         fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100'),
-        fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100')
+        fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100'),
+        fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/categories?per_page=100')
       ]);
 
       const baseUrl = 'https://entrylab.io';
@@ -914,13 +915,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       sitemap += `    <priority>1.0</priority>\n`;
       sitemap += `  </url>\n`;
 
-      // Archive page
+      // News archive (Recent Posts)
       sitemap += `  <url>\n`;
-      sitemap += `    <loc>${baseUrl}/archive</loc>\n`;
+      sitemap += `    <loc>${baseUrl}/news</loc>\n`;
       sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
       sitemap += `    <changefreq>daily</changefreq>\n`;
       sitemap += `    <priority>0.9</priority>\n`;
       sitemap += `  </url>\n`;
+
+      // Category archive pages (broker-news, prop-firm-news, etc)
+      const excludedCategories = ['uncategorized'];
+      categories.forEach((category: any) => {
+        if (category.count > 0 && !excludedCategories.includes(category.slug.toLowerCase())) {
+          sitemap += `  <url>\n`;
+          sitemap += `    <loc>${baseUrl}/${category.slug}</loc>\n`;
+          sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
+          sitemap += `    <changefreq>daily</changefreq>\n`;
+          sitemap += `    <priority>0.9</priority>\n`;
+          sitemap += `  </url>\n`;
+        }
+      });
 
       // Brokers index
       sitemap += `  <url>\n`;
@@ -938,11 +952,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       sitemap += `    <priority>0.9</priority>\n`;
       sitemap += `  </url>\n`;
 
-      // Articles
+      // Articles - Use correct /:category/:slug format
       posts.forEach((post: any) => {
         const modifiedDate = new Date(post.modified).toISOString();
+        const categorySlug = post._embedded?.['wp:term']?.[0]?.[0]?.slug || 'uncategorized';
         sitemap += `  <url>\n`;
-        sitemap += `    <loc>${baseUrl}/article/${post.slug}</loc>\n`;
+        sitemap += `    <loc>${baseUrl}/${categorySlug}/${post.slug}</loc>\n`;
         sitemap += `    <lastmod>${modifiedDate}</lastmod>\n`;
         sitemap += `    <changefreq>monthly</changefreq>\n`;
         sitemap += `    <priority>0.8</priority>\n`;
