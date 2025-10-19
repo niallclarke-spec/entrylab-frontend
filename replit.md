@@ -11,6 +11,7 @@ EntryLab is a full-stack web application serving as a Forex News & Trading Intel
 - **Canonical URLs**: Implemented canonical tags on category archive pages to prevent duplicate content issues
 - **Cache Headers**: Updated HTML cache from `no-cache, no-store, must-revalidate` to `public, max-age=600, stale-while-revalidate=86400` for better SEO performance
 - **Archive Tab Navigation**: Enabled SEO-friendly URLs that change when switching category tabs while maintaining instant client-side filtering
+- **Fixed /home Empty Page**: Added 301 redirect from `/home` to `/`, excluded "home" from category archives, and removed from sitemap to fix Google indexing empty "Category" page
 
 ### Next Steps for SEO Recovery
 1. Submit refreshed sitemap to Google Search Console
