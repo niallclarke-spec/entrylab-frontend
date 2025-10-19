@@ -3,6 +3,21 @@
 ## Overview
 EntryLab is a full-stack web application serving as a Forex News & Trading Intelligence Hub. It aggregates and displays forex broker news, prop firm updates, and trading analysis, sourcing content from a WordPress backend. Inspired by Bloomberg and CoinDesk, the platform provides traders with a professional interface for broker information, articles, and market data, focusing on business vision and market potential.
 
+## Recent Changes (October 2025)
+
+### SEO Critical Fixes
+- **Sitemap URLs**: Fixed sitemap to use correct `/:category/:slug` format instead of deprecated `/article/:slug` pattern
+- **Category Archive URLs**: Added all category archive pages (`/news`, `/broker-news`, `/prop-firm-news`, etc.) to sitemap for better discoverability
+- **Canonical URLs**: Implemented canonical tags on category archive pages to prevent duplicate content issues
+- **Cache Headers**: Updated HTML cache from `no-cache, no-store, must-revalidate` to `public, max-age=600, stale-while-revalidate=86400` for better SEO performance
+- **Archive Tab Navigation**: Enabled SEO-friendly URLs that change when switching category tabs while maintaining instant client-side filtering
+
+### Next Steps for SEO Recovery
+1. Submit refreshed sitemap to Google Search Console
+2. Verify article URLs render correctly under `/:category/:slug` format in production
+3. Monitor crawl stats to ensure cache headers don't introduce stale content
+4. Set up 301 redirects for old broker slugs (pending old→new mapping from user)
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
