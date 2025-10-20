@@ -90,12 +90,90 @@ export default function PropFirmReview() {
                          propFirm.tagline || 
                          `Comprehensive review of ${stripHtml(propFirm.name)}. Read about funding, profit splits, evaluation process, and more.`;
 
+  // Breadcrumbs for structured data
+  const breadcrumbs = [
+    { name: "Home", url: "https://entrylab.io" },
+    { name: "Prop Firms", url: "https://entrylab.io/prop-firms" },
+    { name: stripHtml(propFirm.name), url: `https://entrylab.io/prop-firm/${propFirm.slug}` }
+  ];
+
+  // Parse headquarters to extract city and country (don't use full string as street address)
+  const parseHeadquarters = (hq: string | undefined) => {
+    if (!hq) return { locality: undefined, country: undefined };
+    const parts = hq.split(',').map(p => p.trim());
+    if (parts.length >= 2) {
+      return {
+        locality: parts[0],
+        country: parts[parts.length - 1]
+      };
+    }
+    return { locality: hq, country: undefined };
+  };
+
+  const { locality, country } = parseHeadquarters(propFirm.headquarters);
+
+  // Calculate actual user reviews (only use real user submissions)
+  const userRatings = reviews?.map((r: any) => parseFloat(r.acf?.rating || 0)).filter((r: number) => r > 0) || [];
+  const hasUserReviews = userRatings.length >= 3; // Minimum 3 reviews to show aggregate
+  const avgUserRating = hasUserReviews 
+    ? userRatings.reduce((sum: number, r: number) => sum + r, 0) / userRatings.length 
+    : null;
+
+  // Validate telephone (only include if it looks like a phone number, not email/URL)
+  const isValidPhone = (contact: string | undefined) => {
+    if (!contact) return false;
+    // Check if it looks like a phone: contains digits, may have +, (, ), -, spaces
+    return /^[\d\s\+\-\(\)]+$/.test(contact.trim());
+  };
+
+  // Create comprehensive FinancialService schema for prop firm entity
+  const financialServiceData = {
+    name: stripHtml(propFirm.name),
+    description: propFirm.tagline || seoDescription,
+    url: propFirm.link, // Prop firm's official website (not affiliate link)
+    ...(locality && country && {
+      addressLocality: locality,
+      addressCountry: country
+    }),
+    ...(propFirm.support && isValidPhone(propFirm.support) && {
+      telephone: propFirm.support
+    }),
+    priceRange: propFirm.minDeposit ? `From ${propFirm.minDeposit}` : undefined,
+    foundingDate: propFirm.yearFounded,
+    // Only show aggregate rating if we have real user reviews (minimum 3)
+    ...(hasUserReviews && avgUserRating && {
+      aggregateRating: {
+        ratingValue: Number(avgUserRating.toFixed(1)),
+        bestRating: 5,
+        worstRating: 1,
+        reviewCount: userRatings.length
+      }
+    }),
+    // Note: sameAs should be official social profiles, not affiliate links
+    // Omitting for now until we have official prop firm social media URLs
+    sameAs: undefined
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
         title={seoTitle}
         description={seoDescription}
         url={`https://entrylab.io/prop-firm/${propFirm.slug}`}
+        image={propFirm.logo}
+        breadcrumbs={breadcrumbs}
+        financialServiceData={financialServiceData}
+        reviewData={{
+          itemName: stripHtml(propFirm.name),
+          itemType: "FinancialService",
+          rating: {
+            ratingValue: propFirm.rating,
+            bestRating: 5,
+            worstRating: 1
+          },
+          author: "EntryLab",
+          datePublished: propFirm.lastUpdated?.toISOString() || new Date().toISOString()
+        }}
       />
       <Navigation />
 
