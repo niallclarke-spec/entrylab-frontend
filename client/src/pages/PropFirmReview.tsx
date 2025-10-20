@@ -129,7 +129,7 @@ export default function PropFirmReview() {
   // Create comprehensive FinancialService schema for prop firm entity
   const financialServiceData = {
     name: stripHtml(propFirm.name),
-    description: propFirm.tagline || seoDescription,
+    description: seoDescription, // Use Yoast SEO description (already prioritized in seoDescription)
     url: propFirm.link, // Prop firm's official website (not affiliate link)
     addressLocality: locality,
     addressCountry: country,

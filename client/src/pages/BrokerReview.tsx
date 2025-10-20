@@ -131,7 +131,7 @@ export default function BrokerReview() {
   // Create comprehensive FinancialService schema for broker entity
   const financialServiceData = {
     name: stripHtml(broker.name),
-    description: broker.tagline || seoDescription,
+    description: seoDescription, // Use Yoast SEO description (already prioritized in seoDescription)
     url: broker.link, // Broker's official website (not affiliate link)
     addressLocality: locality,
     addressCountry: country,
