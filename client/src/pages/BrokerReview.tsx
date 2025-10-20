@@ -99,13 +99,72 @@ export default function BrokerReview() {
     { name: stripHtml(broker.name), url: `https://entrylab.io/broker/${broker.slug}` }
   ];
 
+  // Parse headquarters to extract city and country (don't use full string as street address)
+  const parseHeadquarters = (hq: string | undefined) => {
+    if (!hq) return { locality: undefined, country: undefined };
+    const parts = hq.split(',').map(p => p.trim());
+    if (parts.length >= 2) {
+      return {
+        locality: parts[0],
+        country: parts[parts.length - 1]
+      };
+    }
+    return { locality: hq, country: undefined };
+  };
+
+  const { locality, country } = parseHeadquarters(broker.headquarters);
+
+  // Calculate actual user reviews (only use real user submissions)
+  const userRatings = reviews?.map((r: any) => parseFloat(r.acf?.rating || 0)).filter((r: number) => r > 0) || [];
+  const hasUserReviews = userRatings.length >= 3; // Minimum 3 reviews to show aggregate
+  const avgUserRating = hasUserReviews 
+    ? userRatings.reduce((sum: number, r: number) => sum + r, 0) / userRatings.length 
+    : null;
+
+  // Validate telephone (only include if it looks like a phone number, not email/URL)
+  const isValidPhone = (contact: string | undefined) => {
+    if (!contact) return false;
+    // Check if it looks like a phone: contains digits, may have +, (, ), -, spaces
+    return /^[\d\s\+\-\(\)]+$/.test(contact.trim());
+  };
+
+  // Create comprehensive FinancialService schema for broker entity
+  const financialServiceData = {
+    name: stripHtml(broker.name),
+    description: broker.tagline || seoDescription,
+    url: broker.link, // Broker's official website (not affiliate link)
+    ...(locality && country && {
+      addressLocality: locality,
+      addressCountry: country
+    }),
+    ...(broker.support && isValidPhone(broker.support) && {
+      telephone: broker.support
+    }),
+    priceRange: broker.minDeposit ? `From ${broker.minDeposit}` : undefined,
+    foundingDate: broker.yearFounded,
+    // Only show aggregate rating if we have real user reviews (minimum 3)
+    ...(hasUserReviews && avgUserRating && {
+      aggregateRating: {
+        ratingValue: Number(avgUserRating.toFixed(1)),
+        bestRating: 5,
+        worstRating: 1,
+        reviewCount: userRatings.length
+      }
+    }),
+    // Note: sameAs should be official social profiles, not affiliate links
+    // Omitting for now until we have official broker social media URLs
+    sameAs: undefined
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
         title={seoTitle}
         description={seoDescription}
         url={`https://entrylab.io/broker/${broker.slug}`}
+        image={broker.logo}
         breadcrumbs={breadcrumbs}
+        financialServiceData={financialServiceData}
         reviewData={{
           itemName: stripHtml(broker.name),
           itemType: "FinancialService",

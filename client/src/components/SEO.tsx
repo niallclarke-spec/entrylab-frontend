@@ -22,6 +22,20 @@ interface ItemListElement {
   image?: string;
 }
 
+interface FinancialServiceData {
+  name: string;
+  description?: string;
+  address?: string;
+  addressLocality?: string;
+  addressCountry?: string;
+  telephone?: string;
+  url?: string;
+  priceRange?: string;
+  aggregateRating?: ReviewRating & { reviewCount?: number };
+  foundingDate?: string;
+  sameAs?: string[];
+}
+
 interface SEOProps {
   title?: string;
   description?: string;
@@ -37,6 +51,7 @@ interface SEOProps {
   breadcrumbs?: BreadcrumbItem[];
   faq?: FAQItem[];
   itemList?: ItemListElement[];
+  financialServiceData?: FinancialServiceData;
   reviewData?: {
     itemName: string;
     itemType: "FinancialService" | "Organization";
@@ -61,6 +76,7 @@ export function SEO({
   breadcrumbs,
   faq,
   itemList,
+  financialServiceData,
   reviewData,
 }: SEOProps) {
   
@@ -179,6 +195,41 @@ export function SEO({
     }))
   } : null;
 
+  // FinancialService Schema (for broker/prop firm entity pages)
+  const financialServiceSchema = financialServiceData ? {
+    "@context": "https://schema.org",
+    "@type": "FinancialService",
+    "@id": url ? `${url}#organization` : undefined,
+    "name": financialServiceData.name,
+    "description": financialServiceData.description || description,
+    "url": financialServiceData.url || url,
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": url
+    },
+    ...((financialServiceData.addressLocality && financialServiceData.addressCountry) && {
+      "address": {
+        "@type": "PostalAddress",
+        ...(financialServiceData.address && { "streetAddress": financialServiceData.address }),
+        "addressLocality": financialServiceData.addressLocality,
+        "addressCountry": financialServiceData.addressCountry
+      }
+    }),
+    ...(financialServiceData.telephone && { "telephone": financialServiceData.telephone }),
+    ...(financialServiceData.priceRange && { "priceRange": financialServiceData.priceRange }),
+    ...(financialServiceData.foundingDate && { "foundingDate": String(financialServiceData.foundingDate) }),
+    ...(financialServiceData.sameAs && financialServiceData.sameAs.length > 0 && { "sameAs": financialServiceData.sameAs }),
+    ...(financialServiceData.aggregateRating && {
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": financialServiceData.aggregateRating.ratingValue,
+        "bestRating": financialServiceData.aggregateRating.bestRating,
+        "worstRating": financialServiceData.aggregateRating.worstRating,
+        ...(financialServiceData.aggregateRating.reviewCount && { "reviewCount": financialServiceData.aggregateRating.reviewCount })
+      }
+    })
+  } : null;
+
   return (
     <Helmet>
       <title>{title}</title>
@@ -261,6 +312,12 @@ export function SEO({
       {itemListSchema && (
         <script type="application/ld+json">
           {JSON.stringify(itemListSchema)}
+        </script>
+      )}
+      
+      {financialServiceSchema && (
+        <script type="application/ld+json">
+          {JSON.stringify(financialServiceSchema)}
         </script>
       )}
     </Helmet>
