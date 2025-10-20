@@ -367,16 +367,19 @@ export default function Article() {
   const readingTime = calculateReadingTime(stripHtml(post.content.rendered));
   
   const seoImage = featuredImage || "https://entrylab.io/og-image.jpg";
-  const seoUrl = `https://entrylab.io/article/${post.slug}`;
+  // Use correct category-based URL format: /:category/:slug
+  const seoUrl = `https://entrylab.io${getArticleUrl(post)}`;
 
   // Extract categories and tags for structured data
   const categories = post._embedded?.["wp:term"]?.[0]?.map((term: any) => term.name) || [];
   const tags = post._embedded?.["wp:term"]?.[1]?.map((term: any) => term.name) || [];
+  const categorySlug = post._embedded?.["wp:term"]?.[0]?.[0]?.slug || "news";
+  const categoryName = getCategoryName(post);
   
   // Breadcrumbs for structured data
   const breadcrumbs = [
     { name: "Home", url: "https://entrylab.io" },
-    { name: "Articles", url: "https://entrylab.io/archive" },
+    { name: categoryName, url: `https://entrylab.io/${categorySlug}` },
     { name: stripHtml(post.title.rendered), url: seoUrl }
   ];
 

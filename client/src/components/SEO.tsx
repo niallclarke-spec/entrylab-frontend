@@ -16,6 +16,12 @@ interface ReviewRating {
   worstRating: number;
 }
 
+interface ItemListElement {
+  url: string;
+  name: string;
+  image?: string;
+}
+
 interface SEOProps {
   title?: string;
   description?: string;
@@ -30,6 +36,7 @@ interface SEOProps {
   tags?: string[];
   breadcrumbs?: BreadcrumbItem[];
   faq?: FAQItem[];
+  itemList?: ItemListElement[];
   reviewData?: {
     itemName: string;
     itemType: "FinancialService" | "Organization";
@@ -53,6 +60,7 @@ export function SEO({
   tags,
   breadcrumbs,
   faq,
+  itemList,
   reviewData,
 }: SEOProps) {
   
@@ -70,10 +78,10 @@ export function SEO({
     ]
   };
 
-  // Article Schema
+  // NewsArticle Schema (for better Google News visibility)
   const articleSchema = type === "article" && publishedTime ? {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": "NewsArticle",
     "headline": title,
     "description": description,
     "image": image,
@@ -88,7 +96,9 @@ export function SEO({
       "name": "EntryLab",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://entrylab.io/favicon.svg"
+        "url": "https://entrylab.io/favicon.svg",
+        "width": 600,
+        "height": 60
       }
     },
     "mainEntityOfPage": {
@@ -96,7 +106,7 @@ export function SEO({
       "@id": url
     },
     ...(categories && categories.length > 0 && {
-      "articleSection": categories.join(", ")
+      "articleSection": categories[0]
     }),
     ...(tags && tags.length > 0 && {
       "keywords": tags.join(", ")
@@ -149,6 +159,22 @@ export function SEO({
       "acceptedAnswer": {
         "@type": "Answer",
         "text": item.answer
+      }
+    }))
+  } : null;
+
+  // ItemList Schema (for category/archive pages)
+  const itemListSchema = itemList && itemList.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": itemList.map((item, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "Thing",
+        "name": item.name,
+        "url": item.url,
+        ...(item.image && { "image": item.image })
       }
     }))
   } : null;
@@ -229,6 +255,12 @@ export function SEO({
       {faqSchema && (
         <script type="application/ld+json">
           {JSON.stringify(faqSchema)}
+        </script>
+      )}
+      
+      {itemListSchema && (
+        <script type="application/ld+json">
+          {JSON.stringify(itemListSchema)}
         </script>
       )}
     </Helmet>

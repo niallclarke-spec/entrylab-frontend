@@ -60,12 +60,20 @@ export default function PropFirmCategoryArchive() {
     );
   }
 
+  // Create ItemList schema data from prop firms
+  const itemListData = propFirms.slice(0, 20).map((firm: Broker) => ({
+    url: `https://entrylab.io/prop-firms/${firm.slug}`,
+    name: firm.name,
+    image: firm.logo
+  }));
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
         title={`${categoryName} | EntryLab`}
         description={`Discover the ${categoryName.toLowerCase()}. Compare verified prop firms with competitive profit splits, fast payouts, and trusted trader reviews.`}
         url={`https://entrylab.io/${slug}`}
+        itemList={itemListData}
         breadcrumbs={[
           { name: "Home", url: "https://entrylab.io" },
           { name: "Prop Firms", url: "https://entrylab.io/prop-firms" },
