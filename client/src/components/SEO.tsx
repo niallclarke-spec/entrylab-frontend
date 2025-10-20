@@ -207,12 +207,12 @@ export function SEO({
       "@type": "WebPage",
       "@id": url
     },
-    ...((financialServiceData.addressLocality && financialServiceData.addressCountry) && {
+    ...((financialServiceData.addressLocality || financialServiceData.addressCountry) && {
       "address": {
         "@type": "PostalAddress",
         ...(financialServiceData.address && { "streetAddress": financialServiceData.address }),
-        "addressLocality": financialServiceData.addressLocality,
-        "addressCountry": financialServiceData.addressCountry
+        ...(financialServiceData.addressLocality && { "addressLocality": financialServiceData.addressLocality }),
+        ...(financialServiceData.addressCountry && { "addressCountry": financialServiceData.addressCountry })
       }
     }),
     ...(financialServiceData.telephone && { "telephone": financialServiceData.telephone }),

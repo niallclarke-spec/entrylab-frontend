@@ -133,10 +133,8 @@ export default function BrokerReview() {
     name: stripHtml(broker.name),
     description: broker.tagline || seoDescription,
     url: broker.link, // Broker's official website (not affiliate link)
-    ...(locality && country && {
-      addressLocality: locality,
-      addressCountry: country
-    }),
+    addressLocality: locality,
+    addressCountry: country,
     ...(broker.support && isValidPhone(broker.support) && {
       telephone: broker.support
     }),
