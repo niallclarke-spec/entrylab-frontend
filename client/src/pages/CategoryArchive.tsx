@@ -98,6 +98,13 @@ export default function CategoryArchive() {
 
   const canonicalUrl = isAllPosts ? "https://entrylab.io/news" : `https://entrylab.io/${selectedCategory}`;
 
+  // Create ItemList schema data from filtered posts
+  const itemListData = filteredPosts.slice(0, 20).map(post => ({
+    url: `https://entrylab.io${getArticleUrl(post)}`,
+    name: stripHtml(post.title.rendered),
+    image: getFeaturedImage(post)
+  }));
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
@@ -105,6 +112,7 @@ export default function CategoryArchive() {
         description={seoDescription}
         url={canonicalUrl}
         type="website"
+        itemList={itemListData}
         breadcrumbs={[
           { name: "Home", url: "https://entrylab.io" },
           { name: isAllPosts ? "Recent Posts" : (category?.name || 'Category'), url: isAllPosts ? "https://entrylab.io/news" : `https://entrylab.io/${selectedCategory}` }

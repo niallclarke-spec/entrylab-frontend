@@ -60,12 +60,20 @@ export default function BrokerCategoryArchive() {
     );
   }
 
+  // Create ItemList schema data from brokers
+  const itemListData = brokers.slice(0, 20).map((broker: Broker) => ({
+    url: `https://entrylab.io/brokers/${broker.slug}`,
+    name: broker.name,
+    image: broker.logo
+  }));
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
         title={`${categoryName} | EntryLab`}
         description={`Discover the ${categoryName.toLowerCase()}. Compare verified brokers with competitive spreads, fast execution, and trusted regulation.`}
         url={`https://entrylab.io/${slug}`}
+        itemList={itemListData}
         breadcrumbs={[
           { name: "Home", url: "https://entrylab.io" },
           { name: "Brokers", url: "https://entrylab.io/brokers" },
