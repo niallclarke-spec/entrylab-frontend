@@ -207,14 +207,13 @@ export function SEO({
       "@type": "WebPage",
       "@id": url
     },
-    ...((financialServiceData.addressLocality || financialServiceData.addressCountry) && {
-      "address": {
-        "@type": "PostalAddress",
-        ...(financialServiceData.address && { "streetAddress": financialServiceData.address }),
-        ...(financialServiceData.addressLocality && { "addressLocality": financialServiceData.addressLocality }),
-        ...(financialServiceData.addressCountry && { "addressCountry": financialServiceData.addressCountry })
-      }
-    }),
+    // Always include address for FinancialService (required field)
+    "address": {
+      "@type": "PostalAddress",
+      ...(financialServiceData.address && { "streetAddress": financialServiceData.address }),
+      ...(financialServiceData.addressLocality && { "addressLocality": financialServiceData.addressLocality }),
+      ...(financialServiceData.addressCountry && { "addressCountry": financialServiceData.addressCountry })
+    },
     ...(financialServiceData.telephone && { "telephone": financialServiceData.telephone }),
     ...(financialServiceData.priceRange && { "priceRange": financialServiceData.priceRange }),
     ...(financialServiceData.foundingDate && { "foundingDate": String(financialServiceData.foundingDate) }),
