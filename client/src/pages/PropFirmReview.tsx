@@ -131,10 +131,8 @@ export default function PropFirmReview() {
     name: stripHtml(propFirm.name),
     description: propFirm.tagline || seoDescription,
     url: propFirm.link, // Prop firm's official website (not affiliate link)
-    ...(locality && country && {
-      addressLocality: locality,
-      addressCountry: country
-    }),
+    addressLocality: locality,
+    addressCountry: country,
     ...(propFirm.support && isValidPhone(propFirm.support) && {
       telephone: propFirm.support
     }),
