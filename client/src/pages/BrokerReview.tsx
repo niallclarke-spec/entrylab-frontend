@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { transformBrokerDetailed } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
+import { getCountryCode } from "@/lib/countryCodeMap";
 
 // Lazy load modals and popups for better performance
 const ReviewModal = lazy(() => import("@/components/ReviewModalSimple").then(m => ({ default: m.ReviewModalSimple })));
@@ -140,7 +141,7 @@ export default function BrokerReview() {
     description: seoDescription, // Use Yoast SEO description (already prioritized in seoDescription)
     url: broker.link, // Broker's official website (not affiliate link)
     addressLocality: locality,
-    addressCountry: country,
+    addressCountry: getCountryCode(country), // Convert to ISO code for Schema.org compliance
     ...(broker.support && isValidPhone(broker.support) && {
       telephone: broker.support
     }),
