@@ -196,6 +196,13 @@ export function SEO({
   } : null;
 
   // FinancialService Schema (for broker/prop firm entity pages)
+  // Build address object only if we have at least one address field
+  const hasAddressData = financialServiceData && (
+    financialServiceData.address || 
+    financialServiceData.addressLocality || 
+    financialServiceData.addressCountry
+  );
+  
   const financialServiceSchema = financialServiceData ? {
     "@context": "https://schema.org",
     "@type": "FinancialService",
@@ -207,13 +214,15 @@ export function SEO({
       "@type": "WebPage",
       "@id": url
     },
-    // Always include address for FinancialService (required field)
-    "address": {
-      "@type": "PostalAddress",
-      ...(financialServiceData.address && { "streetAddress": financialServiceData.address }),
-      ...(financialServiceData.addressLocality && { "addressLocality": financialServiceData.addressLocality }),
-      ...(financialServiceData.addressCountry && { "addressCountry": financialServiceData.addressCountry })
-    },
+    // Only include address if we have at least one address field
+    ...(hasAddressData && {
+      "address": {
+        "@type": "PostalAddress",
+        ...(financialServiceData.address && { "streetAddress": financialServiceData.address }),
+        ...(financialServiceData.addressLocality && { "addressLocality": financialServiceData.addressLocality }),
+        ...(financialServiceData.addressCountry && { "addressCountry": financialServiceData.addressCountry })
+      }
+    }),
     ...(financialServiceData.telephone && { "telephone": financialServiceData.telephone }),
     ...(financialServiceData.priceRange && { "priceRange": financialServiceData.priceRange }),
     ...(financialServiceData.foundingDate && { "foundingDate": String(financialServiceData.foundingDate) }),
