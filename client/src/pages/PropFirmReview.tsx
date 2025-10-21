@@ -102,9 +102,15 @@ export default function PropFirmReview() {
     if (!hq) return { locality: undefined, country: undefined };
     const parts = hq.split(',').map(p => p.trim());
     if (parts.length >= 2) {
+      // If last part is numeric (postal code), use second-to-last as country
+      const lastPart = parts[parts.length - 1];
+      const isPostalCode = /^\d+$/.test(lastPart);
+      
       return {
         locality: parts[0],
-        country: parts[parts.length - 1]
+        country: isPostalCode && parts.length >= 3 
+          ? parts[parts.length - 2]  // Use second-to-last if last is postal code
+          : parts[parts.length - 1]   // Otherwise use last part
       };
     }
     return { locality: hq, country: undefined };

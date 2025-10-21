@@ -104,21 +104,21 @@ export default function BrokerReview() {
     if (!hq) return { locality: undefined, country: undefined };
     const parts = hq.split(',').map(p => p.trim());
     if (parts.length >= 2) {
+      // If last part is numeric (postal code), use second-to-last as country
+      const lastPart = parts[parts.length - 1];
+      const isPostalCode = /^\d+$/.test(lastPart);
+      
       return {
         locality: parts[0],
-        country: parts[parts.length - 1]
+        country: isPostalCode && parts.length >= 3 
+          ? parts[parts.length - 2]  // Use second-to-last if last is postal code
+          : parts[parts.length - 1]   // Otherwise use last part
       };
     }
     return { locality: hq, country: undefined };
   };
 
   const { locality, country } = parseHeadquarters(broker.headquarters);
-
-  // Debug: Log parsed address data
-  console.log('DEBUG - Broker:', broker.name);
-  console.log('DEBUG - Headquarters:', broker.headquarters);
-  console.log('DEBUG - Parsed locality:', locality);
-  console.log('DEBUG - Parsed country:', country);
 
   // Calculate actual user reviews (only use real user submissions)
   const userRatings = reviews?.map((r: any) => parseFloat(r.acf?.rating || 0)).filter((r: number) => r > 0) || [];
