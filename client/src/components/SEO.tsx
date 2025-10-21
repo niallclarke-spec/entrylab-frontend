@@ -195,48 +195,9 @@ export function SEO({
     }))
   } : null;
 
-  // FinancialService Schema (for broker/prop firm entity pages)
-  // Build address object only if we have at least one address field
-  const hasAddressData = financialServiceData && (
-    financialServiceData.address || 
-    financialServiceData.addressLocality || 
-    financialServiceData.addressCountry
-  );
-  
-  const financialServiceSchema = financialServiceData ? {
-    "@context": "https://schema.org",
-    "@type": "FinancialService",
-    "@id": url ? `${url}#organization` : undefined,
-    "name": financialServiceData.name,
-    "description": financialServiceData.description || description,
-    "url": financialServiceData.url || url,
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": url
-    },
-    // Only include address if we have at least one address field
-    ...(hasAddressData && {
-      "address": {
-        "@type": "PostalAddress",
-        ...(financialServiceData.address && { "streetAddress": financialServiceData.address }),
-        ...(financialServiceData.addressLocality && { "addressLocality": financialServiceData.addressLocality }),
-        ...(financialServiceData.addressCountry && { "addressCountry": financialServiceData.addressCountry })
-      }
-    }),
-    ...(financialServiceData.telephone && { "telephone": financialServiceData.telephone }),
-    ...(financialServiceData.priceRange && { "priceRange": financialServiceData.priceRange }),
-    ...(financialServiceData.foundingDate && { "foundingDate": String(financialServiceData.foundingDate) }),
-    ...(financialServiceData.sameAs && financialServiceData.sameAs.length > 0 && { "sameAs": financialServiceData.sameAs }),
-    ...(financialServiceData.aggregateRating && {
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": financialServiceData.aggregateRating.ratingValue,
-        "bestRating": financialServiceData.aggregateRating.bestRating,
-        "worstRating": financialServiceData.aggregateRating.worstRating,
-        ...(financialServiceData.aggregateRating.reviewCount && { "reviewCount": financialServiceData.aggregateRating.reviewCount })
-      }
-    })
-  } : null;
+  // FinancialService Schema is now generated server-side only (server/structured-data.ts)
+  // to avoid duplicates and ensure Google crawlers see it on initial page load
+  const financialServiceSchema = null;
 
   return (
     <Helmet>
