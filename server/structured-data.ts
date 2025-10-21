@@ -6,6 +6,115 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, '').trim();
 }
 
+// Country name to ISO code mapping for Schema.org compliance
+const countryNameToCode: Record<string, string> = {
+  "Australia": "AU",
+  "Saint Lucia": "LC",
+  "United Kingdom": "GB",
+  "United States": "US",
+  "Cyprus": "CY",
+  "Seychelles": "SC",
+  "Belize": "BZ",
+  "Vanuatu": "VU",
+  "Malta": "MT",
+  "Gibraltar": "GI",
+  "British Virgin Islands": "VG",
+  "Cayman Islands": "KY",
+  "Mauritius": "MU",
+  "Canada": "CA",
+  "Switzerland": "CH",
+  "UAE": "AE",
+  "United Arab Emirates": "AE",
+  "Singapore": "SG",
+  "Hong Kong": "HK",
+  "Japan": "JP",
+  "Germany": "DE",
+  "France": "FR",
+  "Netherlands": "NL",
+  "Poland": "PL",
+  "Spain": "ES",
+  "Italy": "IT",
+  "South Africa": "ZA",
+  "New Zealand": "NZ",
+  "China": "CN",
+  "India": "IN",
+  "Brazil": "BR",
+  "Mexico": "MX",
+  "Argentina": "AR",
+  "Chile": "CL",
+  "Russia": "RU",
+  "Turkey": "TR",
+  "Israel": "IL",
+  "Ireland": "IE",
+  "Estonia": "EE",
+  "Latvia": "LV",
+  "Lithuania": "LT",
+  "Czech Republic": "CZ",
+  "Slovakia": "SK",
+  "Hungary": "HU",
+  "Romania": "RO",
+  "Bulgaria": "BG",
+  "Greece": "GR",
+  "Portugal": "PT",
+  "Austria": "AT",
+  "Belgium": "BE",
+  "Luxembourg": "LU",
+  "Denmark": "DK",
+  "Sweden": "SE",
+  "Norway": "NO",
+  "Finland": "FI",
+  "Iceland": "IS"
+};
+
+// Convert country name to ISO code
+function getCountryCode(countryName: string | undefined): string | undefined {
+  if (!countryName) return undefined;
+  
+  const trimmed = countryName.trim();
+  
+  // If it's already a 2-letter code, return as-is
+  if (/^[A-Z]{2}$/.test(trimmed)) {
+    return trimmed;
+  }
+  
+  // Look up the country name (case-insensitive)
+  const code = countryNameToCode[trimmed] || 
+               Object.entries(countryNameToCode).find(
+                 ([name]) => name.toLowerCase() === trimmed.toLowerCase()
+               )?.[1];
+  
+  // If not found, return the original (Google may still accept it)
+  return code || trimmed;
+}
+
+// Parse headquarters address into locality and country
+function parseHeadquarters(headquarters: string | undefined): { locality?: string; country?: string } {
+  if (!headquarters) return {};
+  
+  const parts = headquarters.split(',').map(p => p.trim()).filter(Boolean);
+  if (parts.length === 0) return {};
+  
+  const locality = parts[0];
+  
+  // Check if last part looks like a postal code (digits)
+  const lastPart = parts[parts.length - 1];
+  const isPostalCode = /^\d+(-\d+)?$/.test(lastPart);
+  
+  // Country is second-to-last if last part is postal code, otherwise last
+  const country = isPostalCode && parts.length > 1 
+    ? parts[parts.length - 2] 
+    : lastPart;
+  
+  return { locality, country };
+}
+
+// Validate phone number (basic check)
+function isValidPhone(phone: string | undefined): boolean {
+  if (!phone) return false;
+  // Basic check: contains digits and common phone chars
+  return /[\d\+\-\(\)\s]{7,}/.test(phone);
+}
+
 // Helper function to make WordPress API requests
 function fetchWordPress(url: string): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -197,11 +306,67 @@ export async function getBrokerSchema(slug: string) {
 
     const broker = brokers[0];
     const name = stripHtml(broker.title?.rendered || '');
-    const description = stripHtml(broker.excerpt?.rendered || '').substring(0, 155) || 
+    
+    // Get SEO meta description from Yoast (prioritize over excerpt/tagline)
+    const yoastMeta = broker.yoast_head_json?.description;
+    const description = yoastMeta || 
+                       stripHtml(broker.excerpt?.rendered || '').substring(0, 155) || 
                        `Comprehensive review of ${name}. Compare spreads, regulation, and trading conditions.`;
-    const rating = broker.acf?.rating || 0;
+    
+    const acf = broker.acf || {};
+    const rating = acf.rating || 0;
+    const link = acf.link || '';
+    const headquarters = acf.headquarters;
+    const support = acf.support;
+    const minDeposit = acf.min_deposit;
+    const yearFounded = acf.year_founded;
+    
+    // Parse headquarters into address components
+    const { locality, country } = parseHeadquarters(headquarters);
     
     const schemas = [];
+
+    // FinancialService schema (standalone entity)
+    const hasAddressData = locality || country;
+    const financialServiceSchema: any = {
+      "@context": "https://schema.org",
+      "@type": "FinancialService",
+      "@id": `https://entrylab.io/broker/${slug}#organization`,
+      "name": name,
+      "description": description,
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": `https://entrylab.io/broker/${slug}`
+      }
+    };
+    
+    // Only include URL if we have a valid broker website link
+    if (link && link.trim()) {
+      financialServiceSchema.url = link;
+    }
+    
+    // Add address if we have location data
+    if (hasAddressData) {
+      const address: any = {
+        "@type": "PostalAddress"
+      };
+      if (locality) address.addressLocality = locality;
+      if (country) address.addressCountry = getCountryCode(country);
+      financialServiceSchema.address = address;
+    }
+    
+    // Add optional fields if available
+    if (support && isValidPhone(support)) {
+      financialServiceSchema.telephone = support;
+    }
+    if (minDeposit) {
+      financialServiceSchema.priceRange = `From ${minDeposit}`;
+    }
+    if (yearFounded) {
+      financialServiceSchema.foundingDate = yearFounded;
+    }
+    
+    schemas.push(financialServiceSchema);
 
     // Review schema
     schemas.push({
@@ -270,12 +435,68 @@ export async function getPropFirmSchema(slug: string) {
 
     const propFirm = propFirms[0];
     const name = stripHtml(propFirm.title?.rendered || '');
-    const description = stripHtml(propFirm.excerpt?.rendered || '').substring(0, 155) || 
+    
+    // Get SEO meta description from Yoast (prioritize over excerpt)
+    const yoastMeta = propFirm.yoast_head_json?.description;
+    const description = yoastMeta || 
+                       stripHtml(propFirm.excerpt?.rendered || '').substring(0, 155) || 
                        `Comprehensive review of ${name}. Compare evaluation process, profit splits, and funding options.`;
-    const rating = propFirm.acf?.rating || 0;
-    const faqData = propFirm.acf?.faq || [];
+    
+    const acf = propFirm.acf || {};
+    const rating = acf.rating || 0;
+    const faqData = acf.faq || [];
+    const link = acf.link || '';
+    const headquarters = acf.headquarters;
+    const support = acf.support;
+    const minDeposit = acf.minimum_account_size;
+    const yearFounded = acf.year_founded;
+    
+    // Parse headquarters into address components
+    const { locality, country } = parseHeadquarters(headquarters);
     
     const schemas = [];
+    
+    // FinancialService schema (standalone entity for prop firm)
+    const hasAddressData = locality || country;
+    const financialServiceSchema: any = {
+      "@context": "https://schema.org",
+      "@type": "FinancialService",
+      "@id": `https://entrylab.io/prop-firm/${slug}#organization`,
+      "name": name,
+      "description": description,
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": `https://entrylab.io/prop-firm/${slug}`
+      }
+    };
+    
+    // Only include URL if we have a valid prop firm website link
+    if (link && link.trim()) {
+      financialServiceSchema.url = link;
+    }
+    
+    // Add address if we have location data
+    if (hasAddressData) {
+      const address: any = {
+        "@type": "PostalAddress"
+      };
+      if (locality) address.addressLocality = locality;
+      if (country) address.addressCountry = getCountryCode(country);
+      financialServiceSchema.address = address;
+    }
+    
+    // Add optional fields if available
+    if (support && isValidPhone(support)) {
+      financialServiceSchema.telephone = support;
+    }
+    if (minDeposit) {
+      financialServiceSchema.priceRange = `From ${minDeposit}`;
+    }
+    if (yearFounded) {
+      financialServiceSchema.foundingDate = yearFounded;
+    }
+    
+    schemas.push(financialServiceSchema);
 
     // Review schema
     schemas.push({
