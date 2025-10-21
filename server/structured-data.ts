@@ -584,12 +584,12 @@ export async function generateStructuredData(url: string): Promise<string> {
     if (articleSchemas) {
       schemas.push(...articleSchemas);
     }
-  } else if (urlParts[0] === 'broker' && urlParts[1]) {
+  } else if (urlParts[0] === 'broker-reviews' && urlParts[1]) {
     const brokerSchemas = await getBrokerSchema(urlParts[1]);
     if (brokerSchemas) {
       schemas.push(...brokerSchemas);
     }
-  } else if (urlParts[0] === 'prop-firm' && urlParts[1]) {
+  } else if (urlParts[0] === 'prop-firm-reviews' && urlParts[1]) {
     const propFirmSchemas = await getPropFirmSchema(urlParts[1]);
     if (propFirmSchemas) {
       schemas.push(...propFirmSchemas);
