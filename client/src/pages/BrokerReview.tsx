@@ -114,6 +114,12 @@ export default function BrokerReview() {
 
   const { locality, country } = parseHeadquarters(broker.headquarters);
 
+  // Debug: Log parsed address data
+  console.log('DEBUG - Broker:', broker.name);
+  console.log('DEBUG - Headquarters:', broker.headquarters);
+  console.log('DEBUG - Parsed locality:', locality);
+  console.log('DEBUG - Parsed country:', country);
+
   // Calculate actual user reviews (only use real user submissions)
   const userRatings = reviews?.map((r: any) => parseFloat(r.acf?.rating || 0)).filter((r: number) => r > 0) || [];
   const hasUserReviews = userRatings.length >= 3; // Minimum 3 reviews to show aggregate
