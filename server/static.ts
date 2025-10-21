@@ -42,8 +42,11 @@ export function serveStatic(app: Express) {
   }));
 
   // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
+  // NOTE: Using res.send instead of res.sendFile to allow SSR middleware to inject structured data
+  app.use("*", (req, res) => {
     res.setHeader('Cache-Control', 'public, max-age=600, stale-while-revalidate=86400');
-    res.sendFile(path.resolve(distPath, "index.html"));
+    const htmlPath = path.resolve(distPath, "index.html");
+    const html = fs.readFileSync(htmlPath, 'utf-8');
+    res.type('html').send(html);
   });
 }
