@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { transformPropFirmDetailed } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
+import { getCountryCode } from "@/lib/countryCodeMap";
 import { ReviewModalSimple as ReviewModal } from "@/components/ReviewModalSimple";
 import { BrokerAlertPopup } from "@/components/BrokerAlertPopup";
 
@@ -138,7 +139,7 @@ export default function PropFirmReview() {
     description: seoDescription, // Use Yoast SEO description (already prioritized in seoDescription)
     url: propFirm.link, // Prop firm's official website (not affiliate link)
     addressLocality: locality,
-    addressCountry: country,
+    addressCountry: getCountryCode(country), // Convert to ISO code for Schema.org compliance
     ...(propFirm.support && isValidPhone(propFirm.support) && {
       telephone: propFirm.support
     }),
