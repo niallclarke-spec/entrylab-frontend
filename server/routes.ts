@@ -1315,7 +1315,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const needsSEO = url.startsWith('/article/') || 
                      url.startsWith('/broker/') ||
                      url.startsWith('/prop-firm/') ||
-                     url.match(/^\/(news|broker-news|prop-firm-news|trading-strategies)/);
+                     url.match(/^\/(news|broker-news|broker-guides|prop-firm-news|trading-strategies)/);
     
     if (isHtmlRequest && needsSEO) {
       console.log('[SEO MIDDLEWARE] Will inject SEO data for:', url);
