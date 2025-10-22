@@ -5,7 +5,22 @@ EntryLab is a full-stack web application serving as a Forex News & Trading Intel
 
 ## Recent Changes (October 2025)
 
-### SEO Critical Fixes
+### CRITICAL SEO Fix - Server-Side Rendering (October 22, 2025)
+**Issue**: Traffic collapsed after migrating from WordPress to React SPA. Google couldn't see content because all pages were client-side rendered.
+
+**Solution**: Implemented server-side SEO injection middleware that:
+- Pre-fetches broker/article data from WordPress API before sending HTML
+- Injects title tags, meta descriptions, Open Graph tags, and canonical URLs into HTML
+- Makes content visible to Googlebot immediately without waiting for JavaScript execution
+- Uses Yoast SEO fields from WordPress with intelligent fallbacks
+- Works in both development (Vite) and production (static serving)
+
+**Files Modified**: 
+- `server/routes.ts` - Enhanced SEO middleware (lines 1307-1474)
+
+**Expected Impact**: Rankings should recover within 1-2 weeks as Google re-crawls pages
+
+### Previous SEO Fixes
 - **Sitemap URLs**: Fixed sitemap to use correct `/:category/:slug` format instead of deprecated `/article/:slug` pattern
 - **Category Archive URLs**: Added all category archive pages (`/news`, `/broker-news`, `/prop-firm-news`, etc.) to sitemap for better discoverability
 - **Canonical URLs**: Implemented canonical tags on category archive pages to prevent duplicate content issues
@@ -13,11 +28,11 @@ EntryLab is a full-stack web application serving as a Forex News & Trading Intel
 - **Archive Tab Navigation**: Enabled SEO-friendly URLs that change when switching category tabs while maintaining instant client-side filtering
 - **Fixed /home Empty Page**: Added 301 redirect from `/home` to `/`, excluded "home" from category archives, and removed from sitemap to fix Google indexing empty "Category" page
 
-### Next Steps for SEO Recovery
-1. Submit refreshed sitemap to Google Search Console
-2. Verify article URLs render correctly under `/:category/:slug` format in production
-3. Monitor crawl stats to ensure cache headers don't introduce stale content
-4. Set up 301 redirects for old broker slugs (pending old→new mapping from user)
+### User Action Items for SEO Recovery
+1. ✅ Server-side SEO injection deployed
+2. Block admin.entrylab.io: Go to WordPress Settings → Reading → Check "Discourage search engines"
+3. Submit sitemap in Google Search Console: Add sitemap.xml
+4. Monitor Google Search Console for indexing improvements over next 2 weeks
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
