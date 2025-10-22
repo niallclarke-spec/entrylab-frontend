@@ -1301,8 +1301,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Structured data injection middleware for SEO
-  // This must run BEFORE Vite/static middleware to inject server-side structured data
+  // Server-Side SEO Injection Middleware
+  // Injects title, meta description, and content for Google to see without waiting for JavaScript
+  // This runs BEFORE Vite/static middleware
   
   app.use(async (req, res, next) => {
     const url = req.originalUrl || req.url;
@@ -1311,54 +1312,157 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // Only process HTML requests for specific page types
     const isHtmlRequest = !url.includes('.') || url.endsWith('.html');
-    const needsStructuredData = url.startsWith('/article/') || 
-                                url.startsWith('/broker/') ||
-                                url.startsWith('/prop-firm/');
+    const needsSEO = url.startsWith('/article/') || 
+                     url.startsWith('/broker/') ||
+                     url.startsWith('/prop-firm/') ||
+                     url.match(/^\/(news|broker-news|prop-firm-news|trading-strategies)/);
     
-    if (isHtmlRequest && needsStructuredData) {
-      console.log('[SEO MIDDLEWARE] Will inject structured data for:', url);
-      // Wrap res.end to intercept HTML response (Vite uses res.end, not res.send)
+    if (isHtmlRequest && needsSEO) {
+      console.log('[SEO MIDDLEWARE] Will inject SEO data for:', url);
+      
+      // Pre-fetch page data to inject into HTML
+      let pageData: any = null;
+      try {
+        if (url.startsWith('/broker/')) {
+          const slug = url.replace('/broker/', '').split('?')[0];
+          pageData = await fetchWordPressWithCache(
+            `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`
+          );
+          pageData = pageData?.[0]; // API returns array
+        } else if (url.startsWith('/prop-firm/')) {
+          const slug = url.replace('/prop-firm/', '').split('?')[0];
+          pageData = await fetchWordPressWithCache(
+            `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`
+          );
+          pageData = pageData?.[0];
+        } else if (url.match(/\/[^/]+\/[^/]+$/)) {
+          // Article format: /category/slug
+          const parts = url.split('/').filter(Boolean);
+          if (parts.length === 2) {
+            const slug = parts[1].split('?')[0];
+            pageData = await fetchWordPressWithCache(
+              `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed&acf_format=standard`
+            );
+            pageData = pageData?.[0];
+          }
+        }
+      } catch (error) {
+        console.error('[SEO] Failed to fetch page data:', error);
+      }
+      
+      // Wrap res.end and res.send to intercept HTML response
       const originalEnd = res.end;
       const originalSend = res.send;
       
-      // Intercept res.end
+      const injectSEO = async (html: string): Promise<string> => {
+        let modifiedHtml = html;
+        
+        // Inject structured data
+        try {
+          const structuredData = await generateStructuredData(url);
+          modifiedHtml = modifiedHtml.replace('<script id="ssr-structured-data"></script>', structuredData);
+        } catch (error) {
+          console.error('[SEO] Structured data error:', error);
+        }
+        
+        // Inject title and meta tags if we have page data
+        if (pageData) {
+          const yoast = pageData.yoast_head_json || {};
+          const acf = pageData.acf || {};
+          
+          // Get SEO title (Yoast > fallback)
+          const seoTitle = yoast.title || 
+                          `${pageData.title?.rendered || pageData.name || ''} | EntryLab`;
+          
+          // Get SEO description (Yoast > excerpt > content)
+          const seoDescription = yoast.og_description || 
+                                yoast.description || 
+                                pageData.excerpt?.rendered?.replace(/<[^>]*>/g, '').substring(0, 160) ||
+                                pageData.content?.rendered?.replace(/<[^>]*>/g, '').substring(0, 160) ||
+                                '';
+          
+          // Inject title tag
+          if (seoTitle) {
+            modifiedHtml = modifiedHtml.replace(
+              /<title>[^<]*<\/title>/,
+              `<title>${seoTitle.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</title>`
+            );
+          }
+          
+          // Inject/update meta description
+          if (seoDescription) {
+            const cleanDesc = seoDescription.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            if (modifiedHtml.includes('<meta name="description"')) {
+              modifiedHtml = modifiedHtml.replace(
+                /<meta name="description" content="[^"]*"/,
+                `<meta name="description" content="${cleanDesc}"`
+              );
+            } else {
+              modifiedHtml = modifiedHtml.replace(
+                '</head>',
+                `  <meta name="description" content="${cleanDesc}">\n  </head>`
+              );
+            }
+          }
+          
+          // Inject Open Graph tags for better social sharing and Google understanding
+          const ogTitle = seoTitle.replace(/"/g, '&quot;');
+          const ogDesc = seoDescription.replace(/"/g, '&quot;');
+          const ogImage = yoast.og_image?.[0]?.url || pageData._embedded?.['wp:featuredmedia']?.[0]?.source_url || 'https://entrylab.io/og-image.jpg';
+          const ogUrl = `https://entrylab.io${url}`;
+          
+          const ogTags = `
+    <!-- Open Graph / SEO -->
+    <meta property="og:title" content="${ogTitle}">
+    <meta property="og:description" content="${ogDesc}">
+    <meta property="og:image" content="${ogImage}">
+    <meta property="og:url" content="${ogUrl}">
+    <meta property="og:type" content="article">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="${ogUrl}">`;
+          
+          modifiedHtml = modifiedHtml.replace('</head>', `${ogTags}\n  </head>`);
+        }
+        
+        return modifiedHtml;
+      }
+      
+      // Intercept res.end (used by Vite)
       res.end = function(chunk?: any, encoding?: any, callback?: any) {
-        if (typeof chunk === 'string' && chunk.includes('id="ssr-structured-data"')) {
-          console.log('[SEO] Replacing placeholder with structured data');
-          generateStructuredData(url)
-            .then(structuredData => {
-              const modifiedHtml = chunk.replace('<script id="ssr-structured-data"></script>', structuredData);
+        if (typeof chunk === 'string' && (chunk.includes('<html') || chunk.includes('<!DOCTYPE'))) {
+          console.log('[SEO] Injecting SEO tags into HTML');
+          injectSEO(chunk)
+            .then(modifiedHtml => {
+              console.log('[SEO] Successfully injected SEO tags');
               originalEnd.call(res, modifiedHtml, encoding, callback);
             })
             .catch(error => {
-              console.error('[Structured Data] Injection error:', error);
+              console.error('[SEO] Injection error:', error);
               originalEnd.call(res, chunk, encoding, callback);
             });
         } else {
           originalEnd.call(res, chunk, encoding, callback);
         }
-        
         return res;
       };
       
-      // Also intercept res.send for production static serving
+      // Intercept res.send (used by static serving in production)
       res.send = function(data: any) {
-        if (typeof data === 'string' && data.includes('id="ssr-structured-data"')) {
-          console.log('[SEO] Replacing placeholder with structured data (send)');
-          generateStructuredData(url)
-            .then(structuredData => {
-              const modifiedHtml = data.replace('<script id="ssr-structured-data"></script>', structuredData);
+        if (typeof data === 'string' && (data.includes('<html') || data.includes('<!DOCTYPE'))) {
+          console.log('[SEO] Injecting SEO tags into HTML (send)');
+          injectSEO(data)
+            .then(modifiedHtml => {
+              console.log('[SEO] Successfully injected SEO tags (send)');
               res.type('html');
               originalSend.call(res, modifiedHtml);
             })
             .catch(error => {
-              console.error('[Structured Data] Injection error:', error);
+              console.error('[SEO] Injection error (send):', error);
               originalSend.call(res, data);
             });
         } else {
           originalSend.call(res, data);
         }
-        
         return res;
       };
     }
