@@ -181,6 +181,7 @@ export default function BrokerReview() {
           author: "EntryLab",
           datePublished: broker.lastUpdated?.toISOString() || new Date().toISOString()
         }}
+        disableStructuredData={true}
       />
       <Navigation />
 
