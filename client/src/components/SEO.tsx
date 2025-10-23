@@ -59,6 +59,8 @@ interface SEOProps {
     author?: string;
     datePublished?: string;
   };
+  // Disable client-side structured data when server-side rendering is handling it
+  disableStructuredData?: boolean;
 }
 
 export function SEO({
@@ -78,10 +80,11 @@ export function SEO({
   itemList,
   financialServiceData,
   reviewData,
+  disableStructuredData = false,
 }: SEOProps) {
   
-  // Organization Schema (always present)
-  const organizationSchema = {
+  // Organization Schema - Disabled on broker/prop firm pages (server-side handles it)
+  const organizationSchema = disableStructuredData ? null : {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "EntryLab",
@@ -129,8 +132,8 @@ export function SEO({
     })
   } : null;
 
-  // Review Schema
-  const reviewSchema = reviewData ? {
+  // Review Schema - Disabled on broker/prop firm pages (server-side handles it)
+  const reviewSchema = disableStructuredData ? null : reviewData ? {
     "@context": "https://schema.org",
     "@type": "Review",
     "itemReviewed": {
@@ -153,8 +156,8 @@ export function SEO({
     })
   } : null;
 
-  // Breadcrumb Schema
-  const breadcrumbSchema = breadcrumbs && breadcrumbs.length > 0 ? {
+  // Breadcrumb Schema - Disabled on broker/prop firm pages (server-side handles it)
+  const breadcrumbSchema = disableStructuredData ? null : breadcrumbs && breadcrumbs.length > 0 ? {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": breadcrumbs.map((item, index) => ({

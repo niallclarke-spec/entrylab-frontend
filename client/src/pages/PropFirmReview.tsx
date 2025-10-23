@@ -179,6 +179,7 @@ export default function PropFirmReview() {
           author: "EntryLab",
           datePublished: propFirm.lastUpdated?.toISOString() || new Date().toISOString()
         }}
+        disableStructuredData={true}
       />
       <Navigation />
 

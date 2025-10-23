@@ -5,6 +5,25 @@ EntryLab is a full-stack web application serving as a Forex News & Trading Intel
 
 ## Recent Changes (October 2025)
 
+### ✅ Fixed Duplicate Structured Data (October 23, 2025) - DEPLOYED
+**Issue**: Google's Rich Results Test showed duplicate Review schemas for broker/prop firm pages (2x HeroFX Review, 2x Organization, etc.).
+
+**Root Cause**: Both server-side SEO middleware AND client-side React components were generating JSON-LD structured data, causing duplicates.
+
+**Solution**: Added `disableStructuredData` prop to SEO component to suppress client-side schema generation on broker/prop firm pages:
+- Server-side middleware now handles ALL structured data for these pages
+- Client-side schemas disabled for Organization, Review, and Breadcrumb on broker/prop firm routes
+- Article and archive pages still use client-side schemas (no server-side generation yet)
+
+**Files Modified**: 
+- `client/src/components/SEO.tsx` - Added disableStructuredData prop with conditional rendering
+- `client/src/pages/BrokerReview.tsx` - Set disableStructuredData={true}
+- `client/src/pages/PropFirmReview.tsx` - Set disableStructuredData={true}
+
+**Impact**: Google now sees single, clean structured data per page instead of duplicates
+
+**User Action**: Re-test pages in Google Rich Results Test to verify duplicates are gone
+
 ### ✅ Legacy Category URL Redirects (October 23, 2025) - READY FOR DEPLOYMENT
 **Issue**: Google indexed old WordPress `/category/*` URLs (e.g., `/category/top-tier-trader/`, `/category/sagefx/`) that show empty pages or don't exist in the new React app.
 
