@@ -5,6 +5,25 @@ EntryLab is a full-stack web application serving as a Forex News & Trading Intel
 
 ## Recent Changes (October 2025)
 
+### ✅ Legacy Category URL Redirects (October 23, 2025) - READY FOR DEPLOYMENT
+**Issue**: Google indexed old WordPress `/category/*` URLs (e.g., `/category/top-tier-trader/`, `/category/sagefx/`) that show empty pages or don't exist in the new React app.
+
+**Solution**: Added 301 permanent redirects from `/category/*` to proper format (strips `/category/` prefix):
+- `/category/broker-news` → `/broker-news`
+- `/category/top-tier-trader` → `/top-tier-trader` (then 404 if doesn't exist)
+- All `/category/*` URLs automatically redirect to correct format
+
+**Files Modified**: 
+- `server/routes.ts` - Added redirect middleware before SEO injection (lines 1307-1322)
+
+**Impact**: Once deployed and Google re-crawls:
+- Old `/category/*` URLs will redirect to correct pages
+- Google will consolidate ranking signals on new URLs
+- Search result snippets will update to show correct pages
+- Empty/broken category pages will disappear from search results
+
+**User Action Required After Deploy**: Request re-indexing in Google Search Console for key pages
+
 ### ✅ CRITICAL SEO Fix - Server-Side Rendering (October 22, 2025) - DEPLOYED & VERIFIED
 **Issue**: Traffic collapsed after migrating from WordPress to React SPA. Google couldn't see content because all pages were client-side rendered.
 
@@ -16,7 +35,7 @@ EntryLab is a full-stack web application serving as a Forex News & Trading Intel
 - Works in both development (Vite) and production (static serving)
 
 **Files Modified**: 
-- `server/routes.ts` - Enhanced SEO middleware (lines 1304-1471)
+- `server/routes.ts` - Enhanced SEO middleware (lines 1324-1488)
 - `client/index.html` - Added default title/meta tags for middleware replacement
 
 **Verified Working (October 22, 2025)**:
@@ -26,7 +45,7 @@ EntryLab is a full-stack web application serving as a Forex News & Trading Intel
 - ✅ Meta descriptions, Open Graph tags, canonical URLs all injecting correctly
 - ✅ Production deployment confirmed via live testing
 
-**Expected Impact**: Rankings should recover within 1-2 weeks as Google re-crawls pages
+**Expected Impact**: Rankings should recover within 4-8 weeks as Google re-crawls pages
 
 ### Previous SEO Fixes
 - **Sitemap URLs**: Fixed sitemap to use correct `/:category/:slug` format instead of deprecated `/article/:slug` pattern
