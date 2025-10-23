@@ -5,6 +5,31 @@ EntryLab is a full-stack web application serving as a Forex News & Trading Intel
 
 ## Recent Changes (October 2025)
 
+### ✅ Fixed Article & Prop Firm Structured Data (October 23, 2025) - DEPLOYED
+**Issue**: Two critical structured data problems found in SEO audit:
+1. Prop firm Review schemas used incorrect "@type": "Organization" instead of "FinancialService" (brokers correctly used FinancialService)
+2. Article pages had NO Article schema server-side - only Organization schema
+
+**Root Cause**: 
+1. Prop firm schema generator used wrong type for itemReviewed
+2. Server-side structured data generator didn't recognize `/:category/:slug` article URL pattern (only recognized deprecated `/article/:slug`)
+
+**Solution**: 
+1. Changed prop firm Review schema itemReviewed from Organization to FinancialService for consistency with brokers
+2. Added `/:category/:slug` URL pattern detection to generateStructuredData() for articles in /broker-news/, /prop-firm-news/, /news/, etc.
+
+**Files Modified**: 
+- `server/structured-data.ts` - Fixed prop firm type + added article URL pattern recognition
+
+**Impact**: 
+- Prop firms now show consistent FinancialService type in Rich Results
+- Article pages now have complete structured data (Organization + Article + BreadcrumbList schemas)
+- All future content automatically gets correct schemas
+
+**Verified Working**:
+- ✅ Prop firm pages: Review schema with FinancialService itemReviewed
+- ✅ Article pages: 3 schemas (Organization, Article, BreadcrumbList)
+
 ### ✅ Fixed Duplicate Structured Data (October 23, 2025) - DEPLOYED
 **Issue**: Google's Rich Results Test showed duplicate Review schemas for broker/prop firm pages (2x HeroFX Review, 2x Organization, etc.).
 
