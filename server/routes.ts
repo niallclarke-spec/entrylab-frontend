@@ -1301,6 +1301,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Legacy /category/* URL Redirects
+  // Redirect old WordPress /category/* URLs to new format (without /category/ prefix)
+  // This must run BEFORE SEO middleware
+  app.use((req, res, next) => {
+    const url = req.originalUrl || req.url;
+    
+    if (url.startsWith('/category/')) {
+      const newPath = url.replace('/category/', '/');
+      console.log(`[REDIRECT] Old category URL: ${url} → ${newPath}`);
+      
+      // 301 permanent redirect
+      return res.redirect(301, newPath);
+    }
+    
+    next();
+  });
+
   // Server-Side SEO Injection Middleware
   // Injects title, meta description, and content for Google to see without waiting for JavaScript
   // This runs BEFORE Vite/static middleware
