@@ -503,7 +503,7 @@ export async function getPropFirmSchema(slug: string) {
       "@context": "https://schema.org",
       "@type": "Review",
       "itemReviewed": {
-        "@type": "Organization",
+        "@type": "FinancialService",
         "name": name,
         "description": description
       },
@@ -593,6 +593,12 @@ export async function generateStructuredData(url: string): Promise<string> {
     const propFirmSchemas = await getPropFirmSchema(urlParts[1]);
     if (propFirmSchemas) {
       schemas.push(...propFirmSchemas);
+    }
+  } else if (urlParts.length === 2 && ['news', 'broker-news', 'broker-guides', 'prop-firm-news', 'trading-strategies'].includes(urlParts[0])) {
+    // Handle /:category/:slug article format (e.g., /broker-news/zarafx-gets-raided)
+    const articleSchemas = await getArticleSchema(urlParts[1]);
+    if (articleSchemas) {
+      schemas.push(...articleSchemas);
     }
   }
 
