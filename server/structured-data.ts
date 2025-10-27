@@ -368,14 +368,12 @@ export async function getBrokerSchema(slug: string) {
     
     schemas.push(financialServiceSchema);
 
-    // Review schema
+    // Review schema - references the FinancialService above using @id
     schemas.push({
       "@context": "https://schema.org",
       "@type": "Review",
       "itemReviewed": {
-        "@type": "FinancialService",
-        "name": name,
-        "description": description
+        "@id": `https://entrylab.io/broker/${slug}#organization`
       },
       "author": {
         "@type": "Organization",
@@ -498,14 +496,12 @@ export async function getPropFirmSchema(slug: string) {
     
     schemas.push(financialServiceSchema);
 
-    // Review schema
+    // Review schema - references the FinancialService above using @id
     schemas.push({
       "@context": "https://schema.org",
       "@type": "Review",
       "itemReviewed": {
-        "@type": "FinancialService",
-        "name": name,
-        "description": description
+        "@id": `https://entrylab.io/prop-firm/${slug}#organization`
       },
       "author": {
         "@type": "Organization",
