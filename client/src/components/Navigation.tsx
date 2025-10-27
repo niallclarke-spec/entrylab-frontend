@@ -5,7 +5,6 @@ import { useTheme } from "./ThemeProvider";
 import { Link } from "wouter";
 import { useState } from "react";
 import logoImage from "@assets/logo.png";
-import { MarketTicker } from "@/components/MarketTicker";
 import { prefetchRoute } from "@/lib/prefetch";
 
 export function Navigation() {
@@ -113,7 +112,6 @@ export function Navigation() {
           )}
         </div>
       </header>
-      <MarketTicker />
     </>
   );
 }
