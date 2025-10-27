@@ -253,9 +253,11 @@ export function SEO({
       <link rel="canonical" href={url} />
 
       {/* JSON-LD Structured Data */}
-      <script type="application/ld+json">
-        {JSON.stringify(organizationSchema)}
-      </script>
+      {organizationSchema && (
+        <script type="application/ld+json">
+          {JSON.stringify(organizationSchema)}
+        </script>
+      )}
       
       {articleSchema && (
         <script type="application/ld+json">
