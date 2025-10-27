@@ -398,6 +398,7 @@ export default function Article() {
         categories={categories}
         tags={tags}
         breadcrumbs={breadcrumbs}
+        disableStructuredData={true}
       />
       <Navigation />
       
