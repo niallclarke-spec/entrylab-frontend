@@ -235,12 +235,19 @@ export async function getArticleSchema(slug: string) {
     const datePublished = article.date_gmt ? `${article.date_gmt}Z` : article.date;
     const dateModified = article.modified_gmt ? `${article.modified_gmt}Z` : (article.modified || article.date);
 
+    // Determine article type based on category
+    const newsCategories = ['Broker News', 'Prop Firm News', 'News', 'broker-news', 'prop-firm-news', 'news'];
+    const isNewsArticle = categories.some((cat: string) => 
+      newsCategories.some(newsCat => cat.toLowerCase().includes(newsCat.toLowerCase()))
+    );
+    const articleType = isNewsArticle ? "NewsArticle" : "Article";
+
     const schemas = [];
 
-    // Article schema
+    // Article schema (NewsArticle for news content, Article for guides/educational)
     schemas.push({
       "@context": "https://schema.org",
-      "@type": "Article",
+      "@type": articleType,
       "headline": title,
       "description": description,
       "image": image,
