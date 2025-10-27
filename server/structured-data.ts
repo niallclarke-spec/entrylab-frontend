@@ -573,11 +573,16 @@ export async function getPropFirmSchema(slug: string) {
 export async function generateStructuredData(url: string): Promise<string> {
   const schemas: any[] = [];
 
-  // Always include organization schema
-  schemas.push(getOrganizationSchema());
-
   // Parse URL to determine page type and extract slug
   const urlParts = url.split('?')[0].split('/').filter(Boolean);
+  
+  // Determine if this is a broker/prop-firm page (they have their own entity schemas)
+  const isBrokerOrPropFirm = (urlParts[0] === 'broker' || urlParts[0] === 'prop-firm') && urlParts[1];
+  
+  // Only include organization schema on non-broker/prop-firm pages
+  if (!isBrokerOrPropFirm) {
+    schemas.push(getOrganizationSchema());
+  }
   
   if (urlParts[0] === 'article' && urlParts[1]) {
     const articleSchemas = await getArticleSchema(urlParts[1]);
