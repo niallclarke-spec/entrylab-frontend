@@ -105,6 +105,28 @@ function entrylab_create_newsletter_table() {
 register_activation_hook(__FILE__, 'entrylab_create_newsletter_table');
 add_action('after_setup_theme', 'entrylab_create_newsletter_table');
 
+// Helper function to get real client IP (handles reverse proxy)
+function entrylab_get_client_ip() {
+    // Check for CloudFlare
+    if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+        return $_SERVER['HTTP_CF_CONNECTING_IP'];
+    }
+    
+    // Check for proxy headers (Nginx, Apache, etc)
+    if (!empty($_SERVER['HTTP_X_REAL_IP'])) {
+        return $_SERVER['HTTP_X_REAL_IP'];
+    }
+    
+    // Check X-Forwarded-For (can contain multiple IPs, use first one)
+    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $ip_list = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+        return trim($ip_list[0]);
+    }
+    
+    // Fallback to REMOTE_ADDR
+    return $_SERVER['REMOTE_ADDR'] ?? null;
+}
+
 // Function to get GEO location from IP address
 function entrylab_get_geo_from_ip($ip_address) {
     if (empty($ip_address) || $ip_address === '::1' || $ip_address === '127.0.0.1') {
@@ -155,8 +177,8 @@ function entrylab_handle_newsletter_subscription($request) {
         return new WP_Error('invalid_email', 'Invalid email address', array('status' => 400));
     }
     
-    // Get subscriber IP address
-    $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
+    // Get subscriber IP address (handles reverse proxy)
+    $ip_address = entrylab_get_client_ip();
     
     // Rate limiting: Check if this IP has subscribed recently (within last 60 seconds)
     if ($ip_address) {
