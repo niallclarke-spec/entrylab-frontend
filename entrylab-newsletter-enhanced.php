@@ -2,7 +2,7 @@
 /**
  * Plugin Name: EntryLab Newsletter
  * Description: Manages newsletter subscriptions with source tracking, analytics, and GEO location for EntryLab
- * Version: 4.0
+ * Version: 4.1
  * Author: EntryLab
  */
 
@@ -169,8 +169,7 @@ function entrylab_handle_newsletter_subscription($request) {
         
         if ($recent_submission > 0) {
             return new WP_Error(
-                'rate_limit', 
-                'Please wait before subscribing again', 
+                'rate_limit', 'Please wait before subscribing again', 
                 array('status' => 429)
             );
         }
@@ -244,31 +243,39 @@ function entrylab_newsletter_admin_page() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'entrylab_newsletter';
     
-    // Handle single delete
-    if (isset($_POST['delete_subscriber']) && check_admin_referer('entrylab_delete_subscriber')) {
-        $subscriber_id = intval($_POST['subscriber_id']);
-        $wpdb->delete($table_name, array('id' => $subscriber_id), array('%d'));
-        echo '<div class="notice notice-success is-dismissible"><p><strong>Subscriber deleted successfully!</strong></p></div>';
+    // Handle single delete with improved nonce check
+    if (isset($_POST['delete_subscriber']) && isset($_POST['_wpnonce'])) {
+        if (wp_verify_nonce($_POST['_wpnonce'], 'entrylab_delete_' . intval($_POST['subscriber_id']))) {
+            $subscriber_id = intval($_POST['subscriber_id']);
+            $deleted = $wpdb->delete($table_name, array('id' => $subscriber_id), array('%d'));
+            if ($deleted) {
+                echo '<div class="notice notice-success is-dismissible"><p><strong>Subscriber deleted successfully!</strong></p></div>';
+            }
+        }
     }
     
-    // Handle bulk delete
-    if (isset($_POST['bulk_delete']) && check_admin_referer('entrylab_bulk_action')) {
-        $subscriber_ids = array_map('intval', $_POST['subscriber_ids'] ?? array());
-        if (!empty($subscriber_ids)) {
-            $placeholders = implode(',', array_fill(0, count($subscriber_ids), '%d'));
-            $wpdb->query($wpdb->prepare(
-                "DELETE FROM $table_name WHERE id IN ($placeholders)",
-                ...$subscriber_ids
-            ));
-            $count = count($subscriber_ids);
-            echo '<div class="notice notice-success is-dismissible"><p><strong>' . $count . ' subscriber(s) deleted successfully!</strong></p></div>';
+    // Handle bulk delete with improved nonce check
+    if (isset($_POST['bulk_delete']) && isset($_POST['_wpnonce'])) {
+        if (wp_verify_nonce($_POST['_wpnonce'], 'entrylab_bulk_delete')) {
+            $subscriber_ids = array_map('intval', $_POST['subscriber_ids'] ?? array());
+            if (!empty($subscriber_ids)) {
+                $placeholders = implode(',', array_fill(0, count($subscriber_ids), '%d'));
+                $wpdb->query($wpdb->prepare(
+                    "DELETE FROM $table_name WHERE id IN ($placeholders)",
+                    ...$subscriber_ids
+                ));
+                $count = count($subscriber_ids);
+                echo '<div class="notice notice-success is-dismissible"><p><strong>' . $count . ' subscriber(s) deleted successfully!</strong></p></div>';
+            }
         }
     }
     
     // Handle manual database update
-    if (isset($_POST['update_database']) && check_admin_referer('entrylab_update_db')) {
-        entrylab_create_newsletter_table();
-        echo '<div class="notice notice-success is-dismissible"><p><strong>Database updated successfully!</strong> New columns added.</p></div>';
+    if (isset($_POST['update_database']) && isset($_POST['_wpnonce'])) {
+        if (wp_verify_nonce($_POST['_wpnonce'], 'entrylab_update_db')) {
+            entrylab_create_newsletter_table();
+            echo '<div class="notice notice-success is-dismissible"><p><strong>Database updated successfully!</strong> New columns added.</p></div>';
+        }
     }
     
     // Get analytics data
@@ -297,15 +304,6 @@ function entrylab_newsletter_admin_page() {
     // Get signups by country
     $signups_by_country = $wpdb->get_results(
         "SELECT country, COUNT(*) as count FROM $table_name WHERE country IS NOT NULL AND status = 'active' GROUP BY country ORDER BY count DESC LIMIT 10"
-    );
-    
-    // Get daily signups for last 30 days
-    $daily_signups = $wpdb->get_results(
-        "SELECT DATE(subscribed_at) as date, COUNT(*) as count 
-        FROM $table_name 
-        WHERE subscribed_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND status = 'active'
-        GROUP BY DATE(subscribed_at) 
-        ORDER BY date ASC"
     );
     
     // Get filter and search parameters
@@ -450,7 +448,7 @@ function entrylab_newsletter_admin_page() {
                                 <span style="color: #666;"><?php echo $item->count; ?> (<?php echo round($percentage, 1); ?>%)</span>
                             </div>
                             <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
-                                <div style="background: linear-gradient(90deg, #4facfe, #00f2fe); height: 100%; width: <?php echo $percentage; ?>%;"></div>
+                                <div style="background: linear-gradient(90deg, #4facfe, #00f2fe); height: 100%; width: <?php echo $percentage; %>%;"></div>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -535,7 +533,7 @@ function entrylab_newsletter_admin_page() {
         
         <!-- Bulk Action Form -->
         <form method="post" id="bulk-action-form">
-            <?php wp_nonce_field('entrylab_bulk_action'); ?>
+            <?php wp_nonce_field('entrylab_bulk_delete'); ?>
             <input type="hidden" name="bulk_delete" value="1">
             
             <table class="wp-list-table widefat fixed striped">
@@ -584,7 +582,7 @@ function entrylab_newsletter_admin_page() {
                                 </td>
                                 <td>
                                     <form method="post" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to delete this subscriber?');">
-                                        <?php wp_nonce_field('entrylab_delete_subscriber'); ?>
+                                        <?php wp_nonce_field('entrylab_delete_' . $subscriber->id); ?>
                                         <input type="hidden" name="subscriber_id" value="<?php echo esc_attr($subscriber->id); ?>">
                                         <button type="submit" name="delete_subscriber" class="button button-small" style="color: #dc3232; padding: 0 8px; height: 24px; line-height: 22px;">
                                             🗑️
