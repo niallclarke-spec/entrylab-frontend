@@ -2,7 +2,7 @@
 /**
  * Plugin Name: EntryLab Newsletter
  * Description: Manages newsletter subscriptions with source tracking, analytics, and GEO location for EntryLab
- * Version: 4.1
+ * Version: 4.2
  * Author: EntryLab
  */
 
@@ -169,7 +169,8 @@ function entrylab_handle_newsletter_subscription($request) {
         
         if ($recent_submission > 0) {
             return new WP_Error(
-                'rate_limit', 'Please wait before subscribing again', 
+                'rate_limit', 
+                'Please wait before subscribing again', 
                 array('status' => 429)
             );
         }
@@ -224,6 +225,39 @@ function entrylab_handle_newsletter_subscription($request) {
     ), 200);
 }
 
+// Handle single subscriber delete action
+function entrylab_handle_delete_subscriber() {
+    global $wpdb;
+    
+    // Verify nonce
+    if (!isset($_GET['_wpnonce']) || !wp_verify_nonce($_GET['_wpnonce'], 'delete_subscriber_' . intval($_GET['subscriber_id']))) {
+        wp_die('Security check failed');
+    }
+    
+    // Check user permissions
+    if (!current_user_can('manage_options')) {
+        wp_die('Unauthorized');
+    }
+    
+    $subscriber_id = intval($_GET['subscriber_id']);
+    $table_name = $wpdb->prefix . 'entrylab_newsletter';
+    
+    $deleted = $wpdb->delete($table_name, array('id' => $subscriber_id), array('%d'));
+    
+    // Redirect back with success message
+    $redirect_url = add_query_arg(
+        array(
+            'page' => 'entrylab-newsletter',
+            'deleted' => $deleted ? '1' : '0'
+        ),
+        admin_url('admin.php')
+    );
+    
+    wp_redirect($redirect_url);
+    exit;
+}
+add_action('admin_post_entrylab_delete_subscriber', 'entrylab_handle_delete_subscriber');
+
 // Add admin menu
 function entrylab_add_admin_menu() {
     add_menu_page(
@@ -243,18 +277,12 @@ function entrylab_newsletter_admin_page() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'entrylab_newsletter';
     
-    // Handle single delete with improved nonce check
-    if (isset($_POST['delete_subscriber']) && isset($_POST['_wpnonce'])) {
-        if (wp_verify_nonce($_POST['_wpnonce'], 'entrylab_delete_' . intval($_POST['subscriber_id']))) {
-            $subscriber_id = intval($_POST['subscriber_id']);
-            $deleted = $wpdb->delete($table_name, array('id' => $subscriber_id), array('%d'));
-            if ($deleted) {
-                echo '<div class="notice notice-success is-dismissible"><p><strong>Subscriber deleted successfully!</strong></p></div>';
-            }
-        }
+    // Show success message if just deleted
+    if (isset($_GET['deleted']) && $_GET['deleted'] === '1') {
+        echo '<div class="notice notice-success is-dismissible"><p><strong>Subscriber deleted successfully!</strong></p></div>';
     }
     
-    // Handle bulk delete with improved nonce check
+    // Handle bulk delete
     if (isset($_POST['bulk_delete']) && isset($_POST['_wpnonce'])) {
         if (wp_verify_nonce($_POST['_wpnonce'], 'entrylab_bulk_delete')) {
             $subscriber_ids = array_map('intval', $_POST['subscriber_ids'] ?? array());
@@ -448,7 +476,7 @@ function entrylab_newsletter_admin_page() {
                                 <span style="color: #666;"><?php echo $item->count; ?> (<?php echo round($percentage, 1); ?>%)</span>
                             </div>
                             <div style="background: #e0e0e0; height: 8px; border-radius: 4px; overflow: hidden;">
-                                <div style="background: linear-gradient(90deg, #4facfe, #00f2fe); height: 100%; width: <?php echo $percentage; %>%;"></div>
+                                <div style="background: linear-gradient(90deg, #4facfe, #00f2fe); height: 100%; width: <?php echo $percentage; ?>%;"></div>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -581,13 +609,18 @@ function entrylab_newsletter_admin_page() {
                                     </span>
                                 </td>
                                 <td>
-                                    <form method="post" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to delete this subscriber?');">
-                                        <?php wp_nonce_field('entrylab_delete_' . $subscriber->id); ?>
-                                        <input type="hidden" name="subscriber_id" value="<?php echo esc_attr($subscriber->id); ?>">
-                                        <button type="submit" name="delete_subscriber" class="button button-small" style="color: #dc3232; padding: 0 8px; height: 24px; line-height: 22px;">
-                                            🗑️
-                                        </button>
-                                    </form>
+                                    <?php
+                                    $delete_url = wp_nonce_url(
+                                        admin_url('admin-post.php?action=entrylab_delete_subscriber&subscriber_id=' . $subscriber->id),
+                                        'delete_subscriber_' . $subscriber->id
+                                    );
+                                    ?>
+                                    <a href="<?php echo esc_url($delete_url); ?>" 
+                                       class="button button-small" 
+                                       style="color: #dc3232; padding: 0 8px; height: 24px; line-height: 22px; text-decoration: none; display: inline-block;"
+                                       onclick="return confirm('Are you sure you want to delete this subscriber?');">
+                                        🗑️
+                                    </a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
