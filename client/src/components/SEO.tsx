@@ -97,8 +97,8 @@ export function SEO({
     ]
   };
 
-  // NewsArticle Schema (for better Google News visibility)
-  const articleSchema = type === "article" && publishedTime ? {
+  // NewsArticle Schema - Disabled on article pages when server-side handles it
+  const articleSchema = !disableStructuredData && type === "article" && publishedTime ? {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     "headline": title,
