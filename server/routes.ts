@@ -1439,6 +1439,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     <link rel="canonical" href="${ogUrl}">`;
           
           modifiedHtml = modifiedHtml.replace('</head>', `${ogTags}\n  </head>`);
+        } else {
+          // For pages without pageData (e.g., category archives), still inject robots meta tag
+          if (!modifiedHtml.includes('<meta name="robots"')) {
+            modifiedHtml = modifiedHtml.replace(
+              '</head>',
+              '  <meta name="robots" content="index, follow">\n  </head>'
+            );
+          }
         }
         
         return modifiedHtml;
