@@ -222,13 +222,18 @@ export async function getArticleSchema(slug: string) {
     const article = post[0];
     const title = stripHtml(article.title?.rendered || '');
     const description = stripHtml(article.excerpt?.rendered || '').substring(0, 155);
-    const author = article._embedded?.author?.[0]?.name || "EntryLab Editorial Team";
+    const authorName = article._embedded?.author?.[0]?.name || "EntryLab Editorial Team";
+    const authorSlug = article._embedded?.author?.[0]?.slug || "entrylab-team";
     const categories = article._embedded?.["wp:term"]?.[0]?.map((t: any) => t.name) || [];
     const tags = article._embedded?.["wp:term"]?.[1]?.map((t: any) => t.name) || [];
     
     // Get featured image
     const media = article._embedded?.["wp:featuredmedia"]?.[0];
     const image = media?.source_url || "https://entrylab.io/og-image.jpg";
+    
+    // Use GMT dates for proper timezone (WordPress stores UTC as GMT)
+    const datePublished = article.date_gmt ? `${article.date_gmt}Z` : article.date;
+    const dateModified = article.modified_gmt ? `${article.modified_gmt}Z` : (article.modified || article.date);
 
     const schemas = [];
 
@@ -239,11 +244,12 @@ export async function getArticleSchema(slug: string) {
       "headline": title,
       "description": description,
       "image": image,
-      "datePublished": article.date,
-      "dateModified": article.modified || article.date,
+      "datePublished": datePublished,
+      "dateModified": dateModified,
       "author": {
         "@type": "Person",
-        "name": author
+        "name": authorName,
+        "url": `https://entrylab.io/author/${authorSlug}`
       },
       "publisher": {
         "@type": "Organization",
