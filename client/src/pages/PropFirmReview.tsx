@@ -214,182 +214,288 @@ export default function PropFirmReview() {
       />
       <Navigation />
 
-      {/* Hero "Intel Bar" - 3-Column Grid */}
-      <div className="relative bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border-b border-border/50 overflow-hidden">
+      {/* Hero "Command Center" - Two-Tier Layout */}
+      <div className="relative bg-gradient-to-br from-primary/20 via-slate-950 to-slate-950 border-b border-border/50 overflow-visible">
         {/* Subtle grid overlay */}
         <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:32px_32px]" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-8">
-          <Link href="/prop-firms">
-            <Button variant="ghost" size="sm" className="mb-6 text-muted-foreground hover:text-foreground" data-testid="button-back-prop-firms-top">
-              <ArrowLeft className="mr-2 h-3 w-3" /> Back to Prop Firms
-            </Button>
-          </Link>
-
-          {/* 3-Column Intel Grid */}
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Column 1: Logo + Rating */}
-            <div className="flex flex-col items-start">
-              <img 
-                src={propFirm.logo} 
-                alt={stripHtml(propFirm.name)}
-                width="160"
-                height="80"
-                className="h-20 w-auto object-contain bg-white rounded-xl p-3 mb-4"
-                data-testid="img-prop-firm-logo"
-              />
-              <h1 className="text-3xl font-bold text-foreground mb-3" data-testid="text-prop-firm-name">
-                {stripHtml(propFirm.name)}
-              </h1>
-              <div className="flex items-center gap-3 flex-wrap mb-3">
-                <div className="flex items-center gap-2 bg-emerald-500/20 px-4 py-2 rounded-lg border border-emerald-500/30" data-testid="text-prop-firm-rating">
-                  <Star className="h-5 w-5 fill-emerald-500 text-emerald-500" />
-                  <span className="text-2xl font-bold text-emerald-500">{propFirm.rating}</span>
-                  <span className="text-muted-foreground text-sm">/5</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                {propFirm.verified && (
-                  <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20" data-testid="badge-verified">
-                    <Shield className="h-3 w-3 mr-1" /> Verified
-                  </Badge>
-                )}
-                {propFirm.featured && (
-                  <Badge className="bg-primary/10 text-primary border-primary/20" data-testid="badge-featured">
-                    <Award className="h-3 w-3 mr-1" /> Featured
-                  </Badge>
-                )}
-              </div>
-              {propFirm.lastUpdated && (
-                <span className="text-xs text-muted-foreground mt-3" data-testid="text-last-updated">
-                  Updated {propFirm.lastUpdated.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                </span>
-              )}
-            </div>
-
-            {/* Column 2: Key USPs */}
-            {(propFirm.highlights && propFirm.highlights.length > 0) && (
-              <div className="flex flex-col justify-center">
-                <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-4 flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-primary" /> Key Features
-                </h3>
-                <div className="space-y-3">
-                  {propFirm.highlights.slice(0, 4).map((highlight, index) => (
-                    <div key={index} className="flex items-start gap-2" data-testid={`hero-highlight-${index}`}>
-                      <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground font-medium">{highlight}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          {/* Top Meta Bar */}
+          <div className="flex items-center justify-between mb-6">
+            <Link href="/prop-firms">
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" data-testid="button-back-prop-firms-top">
+                <ArrowLeft className="mr-2 h-3 w-3" /> Back to Prop Firms
+              </Button>
+            </Link>
+            {propFirm.lastUpdated && (
+              <Badge variant="outline" className="text-xs" data-testid="text-last-updated">
+                Updated {propFirm.lastUpdated.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+              </Badge>
             )}
+          </div>
 
-            {/* Column 3: Discount Code Capsule */}
-            {propFirm.bonusOffer && (
-              <div className="flex flex-col justify-center">
-                <Card className="bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-transparent border-2 border-emerald-500/50">
-                  <div className="p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Zap className="h-5 w-5 text-emerald-500" />
-                      <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider">Exclusive Code</span>
-                    </div>
-                    <div className="bg-background/95 rounded-lg p-5 mb-4 border border-border/50">
-                      <code className="text-3xl font-bold text-foreground tracking-wider block text-center" data-testid="text-discount-code">
-                        {propFirm.bonusOffer}
-                      </code>
-                    </div>
-                    <Button
-                      size="lg"
-                      className="w-full bg-emerald-600 hover:bg-emerald-700"
-                      onClick={() => copyDiscountCode(propFirm.bonusOffer!)}
-                      data-testid="button-copy-discount"
-                    >
-                      {copiedCode ? (
-                        <>
-                          <CheckCircle2 className="h-5 w-5 mr-2" />
-                          Copied to Clipboard!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-5 w-5 mr-2" />
-                          Copy Code
-                        </>
+          {/* Main Content Grid - Two Columns */}
+          <div className="grid lg:grid-cols-[1.2fr_1fr] gap-8 mb-8">
+            {/* LEFT COLUMN: Brand Identity & Actions */}
+            <div className="space-y-6">
+              {/* Brand Identity Card */}
+              <Card className="bg-background/60 backdrop-blur-sm border-border/50 overflow-visible">
+                <div className="p-6">
+                  <div className="flex flex-col sm:flex-row gap-6 items-start">
+                    {/* Logo */}
+                    <img 
+                      src={propFirm.logo} 
+                      alt={stripHtml(propFirm.name)}
+                      width="120"
+                      height="60"
+                      className="h-16 w-auto object-contain bg-white rounded-lg p-2 border border-border/30"
+                      data-testid="img-prop-firm-logo"
+                    />
+                    
+                    {/* Title + Rating */}
+                    <div className="flex-1">
+                      <h1 className="text-3xl font-bold text-foreground mb-3" data-testid="text-prop-firm-name">
+                        {stripHtml(propFirm.name)}
+                      </h1>
+                      <div className="flex items-center gap-3 flex-wrap mb-3">
+                        {/* Rating Badge with glow effect */}
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full" />
+                          <div className="relative flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 px-4 py-2 rounded-lg" data-testid="text-prop-firm-rating">
+                            <Star className="h-5 w-5 fill-white text-white" />
+                            <span className="text-2xl font-bold text-white">{propFirm.rating}</span>
+                            <span className="text-white/80 text-sm">/5</span>
+                          </div>
+                        </div>
+                        {/* Trust Signals */}
+                        {propFirm.verified && (
+                          <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20" data-testid="badge-verified">
+                            <Shield className="h-3 w-3 mr-1" /> Verified
+                          </Badge>
+                        )}
+                        {propFirm.featured && (
+                          <Badge className="bg-primary/10 text-primary border-primary/20" data-testid="badge-featured">
+                            <Award className="h-3 w-3 mr-1" /> Featured
+                          </Badge>
+                        )}
+                      </div>
+                      {/* USP / Tagline */}
+                      {propFirm.tagline && (
+                        <p className="text-muted-foreground text-sm leading-relaxed">
+                          {stripHtml(propFirm.tagline)}
+                        </p>
                       )}
-                    </Button>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Primary Actions Row */}
+              <div className="grid sm:grid-cols-2 gap-4">
+                {/* Visit Firm CTA - Primary */}
+                <Button
+                  size="lg"
+                  className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white font-semibold shadow-lg shadow-emerald-500/20"
+                  onClick={() => {
+                    trackAffiliateClick({
+                      broker_name: propFirm.name,
+                      broker_type: 'prop_firm',
+                      page_location: 'prop_firm_review',
+                      placement_type: 'hero_cta',
+                      rating: propFirm.rating,
+                    });
+                    window.open(propFirm.link, '_blank');
+                  }}
+                  data-testid="button-visit-prop-firm"
+                >
+                  <ExternalLink className="mr-2 h-5 w-5" />
+                  Visit {stripHtml(propFirm.name).split(' ')[0]}
+                </Button>
+
+                {/* Write Review CTA - Secondary */}
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full border-primary/30 hover:bg-primary/10"
+                  onClick={() => setIsReviewModalOpen(true)}
+                  data-testid="button-write-review-hero"
+                >
+                  <MessageSquare className="mr-2 h-5 w-5" />
+                  Write a Review
+                </Button>
+              </div>
+
+              {/* Discount Code - If Available */}
+              {propFirm.bonusOffer && (
+                <Card className="bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border-2 border-emerald-500/30 overflow-visible">
+                  <div className="p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-emerald-500/40 blur-md rounded-full" />
+                          <Zap className="relative h-5 w-5 text-emerald-500" />
+                        </div>
+                        <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider">Exclusive Discount</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 bg-background/95 rounded-lg px-4 py-3 border border-border/50">
+                        <code className="text-xl font-bold text-foreground tracking-wider block text-center" data-testid="text-discount-code">
+                          {propFirm.bonusOffer}
+                        </code>
+                      </div>
+                      <Button
+                        size="lg"
+                        className="bg-emerald-600 hover:bg-emerald-700 px-6"
+                        onClick={() => copyDiscountCode(propFirm.bonusOffer!)}
+                        data-testid="button-copy-discount"
+                      >
+                        {copiedCode ? (
+                          <CheckCircle2 className="h-5 w-5" />
+                        ) : (
+                          <Copy className="h-5 w-5" />
+                        )}
+                      </Button>
+                    </div>
                     <p className="text-xs text-center text-muted-foreground mt-3">
-                      Apply at checkout for your discount
+                      Copy and apply at checkout
                     </p>
                   </div>
                 </Card>
+              )}
+
+              {/* Social Proof */}
+              {reviews && reviews.length > 0 && (
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 text-primary" />
+                    <span className="font-medium">{reviews.length} user reviews</span>
+                  </div>
+                  {propFirm.verified && (
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-emerald-500" />
+                      <span className="font-medium">Verified Firm</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* RIGHT COLUMN: Intel Snapshot */}
+            <Card className="bg-background/60 backdrop-blur-sm border-border/50">
+              <div className="p-6">
+                <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-4 flex items-center gap-2">
+                  <Info className="h-4 w-4 text-primary" /> Trading Intelligence
+                </h3>
+                
+                {/* Key Highlights */}
+                {propFirm.highlights && propFirm.highlights.length > 0 && (
+                  <div className="space-y-3 mb-6">
+                    {propFirm.highlights.slice(0, 5).map((highlight, index) => (
+                      <div key={index} className="flex items-start gap-2" data-testid={`hero-highlight-${index}`}>
+                        <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-foreground">{highlight}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Quick Stats Grid */}
+                <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border/50">
+                  {propFirm.platforms && Array.isArray(propFirm.platforms) && propFirm.platforms.length > 0 && (
+                    <div className="p-3 rounded-lg bg-muted/30" data-testid="intel-platforms">
+                      <div className="text-xs text-muted-foreground mb-1">Platforms</div>
+                      <div className="font-semibold text-sm text-foreground">
+                        {(propFirm.platforms as string[]).slice(0, 2).join(', ')}
+                        {(propFirm.platforms as string[]).length > 2 && ` +${(propFirm.platforms as string[]).length - 2}`}
+                      </div>
+                    </div>
+                  )}
+                  {propFirm.platforms && typeof propFirm.platforms === 'string' && (
+                    <div className="p-3 rounded-lg bg-muted/30" data-testid="intel-platforms">
+                      <div className="text-xs text-muted-foreground mb-1">Platforms</div>
+                      <div className="font-semibold text-sm text-foreground">
+                        {propFirm.platforms}
+                      </div>
+                    </div>
+                  )}
+                  {propFirm.paymentMethods && Array.isArray(propFirm.paymentMethods) && propFirm.paymentMethods.length > 0 && (
+                    <div className="p-3 rounded-lg bg-muted/30" data-testid="intel-payout">
+                      <div className="text-xs text-muted-foreground mb-1">Payout Methods</div>
+                      <div className="font-semibold text-sm text-foreground">
+                        {(propFirm.paymentMethods as string[]).slice(0, 2).join(', ')}
+                        {(propFirm.paymentMethods as string[]).length > 2 && ` +${(propFirm.paymentMethods as string[]).length - 2}`}
+                      </div>
+                    </div>
+                  )}
+                  {propFirm.support && (
+                    <div className="p-3 rounded-lg bg-muted/30" data-testid="intel-support">
+                      <div className="text-xs text-muted-foreground mb-1">Support</div>
+                      <div className="font-semibold text-sm text-foreground">{propFirm.support}</div>
+                    </div>
+                  )}
+                  {propFirm.headquarters && (
+                    <div className="p-3 rounded-lg bg-muted/30" data-testid="intel-headquarters">
+                      <div className="text-xs text-muted-foreground mb-1">Headquarters</div>
+                      <div className="font-semibold text-sm text-foreground">{propFirm.headquarters}</div>
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
+            </Card>
           </div>
+
+          {/* Bottom Stats Bar */}
+          {(propFirm.minDeposit || propFirm.maxLeverage || propFirm.spreadFrom || propFirm.regulation) && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {propFirm.minDeposit && (
+                <Card className="bg-background/40 backdrop-blur-sm border-border/50" data-testid="stat-min-deposit">
+                  <div className="p-4 text-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 mx-auto mb-2">
+                      <DollarSign className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="font-bold text-foreground text-lg">{propFirm.minDeposit}</div>
+                    <div className="text-xs text-muted-foreground">Starting Capital</div>
+                  </div>
+                </Card>
+              )}
+              {propFirm.spreadFrom && (
+                <Card className="bg-background/40 backdrop-blur-sm border-border/50" data-testid="stat-profit-split">
+                  <div className="p-4 text-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500/10 mx-auto mb-2">
+                      <Activity className="h-5 w-5 text-blue-500" />
+                    </div>
+                    <div className="font-bold text-foreground text-lg">{propFirm.spreadFrom}</div>
+                    <div className="text-xs text-muted-foreground">Profit Split</div>
+                  </div>
+                </Card>
+              )}
+              {propFirm.maxLeverage && (
+                <Card className="bg-background/40 backdrop-blur-sm border-border/50" data-testid="stat-max-leverage">
+                  <div className="p-4 text-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-amber-500/10 mx-auto mb-2">
+                      <Zap className="h-5 w-5 text-amber-500" />
+                    </div>
+                    <div className="font-bold text-foreground text-lg">{propFirm.maxLeverage}</div>
+                    <div className="text-xs text-muted-foreground">Max Leverage</div>
+                  </div>
+                </Card>
+              )}
+              {propFirm.regulation && (
+                <Card className="bg-background/40 backdrop-blur-sm border-border/50" data-testid="stat-regulation">
+                  <div className="p-4 text-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500/10 mx-auto mb-2">
+                      <Shield className="h-5 w-5 text-emerald-500" />
+                    </div>
+                    <div className="font-bold text-foreground text-sm">{propFirm.regulation.split(',')[0].trim()}</div>
+                    <div className="text-xs text-muted-foreground">Regulated</div>
+                  </div>
+                </Card>
+              )}
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Quick Stats Bar - Only show if at least one stat exists */}
-      {(propFirm.minDeposit || propFirm.maxLeverage || propFirm.spreadFrom || propFirm.regulation || propFirm.instrumentsCount || propFirm.supportHours) && (
-        <div className="border-b bg-muted/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {propFirm.minDeposit && (
-              <div className="text-center" data-testid="stat-min-deposit">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
-                  <DollarSign className="h-6 w-6 text-primary" />
-                </div>
-                <div className="font-bold text-foreground">{propFirm.minDeposit}</div>
-                <div className="text-xs text-muted-foreground">Starting Capital</div>
-              </div>
-            )}
-            {propFirm.maxLeverage && (
-              <div className="text-center" data-testid="stat-max-leverage">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-amber-500/10 mx-auto mb-2">
-                  <Zap className="h-6 w-6 text-amber-500" />
-                </div>
-                <div className="font-bold text-foreground">{propFirm.maxLeverage}</div>
-                <div className="text-xs text-muted-foreground">Max Leverage</div>
-              </div>
-            )}
-            {propFirm.spreadFrom && (
-              <div className="text-center" data-testid="stat-profit-split">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-500/10 mx-auto mb-2">
-                  <Activity className="h-6 w-6 text-blue-500" />
-                </div>
-                <div className="font-bold text-foreground">{propFirm.spreadFrom}</div>
-                <div className="text-xs text-muted-foreground">Profit Split</div>
-              </div>
-            )}
-            {propFirm.regulation && (
-              <div className="text-center" data-testid="stat-regulation">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mx-auto mb-2">
-                  <Shield className="h-6 w-6 text-emerald-500" />
-                </div>
-                <div className="font-bold text-foreground text-sm">{propFirm.regulation.split(',')[0].trim()}</div>
-                <div className="text-xs text-muted-foreground">Regulated</div>
-              </div>
-            )}
-            {propFirm.instrumentsCount && (
-              <div className="text-center" data-testid="stat-instruments">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
-                  <Globe className="h-6 w-6 text-primary" />
-                </div>
-                <div className="font-bold text-foreground">{propFirm.instrumentsCount}</div>
-                <div className="text-xs text-muted-foreground">Instruments</div>
-              </div>
-            )}
-            {propFirm.supportHours && (
-              <div className="text-center" data-testid="stat-support">
-                <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
-                  <Headphones className="h-6 w-6 text-primary" />
-                </div>
-                <div className="font-bold text-foreground">{propFirm.supportHours}</div>
-                <div className="text-xs text-muted-foreground">Support</div>
-              </div>
-            )}
-            </div>
-          </div>
-        </div>
-      )}
 
       <main className="flex-1 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
