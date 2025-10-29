@@ -263,16 +263,22 @@ export default function Article() {
       const tagName = currentElement.tagName.toLowerCase();
       const textContent = currentElement.textContent?.trim().toLowerCase() || '';
       
-      // Check if this is a "Pros" heading
-      if (['h2', 'h3', 'h4', 'h5', 'strong', 'p'].includes(tagName) && textContent.match(/^pros\s*$/)) {
+      // Check if this is a "Pros" heading - handle both headings and paragraphs with strong tags
+      const isProsHeading = (['h2', 'h3', 'h4', 'h5'].includes(tagName) && textContent.match(/^pros\s*$/)) ||
+        (tagName === 'p' && currentElement.querySelector('strong') && textContent.match(/^pros\s*$/));
+      
+      if (isProsHeading) {
         prosHeading = currentElement;
         elementsToRemove.push(currentElement);
         currentElement = currentElement.nextElementSibling;
         continue;
       }
       
-      // Check if this is a "Cons" heading
-      if (['h2', 'h3', 'h4', 'h5', 'strong', 'p'].includes(tagName) && textContent.match(/^cons\s*$/)) {
+      // Check if this is a "Cons" heading - handle both headings and paragraphs with strong tags
+      const isConsHeading = (['h2', 'h3', 'h4', 'h5'].includes(tagName) && textContent.match(/^cons\s*$/)) ||
+        (tagName === 'p' && currentElement.querySelector('strong') && textContent.match(/^cons\s*$/));
+      
+      if (isConsHeading) {
         consHeading = currentElement;
         elementsToRemove.push(currentElement);
         currentElement = currentElement.nextElementSibling;
