@@ -29,9 +29,9 @@ EntryLab is a full-stack web application serving as a Forex News & Trading Intel
 ```
 
 **Files Modified**:
-- `client/src/pages/Article.tsx` - Added `processContentWithProsConsCard()` parser and `renderContentWithProsConsCards()` renderer, fixed broker card element selector to include `div[data-pros-cons-placeholder]`
+- `client/src/pages/Article.tsx` - Added `processContentWithProsConsCard()` parser and `renderContentWithProsConsCards()` renderer, fixed broker card insertion logic to use `doc.body.children` (eliminates duplicates)
 - `client/src/components/ProsConsCard.tsx` - Created new component with green/red color-coded two-column layout
-- `client/src/index.css` - Added branded purple link styling with white hover state for article content
+- `client/src/index.css` - Unified link styling: all hyperlinks are green (emerald) with underline, turn white on hover
 
 **Impact**:
 - Improved visual hierarchy and scannability of product reviews
