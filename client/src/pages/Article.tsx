@@ -397,7 +397,9 @@ export default function Article() {
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(processedContent, 'text/html');
-    const allElements = Array.from(doc.querySelectorAll('p, h1, h2, h3, h4, h5, h6, ul, ol, blockquote, table:not(.wp-block-table table), figure, div.wp-block-table, div.wp-block-image, div[data-pros-cons-placeholder], pre'));
+    
+    // Get all direct children of body to preserve structure and avoid duplicates
+    const allElements = Array.from(doc.body.children);
 
     if (allElements.length < 3) {
       return (
@@ -411,11 +413,14 @@ export default function Article() {
     // Calculate 40% position
     const targetIndex = Math.floor(allElements.length * 0.40);
     
-    // Find first heading (h2, h3, h4, h5, h6) at or after 40% mark
+    // Find first heading (h2, h3, h4, h5, h6) at or after 40% mark (including nested headings)
     let insertIndex = -1;
     for (let i = targetIndex; i < allElements.length; i++) {
-      const tagName = allElements[i].tagName.toLowerCase();
-      if (['h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName)) {
+      const element = allElements[i];
+      const tagName = element.tagName.toLowerCase();
+      const hasHeading = ['h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName) || 
+                         element.querySelector('h2, h3, h4, h5, h6');
+      if (hasHeading) {
         insertIndex = i;
         break;
       }
