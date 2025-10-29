@@ -227,11 +227,9 @@ export default function PropFirmReview() {
                 <ArrowLeft className="mr-2 h-3 w-3" /> Back to Prop Firms
               </Button>
             </Link>
-            {propFirm.lastUpdated && (
-              <Badge variant="outline" className="text-xs" data-testid="text-last-updated">
-                Updated {propFirm.lastUpdated.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-              </Badge>
-            )}
+            <Badge variant="outline" className="text-xs" data-testid="text-last-updated">
+              Updated {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+            </Badge>
           </div>
 
           {/* Main Content Grid - Two Columns */}
