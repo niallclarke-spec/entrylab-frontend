@@ -36,15 +36,15 @@ export default function BrokerReview() {
 
   const broker = wpBroker ? transformBrokerDetailed(wpBroker) : null;
 
-  // Add IDs to H2 headings for table of contents
+  // Add IDs to headings for table of contents
   const processContentWithIds = (html: string) => {
     if (!html) return html;
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
-    const h2Elements = doc.querySelectorAll("h2");
+    const headings = doc.querySelectorAll("h2, h3, h4");
     
-    h2Elements.forEach((h2, index) => {
-      h2.id = `section-${index}`;
+    headings.forEach((heading, index) => {
+      heading.id = `section-${index}`;
     });
     
     return doc.body.innerHTML;
