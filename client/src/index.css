@@ -391,10 +391,12 @@
   .prose :where(table):not(:where([class~="not-prose"] *)) {
     width: 100%;
     border-collapse: collapse;
-    border: 1px solid hsl(var(--border));
-    border-radius: 8px;
+    border: 2px solid hsl(var(--border));
+    border-radius: 12px;
     overflow: hidden;
-    background-color: hsl(var(--card));
+    background-color: hsl(var(--background));
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    margin: 24px 0;
   }
 
   .prose :where(thead):not(:where([class~="not-prose"] *)) {
@@ -420,11 +422,11 @@
   }
 
   .prose :where(tbody tr):not(:where([class~="not-prose"] *)):nth-child(even) {
-    background-color: hsl(var(--muted) / 0.3);
+    background-color: hsl(var(--muted) / 0.5);
   }
 
   .prose :where(tbody tr):not(:where([class~="not-prose"] *)):nth-child(even):hover {
-    background-color: hsl(var(--muted) / 0.6);
+    background-color: hsl(var(--muted) / 0.7);
   }
 
   .prose :where(tbody td):not(:where([class~="not-prose"] *)) {
