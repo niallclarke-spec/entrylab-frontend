@@ -242,7 +242,7 @@ export default function BrokerReview() {
                         <Award className="h-3 w-3 mr-1" /> Featured
                       </Badge>
                     )}
-                    <Badge variant="outline" className="text-foreground border-border/50" data-testid="badge-last-updated">
+                    <Badge className="bg-white/10 text-white border border-white/20" data-testid="badge-last-updated">
                       <Calendar className="h-3 w-3 mr-1 text-emerald-500" />
                       Updated {new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </Badge>
@@ -679,9 +679,9 @@ export default function BrokerReview() {
                     </div>
                     
                     {/* Update Badge */}
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border border-border/50">
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 border border-white/20">
                       <Calendar className="h-3.5 w-3.5 text-emerald-500" />
-                      <span className="text-xs font-medium text-foreground">
+                      <span className="text-xs font-medium text-white">
                         Updated {new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </span>
                     </div>
