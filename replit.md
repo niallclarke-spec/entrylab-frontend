@@ -5,6 +5,44 @@ EntryLab is a full-stack web application serving as a Forex News & Trading Intel
 
 ## Recent Changes (October 2025)
 
+### ✅ Automatic Pros & Cons Cards (October 29, 2025) - READY FOR DEPLOYMENT
+**Feature**: Automatically converts WordPress "Pros and Cons" sections into beautiful two-column cards with green checkmarks (pros) and red X marks (cons).
+
+**How It Works**:
+1. Detects H2/H3/H4 headings containing "Pros and Cons" or "Pros & Cons" (case-insensitive)
+2. Extracts bullet lists following bold "Pros" and "Cons" labels
+3. Removes plain lists from content and renders styled ProsConsCard component inline
+4. Card appears immediately after the heading with proper spacing
+
+**WordPress Format Required**:
+```
+## Pros & Cons
+
+**Pros**
+• Fast execution speeds
+• Low spreads
+• 24/7 support
+
+**Cons**
+• High minimum deposit
+• Limited payment methods
+```
+
+**Files Modified**:
+- `client/src/pages/Article.tsx` - Added `processContentWithProsConsCard()` parser and `renderContentWithProsConsCards()` renderer, fixed broker card element selector to include `div[data-pros-cons-placeholder]`
+- `client/src/components/ProsConsCard.tsx` - Created new component with green/red color-coded two-column layout
+
+**Impact**:
+- Improved visual hierarchy and scannability of product reviews
+- Consistent pros/cons presentation across all articles
+- Works automatically with any existing or future WordPress content following the format
+
+**Verified Working**:
+- ✅ Detects "Pros and Cons" and "Pros & Cons" headings
+- ✅ Extracts and displays bullet points correctly
+- ✅ Preserves broker card insertion logic (40% position calculation)
+- ✅ Dark mode support with proper color contrast
+
 ### ✅ Eliminated Duplicate Structured Data Schemas (October 27, 2025) - DEPLOYED
 **Issue**: Google Rich Results Test showed duplicate schemas preventing rich snippets:
 1. Duplicate Organization schemas (2x EntryLab on broker/prop firm pages)
