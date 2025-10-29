@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { List } from "lucide-react";
 
 interface TOCItem {
   id: string;
@@ -68,9 +69,12 @@ export function TableOfContents({ content }: TableOfContentsProps) {
 
   return (
     <Card className="p-4 bg-card/50 border-border/50">
-      <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-3">
-        On This Page
-      </h3>
+      <div className="flex items-center gap-2 mb-3">
+        <List className="h-4 w-4 text-primary" />
+        <h3 className="text-sm font-bold text-foreground">
+          Table of Contents
+        </h3>
+      </div>
       <nav className="space-y-1">
         {headings.map((heading) => (
           <button
