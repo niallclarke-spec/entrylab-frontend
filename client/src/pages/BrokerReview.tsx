@@ -7,7 +7,7 @@ import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, ArrowDownToLine, MessageSquare, Monitor } from "lucide-react";
+import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, ArrowDownToLine, MessageSquare, Monitor, Calendar } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { transformBrokerDetailed } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
@@ -17,6 +17,7 @@ import { getCountryCode } from "@/lib/countryCodeMap";
 // Lazy load modals and popups for better performance
 const ReviewModal = lazy(() => import("@/components/ReviewModalSimple").then(m => ({ default: m.ReviewModalSimple })));
 const BrokerAlertPopup = lazy(() => import("@/components/BrokerAlertPopup").then(m => ({ default: m.BrokerAlertPopup })));
+import { TableOfContents } from "@/components/TableOfContents";
 
 export default function BrokerReview() {
   const params = useParams();
@@ -34,6 +35,22 @@ export default function BrokerReview() {
   });
 
   const broker = wpBroker ? transformBrokerDetailed(wpBroker) : null;
+
+  // Add IDs to H2 headings for table of contents
+  const processContentWithIds = (html: string) => {
+    if (!html) return html;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    const h2Elements = doc.querySelectorAll("h2");
+    
+    h2Elements.forEach((h2, index) => {
+      h2.id = `section-${index}`;
+    });
+    
+    return doc.body.innerHTML;
+  };
+
+  const processedContent = broker?.content ? processContentWithIds(broker.content) : "";
 
   useEffect(() => {
     if (broker) {
@@ -561,7 +578,7 @@ export default function BrokerReview() {
                 <Card className="p-6">
                   <div 
                     className="prose prose-slate dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{ __html: broker.content }}
+                    dangerouslySetInnerHTML={{ __html: processedContent }}
                     data-testid="content-review"
                   />
                 </Card>
@@ -653,6 +670,21 @@ export default function BrokerReview() {
                   </a>
                 </Button>
               </Card>
+
+              {/* Table of Contents + Update Badge */}
+              {broker.content && (
+                <Card className="p-6 sticky top-6">
+                  <div className="mb-4">
+                    <TableOfContents content={broker.content} />
+                  </div>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                    <Calendar className="h-3.5 w-3.5 text-emerald-500" />
+                    <span className="text-xs font-medium text-emerald-400">
+                      Updated {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                    </span>
+                  </div>
+                </Card>
+              )}
             </div>
           </div>
         </div>
