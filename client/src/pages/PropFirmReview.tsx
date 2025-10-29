@@ -662,9 +662,17 @@ export default function PropFirmReview() {
 
                 {/* Table of Contents */}
                 {propFirm.content && (
-                  <div className="mb-6">
-                    <TableOfContents content={propFirm.content} />
-                  </div>
+                  <>
+                    <div className="mb-4">
+                      <TableOfContents content={propFirm.content} />
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 mb-6">
+                      <Calendar className="h-3.5 w-3.5 text-emerald-500" />
+                      <span className="text-xs font-medium text-emerald-400">
+                        Updated {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                      </span>
+                    </div>
+                  </>
                 )}
               </Card>
             </div>
