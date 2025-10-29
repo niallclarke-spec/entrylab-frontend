@@ -260,11 +260,11 @@ export default function PropFirmReview() {
                       <div className="flex items-center gap-3 flex-wrap mb-3">
                         {/* Rating Badge with glow effect */}
                         <div className="relative">
-                          <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full" />
-                          <div className="relative flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 px-4 py-2 rounded-lg" data-testid="text-prop-firm-rating">
-                            <Star className="h-5 w-5 fill-white text-white" />
-                            <span className="text-2xl font-bold text-white">{propFirm.rating}</span>
-                            <span className="text-white/80 text-sm">/5</span>
+                          <div className="absolute inset-0 bg-amber-400/30 blur-xl rounded-full" />
+                          <div className="relative flex items-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 px-4 py-2 rounded-lg" data-testid="text-prop-firm-rating">
+                            <Star className="h-5 w-5 fill-amber-900 text-amber-900" />
+                            <span className="text-2xl font-bold text-amber-900">{propFirm.rating}</span>
+                            <span className="text-amber-900/80 text-sm">/5</span>
                           </div>
                         </div>
                         {/* Trust Signals */}
@@ -385,7 +385,7 @@ export default function PropFirmReview() {
             <Card className="bg-background/60 backdrop-blur-sm border-border/50">
               <div className="p-6">
                 <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-4 flex items-center gap-2">
-                  <Info className="h-4 w-4 text-primary" /> Trading Intelligence
+                  <Info className="h-4 w-4 text-primary" /> At a Glance
                 </h3>
                 
                 {/* Key Highlights */}
