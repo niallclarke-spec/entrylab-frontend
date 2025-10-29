@@ -9,6 +9,7 @@ import { InlineBrokerCard } from "@/components/InlineBrokerCard";
 import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { ArticleCard } from "@/components/ArticleCard";
 import { NewsletterCTA } from "@/components/NewsletterCTA";
+import { ProsConsCard } from "@/components/ProsConsCard";
 import { Badge } from "@/components/ui/badge";
 import { Clock, User, Share2, BookOpen, TrendingUp, Building2, BarChart3, AlertCircle, ShieldCheck, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -235,23 +236,114 @@ export default function Article() {
     return doc.body.innerHTML;
   };
 
+  // Extract pros and cons from content if they exist
+  const extractProsAndCons = (htmlContent: string): { pros: string[], cons: string[], contentWithoutProsCons: string } | null => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, 'text/html');
+    
+    // Find heading that matches "Pros and Cons" or "Pros & Cons" (case insensitive)
+    const headings = Array.from(doc.querySelectorAll('h2, h3, h4'));
+    const prosConsHeading = headings.find(h => 
+      /pros\s*(&|and)\s*cons/i.test(h.textContent || '')
+    );
+    
+    if (!prosConsHeading) return null;
+    
+    // Find the next "Pros" and "Cons" headings or lists
+    let currentElement = prosConsHeading.nextElementSibling;
+    let prosHeading: Element | null = null;
+    let consHeading: Element | null = null;
+    let prosItems: string[] = [];
+    let consItems: string[] = [];
+    
+    // Track elements to remove
+    const elementsToRemove: Element[] = [prosConsHeading];
+    
+    while (currentElement) {
+      const tagName = currentElement.tagName.toLowerCase();
+      const textContent = currentElement.textContent?.trim().toLowerCase() || '';
+      
+      // Check if this is a "Pros" heading
+      if (['h2', 'h3', 'h4', 'h5', 'strong', 'p'].includes(tagName) && textContent.match(/^pros\s*$/)) {
+        prosHeading = currentElement;
+        elementsToRemove.push(currentElement);
+        currentElement = currentElement.nextElementSibling;
+        continue;
+      }
+      
+      // Check if this is a "Cons" heading
+      if (['h2', 'h3', 'h4', 'h5', 'strong', 'p'].includes(tagName) && textContent.match(/^cons\s*$/)) {
+        consHeading = currentElement;
+        elementsToRemove.push(currentElement);
+        currentElement = currentElement.nextElementSibling;
+        continue;
+      }
+      
+      // If we found pros heading, collect list items until we hit cons heading
+      if (prosHeading && !consHeading && tagName === 'ul') {
+        const items = Array.from(currentElement.querySelectorAll('li'));
+        prosItems = items.map(li => li.textContent?.trim() || '');
+        elementsToRemove.push(currentElement);
+      }
+      
+      // If we found cons heading, collect list items
+      if (consHeading && tagName === 'ul') {
+        const items = Array.from(currentElement.querySelectorAll('li'));
+        consItems = items.map(li => li.textContent?.trim() || '');
+        elementsToRemove.push(currentElement);
+        break; // Stop after collecting cons
+      }
+      
+      // Stop if we hit another major heading
+      if (['h2', 'h3'].includes(tagName) && currentElement !== prosHeading && currentElement !== consHeading) {
+        break;
+      }
+      
+      currentElement = currentElement.nextElementSibling;
+    }
+    
+    // Only return if we found both pros and cons
+    if (prosItems.length > 0 && consItems.length > 0) {
+      // Remove the elements from the document
+      elementsToRemove.forEach(el => el.remove());
+      
+      return {
+        pros: prosItems,
+        cons: consItems,
+        contentWithoutProsCons: doc.body.innerHTML
+      };
+    }
+    
+    return null;
+  };
+
   const parseContentWithBroker = (content: string, broker: Broker | undefined) => {
     // First, add affiliate links to the content
     const contentWithAffiliateLinks = addAffiliateLinks(content);
     
+    // Extract pros and cons if they exist
+    const prosConsData = extractProsAndCons(contentWithAffiliateLinks);
+    const processedContent = prosConsData ? prosConsData.contentWithoutProsCons : contentWithAffiliateLinks;
+    
     if (!broker) {
-      return <div dangerouslySetInnerHTML={{ __html: contentWithAffiliateLinks }} className="prose prose-slate dark:prose-invert max-w-none" />;
+      return (
+        <>
+          <div dangerouslySetInnerHTML={{ __html: processedContent }} className="prose prose-slate dark:prose-invert max-w-none" />
+          {prosConsData && <ProsConsCard pros={prosConsData.pros} cons={prosConsData.cons} />}
+        </>
+      );
     }
 
     const parser = new DOMParser();
-    const doc = parser.parseFromString(contentWithAffiliateLinks, 'text/html');
+    const doc = parser.parseFromString(processedContent, 'text/html');
     const allElements = Array.from(doc.querySelectorAll('p, h1, h2, h3, h4, h5, h6, ul, ol, blockquote, table:not(.wp-block-table table), figure, div.wp-block-table, div.wp-block-image, pre'));
 
     if (allElements.length < 3) {
       return (
         <>
-          <div dangerouslySetInnerHTML={{ __html: content }} className="prose prose-slate dark:prose-invert max-w-none" />
+          <div dangerouslySetInnerHTML={{ __html: processedContent }} className="prose prose-slate dark:prose-invert max-w-none" />
           <InlineBrokerCard broker={broker} />
+          {prosConsData && <ProsConsCard pros={prosConsData.pros} cons={prosConsData.cons} />}
         </>
       );
     }
@@ -296,6 +388,7 @@ export default function Article() {
           dangerouslySetInnerHTML={{ __html: afterBroker.map(el => el.outerHTML).join('') }} 
           className="prose prose-slate dark:prose-invert max-w-none" 
         />
+        {prosConsData && <ProsConsCard pros={prosConsData.pros} cons={prosConsData.cons} />}
       </>
     );
   };
