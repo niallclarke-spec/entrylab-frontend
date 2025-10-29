@@ -242,12 +242,10 @@ export default function BrokerReview() {
                         <Award className="h-3 w-3 mr-1" /> Featured
                       </Badge>
                     )}
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20" data-testid="text-last-updated">
-                      <Calendar className="h-3.5 w-3.5 text-emerald-500" />
-                      <span className="text-xs font-medium text-emerald-400">
-                        Updated {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                      </span>
-                    </div>
+                    <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20" data-testid="badge-last-updated">
+                      <Calendar className="h-3 w-3 mr-1" />
+                      Updated {new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </Badge>
                   </div>
                 </div>
               </div>
@@ -684,7 +682,7 @@ export default function BrokerReview() {
                     <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                       <Calendar className="h-3.5 w-3.5 text-emerald-500" />
                       <span className="text-xs font-medium text-emerald-400">
-                        Updated {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                        Updated {new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </span>
                     </div>
                   </>
