@@ -607,10 +607,11 @@ export default function BrokerReview() {
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {/* Quick Info Card */}
+              {/* Combined Card: Quick Info + Visit Button + TOC + Update Badge */}
               <Card className="p-6 sticky top-6">
+                {/* Quick Info Section */}
                 <h3 className="font-bold mb-4">Quick Info</h3>
-                <div className="space-y-3 text-sm">
+                <div className="space-y-3 text-sm mb-6">
                   {broker.headquarters && (
                     <div className="flex justify-between gap-3" data-testid="info-headquarters">
                       <span className="text-muted-foreground flex-shrink-0">Headquarters:</span>
@@ -643,7 +644,7 @@ export default function BrokerReview() {
                 </div>
 
                 {broker.awards && broker.awards.length > 0 && (
-                  <div className="mt-6 pt-6 border-t">
+                  <div className="mb-6 pb-6 border-b border-border/50">
                     <h4 className="font-semibold mb-3 flex items-center gap-2">
                       <Award className="h-4 w-4 text-emerald-500" /> Awards
                     </h4>
@@ -657,7 +658,8 @@ export default function BrokerReview() {
                   </div>
                 )}
 
-                <Button className="w-full mt-6" asChild data-testid="button-visit-sidebar" onClick={() => trackAffiliateClick({
+                {/* Visit Broker Button */}
+                <Button className="w-full mb-6" asChild data-testid="button-visit-sidebar" onClick={() => trackAffiliateClick({
                   broker_name: broker.name,
                   broker_type: 'broker',
                   page_location: 'broker_review',
@@ -669,22 +671,24 @@ export default function BrokerReview() {
                     Visit Broker <ExternalLink className="ml-2 h-4 w-4" />
                   </a>
                 </Button>
-              </Card>
 
-              {/* Table of Contents + Update Badge */}
-              {broker.content && (
-                <Card className="p-6 sticky top-6">
-                  <div className="mb-4">
-                    <TableOfContents content={broker.content} />
-                  </div>
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                    <Calendar className="h-3.5 w-3.5 text-emerald-500" />
-                    <span className="text-xs font-medium text-emerald-400">
-                      Updated {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                    </span>
-                  </div>
-                </Card>
-              )}
+                {/* Table of Contents */}
+                {broker.content && (
+                  <>
+                    <div className="mb-4">
+                      <TableOfContents content={broker.content} />
+                    </div>
+                    
+                    {/* Update Badge */}
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                      <Calendar className="h-3.5 w-3.5 text-emerald-500" />
+                      <span className="text-xs font-medium text-emerald-400">
+                        Updated {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </Card>
             </div>
           </div>
         </div>
