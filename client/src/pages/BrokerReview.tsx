@@ -242,11 +242,12 @@ export default function BrokerReview() {
                         <Award className="h-3 w-3 mr-1" /> Featured
                       </Badge>
                     )}
-                    {broker.lastUpdated && (
-                      <span className="text-xs text-muted-foreground" data-testid="text-last-updated">
-                        Updated {broker.lastUpdated.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20" data-testid="text-last-updated">
+                      <Calendar className="h-3.5 w-3.5 text-emerald-500" />
+                      <span className="text-xs font-medium text-emerald-400">
+                        Updated {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                       </span>
-                    )}
+                    </div>
                   </div>
                 </div>
               </div>
