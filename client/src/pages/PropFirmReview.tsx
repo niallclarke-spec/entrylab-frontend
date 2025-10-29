@@ -7,7 +7,7 @@ import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, MessageSquare } from "lucide-react";
+import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, MessageSquare, Copy, CheckCircle2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { transformPropFirmDetailed } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
@@ -15,11 +15,25 @@ import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
 import { getCountryCode } from "@/lib/countryCodeMap";
 import { ReviewModalSimple as ReviewModal } from "@/components/ReviewModalSimple";
 import { BrokerAlertPopup } from "@/components/BrokerAlertPopup";
+import { ProsConsCard } from "@/components/ProsConsCard";
+import { useToast } from "@/hooks/use-toast";
 
 export default function PropFirmReview() {
   const params = useParams();
   const slug = params.slug;
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const { toast } = useToast();
+
+  const copyDiscountCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(true);
+    toast({
+      title: "Discount code copied!",
+      description: `"${code}" has been copied to your clipboard`,
+    });
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
 
   const { data: wpPropFirm, isLoading } = useQuery<any>({
     queryKey: ["/api/wordpress/prop-firm", slug],
@@ -192,25 +206,26 @@ export default function PropFirmReview() {
             </Button>
           </Link>
 
-          <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-center">
+          <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-start">
+            {/* Left Column - Branding & Info */}
             <div>
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex items-start gap-6 mb-8">
                 <img 
                   src={propFirm.logo} 
                   alt={stripHtml(propFirm.name)}
-                  width="120"
-                  height="64"
-                  className="h-16 w-auto object-contain bg-white rounded-lg p-2"
+                  width="140"
+                  height="80"
+                  className="h-20 w-auto object-contain bg-white rounded-xl p-3 border-2 border-border"
                   data-testid="img-prop-firm-logo"
                 />
-                <div>
-                  <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2" data-testid="text-prop-firm-name">
-                    {stripHtml(propFirm.name)} Review
+                <div className="flex-1">
+                  <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-3" data-testid="text-prop-firm-name">
+                    {stripHtml(propFirm.name)}
                   </h1>
-                  <div className="flex items-center gap-4 flex-wrap">
-                    <div className="flex items-center gap-1" data-testid="text-prop-firm-rating">
+                  <div className="flex items-center gap-4 flex-wrap mb-4">
+                    <div className="flex items-center gap-1.5 bg-emerald-500/10 px-3 py-1.5 rounded-lg" data-testid="text-prop-firm-rating">
                       <Star className="h-5 w-5 fill-emerald-500 text-emerald-500" />
-                      <span className="text-lg font-semibold">{propFirm.rating}</span>
+                      <span className="text-xl font-bold text-emerald-500">{propFirm.rating}</span>
                       <span className="text-muted-foreground text-sm">/5</span>
                     </div>
                     {propFirm.verified && (
@@ -223,32 +238,26 @@ export default function PropFirmReview() {
                         <Award className="h-3 w-3 mr-1" /> Featured
                       </Badge>
                     )}
-                    {propFirm.lastUpdated && (
-                      <span className="text-xs text-muted-foreground" data-testid="text-last-updated">
-                        Updated {propFirm.lastUpdated.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </span>
-                    )}
                   </div>
+                  {propFirm.lastUpdated && (
+                    <span className="text-xs text-muted-foreground" data-testid="text-last-updated">
+                      Last updated {propFirm.lastUpdated.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </span>
+                  )}
                 </div>
               </div>
 
-              {propFirm.tagline && (
-                <p className="text-lg text-muted-foreground mb-6" data-testid="text-prop-firm-tagline">
-                  {propFirm.tagline}
-                </p>
-              )}
-
-              {/* At a Glance Highlights */}
+              {/* USP - Make it prominent */}
               {(propFirm.highlights && propFirm.highlights.length > 0) && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-primary" /> At a Glance
+                <div className="bg-primary/5 border-l-4 border-primary rounded-lg p-6 mb-6">
+                  <h3 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-primary" /> Why Choose {stripHtml(propFirm.name)}
                   </h3>
-                  <div className="grid sm:grid-cols-2 gap-2">
-                    {propFirm.highlights.slice(0, 4).map((highlight, index) => (
-                      <div key={index} className="flex items-center gap-2 text-sm text-muted-foreground" data-testid={`hero-highlight-${index}`}>
-                        <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                        <span>{highlight}</span>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {propFirm.highlights.map((highlight, index) => (
+                      <div key={index} className="flex items-start gap-2.5" data-testid={`hero-highlight-${index}`}>
+                        <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                        <span className="text-sm font-medium text-foreground">{highlight}</span>
                       </div>
                     ))}
                   </div>
@@ -256,26 +265,70 @@ export default function PropFirmReview() {
               )}
 
               {propFirm.bestFor && (
-                <div className="mb-6">
-                  <span className="text-sm font-medium text-muted-foreground">Best For: </span>
-                  <span className="text-sm text-foreground" data-testid="text-best-for">{propFirm.bestFor}</span>
+                <div className="flex items-start gap-2 text-sm mb-4">
+                  <Award className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-semibold text-foreground">Best For: </span>
+                    <span className="text-muted-foreground" data-testid="text-best-for">{propFirm.bestFor}</span>
+                  </div>
                 </div>
               )}
             </div>
 
-            <div className="flex flex-col gap-3 w-full lg:w-72">
-              <Button size="lg" asChild className="w-full" data-testid="button-visit-prop-firm" onClick={() => trackAffiliateClick({
-                broker_name: propFirm.name,
-                broker_type: 'prop_firm',
-                page_location: 'prop_firm_review',
-                placement_type: 'hero_cta',
-                rating: propFirm.rating,
-                affiliate_link: propFirm.link
-              })}>
+            {/* Right Column - CTA Card */}
+            <Card className="w-full lg:w-80 p-6 sticky top-24">
+              <Button 
+                size="lg" 
+                asChild 
+                className="w-full mb-3" 
+                data-testid="button-visit-prop-firm" 
+                onClick={() => trackAffiliateClick({
+                  broker_name: propFirm.name,
+                  broker_type: 'prop_firm',
+                  page_location: 'prop_firm_review',
+                  placement_type: 'hero_cta',
+                  rating: propFirm.rating,
+                  affiliate_link: propFirm.link
+                })}
+              >
                 <a href={propFirm.link} target="_blank" rel="noopener noreferrer">
                   Visit {stripHtml(propFirm.name)} <ExternalLink className="ml-2 h-4 w-4" />
                 </a>
               </Button>
+
+              {propFirm.bonusOffer && (
+                <div className="mb-3">
+                  <Card className="bg-gradient-to-r from-emerald-500/10 to-blue-500/10 border-emerald-500/20">
+                    <div className="p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Zap className="h-4 w-4 text-emerald-500" />
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Exclusive Discount</span>
+                      </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <code className="text-lg font-bold text-foreground" data-testid="text-discount-code">
+                          {propFirm.bonusOffer}
+                        </code>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => copyDiscountCode(propFirm.bonusOffer!)}
+                          data-testid="button-copy-discount"
+                        >
+                          {copiedCode ? (
+                            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Click to copy and paste at checkout
+                      </p>
+                    </div>
+                  </Card>
+                </div>
+              )}
+
               <Button 
                 size="lg" 
                 variant="outline" 
@@ -286,26 +339,7 @@ export default function PropFirmReview() {
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Write a Review
               </Button>
-              {propFirm.bonusOffer && (
-                <div className="relative">
-                  <ArrowUp className="h-4 w-4 text-blue-500 absolute -top-5 left-1/2 -translate-x-1/2 animate-bounce" />
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div>
-                          <Badge className="w-full text-center justify-center py-2.5 bg-blue-500/10 text-blue-500 border-blue-500/20 cursor-help text-base" data-testid="badge-bonus">
-                            🎁 {propFirm.bonusOffer} <Info className="h-3.5 w-3.5 ml-1 inline" />
-                          </Badge>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-xs text-center">
-                        <p className="text-xs">Get "{propFirm.bonusOffer}" if you sign up with the button above</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-              )}
-            </div>
+            </Card>
           </div>
         </div>
       </div>
@@ -376,43 +410,12 @@ export default function PropFirmReview() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-[1fr_350px] gap-8">
             <div className="space-y-8">
-              {/* Pros & Cons */}
+              {/* Pros & Cons - Use new card component */}
               {(propFirm.pros.length > 0 || propFirm.cons && propFirm.cons.length > 0) && (
-                <Card className="p-6">
-                  <h2 className="text-2xl font-bold mb-6">Pros & Cons</h2>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {propFirm.pros.length > 0 && (
-                      <div>
-                        <h3 className="font-semibold text-emerald-500 mb-3 flex items-center gap-2">
-                          <Check className="h-5 w-5" /> Pros
-                        </h3>
-                        <ul className="space-y-2">
-                          {propFirm.pros.map((pro, index) => (
-                            <li key={index} className="flex items-start gap-2 text-sm" data-testid={`text-pro-${index}`}>
-                              <Check className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                              <span>{pro}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {propFirm.cons && propFirm.cons.length > 0 && (
-                      <div>
-                        <h3 className="font-semibold text-destructive mb-3 flex items-center gap-2">
-                          <X className="h-5 w-5" /> Cons
-                        </h3>
-                        <ul className="space-y-2">
-                          {propFirm.cons.map((con, index) => (
-                            <li key={index} className="flex items-start gap-2 text-sm" data-testid={`text-con-${index}`}>
-                              <X className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
-                              <span>{con}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </Card>
+                <ProsConsCard 
+                  pros={propFirm.pros}
+                  cons={propFirm.cons || []}
+                />
               )}
 
               {/* Prop Firm Details Grid */}
@@ -494,13 +497,21 @@ export default function PropFirmReview() {
                 </div>
               </Card>
 
-              {/* Full Review Content */}
+              {/* Review Summary - WYSIWYG Content from ACF */}
               {propFirm.content && (
-                <Card className="p-6">
+                <Card className="p-8">
+                  <h2 className="text-3xl font-bold mb-6">{stripHtml(propFirm.name)} In-Depth Review</h2>
                   <div 
-                    className="prose prose-slate dark:prose-invert max-w-none"
+                    className="prose prose-lg dark:prose-invert max-w-none
+                    prose-headings:font-bold prose-headings:text-foreground
+                    prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4 prose-h2:border-b prose-h2:border-border prose-h2:pb-3
+                    prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3
+                    prose-h4:text-lg prose-h4:mt-4 prose-h4:mb-2
+                    prose-p:text-muted-foreground prose-p:leading-relaxed prose-p:mb-4
+                    prose-ul:my-4 prose-li:text-muted-foreground
+                    prose-strong:text-foreground prose-strong:font-semibold"
                     dangerouslySetInnerHTML={{ __html: propFirm.content }}
-                    data-testid="content-review"
+                    data-testid="content-review-summary"
                   />
                 </Card>
               )}
