@@ -602,6 +602,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.redirect(301, '/');
   });
 
+  // Redirect old Funderpro URL to new review URL (301 permanent redirect)
+  app.get("/prop-firm/funderpro", (req, res) => {
+    console.log('[Redirect] /prop-firm/funderpro → /prop-firm/funderpro-review');
+    res.redirect(301, '/prop-firm/funderpro-review');
+  });
+
   // Redirect old /article/:slug URLs to new /:category/:slug URLs (301 permanent redirect)
   app.get("/article/:slug", async (req, res) => {
     try {
