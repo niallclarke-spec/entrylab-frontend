@@ -258,14 +258,11 @@ export default function PropFirmReview() {
                         {stripHtml(propFirm.name)}
                       </h1>
                       <div className="flex items-center gap-3 flex-wrap mb-3">
-                        {/* Rating Badge with glow effect */}
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-amber-400/30 blur-xl rounded-full" />
-                          <div className="relative flex items-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 px-4 py-2 rounded-lg" data-testid="text-prop-firm-rating">
-                            <Star className="h-5 w-5 fill-amber-900 text-amber-900" />
-                            <span className="text-2xl font-bold text-amber-900">{propFirm.rating}</span>
-                            <span className="text-amber-900/80 text-sm">/5</span>
-                          </div>
+                        {/* Rating Badge - No background */}
+                        <div className="flex items-center gap-2" data-testid="text-prop-firm-rating">
+                          <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
+                          <span className="text-2xl font-bold text-foreground">{propFirm.rating}</span>
+                          <span className="text-muted-foreground text-sm">/5</span>
                         </div>
                         {/* Trust Signals */}
                         {propFirm.verified && (
