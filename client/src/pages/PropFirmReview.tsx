@@ -665,56 +665,6 @@ export default function PropFirmReview() {
                     <TableOfContents content={propFirm.content} />
                   </div>
                 )}
-
-                <div className="border-t border-border/50 pt-6">
-                  <h3 className="font-bold mb-4 text-sm uppercase tracking-wide text-muted-foreground">Quick Info</h3>
-                  <div className="space-y-3 text-sm">
-                  {propFirm.headquarters && (
-                    <div className="flex justify-between" data-testid="info-headquarters">
-                      <span className="text-muted-foreground">Headquarters:</span>
-                      <span className="font-medium">{propFirm.headquarters}</span>
-                    </div>
-                  )}
-                  {propFirm.totalUsers && (
-                    <div className="flex justify-between" data-testid="info-popularity">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="text-muted-foreground flex items-center gap-1 cursor-help">
-                              Popularity: <Info className="h-3 w-3 text-blue-500" />
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-xs text-center">
-                            <p className="text-xs">We base this on website traffic according to SimilarWeb tool, social media engagement and affiliates promoting them</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <span className="font-medium">{propFirm.totalUsers}</span>
-                    </div>
-                  )}
-                  {propFirm.trustScore && (
-                    <div className="flex justify-between" data-testid="info-trust-score">
-                      <span className="text-muted-foreground">Trust Score:</span>
-                      <span className="font-medium">{propFirm.trustScore}/100</span>
-                    </div>
-                  )}
-                  </div>
-
-                  {propFirm.awards && propFirm.awards.length > 0 && (
-                    <div className="mt-6 pt-6 border-t border-border/50">
-                      <h4 className="font-semibold mb-3 flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground">
-                        <Award className="h-4 w-4 text-emerald-500" /> Awards
-                      </h4>
-                      <ul className="space-y-2">
-                        {propFirm.awards.map((award, index) => (
-                          <li key={index} className="text-sm text-muted-foreground" data-testid={`award-${index}`}>
-                            • {award}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
               </Card>
             </div>
           </div>
