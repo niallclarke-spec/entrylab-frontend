@@ -297,32 +297,41 @@ export default function PropFirmReview() {
               </Button>
 
               {propFirm.bonusOffer && (
-                <div className="mb-3">
-                  <Card className="bg-gradient-to-r from-emerald-500/10 to-blue-500/10 border-emerald-500/20">
-                    <div className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Zap className="h-4 w-4 text-emerald-500" />
-                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Exclusive Discount</span>
+                <div className="mb-4">
+                  <Card className="bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-blue-500/10 border-2 border-emerald-500/40">
+                    <div className="p-6">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Zap className="h-5 w-5 text-emerald-500" />
+                        <span className="text-sm font-bold text-emerald-500 uppercase tracking-wide">Exclusive Discount Code</span>
                       </div>
-                      <div className="flex items-center justify-between gap-2">
-                        <code className="text-lg font-bold text-foreground" data-testid="text-discount-code">
-                          {propFirm.bonusOffer}
-                        </code>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => copyDiscountCode(propFirm.bonusOffer!)}
-                          data-testid="button-copy-discount"
-                        >
-                          {copiedCode ? (
-                            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                          ) : (
-                            <Copy className="h-4 w-4" />
-                          )}
-                        </Button>
+                      <div className="bg-background/80 rounded-lg p-4 mb-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <code className="text-2xl font-bold text-foreground tracking-wider" data-testid="text-discount-code">
+                            {propFirm.bonusOffer}
+                          </code>
+                          <Button
+                            size="default"
+                            variant="outline"
+                            className="flex-shrink-0"
+                            onClick={() => copyDiscountCode(propFirm.bonusOffer!)}
+                            data-testid="button-copy-discount"
+                          >
+                            {copiedCode ? (
+                              <>
+                                <CheckCircle2 className="h-4 w-4 mr-2 text-emerald-500" />
+                                Copied!
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="h-4 w-4 mr-2" />
+                                Copy
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Click to copy and paste at checkout
+                      <p className="text-sm text-muted-foreground text-center">
+                        Copy code and paste at checkout to get your discount
                       </p>
                     </div>
                   </Card>
@@ -344,10 +353,11 @@ export default function PropFirmReview() {
         </div>
       </div>
 
-      {/* Quick Stats Bar */}
-      <div className="border-b bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      {/* Quick Stats Bar - Only show if at least one stat exists */}
+      {(propFirm.minDeposit || propFirm.maxLeverage || propFirm.spreadFrom || propFirm.regulation || propFirm.instrumentsCount || propFirm.supportHours) && (
+        <div className="border-b bg-muted/30">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {propFirm.minDeposit && (
               <div className="text-center" data-testid="stat-min-deposit">
                 <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
@@ -402,9 +412,10 @@ export default function PropFirmReview() {
                 <div className="text-xs text-muted-foreground">Support</div>
               </div>
             )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <main className="flex-1 py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -480,7 +491,7 @@ export default function PropFirmReview() {
                     <div className="p-4 rounded-lg bg-muted/50" data-testid="detail-withdrawal">
                       <div className="flex items-center gap-2 mb-2">
                         <CreditCard className="h-5 w-5 text-primary" />
-                        <span className="font-semibold">Payout Time</span>
+                        <span className="font-semibold">Payout Methods</span>
                       </div>
                       <p className="text-sm text-muted-foreground">{propFirm.withdrawalTime}</p>
                     </div>
@@ -500,7 +511,6 @@ export default function PropFirmReview() {
               {/* Review Summary - WYSIWYG Content from ACF */}
               {propFirm.content && (
                 <Card className="p-8">
-                  <h2 className="text-3xl font-bold mb-6">{stripHtml(propFirm.name)} In-Depth Review</h2>
                   <div 
                     className="prose prose-lg dark:prose-invert max-w-none
                     prose-headings:font-bold prose-headings:text-foreground
