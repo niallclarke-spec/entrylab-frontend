@@ -7,7 +7,7 @@ import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, MessageSquare, Copy, CheckCircle2 } from "lucide-react";
+import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, MessageSquare, Copy, CheckCircle2, Calendar } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { transformPropFirmDetailed } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
@@ -227,9 +227,12 @@ export default function PropFirmReview() {
                 <ArrowLeft className="mr-2 h-3 w-3" /> Back to Prop Firms
               </Button>
             </Link>
-            <Badge variant="outline" className="text-xs" data-testid="text-last-updated">
-              Updated {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-            </Badge>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20" data-testid="text-last-updated">
+              <Calendar className="h-3.5 w-3.5 text-emerald-500" />
+              <span className="text-xs font-medium text-emerald-400">
+                Updated {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+              </span>
+            </div>
           </div>
 
           {/* Main Content Grid - Two Columns */}
