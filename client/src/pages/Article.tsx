@@ -236,8 +236,8 @@ export default function Article() {
     return doc.body.innerHTML;
   };
 
-  // Extract pros and cons from content if they exist
-  const extractProsAndCons = (htmlContent: string): { pros: string[], cons: string[], contentWithoutProsCons: string } | null => {
+  // Extract pros and cons from content and replace with card inline
+  const processContentWithProsConsCard = (htmlContent: string): string => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlContent, 'text/html');
     
@@ -247,7 +247,7 @@ export default function Article() {
       /pros\s*(&|and)\s*cons/i.test(h.textContent || '')
     );
     
-    if (!prosConsHeading) return null;
+    if (!prosConsHeading) return htmlContent;
     
     // Find the next "Pros" and "Cons" headings or lists
     let currentElement = prosConsHeading.nextElementSibling;
@@ -256,8 +256,8 @@ export default function Article() {
     let prosItems: string[] = [];
     let consItems: string[] = [];
     
-    // Track elements to remove
-    const elementsToRemove: Element[] = [prosConsHeading];
+    // Track elements to remove (NOT including main heading)
+    const elementsToRemove: Element[] = [];
     
     while (currentElement) {
       const tagName = currentElement.tagName.toLowerCase();
@@ -302,36 +302,89 @@ export default function Article() {
       currentElement = currentElement.nextElementSibling;
     }
     
-    // Only return if we found both pros and cons
+    // Only proceed if we found both pros and cons
     if (prosItems.length > 0 && consItems.length > 0) {
-      // Remove the elements from the document
-      elementsToRemove.forEach(el => el.remove());
+      // Create placeholder div that React will replace with ProsConsCard
+      const placeholder = doc.createElement('div');
+      placeholder.setAttribute('data-pros-cons-placeholder', 'true');
+      placeholder.setAttribute('data-pros', JSON.stringify(prosItems));
+      placeholder.setAttribute('data-cons', JSON.stringify(consItems));
       
-      return {
-        pros: prosItems,
-        cons: consItems,
-        contentWithoutProsCons: doc.body.innerHTML
-      };
+      // Insert placeholder right after the "Pros and Cons" heading
+      prosConsHeading.parentNode?.insertBefore(placeholder, prosConsHeading.nextSibling);
+      
+      // Remove the subheadings and lists
+      elementsToRemove.forEach(el => el.remove());
     }
     
-    return null;
+    return doc.body.innerHTML;
+  };
+
+  // Render content and replace pros/cons placeholders with actual cards
+  const renderContentWithProsConsCards = (htmlContent: string) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, 'text/html');
+    const placeholders = Array.from(doc.querySelectorAll('[data-pros-cons-placeholder]'));
+    
+    if (placeholders.length === 0) {
+      return <div dangerouslySetInnerHTML={{ __html: htmlContent }} className="prose prose-slate dark:prose-invert max-w-none" />;
+    }
+    
+    // Split content by placeholders and interleave with ProsConsCards
+    const elements: JSX.Element[] = [];
+    let lastIndex = 0;
+    
+    placeholders.forEach((placeholder, index) => {
+      const prosData = placeholder.getAttribute('data-pros');
+      const consData = placeholder.getAttribute('data-cons');
+      
+      if (prosData && consData) {
+        const pros = JSON.parse(prosData);
+        const cons = JSON.parse(consData);
+        
+        // Get all content before this placeholder
+        const beforeContent = doc.body.innerHTML.substring(lastIndex, doc.body.innerHTML.indexOf(placeholder.outerHTML));
+        
+        if (beforeContent.trim()) {
+          elements.push(
+            <div 
+              key={`content-${index}`}
+              dangerouslySetInnerHTML={{ __html: beforeContent }} 
+              className="prose prose-slate dark:prose-invert max-w-none" 
+            />
+          );
+        }
+        
+        elements.push(<ProsConsCard key={`pros-cons-${index}`} pros={pros} cons={cons} />);
+        
+        lastIndex = doc.body.innerHTML.indexOf(placeholder.outerHTML) + placeholder.outerHTML.length;
+      }
+    });
+    
+    // Add remaining content after last placeholder
+    const remainingContent = doc.body.innerHTML.substring(lastIndex);
+    if (remainingContent.trim()) {
+      elements.push(
+        <div 
+          key="content-final"
+          dangerouslySetInnerHTML={{ __html: remainingContent }} 
+          className="prose prose-slate dark:prose-invert max-w-none" 
+        />
+      );
+    }
+    
+    return <>{elements}</>;
   };
 
   const parseContentWithBroker = (content: string, broker: Broker | undefined) => {
     // First, add affiliate links to the content
     const contentWithAffiliateLinks = addAffiliateLinks(content);
     
-    // Extract pros and cons if they exist
-    const prosConsData = extractProsAndCons(contentWithAffiliateLinks);
-    const processedContent = prosConsData ? prosConsData.contentWithoutProsCons : contentWithAffiliateLinks;
+    // Process pros/cons sections inline
+    const processedContent = processContentWithProsConsCard(contentWithAffiliateLinks);
     
     if (!broker) {
-      return (
-        <>
-          <div dangerouslySetInnerHTML={{ __html: processedContent }} className="prose prose-slate dark:prose-invert max-w-none" />
-          {prosConsData && <ProsConsCard pros={prosConsData.pros} cons={prosConsData.cons} />}
-        </>
-      );
+      return renderContentWithProsConsCards(processedContent);
     }
 
     const parser = new DOMParser();
@@ -341,9 +394,8 @@ export default function Article() {
     if (allElements.length < 3) {
       return (
         <>
-          <div dangerouslySetInnerHTML={{ __html: processedContent }} className="prose prose-slate dark:prose-invert max-w-none" />
+          {renderContentWithProsConsCards(processedContent)}
           <InlineBrokerCard broker={broker} />
-          {prosConsData && <ProsConsCard pros={prosConsData.pros} cons={prosConsData.cons} />}
         </>
       );
     }
@@ -377,18 +429,14 @@ export default function Article() {
       }
     });
 
+    const beforeContent = beforeBroker.map(el => el.outerHTML).join('');
+    const afterContent = afterBroker.map(el => el.outerHTML).join('');
+    
     return (
       <>
-        <div 
-          dangerouslySetInnerHTML={{ __html: beforeBroker.map(el => el.outerHTML).join('') }} 
-          className="prose prose-slate dark:prose-invert max-w-none" 
-        />
+        {renderContentWithProsConsCards(beforeContent)}
         <InlineBrokerCard broker={broker} />
-        <div 
-          dangerouslySetInnerHTML={{ __html: afterBroker.map(el => el.outerHTML).join('') }} 
-          className="prose prose-slate dark:prose-invert max-w-none" 
-        />
-        {prosConsData && <ProsConsCard pros={prosConsData.pros} cons={prosConsData.cons} />}
+        {renderContentWithProsConsCards(afterContent)}
       </>
     );
   };
