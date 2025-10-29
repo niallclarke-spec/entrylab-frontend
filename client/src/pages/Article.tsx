@@ -247,7 +247,9 @@ export default function Article() {
       /pros\s*(&|and)\s*cons/i.test(h.textContent || '')
     );
     
-    if (!prosConsHeading) return htmlContent;
+    if (!prosConsHeading) {
+      return htmlContent;
+    }
     
     // Find the next "Pros" and "Cons" headings or lists
     let currentElement = prosConsHeading.nextElementSibling;
@@ -395,7 +397,7 @@ export default function Article() {
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(processedContent, 'text/html');
-    const allElements = Array.from(doc.querySelectorAll('p, h1, h2, h3, h4, h5, h6, ul, ol, blockquote, table:not(.wp-block-table table), figure, div.wp-block-table, div.wp-block-image, pre'));
+    const allElements = Array.from(doc.querySelectorAll('p, h1, h2, h3, h4, h5, h6, ul, ol, blockquote, table:not(.wp-block-table table), figure, div.wp-block-table, div.wp-block-image, div[data-pros-cons-placeholder], pre'));
 
     if (allElements.length < 3) {
       return (
