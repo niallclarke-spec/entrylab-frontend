@@ -16,6 +16,7 @@ import { getCountryCode } from "@/lib/countryCodeMap";
 import { ReviewModalSimple as ReviewModal } from "@/components/ReviewModalSimple";
 import { BrokerAlertPopup } from "@/components/BrokerAlertPopup";
 import { ProsConsCard } from "@/components/ProsConsCard";
+import { TableOfContents } from "@/components/TableOfContents";
 import { useToast } from "@/hooks/use-toast";
 
 export default function PropFirmReview() {
@@ -46,6 +47,22 @@ export default function PropFirmReview() {
   });
 
   const propFirm = wpPropFirm ? transformPropFirmDetailed(wpPropFirm) : null;
+
+  // Add IDs to H2 headings for table of contents
+  const processContentWithIds = (html: string) => {
+    if (!html) return html;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    const h2Elements = doc.querySelectorAll("h2");
+    
+    h2Elements.forEach((h2, index) => {
+      h2.id = `section-${index}`;
+    });
+    
+    return doc.body.innerHTML;
+  };
+
+  const processedContent = propFirm?.content ? processContentWithIds(propFirm.content) : "";
 
   useEffect(() => {
     if (propFirm) {
@@ -467,18 +484,18 @@ export default function PropFirmReview() {
               </Card>
 
               {/* Review Summary - WYSIWYG Content from ACF */}
-              {propFirm.content && (
+              {processedContent && (
                 <Card className="p-8">
                   <div 
                     className="prose prose-lg dark:prose-invert max-w-none
                     prose-headings:font-bold prose-headings:text-foreground
-                    prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4 prose-h2:border-b prose-h2:border-border prose-h2:pb-3
+                    prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4 prose-h2:border-b prose-h2:border-border prose-h2:pb-3 prose-h2:scroll-mt-24
                     prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3
                     prose-h4:text-lg prose-h4:mt-4 prose-h4:mb-2
                     prose-p:text-muted-foreground prose-p:leading-relaxed prose-p:mb-4
                     prose-ul:my-4 prose-li:text-muted-foreground
                     prose-strong:text-foreground prose-strong:font-semibold"
-                    dangerouslySetInnerHTML={{ __html: propFirm.content }}
+                    dangerouslySetInnerHTML={{ __html: processedContent }}
                     data-testid="content-review-summary"
                   />
                 </Card>
@@ -538,6 +555,13 @@ export default function PropFirmReview() {
                   <MessageSquare className="mr-2 h-4 w-4" />
                   Write a Review
                 </Button>
+
+                {/* Table of Contents */}
+                {propFirm.content && (
+                  <div className="mb-6">
+                    <TableOfContents content={propFirm.content} />
+                  </div>
+                )}
 
                 <div className="border-t border-border/50 pt-6">
                   <h3 className="font-bold mb-4 text-sm uppercase tracking-wide text-muted-foreground">Quick Info</h3>
