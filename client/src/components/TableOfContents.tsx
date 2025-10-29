@@ -17,12 +17,12 @@ export function TableOfContents({ content }: TableOfContentsProps) {
   useEffect(() => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(content, "text/html");
-    const h2Elements = doc.querySelectorAll("h2");
+    const headingElements = doc.querySelectorAll("h2, h3, h4");
     
-    const items: TOCItem[] = Array.from(h2Elements).map((h2, index) => {
-      const text = h2.textContent || "";
+    const items: TOCItem[] = Array.from(headingElements).map((heading, index) => {
+      const text = heading.textContent || "";
       const id = `section-${index}`;
-      h2.id = id;
+      heading.id = id;
       return { id, text };
     });
     
@@ -42,11 +42,11 @@ export function TableOfContents({ content }: TableOfContentsProps) {
       }
     );
 
-    const actualH2s = document.querySelectorAll("h2[id^='section-']");
-    actualH2s.forEach((h2) => observer.observe(h2));
+    const actualHeadings = document.querySelectorAll("h2[id^='section-'], h3[id^='section-'], h4[id^='section-']");
+    actualHeadings.forEach((heading) => observer.observe(heading));
 
     return () => {
-      actualH2s.forEach((h2) => observer.unobserve(h2));
+      actualHeadings.forEach((heading) => observer.unobserve(heading));
     };
   }, [content]);
 
