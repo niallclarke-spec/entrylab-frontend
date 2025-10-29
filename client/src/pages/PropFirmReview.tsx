@@ -197,158 +197,115 @@ export default function PropFirmReview() {
       />
       <Navigation />
 
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-primary/10 via-background to-background border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-16">
+      {/* Hero "Intel Bar" - 3-Column Grid */}
+      <div className="relative bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border-b border-border/50 overflow-hidden">
+        {/* Subtle grid overlay */}
+        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:32px_32px]" />
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-8">
           <Link href="/prop-firms">
-            <Button variant="ghost" size="sm" className="mb-6" data-testid="button-back-prop-firms-top">
+            <Button variant="ghost" size="sm" className="mb-6 text-muted-foreground hover:text-foreground" data-testid="button-back-prop-firms-top">
               <ArrowLeft className="mr-2 h-3 w-3" /> Back to Prop Firms
             </Button>
           </Link>
 
-          <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-start">
-            {/* Left Column - Branding & Info */}
-            <div>
-              <div className="flex items-start gap-6 mb-8">
-                <img 
-                  src={propFirm.logo} 
-                  alt={stripHtml(propFirm.name)}
-                  width="140"
-                  height="80"
-                  className="h-20 w-auto object-contain bg-white rounded-xl p-3 border-2 border-border"
-                  data-testid="img-prop-firm-logo"
-                />
-                <div className="flex-1">
-                  <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-3" data-testid="text-prop-firm-name">
-                    {stripHtml(propFirm.name)}
-                  </h1>
-                  <div className="flex items-center gap-4 flex-wrap mb-4">
-                    <div className="flex items-center gap-1.5 bg-emerald-500/10 px-3 py-1.5 rounded-lg" data-testid="text-prop-firm-rating">
-                      <Star className="h-5 w-5 fill-emerald-500 text-emerald-500" />
-                      <span className="text-xl font-bold text-emerald-500">{propFirm.rating}</span>
-                      <span className="text-muted-foreground text-sm">/5</span>
-                    </div>
-                    {propFirm.verified && (
-                      <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20" data-testid="badge-verified">
-                        <Shield className="h-3 w-3 mr-1" /> Verified
-                      </Badge>
-                    )}
-                    {propFirm.featured && (
-                      <Badge className="bg-primary/10 text-primary border-primary/20" data-testid="badge-featured">
-                        <Award className="h-3 w-3 mr-1" /> Featured
-                      </Badge>
-                    )}
-                  </div>
-                  {propFirm.lastUpdated && (
-                    <span className="text-xs text-muted-foreground" data-testid="text-last-updated">
-                      Last updated {propFirm.lastUpdated.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                    </span>
-                  )}
+          {/* 3-Column Intel Grid */}
+          <div className="grid lg:grid-cols-3 gap-6">
+            {/* Column 1: Logo + Rating */}
+            <div className="flex flex-col items-start">
+              <img 
+                src={propFirm.logo} 
+                alt={stripHtml(propFirm.name)}
+                width="160"
+                height="80"
+                className="h-20 w-auto object-contain bg-white rounded-xl p-3 mb-4"
+                data-testid="img-prop-firm-logo"
+              />
+              <h1 className="text-3xl font-bold text-foreground mb-3" data-testid="text-prop-firm-name">
+                {stripHtml(propFirm.name)}
+              </h1>
+              <div className="flex items-center gap-3 flex-wrap mb-3">
+                <div className="flex items-center gap-2 bg-emerald-500/20 px-4 py-2 rounded-lg border border-emerald-500/30" data-testid="text-prop-firm-rating">
+                  <Star className="h-5 w-5 fill-emerald-500 text-emerald-500" />
+                  <span className="text-2xl font-bold text-emerald-500">{propFirm.rating}</span>
+                  <span className="text-muted-foreground text-sm">/5</span>
                 </div>
               </div>
-
-              {/* USP - Make it prominent */}
-              {(propFirm.highlights && propFirm.highlights.length > 0) && (
-                <div className="bg-primary/5 border-l-4 border-primary rounded-lg p-6 mb-6">
-                  <h3 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-primary" /> Why Choose {stripHtml(propFirm.name)}
-                  </h3>
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    {propFirm.highlights.map((highlight, index) => (
-                      <div key={index} className="flex items-start gap-2.5" data-testid={`hero-highlight-${index}`}>
-                        <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm font-medium text-foreground">{highlight}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {propFirm.bestFor && (
-                <div className="flex items-start gap-2 text-sm mb-4">
-                  <Award className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-semibold text-foreground">Best For: </span>
-                    <span className="text-muted-foreground" data-testid="text-best-for">{propFirm.bestFor}</span>
-                  </div>
-                </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                {propFirm.verified && (
+                  <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20" data-testid="badge-verified">
+                    <Shield className="h-3 w-3 mr-1" /> Verified
+                  </Badge>
+                )}
+                {propFirm.featured && (
+                  <Badge className="bg-primary/10 text-primary border-primary/20" data-testid="badge-featured">
+                    <Award className="h-3 w-3 mr-1" /> Featured
+                  </Badge>
+                )}
+              </div>
+              {propFirm.lastUpdated && (
+                <span className="text-xs text-muted-foreground mt-3" data-testid="text-last-updated">
+                  Updated {propFirm.lastUpdated.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                </span>
               )}
             </div>
 
-            {/* Right Column - CTA Card */}
-            <Card className="w-full lg:w-80 p-6 sticky top-24">
-              <Button 
-                size="lg" 
-                asChild 
-                className="w-full mb-3" 
-                data-testid="button-visit-prop-firm" 
-                onClick={() => trackAffiliateClick({
-                  broker_name: propFirm.name,
-                  broker_type: 'prop_firm',
-                  page_location: 'prop_firm_review',
-                  placement_type: 'hero_cta',
-                  rating: propFirm.rating,
-                  affiliate_link: propFirm.link
-                })}
-              >
-                <a href={propFirm.link} target="_blank" rel="noopener noreferrer">
-                  Visit {stripHtml(propFirm.name)} <ExternalLink className="ml-2 h-4 w-4" />
-                </a>
-              </Button>
-
-              {propFirm.bonusOffer && (
-                <div className="mb-4">
-                  <Card className="bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-blue-500/10 border-2 border-emerald-500/40">
-                    <div className="p-6">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Zap className="h-5 w-5 text-emerald-500" />
-                        <span className="text-sm font-bold text-emerald-500 uppercase tracking-wide">Exclusive Discount Code</span>
-                      </div>
-                      <div className="bg-background/80 rounded-lg p-4 mb-3">
-                        <div className="flex items-center justify-between gap-3">
-                          <code className="text-2xl font-bold text-foreground tracking-wider" data-testid="text-discount-code">
-                            {propFirm.bonusOffer}
-                          </code>
-                          <Button
-                            size="default"
-                            variant="outline"
-                            className="flex-shrink-0"
-                            onClick={() => copyDiscountCode(propFirm.bonusOffer!)}
-                            data-testid="button-copy-discount"
-                          >
-                            {copiedCode ? (
-                              <>
-                                <CheckCircle2 className="h-4 w-4 mr-2 text-emerald-500" />
-                                Copied!
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="h-4 w-4 mr-2" />
-                                Copy
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground text-center">
-                        Copy code and paste at checkout to get your discount
-                      </p>
+            {/* Column 2: Key USPs */}
+            {(propFirm.highlights && propFirm.highlights.length > 0) && (
+              <div className="flex flex-col justify-center">
+                <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-4 flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-primary" /> Key Features
+                </h3>
+                <div className="space-y-3">
+                  {propFirm.highlights.slice(0, 4).map((highlight, index) => (
+                    <div key={index} className="flex items-start gap-2" data-testid={`hero-highlight-${index}`}>
+                      <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground font-medium">{highlight}</span>
                     </div>
-                  </Card>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
 
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="w-full" 
-                data-testid="button-write-review"
-                onClick={() => setIsReviewModalOpen(true)}
-              >
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Write a Review
-              </Button>
-            </Card>
+            {/* Column 3: Discount Code Capsule */}
+            {propFirm.bonusOffer && (
+              <div className="flex flex-col justify-center">
+                <Card className="bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-transparent border-2 border-emerald-500/50">
+                  <div className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Zap className="h-5 w-5 text-emerald-500" />
+                      <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider">Exclusive Code</span>
+                    </div>
+                    <div className="bg-background/95 rounded-lg p-5 mb-4 border border-border/50">
+                      <code className="text-3xl font-bold text-foreground tracking-wider block text-center" data-testid="text-discount-code">
+                        {propFirm.bonusOffer}
+                      </code>
+                    </div>
+                    <Button
+                      size="lg"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700"
+                      onClick={() => copyDiscountCode(propFirm.bonusOffer!)}
+                      data-testid="button-copy-discount"
+                    >
+                      {copiedCode ? (
+                        <>
+                          <CheckCircle2 className="h-5 w-5 mr-2" />
+                          Copied to Clipboard!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-5 w-5 mr-2" />
+                          Copy Code
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-xs text-center text-muted-foreground mt-3">
+                      Apply at checkout for your discount
+                    </p>
+                  </div>
+                </Card>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -417,9 +374,10 @@ export default function PropFirmReview() {
         </div>
       )}
 
-      <main className="flex-1 py-12 md:py-16">
+      <main className="flex-1 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid lg:grid-cols-[1fr_350px] gap-8">
+          <div className="grid lg:grid-cols-[1fr_380px] gap-8">
+            {/* Main Content Column */}
             <div className="space-y-8">
               {/* Pros & Cons - Use new card component */}
               {(propFirm.pros.length > 0 || propFirm.cons && propFirm.cons.length > 0) && (
@@ -547,12 +505,43 @@ export default function PropFirmReview() {
               </Card>
             </div>
 
-            {/* Sidebar */}
+            {/* Sticky Conversion Sidebar */}
             <div className="space-y-6">
-              {/* Quick Info Card */}
-              <Card className="p-6 sticky top-6">
-                <h3 className="font-bold mb-4">Quick Info</h3>
-                <div className="space-y-3 text-sm">
+              {/* Primary CTA Card */}
+              <Card className="p-6 sticky top-24 bg-gradient-to-br from-card via-card to-muted/30 border-border/50">
+                <Button 
+                  size="lg" 
+                  asChild 
+                  className="w-full mb-4" 
+                  data-testid="button-visit-sidebar" 
+                  onClick={() => trackAffiliateClick({
+                    broker_name: propFirm.name,
+                    broker_type: 'prop_firm',
+                    page_location: 'prop_firm_review',
+                    placement_type: 'quick_stats_cta',
+                    rating: propFirm.rating,
+                    affiliate_link: propFirm.link
+                  })}
+                >
+                  <a href={propFirm.link} target="_blank" rel="noopener noreferrer">
+                    Visit {stripHtml(propFirm.name)} <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
+                
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="w-full mb-6" 
+                  data-testid="button-write-review-sidebar"
+                  onClick={() => setIsReviewModalOpen(true)}
+                >
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Write a Review
+                </Button>
+
+                <div className="border-t border-border/50 pt-6">
+                  <h3 className="font-bold mb-4 text-sm uppercase tracking-wide text-muted-foreground">Quick Info</h3>
+                  <div className="space-y-3 text-sm">
                   {propFirm.headquarters && (
                     <div className="flex justify-between" data-testid="info-headquarters">
                       <span className="text-muted-foreground">Headquarters:</span>
@@ -582,35 +571,23 @@ export default function PropFirmReview() {
                       <span className="font-medium">{propFirm.trustScore}/100</span>
                     </div>
                   )}
-                </div>
-
-                {propFirm.awards && propFirm.awards.length > 0 && (
-                  <div className="mt-6 pt-6 border-t">
-                    <h4 className="font-semibold mb-3 flex items-center gap-2">
-                      <Award className="h-4 w-4 text-emerald-500" /> Awards
-                    </h4>
-                    <ul className="space-y-2">
-                      {propFirm.awards.map((award, index) => (
-                        <li key={index} className="text-sm text-muted-foreground" data-testid={`award-${index}`}>
-                          • {award}
-                        </li>
-                      ))}
-                    </ul>
                   </div>
-                )}
 
-                <Button className="w-full mt-6" asChild data-testid="button-visit-sidebar" onClick={() => trackAffiliateClick({
-                  broker_name: propFirm.name,
-                  broker_type: 'prop_firm',
-                  page_location: 'prop_firm_review',
-                  placement_type: 'quick_stats_cta',
-                  rating: propFirm.rating,
-                  affiliate_link: propFirm.link
-                })}>
-                  <a href={propFirm.link} target="_blank" rel="noopener noreferrer">
-                    Visit Prop Firm <ExternalLink className="ml-2 h-4 w-4" />
-                  </a>
-                </Button>
+                  {propFirm.awards && propFirm.awards.length > 0 && (
+                    <div className="mt-6 pt-6 border-t border-border/50">
+                      <h4 className="font-semibold mb-3 flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground">
+                        <Award className="h-4 w-4 text-emerald-500" /> Awards
+                      </h4>
+                      <ul className="space-y-2">
+                        {propFirm.awards.map((award, index) => (
+                          <li key={index} className="text-sm text-muted-foreground" data-testid={`award-${index}`}>
+                            • {award}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </Card>
             </div>
           </div>
