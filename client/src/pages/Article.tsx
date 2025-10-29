@@ -1,6 +1,6 @@
 import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, useMemo, lazy, Suspense } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
@@ -10,11 +10,12 @@ import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { ArticleCard } from "@/components/ArticleCard";
 import { NewsletterCTA } from "@/components/NewsletterCTA";
 import { ProsConsCard } from "@/components/ProsConsCard";
+import { TableOfContents } from "@/components/TableOfContents";
 import { Badge } from "@/components/ui/badge";
 import { Clock, User, Share2, BookOpen, TrendingUp, Building2, BarChart3, AlertCircle, ShieldCheck, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { transformBroker } from "@/lib/transforms";
+import { transformBroker, addHeadingIds } from "@/lib/transforms";
 import { getArticleUrl, getCategoryName } from "@/lib/articleUtils";
 import type { WordPressPost, Broker } from "@shared/schema";
 import { trackPageView, trackArticleView } from "@/lib/gtm";
@@ -106,6 +107,11 @@ export default function Article() {
     const words = text.trim().split(/\s+/).length;
     return Math.max(1, Math.ceil(words / 200));
   };
+
+  // Process content with heading IDs for Table of Contents (memoized to avoid repeated parsing)
+  const contentWithHeadingIds = useMemo(() => {
+    return post?.content?.rendered ? addHeadingIds(post.content.rendered) : '';
+  }, [post?.content?.rendered]);
 
   // SEO: Use Yoast fields if available, otherwise auto-generate
   const seoTitle = (post as any)?.yoast_head_json?.title || 
@@ -385,7 +391,7 @@ export default function Article() {
   };
 
   const parseContentWithBroker = (content: string, broker: Broker | undefined) => {
-    // First, add affiliate links to the content
+    // Add affiliate links to the content (content already has heading IDs from contentWithHeadingIds variable)
     const contentWithAffiliateLinks = addAffiliateLinks(content);
     
     // Process pros/cons sections inline
@@ -754,7 +760,7 @@ export default function Article() {
 
               {/* Article Content with Broker Insertion */}
               <div className="bg-card rounded-lg p-6 md:p-8 shadow-lg">
-                {parseContentWithBroker(post.content.rendered, featuredBroker)}
+                {parseContentWithBroker(contentWithHeadingIds, featuredBroker)}
               </div>
 
               {/* Affiliate Disclosure */}
@@ -833,6 +839,13 @@ export default function Article() {
             <aside className="hidden lg:block">
               {/* Match trending topics spacing (mb-8 = 32px) + badges height (~40px) */}
               <div className="sticky top-24 space-y-8" style={{ marginTop: '72px' }}>
+                {/* Table of Contents */}
+                {contentWithHeadingIds && (
+                  <div className="mb-6">
+                    <TableOfContents content={contentWithHeadingIds} />
+                  </div>
+                )}
+
                 {/* Related Broker (from ACF field) */}
                 {relatedBroker && (
                   <div>
