@@ -383,8 +383,8 @@
     word-wrap: break-word;
   }
 
-  /* Break long URLs and text */
-  .prose :where(p, li, td, th):not(:where([class~="not-prose"] *)) {
+  /* Break long URLs and text in paragraphs and lists only (NOT tables) */
+  .prose :where(p, li):not(:where([class~="not-prose"] *)) {
     overflow-wrap: break-word;
     word-wrap: break-word;
     word-break: break-word;
