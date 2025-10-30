@@ -1,4 +1,4 @@
-import { Clock, User, BookOpen } from "lucide-react";
+import { Clock, User, BookOpen, Wrench, Newspaper, BookMarked, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
@@ -14,6 +14,45 @@ interface ArticleCardProps {
   imageUrl?: string;
   slug: string;
 }
+
+// Category color and icon mapping
+const getCategoryStyle = (category: string) => {
+  const lowerCategory = category.toLowerCase();
+  
+  if (lowerCategory.includes('trading tool') || lowerCategory.includes('tools')) {
+    return {
+      icon: Wrench,
+      className: "bg-orange-500/10 text-orange-500 border-orange-500/30 hover:bg-orange-500/20"
+    };
+  }
+  
+  if (lowerCategory.includes('news') || lowerCategory.includes('broker news') || lowerCategory.includes('prop firm news')) {
+    return {
+      icon: Newspaper,
+      className: "bg-emerald-500/10 text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/20"
+    };
+  }
+  
+  if (lowerCategory.includes('guide') || lowerCategory.includes('broker guide')) {
+    return {
+      icon: BookMarked,
+      className: "bg-blue-500/10 text-blue-500 border-blue-500/30 hover:bg-blue-500/20"
+    };
+  }
+  
+  if (lowerCategory.includes('strateg')) {
+    return {
+      icon: TrendingUp,
+      className: "bg-purple-500/10 text-purple-500 border-purple-500/30 hover:bg-purple-500/20"
+    };
+  }
+  
+  // Default fallback
+  return {
+    icon: Newspaper,
+    className: "bg-muted text-muted-foreground border-border"
+  };
+};
 
 export function ArticleCard({ title, excerpt, author, date, category, link, imageUrl, slug }: ArticleCardProps) {
   const stripHtml = (html: string) => {
@@ -36,6 +75,8 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
   const truncatedExcerpt = cleanExcerpt.length > 155 
     ? cleanExcerpt.substring(0, 155) + '...'
     : cleanExcerpt;
+  
+  const categoryStyle = getCategoryStyle(category);
 
   return (
     <Card className="hover-elevate active-elevate-2 h-full flex flex-col group" data-testid={`card-article-${title.substring(0, 20)}`}>
@@ -55,7 +96,8 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
         )}
         <CardHeader className="gap-2 pb-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="secondary" className="w-fit" data-testid="badge-category">
+            <Badge variant="outline" className={`w-fit gap-1.5 ${categoryStyle.className}`} data-testid="badge-category">
+              <categoryStyle.icon className="h-3 w-3" />
               {category}
             </Badge>
             <Badge variant="outline" className="w-fit gap-1 border-primary/30 text-primary" data-testid="badge-reading-time">
