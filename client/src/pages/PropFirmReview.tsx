@@ -333,6 +333,11 @@ export default function PropFirmReview() {
                         </div>
                         <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider">Exclusive Discount</span>
                       </div>
+                      {propFirm.discountAmount && (
+                        <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 font-bold px-3 py-1" data-testid="badge-discount-amount">
+                          Save {propFirm.discountAmount}
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="flex-1 bg-background/95 rounded-lg px-4 py-3 border border-border/50">
