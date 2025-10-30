@@ -54,7 +54,7 @@ export function TrustSignals() {
               </p>
 
               <Button asChild variant="outline" className="bg-white/5 border-white/10 hover:bg-white/10">
-                <Link href="/archive" data-testid="link-explore-articles">
+                <Link href="/news" data-testid="link-explore-articles">
                   Explore All Articles <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
