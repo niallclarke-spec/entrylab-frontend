@@ -66,6 +66,7 @@ export interface Broker {
   featured?: boolean;
   tagline?: string;
   bonusOffer?: string;
+  discountAmount?: string;
   features?: Array<{ icon: string; text: string }>;
   featuredHighlights?: string[];
   
