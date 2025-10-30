@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, ArrowDownToLine, MessageSquare, Monitor, Calendar } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { transformBrokerDetailed } from "@/lib/transforms";
+import { transformBrokerDetailed, processWordPressContent } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
 import { getCountryCode } from "@/lib/countryCodeMap";
@@ -36,21 +36,7 @@ export default function BrokerReview() {
 
   const broker = wpBroker ? transformBrokerDetailed(wpBroker) : null;
 
-  // Add IDs to headings for table of contents
-  const processContentWithIds = (html: string) => {
-    if (!html) return html;
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-    const headings = doc.querySelectorAll("h2, h3, h4");
-    
-    headings.forEach((heading, index) => {
-      heading.id = `section-${index}`;
-    });
-    
-    return doc.body.innerHTML;
-  };
-
-  const processedContent = broker?.content ? processContentWithIds(broker.content) : "";
+  const processedContent = broker?.content ? processWordPressContent(broker.content) : "";
 
   useEffect(() => {
     if (broker) {

@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, User, Share2, BookOpen, TrendingUp, Building2, BarChart3, AlertCircle, ShieldCheck, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { transformBroker, addHeadingIds } from "@/lib/transforms";
+import { transformBroker, processWordPressContent } from "@/lib/transforms";
 import { getArticleUrl, getCategoryName } from "@/lib/articleUtils";
 import type { WordPressPost, Broker } from "@shared/schema";
 import { trackPageView, trackArticleView } from "@/lib/gtm";
@@ -108,9 +108,9 @@ export default function Article() {
     return Math.max(1, Math.ceil(words / 200));
   };
 
-  // Process content with heading IDs for Table of Contents (memoized to avoid repeated parsing)
+  // Process content with heading IDs and table wrappers for Table of Contents (memoized to avoid repeated parsing)
   const contentWithHeadingIds = useMemo(() => {
-    return post?.content?.rendered ? addHeadingIds(post.content.rendered) : '';
+    return post?.content?.rendered ? processWordPressContent(post.content.rendered) : '';
   }, [post?.content?.rendered]);
 
   // SEO: Use Yoast fields if available, otherwise auto-generate

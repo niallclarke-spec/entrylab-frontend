@@ -18,6 +18,36 @@ export function addHeadingIds(content: string): string {
 }
 
 /**
+ * Wrap tables in scrollable containers for mobile responsiveness
+ */
+export function wrapTablesForMobile(content: string): string {
+  if (!content) return content;
+  
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(content, "text/html");
+  const tables = doc.querySelectorAll("table");
+  
+  tables.forEach((table) => {
+    const wrapper = doc.createElement("div");
+    wrapper.className = "table-wrapper";
+    table.parentNode?.insertBefore(wrapper, table);
+    wrapper.appendChild(table);
+  });
+  
+  return doc.body.innerHTML;
+}
+
+/**
+ * Process WordPress content for display - add heading IDs and wrap tables
+ */
+export function processWordPressContent(content: string): string {
+  if (!content) return content;
+  let processed = addHeadingIds(content);
+  processed = wrapTablesForMobile(processed);
+  return processed;
+}
+
+/**
  * Transform WordPress broker data to Broker interface (simple version for listings)
  */
 export function transformBroker(wpBroker: any): Broker | null {
