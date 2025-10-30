@@ -335,7 +335,7 @@ export default function PropFirmReview() {
                       </div>
                       {propFirm.discountAmount && (
                         <Badge className="bg-yellow-500 text-black hover:bg-yellow-400 font-bold text-sm px-4 py-1.5 border-2 border-yellow-600/50" data-testid="badge-discount-amount">
-                          {propFirm.discountAmount}
+                          🎉 {propFirm.discountAmount}
                         </Badge>
                       )}
                     </div>
