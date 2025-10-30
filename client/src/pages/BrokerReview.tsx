@@ -600,13 +600,13 @@ export default function BrokerReview() {
                   {broker.headquarters && (
                     <div className="flex justify-between gap-3" data-testid="info-headquarters">
                       <span className="text-muted-foreground flex-shrink-0">Headquarters:</span>
-                      <span className="font-medium text-right">{broker.headquarters}</span>
+                      <span className="font-medium text-right break-words">{broker.headquarters}</span>
                     </div>
                   )}
                   {broker.support && (
                     <div className="flex justify-between" data-testid="info-support">
                       <span className="text-muted-foreground">Support:</span>
-                      <span className="font-medium">{broker.support}</span>
+                      <span className="font-medium break-all">{broker.support}</span>
                     </div>
                   )}
                   {broker.totalUsers && (

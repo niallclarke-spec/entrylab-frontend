@@ -420,13 +420,13 @@ export default function PropFirmReview() {
                   {propFirm.support && (
                     <div className="p-3 rounded-lg bg-muted/30" data-testid="intel-support">
                       <div className="text-xs text-muted-foreground mb-1">Support</div>
-                      <div className="font-semibold text-sm text-foreground">{propFirm.support}</div>
+                      <div className="font-semibold text-sm text-foreground break-all">{propFirm.support}</div>
                     </div>
                   )}
                   {propFirm.headquarters && (
                     <div className="p-3 rounded-lg bg-muted/30" data-testid="intel-headquarters">
                       <div className="text-xs text-muted-foreground mb-1">Headquarters</div>
-                      <div className="font-semibold text-sm text-foreground">{propFirm.headquarters}</div>
+                      <div className="font-semibold text-sm text-foreground break-words">{propFirm.headquarters}</div>
                     </div>
                   )}
                 </div>
