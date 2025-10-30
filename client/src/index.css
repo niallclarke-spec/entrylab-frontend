@@ -417,13 +417,15 @@
 
   /* Custom branded table styling */
   .prose :where(table):not(:where([class~="not-prose"] *)) {
-    width: 100%;
+    min-width: 100%;
+    width: max-content;
     border-collapse: collapse;
     border: 2px solid hsl(var(--border));
     border-radius: 12px;
     background-color: hsl(var(--background));
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     margin: 0;
+    white-space: nowrap;
   }
 
   /* Mobile-friendly table wrapper for horizontal scroll */
