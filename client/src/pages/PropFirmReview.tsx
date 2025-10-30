@@ -339,29 +339,29 @@ export default function PropFirmReview() {
                         </Badge>
                       )}
                     </div>
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="flex items-center gap-3 w-full">
-                        <div className="flex-1 bg-background/95 rounded-lg px-4 py-3 border border-border/50">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 flex flex-col gap-2">
+                        <div className="bg-background/95 rounded-lg px-4 py-3 border border-border/50">
                           <code className="text-xl font-bold text-foreground tracking-wider block text-center" data-testid="text-discount-code">
                             {propFirm.bonusOffer}
                           </code>
                         </div>
-                        <Button
-                          size="lg"
-                          className="bg-emerald-600 hover:bg-emerald-700 px-6"
-                          onClick={() => copyDiscountCode(propFirm.bonusOffer!)}
-                          data-testid="button-copy-discount"
-                        >
-                          {copiedCode ? (
-                            <CheckCircle2 className="h-5 w-5" />
-                          ) : (
-                            <Copy className="h-5 w-5" />
-                          )}
-                        </Button>
+                        <p className="text-xs text-center text-muted-foreground">
+                          Copy and apply at checkout
+                        </p>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Copy and apply at checkout
-                      </p>
+                      <Button
+                        size="lg"
+                        className="bg-emerald-600 hover:bg-emerald-700 px-6"
+                        onClick={() => copyDiscountCode(propFirm.bonusOffer!)}
+                        data-testid="button-copy-discount"
+                      >
+                        {copiedCode ? (
+                          <CheckCircle2 className="h-5 w-5" />
+                        ) : (
+                          <Copy className="h-5 w-5" />
+                        )}
+                      </Button>
                     </div>
                   </div>
                 </Card>
