@@ -608,7 +608,7 @@ export async function generateStructuredData(url: string): Promise<string> {
     if (propFirmSchemas) {
       schemas.push(...propFirmSchemas);
     }
-  } else if (urlParts.length === 2 && ['news', 'broker-news', 'broker-guides', 'prop-firm-news', 'trading-strategies'].includes(urlParts[0])) {
+  } else if (urlParts.length === 2 && ['news', 'broker-news', 'broker-guides', 'prop-firm-news', 'trading-tools'].includes(urlParts[0])) {
     // Handle /:category/:slug article format (e.g., /broker-news/zarafx-gets-raided)
     const articleSchemas = await getArticleSchema(urlParts[1]);
     if (articleSchemas) {
