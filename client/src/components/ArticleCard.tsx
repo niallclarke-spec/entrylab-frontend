@@ -1,4 +1,4 @@
-import { Clock, User, BookOpen, Wrench, Newspaper, BookMarked, TrendingUp } from "lucide-react";
+import { Clock, User, BookOpen, Wrench, Newspaper, BookMarked } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
@@ -37,13 +37,6 @@ const getCategoryStyle = (category: string) => {
     return {
       icon: BookMarked,
       className: "bg-blue-500/10 text-blue-500 border-blue-500/30 hover:bg-blue-500/20"
-    };
-  }
-  
-  if (lowerCategory.includes('strateg')) {
-    return {
-      icon: TrendingUp,
-      className: "bg-purple-500/10 text-purple-500 border-purple-500/30 hover:bg-purple-500/20"
     };
   }
   
