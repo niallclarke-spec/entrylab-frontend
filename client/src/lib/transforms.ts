@@ -1,14 +1,14 @@
 import type { Broker } from "@shared/schema";
 
 /**
- * Add IDs to headings in HTML content for Table of Contents navigation
+ * Add IDs to H2 headings only for Table of Contents navigation
  */
 export function addHeadingIds(content: string): string {
   if (!content) return content;
   
   const parser = new DOMParser();
   const doc = parser.parseFromString(content, "text/html");
-  const headingElements = doc.querySelectorAll("h2, h3, h4");
+  const headingElements = doc.querySelectorAll("h2");
   
   headingElements.forEach((heading, index) => {
     heading.id = `section-${index}`;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { List } from "lucide-react";
 
@@ -14,22 +14,28 @@ interface TableOfContentsProps {
 export function TableOfContents({ content }: TableOfContentsProps) {
   const [headings, setHeadings] = useState<TOCItem[]>([]);
   const [activeId, setActiveId] = useState<string>("");
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
+    // Extract H2 headings from the processed content
+    // IDs are already added by processWordPressContent in transforms.ts
     const parser = new DOMParser();
     const doc = parser.parseFromString(content, "text/html");
-    const headingElements = doc.querySelectorAll("h2, h3, h4");
+    const headingElements = doc.querySelectorAll("h2[id^='section-']");
     
-    const items: TOCItem[] = Array.from(headingElements).map((heading, index) => {
-      const text = heading.textContent || "";
-      const id = `section-${index}`;
-      heading.id = id;
-      return { id, text };
-    });
+    const items: TOCItem[] = Array.from(headingElements).map((heading) => ({
+      id: heading.id,
+      text: heading.textContent || ""
+    }));
     
     setHeadings(items);
 
-    const observer = new IntersectionObserver(
+    // Set up intersection observer for scroll tracking
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    observerRef.current = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
@@ -43,11 +49,16 @@ export function TableOfContents({ content }: TableOfContentsProps) {
       }
     );
 
-    const actualHeadings = document.querySelectorAll("h2[id^='section-'], h3[id^='section-'], h4[id^='section-']");
-    actualHeadings.forEach((heading) => observer.observe(heading));
+    // Wait a tick for content to render, then observe headings
+    setTimeout(() => {
+      const renderedHeadings = document.querySelectorAll("h2[id^='section-']");
+      renderedHeadings.forEach((heading) => observerRef.current?.observe(heading));
+    }, 0);
 
     return () => {
-      actualHeadings.forEach((heading) => observer.unobserve(heading));
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
     };
   }, [content]);
 
