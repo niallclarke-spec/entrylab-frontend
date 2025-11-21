@@ -20,6 +20,7 @@ const PropFirms = lazy(() => import("@/pages/PropFirms"));
 const PropFirmCategoryArchive = lazy(() => import("@/pages/PropFirmCategoryArchive"));
 const BrokerReview = lazy(() => import("@/pages/BrokerReview"));
 const PropFirmReview = lazy(() => import("@/pages/PropFirmReview"));
+const SignalsLanding = lazy(() => import("@/pages/SignalsLanding"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 function PageLoadingFallback() {
@@ -66,6 +67,11 @@ function Router() {
       <Route path="/prop-firm/:slug">
         <Suspense fallback={<PageLoadingFallback />}>
           <PropFirmReview />
+        </Suspense>
+      </Route>
+      <Route path="/signals">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <SignalsLanding />
         </Suspense>
       </Route>
       {/* Article route must come BEFORE category archive to match 2-segment URLs first */}
