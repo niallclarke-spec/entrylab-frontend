@@ -3,10 +3,12 @@ import { createServer, type Server } from "http";
 import https from "https";
 import { storage } from "./storage";
 import { db } from "./db";
-import { brokerAlerts, insertBrokerAlertSchema } from "../shared/schema";
+import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures } from "../shared/schema";
 import { apiCache } from "./cache";
 import { sendReviewNotification, sendTelegramMessage, getTelegramBot } from "./telegram";
 import { generateStructuredData } from "./structured-data";
+import { getUncachableStripeClient } from "./stripeClient";
+import { eq } from "drizzle-orm";
 
 // Cache key for published reviews - used for cache invalidation after approval/rejection
 const REVIEWS_CACHE_KEY = 'https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed';
@@ -1499,6 +1501,178 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     next();
+  });
+
+  // Email capture endpoint
+  app.post('/api/capture-email', async (req, res) => {
+    try {
+      const { 
+        email, 
+        source, 
+        utm_campaign, 
+        utm_source, 
+        utm_medium,
+        utm_content,
+        utm_term
+      } = req.body;
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ error: 'Invalid email address' });
+      }
+
+      // Get IP address from request
+      const ipAddress = (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim() 
+        || req.socket.remoteAddress 
+        || '';
+
+      const userAgent = req.headers['user-agent'] || '';
+
+      // Find or create user
+      let [user] = await db.select()
+        .from(signalUsers)
+        .where(eq(signalUsers.email, email));
+
+      if (!user) {
+        [user] = await db.insert(signalUsers)
+          .values({ email })
+          .returning();
+      }
+
+      // Log email capture for analytics
+      await db.insert(emailCaptures).values({
+        email,
+        source: source || 'direct',
+        utmCampaign: utm_campaign,
+        utmSource: utm_source,
+        utmMedium: utm_medium,
+        utmContent: utm_content,
+        utmTerm: utm_term,
+        ipAddress,
+        userAgent,
+      });
+
+      console.log(`Email captured: ${email} from ${source || 'direct'}`);
+
+      // Return public Telegram channel invite link
+      res.json({
+        success: true,
+        redirect_url: 'https://t.me/entrylabs',
+        message: 'Success! Check your email and join our free Telegram channel.',
+      });
+
+    } catch (error: any) {
+      console.error('Email capture error:', error);
+      res.status(500).json({ error: 'Failed to process email' });
+    }
+  });
+
+  // Create Stripe checkout session
+  app.post('/api/create-checkout-session', async (req, res) => {
+    try {
+      const { email, priceId } = req.body;
+
+      if (!email || !priceId) {
+        return res.status(400).json({ error: 'Email and price ID required' });
+      }
+
+      const stripe = await getUncachableStripeClient();
+
+      // Find or create user
+      let [user] = await db.select()
+        .from(signalUsers)
+        .where(eq(signalUsers.email, email));
+
+      if (!user) {
+        [user] = await db.insert(signalUsers)
+          .values({ email })
+          .returning();
+      }
+
+      // Find or create Stripe customer
+      let customerId = user.stripeCustomerId;
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email,
+          metadata: { userId: user.id },
+        });
+        customerId = customer.id;
+
+        await db.update(signalUsers)
+          .set({ stripeCustomerId: customerId })
+          .where(eq(signalUsers.id, user.id));
+      }
+
+      // Determine success/cancel URLs based on environment
+      const baseUrl = req.protocol + '://' + req.get('host');
+      const successUrl = `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`;
+      const cancelUrl = `${baseUrl}/subscribe`;
+
+      // Create checkout session
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        payment_method_types: ['card'],
+        line_items: [{ price: priceId, quantity: 1 }],
+        mode: 'subscription',
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        metadata: {
+          userId: user.id,
+          email,
+        },
+        allow_promotion_codes: true,
+        billing_address_collection: 'auto',
+      });
+
+      console.log(`Checkout session created for ${email}: ${session.id}`);
+
+      res.json({ 
+        checkout_url: session.url,
+        session_id: session.id 
+      });
+
+    } catch (error: any) {
+      console.error('Checkout session error:', error);
+      res.status(500).json({ error: 'Failed to create checkout session' });
+    }
+  });
+
+  // Get subscription status
+  app.post('/api/subscription-status', async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ error: 'Email required' });
+      }
+
+      const [user] = await db.select()
+        .from(signalUsers)
+        .where(eq(signalUsers.email, email));
+
+      if (!user || !user.stripeSubscriptionId) {
+        return res.json({ 
+          hasSubscription: false,
+          status: null 
+        });
+      }
+
+      // Query subscription from stripe schema
+      const result = await db.execute(
+        db.$with('sql')`SELECT status, current_period_end FROM stripe.subscriptions WHERE id = ${user.stripeSubscriptionId}`
+      );
+
+      const subscription = result.rows[0];
+
+      res.json({
+        hasSubscription: true,
+        status: subscription?.status || 'unknown',
+        currentPeriodEnd: subscription?.current_period_end || null,
+      });
+
+    } catch (error: any) {
+      console.error('Subscription status error:', error);
+      res.status(500).json({ error: 'Failed to get subscription status' });
+    }
   });
 
   const httpServer = createServer(app);
