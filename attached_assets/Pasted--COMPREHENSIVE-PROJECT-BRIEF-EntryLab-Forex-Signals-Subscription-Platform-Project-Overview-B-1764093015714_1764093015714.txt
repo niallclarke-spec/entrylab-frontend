@@ -1,0 +1,482 @@
+📋 COMPREHENSIVE PROJECT BRIEF: EntryLab - Forex Signals Subscription Platform
+🎯 Project Overview
+Build a landing page and subscription management system for a Forex Signals Telegram Bot business. This platform handles lead capture, Stripe payments, and subscription lifecycle management. The actual Telegram bots run in a separate Replit project called "PromoStack."
+
+🏗️ System Architecture
+Two-Project Architecture:
+EntryLab (THIS PROJECT):
+
+Landing pages (email capture + subscription checkout)
+Stripe payment integration
+PostgreSQL database (users, emails, subscriptions)
+API endpoints for subscription management
+Webhook handlers for Stripe events
+PromoStack (SEPARATE PROJECT):
+
+Forex signals Telegram bot
+Two channels: Public (free) + Private (paid)
+Receives subscription status updates from EntryLab via API
+Communication Flow:
+EntryLab (Payments) → API calls → PromoStack (Telegram access control)
+
+👤 User Journey
+Path 1: Free User (Public Channel)
+User clicks Google Ad
+Lands on Email Capture Page (/)
+Enters email → Stored in database
+Redirected to Public Telegram Channel (invite link)
+Sees big wins + promotional messages encouraging upgrade
+Path 2: Paid User (Private Channel)
+User in public channel clicks "Upgrade to Private" link
+Lands on Subscription Page (/subscribe)
+Sees pricing, benefits, social proof
+Clicks "Subscribe Now" → Stripe Checkout
+Completes payment
+Redirected to Success Page with instructions to join private channel
+EntryLab webhook → Calls PromoStack API → Bot grants private channel access
+User gets instant access to private Telegram channel
+Path 3: Subscription Management
+Payment fails → Stripe webhook → EntryLab updates DB → Calls PromoStack API → Bot removes user from private channel
+User cancels → Same flow as payment failure
+User renews → Stripe webhook → Bot re-adds user to private channel
+🗄️ Database Schema (PostgreSQL)
+-- Users table (stores emails and Telegram info)
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  telegram_user_id BIGINT UNIQUE,
+  telegram_username VARCHAR(255),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+-- Subscriptions table (tracks Stripe subscriptions)
+CREATE TABLE subscriptions (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id) ON DELETE CASCADE,
+  stripe_customer_id VARCHAR(255),
+  stripe_subscription_id VARCHAR(255) UNIQUE,
+  status VARCHAR(50) NOT NULL, -- 'active', 'canceled', 'past_due', 'incomplete'
+  plan_type VARCHAR(50) DEFAULT 'premium', -- 'premium' (can add tiers later)
+  current_period_start TIMESTAMP,
+  current_period_end TIMESTAMP,
+  cancel_at_period_end BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+-- Email capture log (track marketing funnel)
+CREATE TABLE email_captures (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  source VARCHAR(100), -- 'google_ads', 'facebook', 'organic', etc.
+  utm_campaign VARCHAR(255),
+  utm_source VARCHAR(255),
+  utm_medium VARCHAR(255),
+  ip_address VARCHAR(50),
+  user_agent TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+-- Webhook events log (debugging and audit trail)
+CREATE TABLE webhook_events (
+  id SERIAL PRIMARY KEY,
+  event_type VARCHAR(100) NOT NULL,
+  stripe_event_id VARCHAR(255) UNIQUE,
+  payload JSONB,
+  processed BOOLEAN DEFAULT FALSE,
+  error_message TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+🔌 API Endpoints to Build
+Public Endpoints (No Auth Required)
+POST /api/capture-email
+Purpose: Store email from landing page, track marketing attribution
+
+Request:
+
+{
+  "email": "user@example.com",
+  "source": "google_ads",
+  "utm_campaign": "forex-signals-nov-2024",
+  "utm_source": "google",
+  "utm_medium": "cpc"
+}
+
+Response:
+
+{
+  "success": true,
+  "redirect_url": "https://t.me/+YOUR_PUBLIC_CHANNEL_INVITE"
+}
+
+Logic:
+
+Validate email format
+Check if email exists (upsert if exists)
+Store in users table and email_captures table
+Return public Telegram invite link
+POST /api/create-checkout-session
+Purpose: Create Stripe checkout session for subscription
+
+Request:
+
+{
+  "email": "user@example.com",
+  "price_id": "price_1ABC123...", // Stripe Price ID
+  "success_url": "https://entrylab.repl.co/success?session_id={CHECKOUT_SESSION_ID}",
+  "cancel_url": "https://entrylab.repl.co/subscribe"
+}
+
+Response:
+
+{
+  "checkout_url": "https://checkout.stripe.com/c/pay/cs_test_..."
+}
+
+Logic:
+
+Find or create Stripe customer with email
+Create checkout session with subscription mode
+Store metadata: user_email, source
+Return checkout URL for redirect
+POST /api/stripe-webhook
+Purpose: Handle Stripe events (subscription created, updated, deleted, payment failed)
+
+Important Events to Handle:
+
+checkout.session.completed → Create subscription record, call PromoStack API to grant access
+customer.subscription.updated → Update subscription status
+customer.subscription.deleted → Mark canceled, call PromoStack API to revoke access
+invoice.payment_failed → Update status to past_due, call PromoStack API to revoke access
+invoice.payment_succeeded → Reactivate if was past_due, call PromoStack API to grant access
+Request: (Stripe webhook payload)
+
+Response:
+
+{
+  "received": true
+}
+
+Logic:
+
+Verify Stripe webhook signature (critical for security!)
+Log event to webhook_events table
+Handle event type with switch/case
+Update database accordingly
+Call PromoStack API for Telegram access control
+Return 200 status (Stripe requires this)
+GET /success
+Purpose: Post-payment success page
+
+Query Params: session_id (Stripe checkout session ID)
+
+Response: HTML page with:
+
+✅ Payment confirmation
+📱 Instructions: "Join the private channel now!"
+🔗 Private Telegram invite link (or instructions to DM the bot)
+📧 Receipt sent to email
+🎁 Bonus: Welcome guide PDF download
+Authenticated Endpoints (Admin Dashboard - Optional but Recommended)
+GET /api/admin/stats
+Purpose: Dashboard metrics
+
+Response:
+
+{
+  "total_emails": 1247,
+  "total_subscribers": 89,
+  "active_subscribers": 76,
+  "mrr": 2280, // Monthly Recurring Revenue
+  "churn_rate": 5.2,
+  "conversion_rate": 7.1 // Email → Paid
+}
+
+GET /api/admin/users
+Purpose: List all users with subscription status
+
+Response:
+
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "user@example.com",
+      "telegram_username": "@john_doe",
+      "subscription_status": "active",
+      "subscribed_since": "2024-11-20T10:30:00Z",
+      "next_billing_date": "2024-12-20T10:30:00Z"
+    }
+  ]
+}
+
+💳 Stripe Integration Setup
+Step 1: Replit Stripe Integration
+Use Replit's native Stripe integration (search for "stripe" in integrations)
+This automatically manages STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET
+Toggle between Test Mode and Live Mode easily
+Step 2: Create Products in Stripe Dashboard
+Go to Stripe Dashboard → Products
+Create product: "Forex Signals - Premium"
+Add pricing: $49/month (or your preferred price)
+Copy the Price ID (starts with price_...)
+Store this in your code or environment variable
+Step 3: Configure Webhook Endpoint
+Stripe Dashboard → Developers → Webhooks
+Add endpoint: https://your-entrylab-url.repl.co/api/stripe-webhook
+Select events:
+checkout.session.completed
+customer.subscription.created
+customer.subscription.updated
+customer.subscription.deleted
+invoice.payment_succeeded
+invoice.payment_failed
+Copy webhook signing secret → Store in Replit secrets
+🔗 PromoStack API Integration
+Endpoints to Call (in PromoStack project)
+You'll call these from EntryLab when subscriptions change:
+
+POST https://dash.promostack.io/api/grant-channel-access
+Purpose: Add user to private Telegram channel
+
+Request:
+
+{
+  "telegram_user_id": 123456789,
+  "email": "user@example.com"
+}
+
+Headers:
+
+Authorization: Bearer YOUR_SHARED_SECRET_KEY
+
+When to call:
+
+Subscription created (checkout.session.completed)
+Payment succeeded after failure (invoice.payment_succeeded)
+POST https://dash.promostack.io/api/revoke-channel-access
+Purpose: Remove user from private Telegram channel
+
+Request:
+
+{
+  "telegram_user_id": 123456789,
+  "reason": "payment_failed" // or "canceled"
+}
+
+When to call:
+
+Subscription canceled
+Payment failed
+Subscription deleted
+🎨 Landing Page Designs
+Page 1: Email Capture (/ or /join)
+Purpose: Capture email before showing public channel
+
+Design Elements:
+
+Hero Section:
+Headline: "Get Free Forex Signals for XAU/USD (Gold)"
+Subheadline: "Join 1,000+ traders receiving daily signals"
+Email input field
+CTA button: "Get Free Signals →"
+Social Proof:
+Recent win screenshots from public channel
+Testimonials (if available)
+"Live" signal counter
+Benefits:
+✅ Real-time signals
+✅ XAU/USD (Gold) pairs
+✅ Entry, TP, SL levels
+✅ Performance tracking
+Tech Stack Recommendation:
+
+Simple HTML/CSS/JS (lightweight, fast loading)
+OR Next.js/React if you want dynamic content
+Tailwind CSS for styling
+Page 2: Subscription Checkout (/subscribe)
+Purpose: Convert free users to paid subscribers
+
+Design Elements:
+
+Hero Section:
+
+Headline: "Upgrade to Premium Signals"
+Subheadline: "Get access to ALL signals, not just the wins"
+Pricing Card:
+
+$49/month (or your price)
+"7-day money-back guarantee"
+List of premium benefits
+Comparison Table:
+
+Feature	Free	Premium
+Big Wins Posted	✅	✅
+All Signals	❌	✅
+Entry Prices	❌	✅
+TP/SL Levels	❌	✅
+AI Analysis	❌	✅
+Daily Recaps	❌	✅
+Social Proof:
+
+Win rate stats
+Total pips this month
+Member count
+Testimonials
+CTA Button:
+
+"Start Premium Access - $49/month"
+Redirects to Stripe Checkout
+Page 3: Success Page (/success)
+Purpose: Confirm payment and guide user to private channel
+
+Design Elements:
+
+✅ Success icon/animation
+"Welcome to Premium Signals!"
+Next steps:
+"Open Telegram"
+"Search for @your_bot_name"
+"Click 'Request Access to Private Channel'"
+"You'll be approved instantly!"
+Link to private channel (or bot DM link)
+Email confirmation message
+Support email if issues
+🔐 Environment Variables Needed
+# Stripe (use Replit integration)
+STRIPE_SECRET_KEY=sk_test_...  # Auto-managed by Replit
+STRIPE_WEBHOOK_SECRET=whsec_...  # Auto-managed by Replit
+STRIPE_PRICE_ID=price_1ABC123...  # Your premium plan Price ID
+# Database (use Replit PostgreSQL)
+DATABASE_URL=postgresql://...  # Auto-managed by Replit
+# PromoStack Integration
+PROMOSTACK_API_URL=https://dash.promostack.io
+PROMOSTACK_API_KEY=your_shared_secret_key  # Create a random secret
+# Telegram
+PUBLIC_CHANNEL_INVITE=https://t.me/+ABC123...
+PRIVATE_CHANNEL_INVITE=https://t.me/+XYZ789...  # Or bot DM link
+# Admin Dashboard (optional)
+ADMIN_PASSWORD=your_secure_password
+
+📋 Implementation Checklist
+Phase 1: Database Setup
+ Create PostgreSQL database in Replit
+ Run SQL schema to create tables
+ Add indexes for performance (email, stripe_subscription_id)
+Phase 2: Landing Pages
+ Build email capture page (/)
+ Build subscription page (/subscribe)
+ Build success page (/success)
+ Add form validation
+ Mobile responsive design
+Phase 3: Stripe Integration
+ Install Stripe integration in Replit
+ Create product/price in Stripe Dashboard
+ Build checkout session API endpoint
+ Test checkout flow in test mode
+ Configure webhook endpoint
+Phase 4: Webhook Handler
+ Build /api/stripe-webhook endpoint
+ Verify webhook signatures
+ Handle checkout.session.completed
+ Handle invoice.payment_failed
+ Handle customer.subscription.deleted
+ Log all events to database
+ Test with Stripe CLI
+Phase 5: PromoStack Integration
+ Create shared API key
+ Build API client to call PromoStack endpoints
+ Test grant/revoke access flows
+ Add error handling and retries
+Phase 6: Admin Dashboard (Optional)
+ Build stats dashboard
+ User list with subscription status
+ Revenue metrics
+ Webhook event logs
+ Password protection
+Phase 7: Testing
+ Test full user journey (email → payment → access)
+ Test payment failure scenarios
+ Test subscription cancellation
+ Test webhook replay
+ Security audit (webhook signature, SQL injection, XSS)
+Phase 8: Production Launch
+ Switch Stripe to Live Mode
+ Update webhook URL to production
+ Set up error monitoring (Sentry or similar)
+ Add analytics (Google Analytics, Plausible, etc.)
+ Configure domain (if custom domain)
+🚀 Recommended Tech Stack
+Backend:
+
+Python (Flask/FastAPI) - Matches PromoStack project
+OR Node.js (Express) - If you prefer JS
+Frontend:
+
+HTML/CSS/JS (fastest, simplest)
+OR Next.js (if you want dynamic content, SEO)
+Database:
+
+PostgreSQL (Replit managed)
+Payments:
+
+Stripe (Replit integration)
+Hosting:
+
+Replit (obviously!)
+🎯 Success Metrics to Track
+Email Capture Rate: Visits → Emails (target: >40%)
+Email → Paid Conversion: Emails → Subscriptions (target: >5%)
+MRR (Monthly Recurring Revenue)
+Churn Rate: Cancellations per month (target: <5%)
+LTV (Lifetime Value): Average subscription duration × price
+CAC (Customer Acquisition Cost): Ad spend ÷ new subscribers
+🔧 Developer Notes
+How to Link Telegram User ID to Email:
+Since users provide email first, then join Telegram, we need to link them:
+
+Option A: Bot Command (Recommended)
+
+User subscribes → Gets private channel invite
+User clicks invite → Telegram shows "Request to Join"
+Bot detects join request → Checks if telegram_user_id is in database
+If not found → Bot DMs user: "Please verify your email: /verify user@example.com"
+User sends /verify → Bot updates database
+Option B: Unique Invite Links
+
+After payment → Generate unique invite link with user_id parameter
+When user clicks → Bot knows which user it is
+Auto-approve and link in database
+🆘 Support & Maintenance
+Common Issues:
+
+User paid but can't access private channel
+
+Check webhook was received (webhook_events table)
+Check PromoStack API was called successfully
+Manually grant access if needed
+Duplicate subscriptions
+
+Stripe prevents this, but check for same email with multiple subscriptions
+Cancel duplicates
+User wants refund
+
+Stripe Dashboard → Refunds
+Webhook will auto-revoke access
+📞 Next Steps After Building EntryLab
+Once EntryLab is built, you'll need to update PromoStack project to:
+
+Add /api/grant-channel-access endpoint
+Add /api/revoke-channel-access endpoint
+Create public Telegram channel
+Configure bot as admin in both channels
+Add promotional message scheduler for public channel
+Filter signals: All signals → Private, Big wins only → Public
+That's everything! This should give you a complete roadmap to build the EntryLab subscription platform. Let me know if you need any clarification on any section!
+
+💡 Pro Tips
+Start with Test Mode: Build everything in Stripe test mode first
+Log Everything: Webhook events, API calls, errors - you'll thank yourself later
+Handle Edge Cases: What if user subscribes twice? What if webhook fails? What if user changes email?
+Security First: Verify webhook signatures, sanitize inputs, use HTTPS
+Mobile First: Most users will be on mobile - design accordingly
+Clear Onboarding: Make it OBVIOUS how to join the private channel after payment
