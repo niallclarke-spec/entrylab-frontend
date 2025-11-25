@@ -32,6 +32,10 @@ localPort = 39031
 externalPort = 3002
 
 [[ports]]
+localPort = 39345
+externalPort = 8008
+
+[[ports]]
 localPort = 40185
 externalPort = 3001
 
@@ -81,3 +85,9 @@ waitForPort = 5000
 
 [agent]
 integrations = ["javascript_mem_db:1.0.0", "javascript_database:1.0.0", "stripe:1.0.0"]
+
+[userenv]
+
+[userenv.shared]
+VITE_STRIPE_PRICE_MONTHLY = "price_1SXQrUCdjkOcXxTVNP5FaYbi"
+VITE_STRIPE_PRICE_YEARLY = "price_1SXQrVCdjkOcXxTVn9LQWzWV"

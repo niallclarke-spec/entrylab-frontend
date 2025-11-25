@@ -15,13 +15,21 @@ export default function Subscribe() {
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
   const { toast } = useToast();
 
+  // Validate Stripe price IDs are configured
+  const monthlyPriceId = import.meta.env.VITE_STRIPE_PRICE_MONTHLY;
+  const yearlyPriceId = import.meta.env.VITE_STRIPE_PRICE_YEARLY;
+
+  if (!monthlyPriceId || !yearlyPriceId) {
+    console.error('Stripe price IDs not configured. Check VITE_STRIPE_PRICE_MONTHLY and VITE_STRIPE_PRICE_YEARLY environment variables.');
+  }
+
   const pricingTiers = [
     {
       id: 'monthly',
       name: "Monthly",
       price: "$49",
       period: "per month",
-      priceId: process.env.VITE_STRIPE_PRICE_MONTHLY || 'price_monthly',
+      priceId: monthlyPriceId || '',
       description: "Perfect for testing our premium signals",
       totalPerYear: "$588",
       savings: null,
@@ -43,7 +51,7 @@ export default function Subscribe() {
       name: "Yearly",
       price: "$319",
       period: "per year",
-      priceId: process.env.VITE_STRIPE_PRICE_YEARLY || 'price_yearly',
+      priceId: yearlyPriceId || '',
       description: "Best value - save $269 per year!",
       totalPerYear: "$319",
       savings: "$269",
@@ -138,6 +146,18 @@ export default function Subscribe() {
         variant: "destructive"
       });
       setIsSubmitting(false);
+      return;
+    }
+
+    // Validate price ID is configured
+    if (!selectedTier.priceId) {
+      toast({
+        title: "Configuration Error",
+        description: "Stripe pricing is not configured. Please contact support.",
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
+      console.error('Stripe price ID missing for plan:', selectedPlan);
       return;
     }
 
