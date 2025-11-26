@@ -74,14 +74,15 @@ app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://cdn.jsdelivr.net https://www.clarity.ms https://*.clarity.ms; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://cdn.jsdelivr.net https://www.clarity.ms https://*.clarity.ms https://js.stripe.com; " +
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
     "font-src 'self' https://fonts.gstatic.com; " +
     "img-src 'self' data: https: blob:; " +
-    "connect-src 'self' https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com https://finnhub.io https://*.clarity.ms; " +
+    "connect-src 'self' https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com https://finnhub.io https://*.clarity.ms https://api.stripe.com; " +
     "frame-ancestors 'none'; " +
+    "frame-src https://checkout.stripe.com https://js.stripe.com; " +
     "base-uri 'self'; " +
-    "form-action 'self'"
+    "form-action 'self' https://checkout.stripe.com"
   );
   
   // Strict-Transport-Security - enforces HTTPS
