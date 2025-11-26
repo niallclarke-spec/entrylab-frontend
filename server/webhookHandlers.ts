@@ -105,26 +105,44 @@ export class WebhookHandlers {
 
     console.log(`Checkout completed for ${email}, subscription: ${subscriptionId}`);
     
-    // Grant access via PromoStack and send welcome email
-    try {
-      const inviteLink = await promostackClient.grantAccess(email, user.telegramUserId || undefined);
-      
-      if (inviteLink) {
-        // Send welcome email with Telegram invite link
-        const { client, fromEmail } = await getUncachableResendClient();
-        await client.emails.send({
-          from: fromEmail,
-          to: email,
-          subject: 'Welcome to EntryLab Premium Signals!',
-          html: getWelcomeEmailHtml(inviteLink),
-        });
+    // Grant access via PromoStack and send welcome email (only if not already sent)
+    if (!user.welcomeEmailSent) {
+      try {
+        const inviteLink = await promostackClient.grantAccess(email, user.telegramUserId || undefined);
         
-        console.log(`Welcome email sent to ${email} with invite link`);
-      } else {
-        console.error(`Failed to get invite link for ${email}`);
+        if (inviteLink) {
+          // Save invite link to database
+          await db.update(signalUsers)
+            .set({ telegramInviteLink: inviteLink })
+            .where(eq(signalUsers.id, user.id));
+
+          // Send welcome email with Telegram invite link
+          const { client, fromEmail } = await getUncachableResendClient();
+          await client.emails.send({
+            from: fromEmail,
+            to: email,
+            subject: 'Welcome to EntryLab Premium Signals!',
+            html: getWelcomeEmailHtml(inviteLink),
+            text: `Welcome to EntryLab Premium Signals!\n\nYour subscription is now active. Join our private Telegram channel: ${inviteLink}\n\nQuestions? Contact us at support@entrylab.io`,
+          });
+          
+          // Mark welcome email as sent
+          await db.update(signalUsers)
+            .set({ welcomeEmailSent: true })
+            .where(eq(signalUsers.id, user.id));
+          
+          console.log(`Welcome email sent to ${email} with invite link`);
+        } else {
+          console.error(`CRITICAL: Failed to get invite link for ${email} - PromoStack returned null`);
+          throw new Error('PromoStack grant access failed');
+        }
+      } catch (error: any) {
+        console.error(`CRITICAL: Error granting access to ${email}:`, error.message);
+        // Re-throw to mark webhook as failed for retry
+        throw error;
       }
-    } catch (error: any) {
-      console.error(`Error granting access to ${email}:`, error.message);
+    } else {
+      console.log(`Welcome email already sent to ${email}, skipping`);
     }
   }
 
@@ -193,11 +211,18 @@ export class WebhookHandlers {
       
       if (user) {
         try {
-          await promostackClient.revokeAccess(user.email, user.telegramUserId || undefined);
+          const revoked = await promostackClient.revokeAccess(user.email, user.telegramUserId || undefined);
+          if (!revoked) {
+            console.error(`CRITICAL: PromoStack revoke failed for ${user.email}`);
+            throw new Error('PromoStack revoke access failed');
+          }
           console.log(`Access revoked for ${user.email}`);
         } catch (error: any) {
-          console.error(`Error revoking access for ${user.email}:`, error.message);
+          console.error(`CRITICAL: Error revoking access for ${user.email}:`, error.message);
+          throw error;
         }
+      } else {
+        console.error(`CRITICAL: User not found for subscription ${subscriptionId} during status update`);
       }
     }
   }
@@ -222,7 +247,11 @@ export class WebhookHandlers {
     
     if (user) {
       try {
-        await promostackClient.revokeAccess(user.email, user.telegramUserId || undefined);
+        const revoked = await promostackClient.revokeAccess(user.email, user.telegramUserId || undefined);
+        if (!revoked) {
+          console.error(`CRITICAL: PromoStack revoke failed for ${user.email}`);
+          throw new Error('PromoStack revoke access failed');
+        }
         
         // Send cancellation email
         const { client, fromEmail } = await getUncachableResendClient();
@@ -231,12 +260,16 @@ export class WebhookHandlers {
           to: user.email,
           subject: 'Your EntryLab Subscription Has Been Cancelled',
           html: getCancellationEmailHtml(),
+          text: `Your EntryLab Signals subscription has been cancelled.\n\nYou will no longer have access to our private Telegram channel.\n\nResubscribe anytime at: https://entrylab.io/signals\n\nQuestions? Contact us at support@entrylab.io`,
         });
         
         console.log(`Cancellation email sent to ${user.email}`);
       } catch (error: any) {
-        console.error(`Error processing cancellation for ${user.email}:`, error.message);
+        console.error(`CRITICAL: Error processing cancellation for ${user.email}:`, error.message);
+        throw error;
       }
+    } else {
+      console.error(`CRITICAL: User not found for subscription ${subscriptionId} during deletion`);
     }
   }
 
@@ -260,11 +293,18 @@ export class WebhookHandlers {
     
     if (user) {
       try {
-        await promostackClient.revokeAccess(user.email, user.telegramUserId || undefined);
+        const revoked = await promostackClient.revokeAccess(user.email, user.telegramUserId || undefined);
+        if (!revoked) {
+          console.error(`CRITICAL: PromoStack revoke failed for ${user.email}`);
+          throw new Error('PromoStack revoke access failed');
+        }
         console.log(`Access revoked due to payment failure for ${user.email}`);
       } catch (error: any) {
-        console.error(`Error revoking access for ${user.email}:`, error.message);
+        console.error(`CRITICAL: Error revoking access for ${user.email}:`, error.message);
+        throw error;
       }
+    } else {
+      console.error(`CRITICAL: User not found for subscription ${subscriptionId} during payment failure`);
     }
   }
 
@@ -289,11 +329,18 @@ export class WebhookHandlers {
     
     if (user) {
       try {
-        await promostackClient.grantAccess(user.email, user.telegramUserId || undefined);
+        const inviteLink = await promostackClient.grantAccess(user.email, user.telegramUserId || undefined);
+        if (!inviteLink) {
+          console.error(`CRITICAL: PromoStack grant failed for ${user.email}`);
+          throw new Error('PromoStack grant access failed');
+        }
         console.log(`Access re-granted after payment success for ${user.email}`);
       } catch (error: any) {
-        console.error(`Error re-granting access for ${user.email}:`, error.message);
+        console.error(`CRITICAL: Error re-granting access for ${user.email}:`, error.message);
+        throw error;
       }
+    } else {
+      console.error(`CRITICAL: User not found for subscription ${subscriptionId} during payment success`);
     }
   }
 }

@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import https from "https";
 import { storage } from "./storage";
 import { db } from "./db";
-import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures } from "../shared/schema";
+import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures, subscriptions } from "../shared/schema";
 import { apiCache } from "./cache";
 import { sendReviewNotification, sendTelegramMessage, getTelegramBot } from "./telegram";
 import { generateStructuredData } from "./structured-data";
@@ -1656,17 +1656,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Query subscription from stripe schema
-      const result = await db.execute(
-        db.$with('sql')`SELECT status, current_period_end FROM stripe.subscriptions WHERE id = ${user.stripeSubscriptionId}`
-      );
-
-      const subscription = result.rows[0];
+      // Query subscription from our subscriptions table
+      const [subscription] = await db.select()
+        .from(subscriptions)
+        .where(eq(subscriptions.stripeSubscriptionId, user.stripeSubscriptionId));
 
       res.json({
         hasSubscription: true,
         status: subscription?.status || 'unknown',
-        currentPeriodEnd: subscription?.current_period_end || null,
+        currentPeriodEnd: subscription?.currentPeriodEnd || null,
+        telegramConnected: !!user.telegramUserId,
+        email: user.email,
       });
 
     } catch (error: any) {

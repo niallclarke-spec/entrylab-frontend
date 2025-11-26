@@ -23,8 +23,10 @@ export const signalUsers = pgTable("signal_users", {
   email: varchar("email", { length: 255 }).notNull().unique(),
   telegramUserId: varchar("telegram_user_id", { length: 255 }).unique(),
   telegramUsername: varchar("telegram_username", { length: 255 }),
+  telegramInviteLink: text("telegram_invite_link"),
   stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
   stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }),
+  welcomeEmailSent: boolean("welcome_email_sent").default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

@@ -78,7 +78,7 @@ export function getWelcomeEmailHtml(inviteLink: string): string {
   <div class="container">
     <div class="header">
       <div class="logo">EntryLab</div>
-      <h1>🎉 Welcome to Premium Signals!</h1>
+      <h1>Welcome to Premium Signals!</h1>
     </div>
     
     <p>Your subscription is now active! You have exclusive access to our private Telegram channel where we share:</p>
