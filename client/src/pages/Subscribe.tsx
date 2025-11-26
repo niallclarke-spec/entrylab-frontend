@@ -173,9 +173,18 @@ export default function Subscribe() {
 
       const response = await res.json() as { checkout_url: string };
 
+      console.log('Checkout URL received:', response.checkout_url);
+
+      if (!response.checkout_url) {
+        throw new Error('No checkout URL received from server');
+      }
+
+      // Redirect to Stripe checkout
+      console.log('Redirecting to Stripe checkout...');
       window.location.href = response.checkout_url;
 
     } catch (error: any) {
+      console.error('Checkout error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to create checkout session. Please try again.",
