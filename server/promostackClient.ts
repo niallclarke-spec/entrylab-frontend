@@ -18,6 +18,12 @@ interface GrantAccessParams {
   stripeSubscriptionId?: string;
 }
 
+interface FreeUserParams {
+  email: string;
+  name?: string;
+  source?: string;
+}
+
 export class PromostackClient {
   private apiKey: string;
   private baseUrl: string;
@@ -128,6 +134,47 @@ export class PromostackClient {
     } catch (error: any) {
       console.error('PromoStack check access error:', error.message);
       return null;
+    }
+  }
+
+  async addFreeUser(params: FreeUserParams): Promise<boolean> {
+    const { email, name, source } = params;
+    
+    try {
+      const response = await fetch(`${this.baseUrl}/api/telegram/grant-access`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': this.apiKey
+        },
+        body: JSON.stringify({
+          email,
+          name: name || '',
+          planType: source || 'Free Gold Signals',
+          amountPaid: 0,
+          stripeCustomerId: null,
+          stripeSubscriptionId: null
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`PromoStack add free user failed: ${response.status} ${errorText}`);
+        return false;
+      }
+
+      const data: PromostackGrantResponse = await response.json();
+      
+      if (data.success) {
+        console.log(`PromoStack: Free user added - ${email}`);
+        return true;
+      }
+
+      console.log(`PromoStack: Add free user response for ${email}:`, data);
+      return false;
+    } catch (error: any) {
+      console.error('PromoStack add free user error:', error.message);
+      return false;
     }
   }
 }
