@@ -1553,6 +1553,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Email captured: ${email} from ${source || 'direct'}`);
 
+      // Also add to PromoStack for unified tracking
+      try {
+        const { promostackClient } = await import('./promostackClient');
+        const promostackSuccess = await promostackClient.addFreeUser({
+          email,
+          name: '',
+          source: source || 'signals_landing'
+        });
+        console.log(`PromoStack free user: ${email} (${promostackSuccess ? 'success' : 'failed'})`);
+      } catch (promostackError) {
+        console.error('PromoStack integration error:', promostackError);
+        // Continue - don't block the user flow
+      }
+
       // Return public Telegram channel invite link
       res.json({
         success: true,
