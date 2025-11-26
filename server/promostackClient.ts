@@ -11,7 +11,7 @@ interface PromostackRevokeResponse {
 
 export class PromostackClient {
   private apiKey: string;
-  private baseUrl: string = 'https://dash.promostack.io/api';
+  private baseUrl: string;
 
   constructor() {
     const apiKey = process.env.PROMOSTACK_API_KEY;
@@ -19,6 +19,9 @@ export class PromostackClient {
       throw new Error('PROMOSTACK_API_KEY is not set');
     }
     this.apiKey = apiKey;
+    
+    // Use dev URL for now until PromoStack is deployed to production
+    this.baseUrl = process.env.PROMOSTACK_API_URL || 'https://d52a9e7d-57bd-4872-9582-c313918fbf51-00-b0a33vdhqu47.janeway.replit.dev/api';
   }
 
   async grantAccess(email: string, telegramUserId?: string): Promise<string | null> {

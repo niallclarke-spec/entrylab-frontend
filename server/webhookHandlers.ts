@@ -107,38 +107,49 @@ export class WebhookHandlers {
     
     // Grant access via PromoStack and send welcome email (only if not already sent)
     if (!user.welcomeEmailSent) {
+      let inviteLink: string | null = null;
+      
+      // Try to get invite link from PromoStack (non-blocking)
       try {
-        const inviteLink = await promostackClient.grantAccess(email, user.telegramUserId || undefined);
+        inviteLink = await promostackClient.grantAccess(email, user.telegramUserId || undefined);
         
         if (inviteLink) {
           // Save invite link to database
           await db.update(signalUsers)
             .set({ telegramInviteLink: inviteLink })
             .where(eq(signalUsers.id, user.id));
-
-          // Send welcome email with Telegram invite link
-          const { client, fromEmail } = await getUncachableResendClient();
-          await client.emails.send({
-            from: fromEmail,
-            to: email,
-            subject: 'Welcome to EntryLab Premium Signals!',
-            html: getWelcomeEmailHtml(inviteLink),
-            text: `Welcome to EntryLab Premium Signals!\n\nYour subscription is now active. Join our private Telegram channel: ${inviteLink}\n\nQuestions? Contact us at support@entrylab.io`,
-          });
-          
-          // Mark welcome email as sent
-          await db.update(signalUsers)
-            .set({ welcomeEmailSent: true })
-            .where(eq(signalUsers.id, user.id));
-          
-          console.log(`Welcome email sent to ${email} with invite link`);
+          console.log(`PromoStack: Invite link obtained for ${email}`);
         } else {
-          console.error(`CRITICAL: Failed to get invite link for ${email} - PromoStack returned null`);
-          throw new Error('PromoStack grant access failed');
+          console.warn(`PromoStack: Failed to get invite link for ${email} - will use fallback`);
         }
       } catch (error: any) {
-        console.error(`CRITICAL: Error granting access to ${email}:`, error.message);
-        // Re-throw to mark webhook as failed for retry
+        console.error(`PromoStack error for ${email} (continuing with fallback):`, error.message);
+      }
+      
+      // Send welcome email regardless of PromoStack status
+      try {
+        const { client, fromEmail } = await getUncachableResendClient();
+        
+        // Use PromoStack link if available, otherwise use public channel
+        const telegramLink = inviteLink || 'https://t.me/+TbJsf9xRrNkwN2E0';
+        
+        await client.emails.send({
+          from: fromEmail,
+          to: email,
+          subject: 'Welcome to EntryLab Premium Signals!',
+          html: getWelcomeEmailHtml(telegramLink),
+          text: `Welcome to EntryLab Premium Signals!\n\nYour subscription is now active. Join our private Telegram channel: ${telegramLink}\n\nQuestions? Contact us at support@entrylab.io`,
+        });
+        
+        // Mark welcome email as sent
+        await db.update(signalUsers)
+          .set({ welcomeEmailSent: true })
+          .where(eq(signalUsers.id, user.id));
+        
+        console.log(`Welcome email sent to ${email} with ${inviteLink ? 'PromoStack' : 'fallback'} invite link`);
+      } catch (error: any) {
+        console.error(`CRITICAL: Failed to send welcome email to ${email}:`, error.message);
+        // Re-throw email failures to trigger webhook retry
         throw error;
       }
     } else {
@@ -161,6 +172,14 @@ export class WebhookHandlers {
       return;
     }
 
+    // Safely parse timestamps (Stripe sends Unix timestamps in seconds)
+    const periodStart = subscription.current_period_start 
+      ? new Date(subscription.current_period_start * 1000) 
+      : null;
+    const periodEnd = subscription.current_period_end 
+      ? new Date(subscription.current_period_end * 1000) 
+      : null;
+
     // Create or update subscription record
     await db.insert(subscriptions)
       .values({
@@ -169,17 +188,17 @@ export class WebhookHandlers {
         stripeSubscriptionId: subscriptionId,
         status: subscription.status,
         planType: 'premium',
-        currentPeriodStart: new Date(subscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        currentPeriodStart: periodStart,
+        currentPeriodEnd: periodEnd,
+        cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
       })
       .onConflictDoUpdate({
         target: subscriptions.stripeSubscriptionId,
         set: {
           status: subscription.status,
-          currentPeriodStart: new Date(subscription.current_period_start * 1000),
-          currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-          cancelAtPeriodEnd: subscription.cancel_at_period_end,
+          currentPeriodStart: periodStart,
+          currentPeriodEnd: periodEnd,
+          cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
           updatedAt: new Date(),
         }
       });
@@ -191,12 +210,20 @@ export class WebhookHandlers {
     const subscription = event.data.object;
     const subscriptionId = subscription.id;
 
+    // Safely parse timestamps
+    const periodStart = subscription.current_period_start 
+      ? new Date(subscription.current_period_start * 1000) 
+      : null;
+    const periodEnd = subscription.current_period_end 
+      ? new Date(subscription.current_period_end * 1000) 
+      : null;
+
     await db.update(subscriptions)
       .set({
         status: subscription.status,
-        currentPeriodStart: new Date(subscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        currentPeriodStart: periodStart,
+        currentPeriodEnd: periodEnd,
+        cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
         updatedAt: new Date(),
       })
       .where(eq(subscriptions.stripeSubscriptionId, subscriptionId));
@@ -312,6 +339,12 @@ export class WebhookHandlers {
     const invoice = event.data.object;
     const subscriptionId = invoice.subscription;
 
+    // Some invoice types don't have subscriptions (one-time payments, etc.)
+    if (!subscriptionId) {
+      console.log('Payment succeeded for non-subscription invoice, skipping');
+      return;
+    }
+
     // Reactivate if was past_due
     await db.update(subscriptions)
       .set({
@@ -328,19 +361,24 @@ export class WebhookHandlers {
       .where(eq(signalUsers.stripeSubscriptionId, subscriptionId));
     
     if (user) {
+      // Try to re-grant access (non-blocking)
       try {
         const inviteLink = await promostackClient.grantAccess(user.email, user.telegramUserId || undefined);
-        if (!inviteLink) {
-          console.error(`CRITICAL: PromoStack grant failed for ${user.email}`);
-          throw new Error('PromoStack grant access failed');
+        if (inviteLink) {
+          // Update invite link if changed
+          await db.update(signalUsers)
+            .set({ telegramInviteLink: inviteLink })
+            .where(eq(signalUsers.id, user.id));
+          console.log(`Access re-granted after payment success for ${user.email}`);
+        } else {
+          console.warn(`PromoStack: Failed to re-grant access for ${user.email}`);
         }
-        console.log(`Access re-granted after payment success for ${user.email}`);
       } catch (error: any) {
-        console.error(`CRITICAL: Error re-granting access for ${user.email}:`, error.message);
-        throw error;
+        console.error(`PromoStack error while re-granting access for ${user.email}:`, error.message);
+        // Don't throw - payment succeeded, access issue is secondary
       }
     } else {
-      console.error(`CRITICAL: User not found for subscription ${subscriptionId} during payment success`);
+      console.warn(`User not found for subscription ${subscriptionId} during payment success (may not be created yet)`);
     }
   }
 }
