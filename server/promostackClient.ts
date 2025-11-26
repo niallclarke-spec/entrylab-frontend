@@ -150,10 +150,10 @@ export class PromostackClient {
         body: JSON.stringify({
           email,
           name: name || '',
-          planType: source || 'Free Gold Signals',
+          planType: 'Free Gold Signals',
           amountPaid: 0,
-          stripeCustomerId: null,
-          stripeSubscriptionId: null
+          stripeCustomerId: 'free_user',
+          stripeSubscriptionId: 'free_signup'
         })
       });
 
