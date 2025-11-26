@@ -12,27 +12,46 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 export default function Subscribe() {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
+  const [selectedPlan, setSelectedPlan] = useState<'weekly' | 'monthly' | 'lifetime'>('lifetime');
   const { toast } = useToast();
 
-  // Validate Stripe price IDs are configured
+  // Stripe price IDs from environment
+  const weeklyPriceId = import.meta.env.VITE_STRIPE_PRICE_WEEKLY;
   const monthlyPriceId = import.meta.env.VITE_STRIPE_PRICE_MONTHLY;
-  const yearlyPriceId = import.meta.env.VITE_STRIPE_PRICE_YEARLY;
+  const lifetimePriceId = import.meta.env.VITE_STRIPE_PRICE_LIFETIME;
 
-  if (!monthlyPriceId || !yearlyPriceId) {
-    console.error('Stripe price IDs not configured. Check VITE_STRIPE_PRICE_MONTHLY and VITE_STRIPE_PRICE_YEARLY environment variables.');
+  if (!weeklyPriceId || !monthlyPriceId || !lifetimePriceId) {
+    console.error('Stripe price IDs not configured. Check VITE_STRIPE_PRICE_WEEKLY, VITE_STRIPE_PRICE_MONTHLY and VITE_STRIPE_PRICE_LIFETIME environment variables.');
   }
 
   const pricingTiers = [
     {
+      id: 'weekly',
+      name: "7 Day VIP",
+      price: "$39",
+      period: "per week",
+      priceId: weeklyPriceId || '',
+      description: "Try our signals for a week",
+      billingType: "recurring",
+      features: [
+        "3-5 daily premium signals",
+        "Full trade analysis with entry/exit",
+        "Stop loss & take profit levels",
+        "Risk management guidance",
+        "Real-time Telegram notifications",
+        "Private VIP channel access",
+        "24/7 analyst support"
+      ],
+      popular: false
+    },
+    {
       id: 'monthly',
-      name: "Monthly",
-      price: "$49",
+      name: "Monthly VIP",
+      price: "$59",
       period: "per month",
       priceId: monthlyPriceId || '',
-      description: "Perfect for testing our premium signals",
-      totalPerYear: "$588",
-      savings: null,
+      description: "Most flexible option",
+      billingType: "recurring",
       features: [
         "3-5 daily premium signals",
         "Full trade analysis with entry/exit",
@@ -47,23 +66,23 @@ export default function Subscribe() {
       popular: false
     },
     {
-      id: 'yearly',
-      name: "Yearly",
-      price: "$319",
-      period: "per year",
-      priceId: yearlyPriceId || '',
-      description: "Best value - save $269 per year!",
-      totalPerYear: "$319",
-      savings: "$269",
-      savingsPercentage: "46%",
+      id: 'lifetime',
+      name: "Lifetime VIP",
+      price: "$339",
+      period: "one-time",
+      priceId: lifetimePriceId || '',
+      description: "Best value - pay once, access forever!",
+      billingType: "one_time",
+      savings: "Save $369+",
+      savingsNote: "vs 6 months of monthly",
       features: [
         "Everything in Monthly plan",
-        "Save $269 per year (46% off)",
+        "Pay once, access forever",
         "Priority signal delivery",
         "Exclusive market reports",
         "Advanced technical analysis",
-        "1-on-1 strategy sessions (quarterly)",
-        "Lifetime price lock guarantee",
+        "1-on-1 strategy sessions",
+        "Never pay again guarantee",
         "Trading psychology course",
         "Custom trade plan assistance"
       ],
@@ -72,14 +91,14 @@ export default function Subscribe() {
   ];
 
   const comparisonFeatures = [
-    { name: "Daily Premium Signals", free: "❌", monthly: "3-5 signals", yearly: "3-5 signals" },
-    { name: "Trade Analysis", free: "Basic", monthly: "✅ Full", yearly: "✅ Full + Priority" },
-    { name: "Risk Management", free: "❌", monthly: "✅", yearly: "✅" },
-    { name: "Telegram Alerts", free: "Public channel", monthly: "Private VIP", yearly: "Private VIP + Priority" },
-    { name: "Analyst Support", free: "❌", monthly: "24/7", yearly: "24/7 + 1-on-1 Sessions" },
-    { name: "Performance Dashboard", free: "❌", monthly: "✅", yearly: "✅ + Advanced Analytics" },
-    { name: "Market Reports", free: "❌", monthly: "Weekly", yearly: "Daily + Exclusive" },
-    { name: "Price Per Month", free: "$0", monthly: "$49", yearly: "$26.58" },
+    { name: "Daily Premium Signals", weekly: "3-5 signals", monthly: "3-5 signals", lifetime: "3-5 signals" },
+    { name: "Trade Analysis", weekly: "Full", monthly: "Full", lifetime: "Full + Priority" },
+    { name: "Risk Management", weekly: "✅", monthly: "✅", lifetime: "✅" },
+    { name: "Telegram Alerts", weekly: "Private VIP", monthly: "Private VIP", lifetime: "Private VIP + Priority" },
+    { name: "Analyst Support", weekly: "24/7", monthly: "24/7", lifetime: "24/7 + 1-on-1 Sessions" },
+    { name: "Performance Dashboard", weekly: "✅", monthly: "✅", lifetime: "✅ + Advanced" },
+    { name: "Market Reports", weekly: "Weekly", monthly: "Weekly", lifetime: "Daily + Exclusive" },
+    { name: "Billing", weekly: "$39/week", monthly: "$59/month", lifetime: "$339 once" },
   ];
 
   const faqs = [
@@ -112,8 +131,8 @@ export default function Subscribe() {
       answer: "Yes! We offer a 7-day money-back guarantee. If you're not satisfied with our signals within the first 7 days, contact support for a full refund, no questions asked."
     },
     {
-      question: "What's the difference between monthly and yearly?",
-      answer: "The yearly plan saves you $269 (46% off) and includes priority signal delivery, exclusive market reports, quarterly 1-on-1 strategy sessions, and a lifetime price lock guarantee."
+      question: "What's the difference between the plans?",
+      answer: "The 7 Day plan ($39/week) is perfect for trying our signals. The Monthly plan ($59/month) offers flexibility with full features. The Lifetime plan ($339 one-time) is the best value - pay once and get access forever with premium perks like priority delivery and 1-on-1 sessions."
     }
   ];
 
@@ -246,19 +265,19 @@ export default function Subscribe() {
               <p className="text-xl text-muted-foreground">Cancel anytime • 7-day money-back guarantee</p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
               {pricingTiers.map((tier) => (
                 <Card 
                   key={tier.id} 
-                  className={`relative ${tier.popular ? 'border-primary shadow-lg shadow-primary/20 scale-105' : ''} hover-elevate cursor-pointer transition-all`}
-                  onClick={() => setSelectedPlan(tier.id as 'monthly' | 'yearly')}
+                  className={`relative ${tier.popular ? 'border-primary shadow-lg shadow-primary/20 md:scale-105' : ''} hover-elevate cursor-pointer transition-all`}
+                  onClick={() => setSelectedPlan(tier.id as 'weekly' | 'monthly' | 'lifetime')}
                   data-testid={`pricing-${tier.id}`}
                 >
                   {tier.popular && (
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                       <Badge className="bg-primary text-primary-foreground glow-badge no-default-hover-elevate">
                         <Sparkles className="h-3 w-3 mr-1" />
-                        Best Value - Save {tier.savingsPercentage}
+                        Best Value
                       </Badge>
                     </div>
                   )}
@@ -269,31 +288,30 @@ export default function Subscribe() {
                     </div>
                   </div>
 
-                  <CardHeader>
-                    <CardTitle className="text-3xl">{tier.name}</CardTitle>
-                    <CardDescription className="text-base">{tier.description}</CardDescription>
-                    <div className="mt-6 space-y-2">
+                  <CardHeader className="pt-8">
+                    <CardTitle className="text-2xl">{tier.name}</CardTitle>
+                    <CardDescription className="text-sm">{tier.description}</CardDescription>
+                    <div className="mt-4 space-y-2">
                       <div>
-                        <span className="text-5xl font-bold">{tier.price}</span>
-                        <span className="text-muted-foreground ml-2 text-lg">{tier.period}</span>
+                        <span className="text-4xl font-bold">{tier.price}</span>
+                        <span className="text-muted-foreground ml-2 text-base">{tier.period}</span>
                       </div>
                       {tier.savings && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/30 no-default-hover-elevate">
-                            Save {tier.savings}
+                            {tier.savings}
                           </Badge>
-                          <span className="text-sm text-muted-foreground">vs monthly billing</span>
                         </div>
                       )}
                     </div>
                   </CardHeader>
 
                   <CardContent>
-                    <ul className="space-y-3">
+                    <ul className="space-y-2">
                       {tier.features.map((feature, i) => (
-                        <li key={i} className="flex items-start gap-3">
-                          <Check className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-muted-foreground">{feature}</span>
+                        <li key={i} className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                          <span className="text-xs text-muted-foreground">{feature}</span>
                         </li>
                       ))}
                     </ul>
@@ -399,18 +417,18 @@ export default function Subscribe() {
                     <thead>
                       <tr className="border-b border-border">
                         <th className="text-left p-4 font-semibold">Feature</th>
-                        <th className="text-center p-4 font-semibold">Free</th>
+                        <th className="text-center p-4 font-semibold">7 Day</th>
                         <th className="text-center p-4 font-semibold">Monthly</th>
-                        <th className="text-center p-4 font-semibold bg-primary/5">Yearly</th>
+                        <th className="text-center p-4 font-semibold bg-primary/5">Lifetime</th>
                       </tr>
                     </thead>
                     <tbody>
                       {comparisonFeatures.map((feature, index) => (
                         <tr key={index} className="border-b border-border last:border-b-0">
                           <td className="p-4 text-sm font-medium">{feature.name}</td>
-                          <td className="p-4 text-center text-sm text-muted-foreground">{feature.free}</td>
+                          <td className="p-4 text-center text-sm text-muted-foreground">{feature.weekly}</td>
                           <td className="p-4 text-center text-sm">{feature.monthly}</td>
-                          <td className="p-4 text-center text-sm bg-primary/5 font-medium">{feature.yearly}</td>
+                          <td className="p-4 text-center text-sm bg-primary/5 font-medium">{feature.lifetime}</td>
                         </tr>
                       ))}
                     </tbody>
