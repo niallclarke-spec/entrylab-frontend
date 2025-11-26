@@ -1566,6 +1566,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Free signup endpoint - WordPress calls this when users submit the free signals form
+  app.post('/api/free-signup', async (req, res) => {
+    try {
+      const { email, name, source } = req.body;
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ error: 'Invalid email address' });
+      }
+
+      // Import PromoStack client dynamically to avoid circular dependencies
+      const { promostackClient } = await import('./promostackClient');
+
+      // Add user to PromoStack as a free user
+      const success = await promostackClient.addFreeUser({
+        email,
+        name: name || '',
+        source: source || 'Free Gold Signals'
+      });
+
+      if (!success) {
+        console.error(`Failed to add free user to PromoStack: ${email}`);
+        // Still return success to WordPress - we don't want to block the form
+        // PromoStack failures are logged and can be manually added
+      }
+
+      console.log(`Free signup registered: ${email} (PromoStack: ${success ? 'success' : 'failed'})`);
+
+      res.json({
+        success: true,
+        message: 'Free signup registered successfully'
+      });
+
+    } catch (error: any) {
+      console.error('Free signup error:', error);
+      res.status(500).json({ error: 'Failed to process free signup' });
+    }
+  });
+
   // Create Stripe checkout session
   app.post('/api/create-checkout-session', async (req, res) => {
     try {
