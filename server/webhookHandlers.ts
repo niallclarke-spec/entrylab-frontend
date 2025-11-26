@@ -2,6 +2,9 @@ import { getStripeSync } from './stripeClient';
 import { db } from './db';
 import { signalUsers, subscriptions, webhookEvents } from '@shared/schema';
 import { eq } from 'drizzle-orm';
+import { promostackClient } from './promostackClient';
+import { getUncachableResendClient } from './resendClient';
+import { getWelcomeEmailHtml, getCancellationEmailHtml } from './emailTemplates';
 
 export class WebhookHandlers {
   static async processWebhook(payload: Buffer, signature: string, uuid: string): Promise<void> {
@@ -102,8 +105,27 @@ export class WebhookHandlers {
 
     console.log(`Checkout completed for ${email}, subscription: ${subscriptionId}`);
     
-    // TODO: Call PromoStack API to grant access
-    // await grantChannelAccess(user);
+    // Grant access via PromoStack and send welcome email
+    try {
+      const inviteLink = await promostackClient.grantAccess(email, user.telegramUserId || undefined);
+      
+      if (inviteLink) {
+        // Send welcome email with Telegram invite link
+        const { client, fromEmail } = await getUncachableResendClient();
+        await client.emails.send({
+          from: fromEmail,
+          to: email,
+          subject: 'Welcome to EntryLab Premium Signals!',
+          html: getWelcomeEmailHtml(inviteLink),
+        });
+        
+        console.log(`Welcome email sent to ${email} with invite link`);
+      } else {
+        console.error(`Failed to get invite link for ${email}`);
+      }
+    } catch (error: any) {
+      console.error(`Error granting access to ${email}:`, error.message);
+    }
   }
 
   private static async handleSubscriptionCreated(event: any) {
@@ -165,8 +187,18 @@ export class WebhookHandlers {
 
     // If canceled or past_due, revoke access
     if (subscription.status === 'canceled' || subscription.status === 'past_due') {
-      // TODO: Call PromoStack API to revoke access
-      console.log(`Revoking access for subscription ${subscriptionId}`);
+      const [user] = await db.select()
+        .from(signalUsers)
+        .where(eq(signalUsers.stripeSubscriptionId, subscriptionId));
+      
+      if (user) {
+        try {
+          await promostackClient.revokeAccess(user.email, user.telegramUserId || undefined);
+          console.log(`Access revoked for ${user.email}`);
+        } catch (error: any) {
+          console.error(`Error revoking access for ${user.email}:`, error.message);
+        }
+      }
     }
   }
 
@@ -183,7 +215,29 @@ export class WebhookHandlers {
 
     console.log(`Subscription ${subscriptionId} deleted`);
     
-    // TODO: Call PromoStack API to revoke access
+    // Revoke access and send cancellation email
+    const [user] = await db.select()
+      .from(signalUsers)
+      .where(eq(signalUsers.stripeSubscriptionId, subscriptionId));
+    
+    if (user) {
+      try {
+        await promostackClient.revokeAccess(user.email, user.telegramUserId || undefined);
+        
+        // Send cancellation email
+        const { client, fromEmail } = await getUncachableResendClient();
+        await client.emails.send({
+          from: fromEmail,
+          to: user.email,
+          subject: 'Your EntryLab Subscription Has Been Cancelled',
+          html: getCancellationEmailHtml(),
+        });
+        
+        console.log(`Cancellation email sent to ${user.email}`);
+      } catch (error: any) {
+        console.error(`Error processing cancellation for ${user.email}:`, error.message);
+      }
+    }
   }
 
   private static async handlePaymentFailed(event: any) {
@@ -199,7 +253,19 @@ export class WebhookHandlers {
 
     console.log(`Payment failed for subscription ${subscriptionId}`);
     
-    // TODO: Call PromoStack API to revoke access
+    // Revoke access due to payment failure
+    const [user] = await db.select()
+      .from(signalUsers)
+      .where(eq(signalUsers.stripeSubscriptionId, subscriptionId));
+    
+    if (user) {
+      try {
+        await promostackClient.revokeAccess(user.email, user.telegramUserId || undefined);
+        console.log(`Access revoked due to payment failure for ${user.email}`);
+      } catch (error: any) {
+        console.error(`Error revoking access for ${user.email}:`, error.message);
+      }
+    }
   }
 
   private static async handlePaymentSucceeded(event: any) {
@@ -216,6 +282,18 @@ export class WebhookHandlers {
 
     console.log(`Payment succeeded for subscription ${subscriptionId}`);
     
-    // TODO: Call PromoStack API to grant access
+    // Re-grant access after successful payment
+    const [user] = await db.select()
+      .from(signalUsers)
+      .where(eq(signalUsers.stripeSubscriptionId, subscriptionId));
+    
+    if (user) {
+      try {
+        await promostackClient.grantAccess(user.email, user.telegramUserId || undefined);
+        console.log(`Access re-granted after payment success for ${user.email}`);
+      } catch (error: any) {
+        console.error(`Error re-granting access for ${user.email}:`, error.message);
+      }
+    }
   }
 }
