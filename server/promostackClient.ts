@@ -52,7 +52,7 @@ export class PromostackClient {
         body: JSON.stringify({
           email,
           name: name || '',
-          planType: planType || 'Premium Forex Signals',
+          planType: planType || 'EntryLab VIP Signals',
           amountPaid: amountPaid || 49,
           stripeCustomerId: stripeCustomerId,
           stripeSubscriptionId: stripeSubscriptionId
@@ -150,7 +150,7 @@ export class PromostackClient {
         body: JSON.stringify({
           email,
           name: name || '',
-          planType: 'Free Gold Signals',
+          planType: 'Free Public Channel',
           amountPaid: 0,
           stripeCustomerId: 'free_user',
           stripeSubscriptionId: 'free_signup'
