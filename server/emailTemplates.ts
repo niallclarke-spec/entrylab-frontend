@@ -39,16 +39,16 @@ export function getWelcomeEmailHtml(inviteLink: string): string {
                   <td align="center">
                     <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="text-align: left;">
                       <tr>
-                        <td style="padding: 8px 0; color: #333333; font-size: 16px;">✓ Real-time forex trading signals</td>
+                        <td style="padding: 8px 0; color: #333333; font-size: 16px;">&#10003; Real-time forex trading signals</td>
                       </tr>
                       <tr>
-                        <td style="padding: 8px 0; color: #333333; font-size: 16px;">✓ Market analysis and insights</td>
+                        <td style="padding: 8px 0; color: #333333; font-size: 16px;">&#10003; Market analysis and insights</td>
                       </tr>
                       <tr>
-                        <td style="padding: 8px 0; color: #333333; font-size: 16px;">✓ Entry and exit strategies</td>
+                        <td style="padding: 8px 0; color: #333333; font-size: 16px;">&#10003; Entry and exit strategies</td>
                       </tr>
                       <tr>
-                        <td style="padding: 8px 0; color: #333333; font-size: 16px;">✓ Risk management guidance</td>
+                        <td style="padding: 8px 0; color: #333333; font-size: 16px;">&#10003; Risk management guidance</td>
                       </tr>
                     </table>
                   </td>
@@ -68,17 +68,31 @@ export function getWelcomeEmailHtml(inviteLink: string): string {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 30px 0;">
                 <tr>
                   <td align="center">
-                    <a href="${inviteLink}" style="display: inline-block; background-color: #8b5cf6; color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 6px; font-weight: 600; font-size: 16px;">Join Private Channel</a>
+                    <!--[if mso]>
+                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${inviteLink}" style="height:50px;v-text-anchor:middle;width:220px;" arcsize="12%" stroke="f" fillcolor="#8b5cf6">
+                      <w:anchorlock/>
+                      <center style="color:#ffffff;font-family:sans-serif;font-size:16px;font-weight:bold;">Join Private Channel</center>
+                    </v:roundrect>
+                    <![endif]-->
+                    <!--[if !mso]><!-->
+                    <a href="${inviteLink}" target="_blank" rel="noopener" style="display: inline-block; background-color: #8b5cf6; color: #ffffff !important; text-decoration: none; padding: 16px 40px; border-radius: 6px; font-weight: 600; font-size: 16px; mso-hide: all;">Join Private Channel</a>
+                    <!--<![endif]-->
                   </td>
                 </tr>
               </table>
               
-              <!-- Fallback Link -->
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+              <!-- Fallback Link Box -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 20px 0;">
                 <tr>
-                  <td align="center" style="color: #666666; font-size: 14px;">
-                    <p style="margin: 0 0 10px 0;">If the button doesn't work, copy and paste this link:</p>
-                    <p style="margin: 0; word-break: break-all; color: #8b5cf6;">${inviteLink}</p>
+                  <td align="center">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 100%; max-width: 450px;">
+                      <tr>
+                        <td style="background-color: #f3f4f6; border: 2px dashed #d1d5db; border-radius: 8px; padding: 20px; text-align: center;">
+                          <p style="margin: 0 0 12px 0; color: #6b7280; font-size: 13px; font-weight: 500;">If the button doesn't work, copy this link:</p>
+                          <p style="margin: 0; padding: 12px 16px; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; font-family: monospace; font-size: 14px; color: #8b5cf6; word-break: break-all;">${inviteLink}</p>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
@@ -88,7 +102,8 @@ export function getWelcomeEmailHtml(inviteLink: string): string {
                 <tr>
                   <td align="center" style="color: #6b7280; font-size: 14px;">
                     <p style="margin: 0 0 8px 0;">Questions? Reply to this email or contact support@entrylab.io</p>
-                    <p style="margin: 0;">© 2024 EntryLab. All rights reserved.</p>
+                    <p style="margin: 0 0 16px 0;">&copy; 2024 EntryLab. All rights reserved.</p>
+                    <p style="margin: 0; font-size: 12px; color: #9ca3af;">EntryLab Trading Intelligence | Dublin, Ireland</p>
                   </td>
                 </tr>
               </table>
@@ -162,16 +177,16 @@ export function getCancellationEmailHtml(): string {
                   <td align="center">
                     <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="text-align: left;">
                       <tr>
-                        <td style="padding: 8px 0; color: #333333; font-size: 16px;">✓ Real-time forex trading signals</td>
+                        <td style="padding: 8px 0; color: #333333; font-size: 16px;">&#10003; Real-time forex trading signals</td>
                       </tr>
                       <tr>
-                        <td style="padding: 8px 0; color: #333333; font-size: 16px;">✓ Expert market analysis</td>
+                        <td style="padding: 8px 0; color: #333333; font-size: 16px;">&#10003; Expert market analysis</td>
                       </tr>
                       <tr>
-                        <td style="padding: 8px 0; color: #333333; font-size: 16px;">✓ Exclusive trading strategies</td>
+                        <td style="padding: 8px 0; color: #333333; font-size: 16px;">&#10003; Exclusive trading strategies</td>
                       </tr>
                       <tr>
-                        <td style="padding: 8px 0; color: #333333; font-size: 16px;">✓ Private community support</td>
+                        <td style="padding: 8px 0; color: #333333; font-size: 16px;">&#10003; Private community support</td>
                       </tr>
                     </table>
                   </td>
@@ -182,7 +197,15 @@ export function getCancellationEmailHtml(): string {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 30px 0;">
                 <tr>
                   <td align="center">
-                    <a href="https://entrylab.io/signals" style="display: inline-block; background-color: #8b5cf6; color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 6px; font-weight: 600; font-size: 16px;">Resubscribe Now</a>
+                    <!--[if mso]>
+                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://entrylab.io/signals" style="height:50px;v-text-anchor:middle;width:220px;" arcsize="12%" stroke="f" fillcolor="#8b5cf6">
+                      <w:anchorlock/>
+                      <center style="color:#ffffff;font-family:sans-serif;font-size:16px;font-weight:bold;">Resubscribe Now</center>
+                    </v:roundrect>
+                    <![endif]-->
+                    <!--[if !mso]><!-->
+                    <a href="https://entrylab.io/signals" target="_blank" rel="noopener" style="display: inline-block; background-color: #8b5cf6; color: #ffffff !important; text-decoration: none; padding: 16px 40px; border-radius: 6px; font-weight: 600; font-size: 16px; mso-hide: all;">Resubscribe Now</a>
+                    <!--<![endif]-->
                   </td>
                 </tr>
               </table>
@@ -201,7 +224,8 @@ export function getCancellationEmailHtml(): string {
                 <tr>
                   <td align="center" style="color: #6b7280; font-size: 14px;">
                     <p style="margin: 0 0 8px 0;">Thank you for being part of EntryLab</p>
-                    <p style="margin: 0;">© 2024 EntryLab. All rights reserved.</p>
+                    <p style="margin: 0 0 16px 0;">&copy; 2024 EntryLab. All rights reserved.</p>
+                    <p style="margin: 0; font-size: 12px; color: #9ca3af;">EntryLab Trading Intelligence | Dublin, Ireland</p>
                   </td>
                 </tr>
               </table>
