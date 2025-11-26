@@ -1636,6 +1636,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get invite link by session ID (for success page)
+  app.get('/api/invite-link/:sessionId', async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+
+      if (!sessionId) {
+        return res.status(400).json({ error: 'Session ID required' });
+      }
+
+      const stripe = await getUncachableStripeClient();
+
+      // Retrieve the checkout session from Stripe
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+      if (!session || !session.customer_email) {
+        // Try to get email from metadata
+        const email = session?.metadata?.email;
+        if (!email) {
+          return res.status(404).json({ error: 'Session not found or no email associated' });
+        }
+      }
+
+      const email = session.customer_email || session.metadata?.email;
+
+      // Look up user's invite link
+      const [user] = await db.select({
+        telegramInviteLink: signalUsers.telegramInviteLink,
+        welcomeEmailSent: signalUsers.welcomeEmailSent,
+      })
+        .from(signalUsers)
+        .where(eq(signalUsers.email, email as string));
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Return the invite link if available
+      res.json({
+        success: true,
+        inviteLink: user.telegramInviteLink || null,
+        emailSent: user.welcomeEmailSent || false,
+      });
+
+    } catch (error: any) {
+      console.error('Invite link lookup error:', error);
+      // Don't expose internal errors, just return not found
+      res.status(404).json({ error: 'Unable to retrieve invite link' });
+    }
+  });
+
   // Get subscription status
   app.post('/api/subscription-status', async (req, res) => {
     try {

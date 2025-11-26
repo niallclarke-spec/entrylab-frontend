@@ -1,14 +1,22 @@
 import { useEffect, useState } from "react";
-import { Check, Sparkles, TrendingUp, Target, Shield, Zap, ExternalLink, ChevronRight, Mail, ArrowRight } from "lucide-react";
+import { Check, Sparkles, TrendingUp, Target, Shield, Zap, ExternalLink, ChevronRight, Mail, ArrowRight, Loader2, Copy, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Helmet } from "react-helmet-async";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+
+interface InviteLinkResponse {
+  success: boolean;
+  inviteLink: string | null;
+  emailSent: boolean;
+}
 
 export default function Success() {
   const [, setLocation] = useLocation();
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -22,17 +30,48 @@ export default function Success() {
     }
   }, [setLocation]);
 
-  const nextSteps = [
-    {
-      icon: Mail,
-      title: "Check Your Email",
-      description: "We've sent your UNIQUE Telegram invite link to your email. This personalized link is just for you - check your spam folder if you don't see it.",
-      action: null
+  // Fetch the unique invite link
+  const { data: inviteData, isLoading: isLoadingLink } = useQuery<InviteLinkResponse>({
+    queryKey: ['/api/invite-link', sessionId],
+    enabled: !!sessionId,
+    refetchInterval: (query) => {
+      // Keep polling every 2 seconds until we have the invite link (webhook may still be processing)
+      if (!query.state.data?.inviteLink) {
+        return 2000;
+      }
+      return false;
     },
+    retry: 5,
+    retryDelay: 1000,
+  });
+
+  const inviteLink = inviteData?.inviteLink;
+
+  const handleCopyLink = () => {
+    if (inviteLink) {
+      navigator.clipboard.writeText(inviteLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const nextSteps = [
     {
       icon: Sparkles,
       title: "Join Private VIP Channel",
-      description: "Click the exclusive invite link in your email to join the private signals channel. Your link is unique and can only be used once.",
+      description: inviteLink 
+        ? "Your exclusive invite link is ready! Click the button below to join the private signals channel."
+        : "Your exclusive invite link is being generated...",
+      action: inviteLink ? {
+        label: "Join Telegram Channel",
+        url: inviteLink,
+        external: true
+      } : null
+    },
+    {
+      icon: Mail,
+      title: "Check Your Email",
+      description: "We've also sent your invite link to your email for safekeeping. Check your spam folder if you don't see it.",
       action: null
     },
     {
@@ -152,16 +191,21 @@ export default function Success() {
                       <CardDescription className="text-base">{step.description}</CardDescription>
                     </div>
                   </CardHeader>
-                  {step.action && (
-                    <CardFooter>
-                      {step.action.external ? (
+                  <CardFooter>
+                    {index === 0 && isLoadingLink ? (
+                      <Button size="lg" variant="outline" className="w-full" disabled data-testid={`button-step-${index}`}>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Loading your invite link...
+                      </Button>
+                    ) : step.action ? (
+                      step.action.external ? (
                         <a 
                           href={step.action.url} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="w-full"
                         >
-                          <Button size="lg" variant="outline" className="w-full" data-testid={`button-step-${index}`}>
+                          <Button size="lg" className="w-full" data-testid={`button-step-${index}`}>
                             {step.action.label}
                             <ExternalLink className="ml-2 h-5 w-5" />
                           </Button>
@@ -173,9 +217,9 @@ export default function Success() {
                             <ChevronRight className="ml-2 h-5 w-5" />
                           </Button>
                         </a>
-                      )}
-                    </CardFooter>
-                  )}
+                      )
+                    ) : null}
+                  </CardFooter>
                 </Card>
               ))}
             </div>
@@ -258,14 +302,59 @@ export default function Success() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="bg-primary/10 rounded-full p-4">
-                    <Mail className="h-8 w-8 text-primary" />
+                {isLoadingLink ? (
+                  <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                    <p className="text-lg font-medium">
+                      Generating your exclusive invite link...
+                    </p>
                   </div>
-                  <p className="text-lg font-medium">
-                    Your unique Telegram invite link has been sent to your email
-                  </p>
-                </div>
+                ) : inviteLink ? (
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-full max-w-md">
+                      <div className="flex items-center gap-2 p-3 bg-muted rounded-lg border">
+                        <code className="flex-1 text-sm font-mono truncate" data-testid="text-invite-link">
+                          {inviteLink}
+                        </code>
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          onClick={handleCopyLink}
+                          data-testid="button-copy-link"
+                        >
+                          {copied ? (
+                            <CheckCircle className="h-4 w-4 text-emerald-500" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                    <a 
+                      href={inviteLink} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-full max-w-md"
+                    >
+                      <Button size="lg" className="w-full text-lg py-6 hover:scale-105 transition-transform" data-testid="button-join-channel">
+                        Join Private VIP Channel Now
+                        <ExternalLink className="ml-2 h-5 w-5" />
+                      </Button>
+                    </a>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="bg-primary/10 rounded-full p-4">
+                      <Mail className="h-8 w-8 text-primary" />
+                    </div>
+                    <p className="text-lg font-medium">
+                      Your unique invite link will appear here shortly
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      We've also sent it to your email
+                    </p>
+                  </div>
+                )}
 
                 <p className="text-sm text-muted-foreground">
                   Can't find the email? Check your spam folder or contact support at support@entrylab.io
