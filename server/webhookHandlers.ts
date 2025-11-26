@@ -111,7 +111,13 @@ export class WebhookHandlers {
       
       // Try to get invite link from PromoStack (non-blocking)
       try {
-        inviteLink = await promostackClient.grantAccess(email, user.telegramUserId || undefined);
+        inviteLink = await promostackClient.grantAccess({
+          email,
+          stripeCustomerId: customerId,
+          stripeSubscriptionId: subscriptionId,
+          planType: 'Premium Forex Signals',
+          amountPaid: 49
+        });
         
         if (inviteLink) {
           // Save invite link to database
@@ -245,18 +251,18 @@ export class WebhookHandlers {
       
       if (user) {
         try {
-          const revoked = await promostackClient.revokeAccess(user.email, user.telegramUserId || undefined);
+          const revoked = await promostackClient.revokeAccess(user.email, 'subscription_status_changed');
           if (!revoked) {
-            console.error(`CRITICAL: PromoStack revoke failed for ${user.email}`);
-            throw new Error('PromoStack revoke access failed');
+            console.warn(`PromoStack revoke failed for ${user.email} - may need manual intervention`);
+          } else {
+            console.log(`Access revoked for ${user.email}`);
           }
-          console.log(`Access revoked for ${user.email}`);
         } catch (error: any) {
-          console.error(`CRITICAL: Error revoking access for ${user.email}:`, error.message);
-          throw error;
+          console.error(`PromoStack error revoking access for ${user.email}:`, error.message);
+          // Don't throw - subscription is already canceled, revoke is secondary
         }
       } else {
-        console.error(`CRITICAL: User not found for subscription ${subscriptionId} during status update`);
+        console.warn(`User not found for subscription ${subscriptionId} during status update`);
       }
     }
   }
@@ -280,14 +286,20 @@ export class WebhookHandlers {
       .where(eq(signalUsers.stripeSubscriptionId, subscriptionId));
     
     if (user) {
+      // Revoke Telegram access (non-blocking - email still sends)
       try {
-        const revoked = await promostackClient.revokeAccess(user.email, user.telegramUserId || undefined);
-        if (!revoked) {
-          console.error(`CRITICAL: PromoStack revoke failed for ${user.email}`);
-          throw new Error('PromoStack revoke access failed');
+        const revoked = await promostackClient.revokeAccess(user.email, 'subscription_cancelled');
+        if (revoked) {
+          console.log(`PromoStack: Access revoked for ${user.email}`);
+        } else {
+          console.warn(`PromoStack: Revoke failed for ${user.email} - may need manual intervention`);
         }
-        
-        // Send cancellation email
+      } catch (error: any) {
+        console.error(`PromoStack error revoking access for ${user.email}:`, error.message);
+      }
+      
+      // Send cancellation email (this should always happen)
+      try {
         const { client, fromEmail } = await getUncachableResendClient();
         await client.emails.send({
           from: fromEmail,
@@ -299,8 +311,8 @@ export class WebhookHandlers {
         
         console.log(`Cancellation email sent to ${user.email}`);
       } catch (error: any) {
-        console.error(`CRITICAL: Error processing cancellation for ${user.email}:`, error.message);
-        throw error;
+        console.error(`Failed to send cancellation email to ${user.email}:`, error.message);
+        throw error; // Retry webhook for email failures
       }
     } else {
       console.error(`CRITICAL: User not found for subscription ${subscriptionId} during deletion`);
@@ -327,18 +339,18 @@ export class WebhookHandlers {
     
     if (user) {
       try {
-        const revoked = await promostackClient.revokeAccess(user.email, user.telegramUserId || undefined);
-        if (!revoked) {
-          console.error(`CRITICAL: PromoStack revoke failed for ${user.email}`);
-          throw new Error('PromoStack revoke access failed');
+        const revoked = await promostackClient.revokeAccess(user.email, 'payment_failed');
+        if (revoked) {
+          console.log(`Access revoked due to payment failure for ${user.email}`);
+        } else {
+          console.warn(`PromoStack: Revoke failed for ${user.email} after payment failure - may need manual intervention`);
         }
-        console.log(`Access revoked due to payment failure for ${user.email}`);
       } catch (error: any) {
-        console.error(`CRITICAL: Error revoking access for ${user.email}:`, error.message);
-        throw error;
+        console.error(`PromoStack error revoking access for ${user.email}:`, error.message);
+        // Don't throw - payment failure is already logged, revoke is secondary
       }
     } else {
-      console.error(`CRITICAL: User not found for subscription ${subscriptionId} during payment failure`);
+      console.warn(`User not found for subscription ${subscriptionId} during payment failure`);
     }
   }
 
@@ -370,7 +382,13 @@ export class WebhookHandlers {
     if (user) {
       // Try to re-grant access (non-blocking)
       try {
-        const inviteLink = await promostackClient.grantAccess(user.email, user.telegramUserId || undefined);
+        const inviteLink = await promostackClient.grantAccess({
+          email: user.email,
+          stripeCustomerId: user.stripeCustomerId || undefined,
+          stripeSubscriptionId: subscriptionId,
+          planType: 'Premium Forex Signals',
+          amountPaid: 49
+        });
         if (inviteLink) {
           // Update invite link if changed
           await db.update(signalUsers)

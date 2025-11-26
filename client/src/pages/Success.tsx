@@ -26,18 +26,14 @@ export default function Success() {
     {
       icon: Mail,
       title: "Check Your Email",
-      description: "We've sent detailed instructions to access the private Telegram channel. Check your spam folder if you don't see it.",
+      description: "We've sent your UNIQUE Telegram invite link to your email. This personalized link is just for you - check your spam folder if you don't see it.",
       action: null
     },
     {
       icon: Sparkles,
       title: "Join Private VIP Channel",
-      description: "Click the exclusive invite link in your email to join the private signals channel.",
-      action: {
-        label: "Open Telegram",
-        url: "https://t.me/+TbJsf9xRrNkwN2E0",
-        external: true
-      }
+      description: "Click the exclusive invite link in your email to join the private signals channel. Your link is unique and can only be used once.",
+      action: null
     },
     {
       icon: Target,
@@ -262,19 +258,17 @@ export default function Success() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <a 
-                  href="https://t.me/+TbJsf9xRrNkwN2E0" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                >
-                  <Button size="lg" className="text-lg px-12 py-6 hover:scale-105 transition-transform" data-testid="button-join-channel">
-                    Join Private VIP Channel
-                    <ExternalLink className="ml-2 h-5 w-5" />
-                  </Button>
-                </a>
+                <div className="flex flex-col items-center gap-4">
+                  <div className="bg-primary/10 rounded-full p-4">
+                    <Mail className="h-8 w-8 text-primary" />
+                  </div>
+                  <p className="text-lg font-medium">
+                    Your unique Telegram invite link has been sent to your email
+                  </p>
+                </div>
 
                 <p className="text-sm text-muted-foreground">
-                  Can't find the email? Check your spam folder or contact support
+                  Can't find the email? Check your spam folder or contact support at support@entrylab.io
                 </p>
               </CardContent>
             </Card>

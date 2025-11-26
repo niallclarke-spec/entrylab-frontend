@@ -1,12 +1,21 @@
 interface PromostackGrantResponse {
   success: boolean;
-  invite_link?: string;
+  inviteLink?: string;
   message?: string;
 }
 
 interface PromostackRevokeResponse {
   success: boolean;
   message?: string;
+}
+
+interface GrantAccessParams {
+  email: string;
+  name?: string;
+  planType?: string;
+  amountPaid?: number;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
 }
 
 export class PromostackClient {
@@ -20,21 +29,27 @@ export class PromostackClient {
     }
     this.apiKey = apiKey;
     
-    // Use dev URL for now until PromoStack is deployed to production
-    this.baseUrl = process.env.PROMOSTACK_API_URL || 'https://d52a9e7d-57bd-4872-9582-c313918fbf51-00-b0a33vdhqu47.janeway.replit.dev/api';
+    // Production URL for PromoStack
+    this.baseUrl = process.env.PROMOSTACK_API_URL || 'https://dash.promostack.io';
   }
 
-  async grantAccess(email: string, telegramUserId?: string): Promise<string | null> {
+  async grantAccess(params: GrantAccessParams): Promise<string | null> {
+    const { email, name, planType, amountPaid, stripeCustomerId, stripeSubscriptionId } = params;
+    
     try {
-      const response = await fetch(`${this.baseUrl}/grant-access`, {
+      const response = await fetch(`${this.baseUrl}/api/telegram/grant-access`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
+          'X-API-Key': this.apiKey
         },
         body: JSON.stringify({
           email,
-          telegram_user_id: telegramUserId
+          name: name || '',
+          planType: planType || 'Premium Forex Signals',
+          amountPaid: amountPaid || 49,
+          stripeCustomerId: stripeCustomerId,
+          stripeSubscriptionId: stripeSubscriptionId
         })
       });
 
@@ -46,9 +61,9 @@ export class PromostackClient {
 
       const data: PromostackGrantResponse = await response.json();
       
-      if (data.success && data.invite_link) {
-        console.log(`PromoStack: Access granted for ${email}, invite link: ${data.invite_link}`);
-        return data.invite_link;
+      if (data.success && data.inviteLink) {
+        console.log(`PromoStack: Access granted for ${email}, invite link: ${data.inviteLink}`);
+        return data.inviteLink;
       }
 
       console.log(`PromoStack: Grant access response for ${email}:`, data);
@@ -59,17 +74,17 @@ export class PromostackClient {
     }
   }
 
-  async revokeAccess(email: string, telegramUserId?: string): Promise<boolean> {
+  async revokeAccess(email: string, reason: string = 'subscription_cancelled'): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/revoke-access`, {
+      const response = await fetch(`${this.baseUrl}/api/telegram/revoke-access`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
+          'X-API-Key': this.apiKey
         },
         body: JSON.stringify({
           email,
-          telegram_user_id: telegramUserId
+          reason
         })
       });
 
@@ -91,6 +106,28 @@ export class PromostackClient {
     } catch (error: any) {
       console.error('PromoStack revoke access error:', error.message);
       return false;
+    }
+  }
+
+  async checkAccess(email: string): Promise<{ hasAccess: boolean; status?: string; telegramUserId?: string } | null> {
+    try {
+      const encodedEmail = encodeURIComponent(email);
+      const response = await fetch(`${this.baseUrl}/api/telegram/check-access/${encodedEmail}`, {
+        headers: {
+          'X-API-Key': this.apiKey
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`PromoStack check access failed: ${response.status} ${errorText}`);
+        return null;
+      }
+
+      return await response.json();
+    } catch (error: any) {
+      console.error('PromoStack check access error:', error.message);
+      return null;
     }
   }
 }
