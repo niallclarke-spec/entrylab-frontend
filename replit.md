@@ -19,9 +19,12 @@ Preferred communication style: Simple, everyday language.
 - **API Design**: Functions as a RESTful API proxy, extending WordPress functionality.
 - **Authentication**: Uses WordPress Application Passwords for secure REST API write operations.
 - **Telegram Bot Integration**: A webhook-based bot facilitates review moderation by sending notifications with inline approve/reject buttons to a Telegram channel.
-- **Key Endpoints**: Manages WordPress posts, categories, brokers, prop firms, trust signals, review submissions/fetching, and Telegram/WordPress webhooks.
+- **Subscription System**: Integrated Stripe payments via Replit connector with automatic webhook management. Handles monthly ($49) and yearly ($319) premium signal subscriptions.
+- **PromoStack Integration**: Separate Replit app that manages Telegram channel access via API. Provides fallback to direct invite links if PromoStack is unavailable.
+- **Key Endpoints**: Manages WordPress posts, categories, brokers, prop firms, trust signals, review submissions/fetching, Stripe checkout sessions, and webhook handlers (Stripe, Telegram, WordPress).
 - **SEO Implementation**: Server-side SEO injection middleware pre-fetches data from WordPress to inject title tags, meta descriptions, Open Graph tags, and canonical URLs into the HTML, ensuring content visibility for search engines. Handles 301 redirects for legacy WordPress URLs.
 - **Structured Data**: Generates JSON-LD structured data server-side for various content types (Organization, FinancialService, Article, Review, BreadcrumbList) to enhance search engine rich results, avoiding client-side duplication.
+- **Webhook Resilience**: All Stripe webhook handlers include defensive timestamp parsing, graceful error handling, and non-blocking external API calls to ensure payment processing continues even if secondary services fail.
 
 ### Data Layer
 - **Database**: PostgreSQL, managed with Drizzle ORM.
@@ -42,6 +45,9 @@ Preferred communication style: Simple, everyday language.
 ### Third-Party Services
 - **Content Management**: WordPress REST API.
 - **Database**: PostgreSQL (specifically Neon serverless).
+- **Payments**: Stripe (via Replit connector) for subscription management and billing.
+- **Email**: Resend for transactional emails (welcome emails, cancellation notifications).
+- **Telegram Access**: PromoStack API (custom Replit app) for automated Telegram channel invite link generation.
 - **Messaging/Bots**: Telegram Bot API for review moderation and notifications.
 
 ### Key NPM Packages

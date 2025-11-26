@@ -130,8 +130,15 @@ export class WebhookHandlers {
       try {
         const { client, fromEmail } = await getUncachableResendClient();
         
-        // Use PromoStack link if available, otherwise use public channel
+        // Use PromoStack link if available, otherwise use fallback
         const telegramLink = inviteLink || 'https://t.me/+TbJsf9xRrNkwN2E0';
+        
+        // Store the link in database (whether from PromoStack or fallback)
+        if (!inviteLink && telegramLink) {
+          await db.update(signalUsers)
+            .set({ telegramInviteLink: telegramLink })
+            .where(eq(signalUsers.id, user.id));
+        }
         
         await client.emails.send({
           from: fromEmail,
