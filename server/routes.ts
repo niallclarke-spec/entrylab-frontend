@@ -1659,8 +1659,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .returning();
       }
 
-      // Find or create Stripe customer
+      // Find or create Stripe customer (with validation that customer still exists)
       let customerId = user.stripeCustomerId;
+      
+      // Verify existing customer still exists in Stripe
+      if (customerId) {
+        try {
+          await stripe.customers.retrieve(customerId);
+        } catch (customerError: any) {
+          if (customerError.code === 'resource_missing') {
+            console.log(`Customer ${customerId} no longer exists in Stripe, creating new one`);
+            customerId = null;
+          } else {
+            throw customerError;
+          }
+        }
+      }
+      
+      // Create new customer if needed
       if (!customerId) {
         const customer = await stripe.customers.create({
           email,
