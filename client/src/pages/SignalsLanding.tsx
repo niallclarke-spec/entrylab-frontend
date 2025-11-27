@@ -333,8 +333,114 @@ export default function SignalsLanding() {
           </div>
         </section>
 
-        {/* Final CTA */}
+        {/* Premium Pricing Section */}
         <section className="py-20 px-4">
+          <div className="container mx-auto max-w-6xl">
+            <div className="text-center mb-12">
+              <Badge className="mb-4" variant="outline">
+                <Award className="h-3 w-3 mr-1" />
+                Premium Plans
+              </Badge>
+              <h2 className="text-4xl font-bold mb-4" data-testid="text-pricing-title">Upgrade to Premium Signals</h2>
+              <p className="text-xl text-muted-foreground">Get 3-5 daily premium signals with 87.5% win rate</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {/* 7 Day Plan */}
+              <Card className="relative hover-elevate" data-testid="pricing-weekly">
+                <CardHeader className="pt-6">
+                  <CardTitle className="text-2xl">7 Day VIP</CardTitle>
+                  <CardDescription>Try our signals for a week</CardDescription>
+                  <div className="mt-4">
+                    <span className="text-4xl font-bold">$39</span>
+                    <span className="text-muted-foreground ml-2">per week</span>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {["3-5 daily premium signals", "Full trade analysis", "Stop loss & take profit", "Private VIP channel", "24/7 support"].map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <Check className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                        <span className="text-xs text-muted-foreground">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                <CardFooter>
+                  <a href="/subscribe" className="w-full">
+                    <Button variant="outline" className="w-full">Get Started</Button>
+                  </a>
+                </CardFooter>
+              </Card>
+
+              {/* Monthly Plan */}
+              <Card className="relative hover-elevate" data-testid="pricing-monthly">
+                <CardHeader className="pt-6">
+                  <CardTitle className="text-2xl">Monthly VIP</CardTitle>
+                  <CardDescription>Most flexible option</CardDescription>
+                  <div className="mt-4">
+                    <span className="text-4xl font-bold">$59</span>
+                    <span className="text-muted-foreground ml-2">per month</span>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {["3-5 daily premium signals", "Full trade analysis", "Stop loss & take profit", "Position sizing advice", "Private VIP channel", "Performance dashboard"].map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <Check className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                        <span className="text-xs text-muted-foreground">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                <CardFooter>
+                  <a href="/subscribe" className="w-full">
+                    <Button variant="outline" className="w-full">Get Started</Button>
+                  </a>
+                </CardFooter>
+              </Card>
+
+              {/* Lifetime Plan */}
+              <Card className="relative border-primary shadow-lg shadow-primary/20 hover-elevate" data-testid="pricing-lifetime">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <Badge className="bg-primary text-primary-foreground no-default-hover-elevate">
+                    <Star className="h-3 w-3 mr-1" />
+                    Best Value
+                  </Badge>
+                </div>
+                <CardHeader className="pt-8">
+                  <CardTitle className="text-2xl">Lifetime VIP</CardTitle>
+                  <CardDescription>Pay once, access forever</CardDescription>
+                  <div className="mt-4">
+                    <span className="text-4xl font-bold">$339</span>
+                    <span className="text-muted-foreground ml-2">one-time</span>
+                  </div>
+                  <Badge variant="outline" className="w-fit bg-emerald-500/10 text-emerald-500 border-emerald-500/30 no-default-hover-elevate mt-2">
+                    Save $369+
+                  </Badge>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {["Everything in Monthly", "Pay once, access forever", "Priority signal delivery", "1-on-1 strategy sessions", "Exclusive market reports", "Trading psychology course"].map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <Check className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                        <span className="text-xs text-muted-foreground">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                <CardFooter>
+                  <a href="/subscribe" className="w-full">
+                    <Button className="w-full">Get Lifetime Access</Button>
+                  </a>
+                </CardFooter>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section className="py-20 px-4 bg-muted/30">
           <div className="container mx-auto max-w-4xl">
             <Card className="bg-gradient-to-br from-primary/20 to-background border-primary/30 text-center p-8 md:p-12 glow-card">
               <CardHeader>
