@@ -31,8 +31,9 @@ export default function Subscribe() {
       price: "$39",
       period: "per week",
       priceId: weeklyPriceId || '',
-      description: "Try our signals for a week",
+      description: "Perfect to test our signals",
       billingType: "recurring",
+      tryNow: true,
       features: [
         "3-5 daily premium signals",
         "Full trade analysis with entry/exit",
@@ -257,6 +258,59 @@ export default function Subscribe() {
           </div>
         </section>
 
+        {/* 7 Day Trial CTA */}
+        <section className="py-8 px-4 bg-gradient-to-r from-primary/10 via-background to-primary/10">
+          <div className="container mx-auto max-w-4xl">
+            <Card className="border-primary/30 bg-card/80 backdrop-blur-sm">
+              <CardContent className="p-6 md:p-8">
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                  <div className="flex-shrink-0">
+                    <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center">
+                      <Clock className="h-8 w-8 text-primary" />
+                    </div>
+                  </div>
+                  <div className="flex-1 text-center md:text-left">
+                    <h3 className="text-2xl font-bold mb-2">Not Sure? Try Us for 7 Days!</h3>
+                    <p className="text-muted-foreground mb-3">
+                      Start with our 7 Day VIP plan for just <span className="text-primary font-semibold">$39</span>. 
+                      Experience our premium signals, see real results, and decide if we're right for you. 
+                      No long-term commitment required.
+                    </p>
+                    <div className="flex flex-wrap gap-4 justify-center md:justify-start text-sm">
+                      <div className="flex items-center gap-1">
+                        <Check className="h-4 w-4 text-emerald-500" />
+                        <span>Full VIP access</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Check className="h-4 w-4 text-emerald-500" />
+                        <span>3-5 daily signals</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Check className="h-4 w-4 text-emerald-500" />
+                        <span>Cancel anytime</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <Button 
+                      size="lg" 
+                      className="px-8"
+                      onClick={() => {
+                        setSelectedPlan('weekly');
+                        document.getElementById('checkout-form')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      data-testid="button-try-7day"
+                    >
+                      Try 7 Days - $39
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
         {/* Pricing Cards */}
         <section className="py-12 px-4">
           <div className="container mx-auto max-w-6xl">
@@ -269,7 +323,7 @@ export default function Subscribe() {
               {pricingTiers.map((tier) => (
                 <Card 
                   key={tier.id} 
-                  className={`relative ${tier.popular ? 'border-primary shadow-lg shadow-primary/20 md:scale-105' : ''} hover-elevate cursor-pointer transition-all`}
+                  className={`relative ${tier.popular ? 'border-primary shadow-lg shadow-primary/20 md:scale-105' : ''} ${tier.tryNow ? 'border-emerald-500/50' : ''} hover-elevate cursor-pointer transition-all`}
                   onClick={() => setSelectedPlan(tier.id as 'weekly' | 'monthly' | 'lifetime')}
                   data-testid={`pricing-${tier.id}`}
                 >
@@ -278,6 +332,14 @@ export default function Subscribe() {
                       <Badge className="bg-primary text-primary-foreground glow-badge no-default-hover-elevate">
                         <Sparkles className="h-3 w-3 mr-1" />
                         Best Value
+                      </Badge>
+                    </div>
+                  )}
+                  {tier.tryNow && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-emerald-500 text-white no-default-hover-elevate">
+                        <Zap className="h-3 w-3 mr-1" />
+                        Try Now
                       </Badge>
                     </div>
                   )}
@@ -321,7 +383,7 @@ export default function Subscribe() {
             </div>
 
             {/* Checkout Form */}
-            <Card className="max-w-2xl mx-auto mt-12 bg-card/80 backdrop-blur-sm border-primary/30 glow-card">
+            <Card id="checkout-form" className="max-w-2xl mx-auto mt-12 bg-card/80 backdrop-blur-sm border-primary/30 glow-card">
               <CardHeader>
                 <CardTitle className="text-center text-2xl">Complete Your Subscription</CardTitle>
                 <CardDescription className="text-center">
