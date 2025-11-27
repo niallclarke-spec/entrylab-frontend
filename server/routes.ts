@@ -1340,8 +1340,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // Map React routes to WordPress page slugs
     const wpPageMap: Record<string, string> = {
-      '/signals': 'entrylab-signals',
-      '/subscribe': 'subscribe-to-signals',
+      '/signals': 'signals',
+      '/subscribe': 'subscribe',
       '/success': 'payment-success'
     };
     
