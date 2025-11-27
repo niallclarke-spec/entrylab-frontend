@@ -97,7 +97,5 @@ integrations = ["javascript_mem_db:1.0.0", "javascript_database:1.0.0", "stripe:
 [userenv]
 
 [userenv.shared]
-VITE_STRIPE_PRICE_MONTHLY = "price_1SXsTHQfYsmULFjZV0BcgYBu"
+VITE_STRIPE_PRICE_MONTHLY = "price_1SXQrUCdjkOcXxTVNP5FaYbi"
 VITE_STRIPE_PRICE_YEARLY = "price_1SXQrVCdjkOcXxTVn9LQWzWV"
-VITE_STRIPE_PRICE_WEEKLY = "price_1SXsUsQfYsmULFjZ8j30ywSj"
-VITE_STRIPE_PRICE_LIFETIME = "price_1SXsUBQfYsmULFjZxUgeTg5m"
