@@ -1678,20 +1678,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const successUrl = `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`;
       const cancelUrl = `${baseUrl}/subscribe`;
 
-      // Create checkout session
+      // Get the price to determine if it's recurring or one-time
+      const price = await stripe.prices.retrieve(priceId);
+      const isOneTime = price.type === 'one_time';
+      const mode = isOneTime ? 'payment' : 'subscription';
+
+      console.log(`Creating ${mode} checkout for price ${priceId} (type: ${price.type})`);
+
+      // Create checkout session with appropriate mode
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
         payment_method_types: ['card'],
         line_items: [{ price: priceId, quantity: 1 }],
-        mode: 'subscription',
+        mode: mode,
         success_url: successUrl,
         cancel_url: cancelUrl,
         metadata: {
           userId: user.id,
           email,
+          planType: isOneTime ? 'lifetime' : 'subscription',
         },
         allow_promotion_codes: true,
         billing_address_collection: 'auto',
+        ...(isOneTime ? { invoice_creation: { enabled: true } } : {}),
       });
 
       console.log(`Checkout session created for ${email}: ${session.id}`);
