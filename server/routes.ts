@@ -1337,10 +1337,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // Only process HTML requests for specific page types
     const isHtmlRequest = !url.includes('.') || url.endsWith('.html');
+    
+    // Map React routes to WordPress page slugs
+    const wpPageMap: Record<string, string> = {
+      '/signals': 'entrylab-signals',
+      '/subscribe': 'subscribe-to-signals',
+      '/success': 'payment-success'
+    };
+    
     const needsSEO = url.startsWith('/article/') || 
                      url.startsWith('/broker/') ||
                      url.startsWith('/prop-firm/') ||
-                     url.match(/^\/(news|broker-news|broker-guides|prop-firm-news|trading-tools)/);
+                     url.match(/^\/(news|broker-news|broker-guides|prop-firm-news|trading-tools)/) ||
+                     wpPageMap[url.split('?')[0]]; // WordPress pages
     
     if (isHtmlRequest && needsSEO) {
       console.log('[SEO MIDDLEWARE] Will inject SEO data for:', url);
@@ -1348,7 +1357,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Pre-fetch page data to inject into HTML
       let pageData: any = null;
       try {
-        if (url.startsWith('/broker/')) {
+        const cleanUrl = url.split('?')[0];
+        
+        // Check if this is a WordPress page
+        if (wpPageMap[cleanUrl]) {
+          const wpSlug = wpPageMap[cleanUrl];
+          console.log('[SEO] Fetching WordPress page:', wpSlug);
+          pageData = await fetchWordPressWithCache(
+            `https://admin.entrylab.io/wp-json/wp/v2/pages?slug=${wpSlug}&_embed`
+          );
+          pageData = pageData?.[0];
+        } else if (url.startsWith('/broker/')) {
           const slug = url.replace('/broker/', '').split('?')[0];
           pageData = await fetchWordPressWithCache(
             `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`
