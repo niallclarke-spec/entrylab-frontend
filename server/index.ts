@@ -169,7 +169,11 @@ app.use('/api', apiLimiter);
       const stripeSync = await getStripeSync();
 
       console.log('Setting up managed webhook...');
-      const webhookBaseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+      // Use REPLIT_DOMAINS for dev, APP_URL for production VPS, or fallback to entrylab.io
+      const domain = process.env.REPLIT_DOMAINS?.split(',')[0] 
+        || process.env.APP_URL?.replace(/^https?:\/\//, '') 
+        || 'entrylab.io';
+      const webhookBaseUrl = `https://${domain}`;
       const { webhook, uuid } = await stripeSync.findOrCreateManagedWebhook(
         `${webhookBaseUrl}/api/stripe/webhook`,
         {
