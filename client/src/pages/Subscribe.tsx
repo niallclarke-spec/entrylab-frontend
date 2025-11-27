@@ -15,14 +15,10 @@ export default function Subscribe() {
   const [selectedPlan, setSelectedPlan] = useState<'weekly' | 'monthly' | 'lifetime'>('lifetime');
   const { toast } = useToast();
 
-  // Stripe price IDs from environment
-  const weeklyPriceId = import.meta.env.VITE_STRIPE_PRICE_WEEKLY;
-  const monthlyPriceId = import.meta.env.VITE_STRIPE_PRICE_MONTHLY;
-  const lifetimePriceId = import.meta.env.VITE_STRIPE_PRICE_LIFETIME;
-
-  if (!weeklyPriceId || !monthlyPriceId || !lifetimePriceId) {
-    console.error('Stripe price IDs not configured. Check VITE_STRIPE_PRICE_WEEKLY, VITE_STRIPE_PRICE_MONTHLY and VITE_STRIPE_PRICE_LIFETIME environment variables.');
-  }
+  // Stripe price IDs with hardcoded fallbacks for VPS deployment
+  const weeklyPriceId = import.meta.env.VITE_STRIPE_PRICE_WEEKLY || 'price_1SXsUsQfYsmULFjZ8j30ywSj';
+  const monthlyPriceId = import.meta.env.VITE_STRIPE_PRICE_MONTHLY || 'price_1SXsTHQfYsmULFjZV0BcgYBu';
+  const lifetimePriceId = import.meta.env.VITE_STRIPE_PRICE_LIFETIME || 'price_1SXsUBQfYsmULFjZxUgeTg5m';
 
   const pricingTiers = [
     {
