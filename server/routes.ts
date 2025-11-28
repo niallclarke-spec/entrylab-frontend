@@ -1572,25 +1572,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Email captured: ${email} from ${source || 'direct'}`);
 
-      // Also add to PromoStack for unified tracking
+      // Add to PromoStack and get dynamic invite link
+      let inviteLink = 'https://t.me/entrylabs'; // Fallback to public channel
       try {
         const { promostackClient } = await import('./promostackClient');
-        const promostackSuccess = await promostackClient.addFreeUser({
+        const promostackResult = await promostackClient.addFreeUser({
           email,
           name: '',
           source: source || 'signals_landing'
         });
-        console.log(`PromoStack free user: ${email} (${promostackSuccess ? 'success' : 'failed'})`);
+        console.log(`PromoStack free user: ${email} (success: ${promostackResult.success}, inviteLink: ${promostackResult.inviteLink || 'none'})`);
+        
+        // Use dynamic invite link if available
+        if (promostackResult.success && promostackResult.inviteLink) {
+          inviteLink = promostackResult.inviteLink;
+        }
       } catch (promostackError) {
         console.error('PromoStack integration error:', promostackError);
-        // Continue - don't block the user flow
+        // Continue with fallback link
       }
 
-      // Return public Telegram channel invite link
+      // Return Telegram invite link (dynamic from PromoStack or fallback)
       res.json({
         success: true,
-        redirect_url: 'https://t.me/entrylabs',
-        message: 'Success! Check your email and join our free Telegram channel.',
+        redirect_url: inviteLink,
+        message: 'Success! Click the button to join our free Telegram channel.',
       });
 
     } catch (error: any) {
@@ -1611,24 +1617,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Import PromoStack client dynamically to avoid circular dependencies
       const { promostackClient } = await import('./promostackClient');
 
-      // Add user to PromoStack as a free user
-      const success = await promostackClient.addFreeUser({
+      // Add user to PromoStack and get invite link
+      const result = await promostackClient.addFreeUser({
         email,
         name: name || '',
         source: source || 'Free Gold Signals'
       });
 
-      if (!success) {
+      if (!result.success) {
         console.error(`Failed to add free user to PromoStack: ${email}`);
         // Still return success to WordPress - we don't want to block the form
-        // PromoStack failures are logged and can be manually added
       }
 
-      console.log(`Free signup registered: ${email} (PromoStack: ${success ? 'success' : 'failed'})`);
+      console.log(`Free signup registered: ${email} (PromoStack: ${result.success ? 'success' : 'failed'}, inviteLink: ${result.inviteLink || 'none'})`);
 
       res.json({
         success: true,
-        message: 'Free signup registered successfully'
+        message: 'Free signup registered successfully',
+        inviteLink: result.inviteLink || 'https://t.me/entrylabs'
       });
 
     } catch (error: any) {
