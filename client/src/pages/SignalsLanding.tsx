@@ -148,14 +148,17 @@ function FloatingTestimonial({ testimonial, position }: { testimonial: typeof fl
 
 function EmailCaptureForm({ 
   variant = "default",
+  testIdSuffix = "",
   onSubmit 
 }: { 
-  variant?: "default" | "compact" | "hero";
+  variant?: "default" | "compact";
+  testIdSuffix?: string;
   onSubmit: (email: string) => Promise<void>;
 }) {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const suffix = testIdSuffix ? `-${testIdSuffix}` : "";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,10 +192,10 @@ function EmailCaptureForm({
             className="pl-9 h-10"
             disabled={isSubmitting}
             required
-            data-testid="input-email-compact"
+            data-testid={`input-email${suffix}`}
           />
         </div>
-        <Button type="submit" size="default" disabled={isSubmitting} data-testid="button-submit-compact">
+        <Button type="submit" size="default" disabled={isSubmitting} data-testid={`button-submit${suffix}`}>
           {isSubmitting ? "Joining..." : "Join Free"}
         </Button>
       </form>
@@ -212,7 +215,7 @@ function EmailCaptureForm({
             className="pl-10 h-12 text-base"
             disabled={isSubmitting}
             required
-            data-testid="input-email"
+            data-testid={`input-email${suffix}`}
           />
         </div>
         <Button 
@@ -220,7 +223,7 @@ function EmailCaptureForm({
           size="lg" 
           className="h-12 px-8"
           disabled={isSubmitting}
-          data-testid="button-submit-email"
+          data-testid={`button-submit${suffix}`}
         >
           {isSubmitting ? "Joining..." : "Get Free Access"}
           <ArrowRight className="ml-2 h-5 w-5" />
@@ -305,7 +308,7 @@ export default function SignalsLanding() {
               {/* Email Capture */}
               <Card className="max-w-2xl mx-auto bg-card/80 backdrop-blur-sm border-border/50">
                 <CardContent className="p-6 md:p-8">
-                  <EmailCaptureForm onSubmit={handleEmailSubmit} />
+                  <EmailCaptureForm testIdSuffix="hero" onSubmit={handleEmailSubmit} />
                   <div className="flex flex-wrap items-center justify-center gap-4 mt-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Zap className="h-4 w-4 text-primary" />
@@ -518,7 +521,7 @@ export default function SignalsLanding() {
             <p className="text-muted-foreground mb-6">
               Join our free Telegram channel and start receiving market insights today.
             </p>
-            <EmailCaptureForm variant="compact" onSubmit={handleEmailSubmit} />
+            <EmailCaptureForm variant="compact" testIdSuffix="mid" onSubmit={handleEmailSubmit} />
           </div>
         </section>
 
@@ -687,7 +690,7 @@ export default function SignalsLanding() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <EmailCaptureForm onSubmit={handleEmailSubmit} />
+                <EmailCaptureForm testIdSuffix="footer" onSubmit={handleEmailSubmit} />
                 
                 <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">

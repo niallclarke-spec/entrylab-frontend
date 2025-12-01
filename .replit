@@ -24,6 +24,10 @@ localPort = 35525
 externalPort = 8099
 
 [[ports]]
+localPort = 36467
+externalPort = 9000
+
+[[ports]]
 localPort = 36875
 externalPort = 6800
 
@@ -50,10 +54,6 @@ externalPort = 3001
 [[ports]]
 localPort = 40317
 externalPort = 5173
-
-[[ports]]
-localPort = 43747
-externalPort = 9000
 
 [[ports]]
 localPort = 44055
@@ -107,3 +107,5 @@ integrations = ["javascript_mem_db:1.0.0", "javascript_database:1.0.0", "stripe:
 [userenv.shared]
 VITE_STRIPE_PRICE_MONTHLY = "price_1SXQrUCdjkOcXxTVNP5FaYbi"
 VITE_STRIPE_PRICE_YEARLY = "price_1SXQrVCdjkOcXxTVn9LQWzWV"
+TESTING_VITE_STRIPE_PUBLIC_KEY = "pk_test_51SXqlCQchg1fLrYkqQjiMAlVm1SMdoxX2YonGahGVXm9d3oMGTPcBgKry0g4d8lK24ZdLPgLgeJMM4hFFDKXxOGK00jLKsDxBy"
+TESTING_STRIPE_SECRET_KEY = "sk_test_51SXqlCQchg1fLrYk723Ln20or192mYzrya043hj4BUimHBBTlp2KJvTD0dm55vAaZhEdWlxjGJKKTqrjOG6oZUzT00thWxg1si"
