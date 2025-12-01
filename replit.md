@@ -20,7 +20,12 @@ Preferred communication style: Simple, everyday language.
 - **Authentication**: Uses WordPress Application Passwords for secure REST API write operations.
 - **Telegram Bot Integration**: A webhook-based bot facilitates review moderation by sending notifications with inline approve/reject buttons to a Telegram channel.
 - **Subscription System**: Integrated Stripe payments via Replit connector with automatic webhook management. Handles monthly ($49) and yearly ($319) premium signal subscriptions.
-- **PromoStack Integration**: Separate Replit app that manages Telegram channel access via API. Provides fallback to direct invite links if PromoStack is unavailable.
+- **PromoStack Integration**: Manages Telegram channel access via `POST https://dash.promostack.io/api/telegram/grant-access`. Premium users receive dynamic invite links with plan mapping based on Stripe subscription data:
+  - 7-day/weekly interval → "Premium Forex Signals - 7 Day"
+  - Monthly interval → "Premium Forex Signals - Monthly"  
+  - One-time (lifetime) → "Premium Forex Signals - Lifetime"
+  - Amount: Uses Stripe `price.unit_amount` (base price) to avoid sending discounted totals
+  - Free users: Static public channel link `https://t.me/entrylabs` with lead tracking only
 - **Key Endpoints**: Manages WordPress posts, categories, brokers, prop firms, trust signals, review submissions/fetching, Stripe checkout sessions, and webhook handlers (Stripe, Telegram, WordPress).
 - **SEO Implementation**: Server-side SEO injection middleware pre-fetches data from WordPress to inject title tags, meta descriptions, Open Graph tags, and canonical URLs into the HTML, ensuring content visibility for search engines. Handles 301 redirects for legacy WordPress URLs.
 - **Structured Data**: Generates JSON-LD structured data server-side for various content types (Organization, FinancialService, Article, Review, BreadcrumbList) to enhance search engine rich results, avoiding client-side duplication.
