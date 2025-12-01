@@ -1572,30 +1572,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Email captured: ${email} from ${source || 'direct'}`);
 
-      // Add to PromoStack and get dynamic invite link
-      let inviteLink = 'https://t.me/entrylabs'; // Fallback to public channel
+      // Static public channel link for free users
+      const FREE_CHANNEL_LINK = 'https://t.me/entrylabs';
+
+      // Record lead in PromoStack for tracking (non-blocking)
       try {
         const { promostackClient } = await import('./promostackClient');
-        const promostackResult = await promostackClient.addFreeUser({
+        const success = await promostackClient.addFreeUser({
           email,
           name: '',
           source: source || 'signals_landing'
         });
-        console.log(`PromoStack free user: ${email} (success: ${promostackResult.success}, inviteLink: ${promostackResult.inviteLink || 'none'})`);
-        
-        // Use dynamic invite link if available
-        if (promostackResult.success && promostackResult.inviteLink) {
-          inviteLink = promostackResult.inviteLink;
-        }
+        console.log(`PromoStack free lead: ${email} (recorded: ${success})`);
       } catch (promostackError) {
-        console.error('PromoStack integration error:', promostackError);
-        // Continue with fallback link
+        console.error('PromoStack tracking error:', promostackError);
+        // Continue - don't block free signup
       }
 
-      // Return Telegram invite link (dynamic from PromoStack or fallback)
+      // Always return static public channel link for free users
       res.json({
         success: true,
-        redirect_url: inviteLink,
+        redirect_url: FREE_CHANNEL_LINK,
         message: 'Success! Click the button to join our free Telegram channel.',
       });
 
@@ -1614,27 +1611,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Invalid email address' });
       }
 
-      // Import PromoStack client dynamically to avoid circular dependencies
-      const { promostackClient } = await import('./promostackClient');
+      // Static public channel link for free users
+      const FREE_CHANNEL_LINK = 'https://t.me/entrylabs';
 
-      // Add user to PromoStack and get invite link
-      const result = await promostackClient.addFreeUser({
-        email,
-        name: name || '',
-        source: source || 'Free Gold Signals'
-      });
-
-      if (!result.success) {
-        console.error(`Failed to add free user to PromoStack: ${email}`);
-        // Still return success to WordPress - we don't want to block the form
+      // Record lead in PromoStack for tracking (non-blocking)
+      try {
+        const { promostackClient } = await import('./promostackClient');
+        const success = await promostackClient.addFreeUser({
+          email,
+          name: name || '',
+          source: source || 'Free Gold Signals'
+        });
+        console.log(`Free signup registered: ${email} (PromoStack: ${success ? 'recorded' : 'failed'})`);
+      } catch (promostackError) {
+        console.error(`PromoStack tracking error for ${email}:`, promostackError);
+        // Continue - don't block free signup
       }
 
-      console.log(`Free signup registered: ${email} (PromoStack: ${result.success ? 'success' : 'failed'}, inviteLink: ${result.inviteLink || 'none'})`);
-
+      // Always return static public channel link for free users
       res.json({
         success: true,
         message: 'Free signup registered successfully',
-        inviteLink: result.inviteLink || 'https://t.me/entrylabs'
+        inviteLink: FREE_CHANNEL_LINK
       });
 
     } catch (error: any) {

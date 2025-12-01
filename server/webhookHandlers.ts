@@ -1,10 +1,37 @@
-import { getStripeSync } from './stripeClient';
+import { getStripeSync, getUncachableStripeClient } from './stripeClient';
 import { db } from './db';
 import { signalUsers, subscriptions, webhookEvents } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { promostackClient } from './promostackClient';
 import { getUncachableResendClient } from './resendClient';
 import { getWelcomeEmailHtml, getCancellationEmailHtml } from './emailTemplates';
+
+// Map Stripe interval to PromoStack planType
+function mapStripeToPlanType(interval: string | null, intervalCount?: number): string {
+  if (!interval) {
+    // One-time payment = Lifetime
+    return 'Premium Forex Signals - Lifetime';
+  }
+  
+  if (interval === 'day' && intervalCount === 7) {
+    return 'Premium Forex Signals - 7 Day';
+  }
+  
+  if (interval === 'week') {
+    return 'Premium Forex Signals - 7 Day';
+  }
+  
+  if (interval === 'month') {
+    return 'Premium Forex Signals - Monthly';
+  }
+  
+  if (interval === 'year') {
+    return 'Premium Forex Signals - Yearly';
+  }
+  
+  // Default fallback
+  return 'Premium Forex Signals';
+}
 
 export class WebhookHandlers {
   static async processWebhook(payload: Buffer, signature: string, uuid: string): Promise<void> {
@@ -105,6 +132,51 @@ export class WebhookHandlers {
 
     console.log(`Checkout completed for ${email}, subscription: ${subscriptionId}`);
     
+    // Extract plan details from Stripe
+    let planType = 'Premium Forex Signals';
+    // Start with session amount as fallback, will prefer price.unit_amount when available
+    let amountPaid = session.amount_total ? session.amount_total / 100 : 0;
+    
+    try {
+      const stripe = await getUncachableStripeClient();
+      
+      if (subscriptionId) {
+        // Recurring subscription - fetch subscription to get price details
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+          expand: ['items.data.price']
+        });
+        
+        const priceData = subscription.items.data[0]?.price;
+        if (priceData) {
+          const interval = priceData.recurring?.interval || null;
+          const intervalCount = priceData.recurring?.interval_count || 1;
+          planType = mapStripeToPlanType(interval, intervalCount);
+          
+          // Prefer price's unit_amount (base price) over session total (which includes discounts/taxes)
+          // Fall back to session amount for metered/usage-based pricing where unit_amount is null
+          if (priceData.unit_amount) {
+            amountPaid = priceData.unit_amount / 100;
+          } else {
+            console.log(`No unit_amount on price, using session total: ${amountPaid}`);
+          }
+        }
+        
+        console.log(`Stripe subscription details: interval=${priceData?.recurring?.interval}, baseAmount=${amountPaid}, planType=${planType}`);
+      } else {
+        // One-time payment (Lifetime plan) - use session amount
+        planType = mapStripeToPlanType(null);
+        console.log(`Stripe one-time payment: amount=${amountPaid}, planType=${planType}`);
+      }
+    } catch (stripeError: any) {
+      console.error(`Failed to fetch Stripe subscription details: ${stripeError.message}`);
+      // Session amount is already set as default fallback
+    }
+    
+    // Log warning if amount is zero (unexpected for paid plans)
+    if (amountPaid === 0) {
+      console.warn(`PromoStack: amountPaid is $0 for ${email} - check price configuration`);
+    }
+    
     // Grant access via PromoStack and send welcome email (only if not already sent)
     if (!user.welcomeEmailSent) {
       let inviteLink: string | null = null;
@@ -115,8 +187,8 @@ export class WebhookHandlers {
           email,
           stripeCustomerId: customerId,
           stripeSubscriptionId: subscriptionId,
-          planType: 'Premium Forex Signals',
-          amountPaid: 49
+          planType,
+          amountPaid
         });
         
         if (inviteLink) {
@@ -380,21 +452,56 @@ export class WebhookHandlers {
       .where(eq(signalUsers.stripeSubscriptionId, subscriptionId));
     
     if (user) {
+      // Extract plan details from Stripe
+      let planType = 'Premium Forex Signals';
+      // Start with invoice amount as fallback, will prefer price.unit_amount when available
+      let amountPaid = invoice.amount_paid ? invoice.amount_paid / 100 : 0;
+      
+      try {
+        const stripe = await getUncachableStripeClient();
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+          expand: ['items.data.price']
+        });
+        
+        const priceData = subscription.items.data[0]?.price;
+        if (priceData) {
+          const interval = priceData.recurring?.interval || null;
+          const intervalCount = priceData.recurring?.interval_count || 1;
+          planType = mapStripeToPlanType(interval, intervalCount);
+          
+          // Prefer price's unit_amount (base price) over invoice total (which includes discounts/taxes)
+          // Fall back to invoice amount for metered/usage-based pricing where unit_amount is null
+          if (priceData.unit_amount) {
+            amountPaid = priceData.unit_amount / 100;
+          } else {
+            console.log(`No unit_amount on price for re-grant, using invoice total: ${amountPaid}`);
+          }
+        }
+      } catch (stripeError: any) {
+        console.error(`Failed to fetch subscription details for re-grant: ${stripeError.message}`);
+        // Invoice amount is already set as default fallback
+      }
+      
+      // Log warning if amount is zero (unexpected for paid plans)
+      if (amountPaid === 0) {
+        console.warn(`PromoStack re-grant: amountPaid is $0 for ${user.email} - check price configuration`);
+      }
+      
       // Try to re-grant access (non-blocking)
       try {
         const inviteLink = await promostackClient.grantAccess({
           email: user.email,
           stripeCustomerId: user.stripeCustomerId || undefined,
           stripeSubscriptionId: subscriptionId,
-          planType: 'Premium Forex Signals',
-          amountPaid: 49
+          planType,
+          amountPaid
         });
         if (inviteLink) {
           // Update invite link if changed
           await db.update(signalUsers)
             .set({ telegramInviteLink: inviteLink })
             .where(eq(signalUsers.id, user.id));
-          console.log(`Access re-granted after payment success for ${user.email}`);
+          console.log(`Access re-granted after payment success for ${user.email} (${planType})`);
         } else {
           console.warn(`PromoStack: Failed to re-grant access for ${user.email}`);
         }

@@ -137,7 +137,7 @@ export class PromostackClient {
     }
   }
 
-  async addFreeUser(params: FreeUserParams): Promise<{ success: boolean; inviteLink?: string }> {
+  async addFreeUser(params: FreeUserParams): Promise<boolean> {
     const { email, name, source } = params;
     
     try {
@@ -151,30 +151,28 @@ export class PromostackClient {
           email,
           name: name || '',
           planType: 'Free Gold Signals',
-          amountPaid: 0,
-          stripeCustomerId: 'free_user',
-          stripeSubscriptionId: 'free_signup'
+          amountPaid: 0
         })
       });
 
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`PromoStack add free user failed: ${response.status} ${errorText}`);
-        return { success: false };
+        return false;
       }
 
       const data: PromostackGrantResponse = await response.json();
       
-      if (data.success && data.inviteLink) {
-        console.log(`PromoStack: Free user added - ${email}, invite link: ${data.inviteLink}`);
-        return { success: true, inviteLink: data.inviteLink };
+      if (data.success) {
+        console.log(`PromoStack: Free lead recorded for ${email}`);
+        return true;
       }
 
       console.log(`PromoStack: Add free user response for ${email}:`, data);
-      return { success: data.success || false, inviteLink: data.inviteLink };
+      return data.success || false;
     } catch (error: any) {
       console.error('PromoStack add free user error:', error.message);
-      return { success: false };
+      return false;
     }
   }
 }
