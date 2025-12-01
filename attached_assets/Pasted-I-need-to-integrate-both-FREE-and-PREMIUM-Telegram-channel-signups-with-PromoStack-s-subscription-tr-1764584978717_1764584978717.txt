@@ -1,0 +1,92 @@
+I need to integrate both FREE and PREMIUM Telegram channel signups with PromoStack's subscription tracking system.
+
+## Two Different Flows:
+
+### 1. FREE Channel Signup (Public Channel - Lead Capture Only)
+When a user signs up for the free Gold Signals channel:
+- Call PromoStack API to record the lead
+- API returns success (no invite link needed)
+- Show the user our STATIC public channel link: [YOUR_PUBLIC_CHANNEL_LINK]
+
+Request:
+POST https://dash.promostack.io/api/telegram/grant-access
+Headers: 
+  X-API-Key: [PROMOSTACK_API_KEY secret]
+  Content-Type: application/json
+
+Body:
+{
+  "email": "user@example.com",
+  "name": "User Name",
+  "planType": "Free Gold Signals",
+  "amountPaid": 0
+}
+
+Response:
+{
+  "success": true,
+  "inviteLink": null,
+  "message": "Free lead captured successfully",
+  "isFreeUser": true
+}
+
+Then show user the static public channel link.
+
+
+### 2. PREMIUM Subscription (Private Channel - Stripe Payment)
+When a user completes Stripe checkout for premium:
+- Call PromoStack API with Stripe data
+- Pull the ACTUAL amount and plan interval from Stripe
+- API returns a UNIQUE private invite link
+
+Request:
+POST https://dash.promostack.io/api/telegram/grant-access
+Headers:
+  X-API-Key: [PROMOSTACK_API_KEY secret]
+  Content-Type: application/json
+
+Body:
+{
+  "email": "user@example.com",
+  "name": "User Name",
+  "planType": "<PLAN_TYPE_FROM_STRIPE>",  // See mapping below
+  "amountPaid": <ACTUAL_AMOUNT_FROM_STRIPE>,
+  "stripeCustomerId": "<FROM_STRIPE_EVENT>",
+  "stripeSubscriptionId": "<FROM_STRIPE_EVENT>"
+}
+
+## IMPORTANT: Plan Type Mapping from Stripe
+
+Pull the interval from Stripe's subscription/price data and map to planType:
+
+| Stripe Interval      | planType Value                    |
+|---------------------|-----------------------------------|
+| 7-day / trial       | "Premium Forex Signals - 7 Day"   |
+| month               | "Premium Forex Signals - Monthly" |
+| lifetime / one-time | "Premium Forex Signals - Lifetime"|
+
+How to get interval from Stripe:
+- subscription.items.data[0].price.recurring.interval (for subscriptions)
+- Or from product metadata if using one-time payments
+
+How to get amount:
+- session.amount_total / 100 (for checkout sessions)
+- subscription.plan.amount / 100 (for subscription events)
+
+Response:
+{
+  "success": true,
+  "inviteLink": "https://t.me/+UniquePrivateLink",
+  "message": "Premium access granted successfully",
+  "isFreeUser": false
+}
+
+Show user the inviteLink from the response.
+
+
+## Questions for the codebase:
+1. Where is the Stripe webhook handler for checkout.session.completed?
+2. How do we access the price interval and amount from the Stripe session/subscription?
+3. Where is the free channel signup form handled?
+4. What is the static public channel link we show to free users?
+5. Is PROMOSTACK_API_KEY already configured as a secret?
