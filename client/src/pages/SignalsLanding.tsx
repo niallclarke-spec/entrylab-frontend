@@ -187,11 +187,45 @@ function FlowingLine() {
         fill="none"
       >
         <defs>
-          <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          {/* Gradient that fades in at content sections and out in between */}
+          <linearGradient id="lineGradientFade" x1="0%" y1="0%" x2="0%" y2="100%">
+            {/* Top fade in */}
             <stop offset="0%" stopColor="#2bb32a" stopOpacity="0" />
+            {/* Hero section - visible */}
             <stop offset="3%" stopColor="#2bb32a" stopOpacity="0.4" />
-            <stop offset="50%" stopColor="#2bb32a" stopOpacity="0.5" />
-            <stop offset="97%" stopColor="#2bb32a" stopOpacity="0.4" />
+            <stop offset="5%" stopColor="#2bb32a" stopOpacity="0.5" />
+            {/* Fade out after hero */}
+            <stop offset="8%" stopColor="#2bb32a" stopOpacity="0.15" />
+            {/* Stats bar - visible */}
+            <stop offset="12%" stopColor="#2bb32a" stopOpacity="0.5" />
+            <stop offset="14%" stopColor="#2bb32a" stopOpacity="0.5" />
+            {/* Fade out after stats */}
+            <stop offset="18%" stopColor="#2bb32a" stopOpacity="0.1" />
+            {/* Features section - visible */}
+            <stop offset="22%" stopColor="#2bb32a" stopOpacity="0.5" />
+            <stop offset="26%" stopColor="#2bb32a" stopOpacity="0.5" />
+            {/* Fade out after features */}
+            <stop offset="30%" stopColor="#2bb32a" stopOpacity="0.1" />
+            {/* Signal preview - visible */}
+            <stop offset="34%" stopColor="#2bb32a" stopOpacity="0.5" />
+            <stop offset="38%" stopColor="#2bb32a" stopOpacity="0.5" />
+            {/* Fade out after signal preview */}
+            <stop offset="44%" stopColor="#2bb32a" stopOpacity="0.1" />
+            {/* Testimonials - visible */}
+            <stop offset="48%" stopColor="#2bb32a" stopOpacity="0.5" />
+            <stop offset="52%" stopColor="#2bb32a" stopOpacity="0.5" />
+            {/* Fade out after testimonials */}
+            <stop offset="58%" stopColor="#2bb32a" stopOpacity="0.1" />
+            {/* FAQ section - visible */}
+            <stop offset="64%" stopColor="#2bb32a" stopOpacity="0.5" />
+            <stop offset="68%" stopColor="#2bb32a" stopOpacity="0.5" />
+            {/* Fade out after FAQ */}
+            <stop offset="76%" stopColor="#2bb32a" stopOpacity="0.1" />
+            {/* Footer CTA - visible */}
+            <stop offset="82%" stopColor="#2bb32a" stopOpacity="0.5" />
+            <stop offset="86%" stopColor="#2bb32a" stopOpacity="0.4" />
+            {/* Bottom fade out */}
+            <stop offset="95%" stopColor="#2bb32a" stopOpacity="0.15" />
             <stop offset="100%" stopColor="#2bb32a" stopOpacity="0" />
           </linearGradient>
           <filter id="glow">
@@ -202,7 +236,7 @@ function FlowingLine() {
             </feMerge>
           </filter>
         </defs>
-        {/* Gentle flowing line - stays more centered, touches key content points */}
+        {/* Gentle flowing line with fade effect between sections */}
         <path
           d="M 720 0
              C 720 80, 580 120, 520 200
@@ -220,26 +254,19 @@ function FlowingLine() {
              C 760 3900, 620 3950, 580 4150
              S 560 4400, 650 4600
              C 740 4800, 800 4900, 720 5000"
-          stroke="url(#lineGradient)"
+          stroke="url(#lineGradientFade)"
           strokeWidth="1.5"
           strokeLinecap="round"
           filter="url(#glow)"
         />
         {/* Accent dots at key section touchpoints */}
-        {/* Hero section */}
-        <circle cx="520" cy="200" r="4" fill="#2bb32a" opacity="0.6" />
-        {/* Stats bar */}
-        <circle cx="800" cy="650" r="4" fill="#2bb32a" opacity="0.7" />
-        {/* Features section */}
-        <circle cx="540" cy="1150" r="4" fill="#2bb32a" opacity="0.6" />
-        {/* Signal preview */}
-        <circle cx="880" cy="1750" r="4" fill="#2bb32a" opacity="0.7" />
-        {/* Testimonials */}
-        <circle cx="560" cy="2450" r="4" fill="#2bb32a" opacity="0.6" />
-        {/* FAQ section */}
-        <circle cx="920" cy="3250" r="4" fill="#2bb32a" opacity="0.7" />
-        {/* Footer CTA */}
-        <circle cx="580" cy="4150" r="4" fill="#2bb32a" opacity="0.6" />
+        <circle cx="520" cy="200" r="3" fill="#2bb32a" opacity="0.5" />
+        <circle cx="800" cy="650" r="3" fill="#2bb32a" opacity="0.6" />
+        <circle cx="540" cy="1150" r="3" fill="#2bb32a" opacity="0.5" />
+        <circle cx="880" cy="1750" r="3" fill="#2bb32a" opacity="0.6" />
+        <circle cx="560" cy="2450" r="3" fill="#2bb32a" opacity="0.5" />
+        <circle cx="920" cy="3250" r="3" fill="#2bb32a" opacity="0.6" />
+        <circle cx="580" cy="4150" r="3" fill="#2bb32a" opacity="0.5" />
       </svg>
     </div>
   );
