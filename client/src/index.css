@@ -918,22 +918,4 @@
     animation: pulse-glow 2s ease-in-out infinite;
   }
 
-  /* Flowing decorative line - weaves across entire page */
-  .signals-flowing-line {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 1;
-    overflow: visible;
-  }
-
-  .signals-flowing-line svg {
-    width: 100%;
-    height: auto;
-    min-height: 100%;
-  }
 }
