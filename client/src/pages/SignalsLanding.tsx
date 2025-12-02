@@ -303,6 +303,51 @@ function TelegramMessage({ message, index }: { message: typeof telegramMessages[
   );
 }
 
+const floatingNotifications = [
+  { type: "signal", text: "New signal posted!", icon: "arrow", delay: 0 },
+  { type: "profit", text: "+$890 closed", icon: "check", delay: 3 },
+  { type: "members", text: "12 traders online", icon: "users", delay: 6 },
+  { type: "signal", text: "TP1 hit!", icon: "target", delay: 9 },
+];
+
+function FloatingNotification({ notification, index }: { notification: typeof floatingNotifications[0]; index: number }) {
+  const positions = [
+    { top: "15%", right: "-80px" },
+    { top: "40%", left: "-90px" },
+    { top: "65%", right: "-75px" },
+    { top: "85%", left: "-85px" },
+  ];
+  
+  const pos = positions[index % positions.length];
+  const isLeft = 'left' in pos;
+  
+  return (
+    <div 
+      className="absolute hidden xl:flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1a2420]/90 backdrop-blur-sm border border-[#2bb32a]/30 shadow-lg animate-float-notification"
+      style={{ 
+        ...pos,
+        animationDelay: `${notification.delay}s`,
+      }}
+    >
+      <div className={`w-7 h-7 rounded-full flex items-center justify-center ${
+        notification.type === 'profit' ? 'bg-[#2bb32a]' : 
+        notification.type === 'signal' ? 'bg-[#2bb32a]/20' : 
+        'bg-[#3d544d]'
+      }`}>
+        {notification.icon === 'check' && <Check className="w-4 h-4 text-white" />}
+        {notification.icon === 'arrow' && <ArrowRight className="w-4 h-4 text-[#2bb32a]" />}
+        {notification.icon === 'users' && <Users className="w-4 h-4 text-[#2bb32a]" />}
+        {notification.icon === 'target' && <Target className="w-4 h-4 text-[#2bb32a]" />}
+      </div>
+      <span className={`text-sm font-medium whitespace-nowrap ${
+        notification.type === 'profit' ? 'text-[#2bb32a]' : 'text-white'
+      }`}>
+        {notification.text}
+      </span>
+    </div>
+  );
+}
+
 function PhoneMockup() {
   return (
     <div className="relative mx-auto" style={{ width: "380px", height: "720px" }}>
@@ -457,6 +502,32 @@ export default function SignalsLanding() {
 
           {/* Hero Visual - iPhone Mockup with Telegram */}
           <div className="relative hidden lg:flex justify-center">
+            {/* Decorative green rings */}
+            <div className="absolute w-[500px] h-[500px] rounded-full border border-[#2bb32a]/10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
+            <div className="absolute w-[600px] h-[600px] rounded-full border border-[#2bb32a]/5 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
+            
+            {/* Floating notifications */}
+            {floatingNotifications.map((notification, i) => (
+              <FloatingNotification key={i} notification={notification} index={i} />
+            ))}
+            
+            {/* Social proof badge - top right */}
+            <div className="absolute -top-4 right-0 xl:right-8 hidden xl:flex items-center gap-2 px-4 py-2 rounded-full bg-[#1a2420]/80 backdrop-blur-sm border border-[#3d544d]">
+              <div className="w-2 h-2 rounded-full bg-[#2bb32a] animate-pulse" />
+              <span className="text-white text-sm font-medium">4.8k traders online</span>
+            </div>
+            
+            {/* Win rate badge - bottom left */}
+            <div className="absolute -bottom-4 left-0 xl:left-8 hidden xl:flex items-center gap-3 px-4 py-3 rounded-xl bg-[#1a2420]/80 backdrop-blur-sm border border-[#2bb32a]/30">
+              <div className="w-10 h-10 rounded-full bg-[#2bb32a]/20 flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-[#2bb32a]" />
+              </div>
+              <div>
+                <p className="text-[#2bb32a] font-bold text-lg">87%</p>
+                <p className="text-[#8b9a8c] text-xs">Win Rate</p>
+              </div>
+            </div>
+            
             <PhoneMockup />
           </div>
         </div>
