@@ -918,27 +918,22 @@
     animation: pulse-glow 2s ease-in-out infinite;
   }
 
-  /* Flowing decorative line - similar to Figma design */
+  /* Flowing decorative line - weaves across entire page */
   .signals-flowing-line {
     position: absolute;
-    left: 15%;
+    left: 0;
+    right: 0;
     top: 0;
-    width: 100px;
+    width: 100%;
     height: 100%;
     pointer-events: none;
     z-index: 1;
-    opacity: 0.8;
+    overflow: visible;
   }
 
-  @media (min-width: 1280px) {
-    .signals-flowing-line {
-      left: 20%;
-    }
-  }
-
-  @media (min-width: 1536px) {
-    .signals-flowing-line {
-      left: 25%;
-    }
+  .signals-flowing-line svg {
+    width: 100%;
+    height: auto;
+    min-height: 100%;
   }
 }

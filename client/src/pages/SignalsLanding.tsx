@@ -181,7 +181,7 @@ function FlowingLine() {
   return (
     <div className="signals-flowing-line hidden lg:block">
       <svg 
-        viewBox="0 0 100 3000" 
+        viewBox="0 0 1440 4500" 
         className="w-full h-full" 
         preserveAspectRatio="xMidYMin slice"
         fill="none"
@@ -189,50 +189,85 @@ function FlowingLine() {
         <defs>
           <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#2bb32a" stopOpacity="0" />
-            <stop offset="10%" stopColor="#2bb32a" stopOpacity="0.4" />
+            <stop offset="5%" stopColor="#2bb32a" stopOpacity="0.5" />
             <stop offset="50%" stopColor="#2bb32a" stopOpacity="0.6" />
-            <stop offset="90%" stopColor="#2bb32a" stopOpacity="0.4" />
+            <stop offset="95%" stopColor="#2bb32a" stopOpacity="0.5" />
             <stop offset="100%" stopColor="#2bb32a" stopOpacity="0" />
           </linearGradient>
           <filter id="glow">
-            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
             <feMerge>
               <feMergeNode in="coloredBlur"/>
               <feMergeNode in="SourceGraphic"/>
             </feMerge>
           </filter>
         </defs>
-        {/* Main flowing line - like a price chart movement */}
+        {/* Main flowing line - weaving across the page touching key content areas */}
         <path
-          d="M 50 0 
-             C 50 100, 80 150, 60 250
-             S 20 400, 50 500
-             S 90 650, 70 750
-             S 30 900, 50 1000
-             S 85 1150, 65 1250
-             S 25 1400, 50 1500
-             S 80 1650, 60 1750
-             S 30 1900, 50 2000
-             S 85 2150, 65 2250
-             S 25 2400, 50 2500
-             S 80 2650, 60 2750
-             S 40 2900, 50 3000"
+          d="M 0 100
+             Q 200 100, 300 200
+             T 600 350
+             Q 800 450, 1000 400
+             T 1440 500
+             
+             Q 1300 600, 1100 700
+             T 700 850
+             Q 400 950, 200 900
+             T 0 1000
+             
+             Q 150 1100, 350 1200
+             T 720 1350
+             Q 1000 1450, 1200 1400
+             T 1440 1500
+             
+             Q 1250 1600, 1000 1700
+             T 600 1850
+             Q 300 1950, 100 1900
+             T 0 2000
+             
+             Q 200 2100, 450 2200
+             T 800 2350
+             Q 1100 2450, 1300 2400
+             T 1440 2500
+             
+             Q 1200 2600, 900 2700
+             T 500 2850
+             Q 200 2950, 100 2900
+             T 0 3000
+             
+             Q 250 3100, 500 3200
+             T 900 3350
+             Q 1150 3450, 1350 3400
+             T 1440 3500
+             
+             Q 1200 3600, 850 3700
+             T 400 3850
+             Q 150 3950, 50 3900
+             T 0 4000
+             
+             Q 300 4100, 600 4200
+             T 1000 4350
+             Q 1250 4450, 1440 4500"
           stroke="url(#lineGradient)"
-          strokeWidth="1.5"
+          strokeWidth="2"
           strokeLinecap="round"
           filter="url(#glow)"
         />
-        {/* Small accent dots along the line - like price points */}
-        <circle cx="60" cy="250" r="3" fill="#2bb32a" opacity="0.5" />
-        <circle cx="50" cy="500" r="3" fill="#2bb32a" opacity="0.6" />
-        <circle cx="70" cy="750" r="3" fill="#2bb32a" opacity="0.4" />
-        <circle cx="50" cy="1000" r="3" fill="#2bb32a" opacity="0.5" />
-        <circle cx="65" cy="1250" r="3" fill="#2bb32a" opacity="0.6" />
-        <circle cx="50" cy="1500" r="3" fill="#2bb32a" opacity="0.4" />
-        <circle cx="60" cy="1750" r="3" fill="#2bb32a" opacity="0.5" />
-        <circle cx="50" cy="2000" r="3" fill="#2bb32a" opacity="0.6" />
-        <circle cx="65" cy="2250" r="3" fill="#2bb32a" opacity="0.4" />
-        <circle cx="50" cy="2500" r="3" fill="#2bb32a" opacity="0.5" />
+        {/* Accent dots at key content connection points */}
+        <circle cx="300" cy="200" r="5" fill="#2bb32a" opacity="0.7" />
+        <circle cx="1000" cy="400" r="5" fill="#2bb32a" opacity="0.6" />
+        <circle cx="700" cy="850" r="5" fill="#2bb32a" opacity="0.7" />
+        <circle cx="200" cy="900" r="5" fill="#2bb32a" opacity="0.5" />
+        <circle cx="720" cy="1350" r="5" fill="#2bb32a" opacity="0.7" />
+        <circle cx="1200" cy="1400" r="5" fill="#2bb32a" opacity="0.6" />
+        <circle cx="600" cy="1850" r="5" fill="#2bb32a" opacity="0.7" />
+        <circle cx="100" cy="1900" r="5" fill="#2bb32a" opacity="0.5" />
+        <circle cx="800" cy="2350" r="5" fill="#2bb32a" opacity="0.7" />
+        <circle cx="1300" cy="2400" r="5" fill="#2bb32a" opacity="0.6" />
+        <circle cx="500" cy="2850" r="5" fill="#2bb32a" opacity="0.7" />
+        <circle cx="900" cy="3350" r="5" fill="#2bb32a" opacity="0.6" />
+        <circle cx="400" cy="3850" r="5" fill="#2bb32a" opacity="0.7" />
+        <circle cx="1000" cy="4350" r="5" fill="#2bb32a" opacity="0.6" />
       </svg>
     </div>
   );
