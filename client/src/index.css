@@ -845,6 +845,13 @@
     margin-top: 16px;
   }
 
+  /* Signals page accordion content styling */
+  .signals-page [data-radix-collection-item] [data-state] + div,
+  .signals-page [data-radix-accordion-content],
+  .signals-page .signals-glass-card [data-state="open"] + div {
+    color: #adb2b1 !important;
+  }
+
   /* Floating card animation for hero */
   @keyframes float-card {
     0%, 100% {
