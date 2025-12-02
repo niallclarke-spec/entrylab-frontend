@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, TrendingUp, Users, Award, Shield, Zap, Clock, Target, ArrowRight, Star, Mail, Sparkles, Lock, ChevronDown } from "lucide-react";
+import { Check, TrendingUp, Users, Award, Shield, Zap, Clock, Target, ArrowRight, Star, Mail, Sparkles, Lock, ChevronDown, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,8 @@ import { Helmet } from "react-helmet-async";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Link } from "wouter";
+import { SiTelegram } from "react-icons/si";
 
 export default function Subscribe() {
   const [email, setEmail] = useState("");
@@ -211,350 +213,375 @@ export default function Subscribe() {
   };
 
   return (
-    <>
+    <div className="signals-page relative overflow-hidden">
       <Helmet>
-        <title>Premium Forex Signals - Subscribe Now | EntryLab</title>
-        <meta name="description" content="Get premium XAU/USD signals with 87.5% win rate. $49/month or save 46% with yearly plan at $319/year. Join 4,821+ profitable traders today!" />
+        <title>Premium VIP Signals - Subscribe Now | EntryLab</title>
+        <meta name="description" content="Get premium XAU/USD signals with 87.5% win rate. $39/week trial or lifetime access at $339. Join 4,821+ profitable traders today!" />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
-        {/* Hero Section */}
-        <section className="relative py-20 px-4 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent glow-effect" />
-          
-          <div className="container mx-auto max-w-6xl relative z-10">
-            <div className="text-center space-y-6 mb-12">
-              <Badge className="mx-auto w-fit glow-badge" variant="outline" data-testid="badge-premium">
-                <Sparkles className="w-3 h-3 mr-2" />
-                Premium Forex Signals
-              </Badge>
+      {/* Background Orbs */}
+      <div className="signals-bg-orb signals-bg-orb-1" />
+      <div className="signals-bg-orb signals-bg-orb-2" />
+      <div className="signals-bg-orb signals-bg-orb-3" />
 
-              <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-primary via-purple-400 to-primary bg-clip-text text-transparent leading-tight animate-glow" data-testid="text-hero-title">
-                Trade Like a Pro<br />Win Like a Champion
-              </h1>
+      {/* Navbar */}
+      <nav className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div className="flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3" data-testid="link-home">
+            <div className="w-8 h-8 bg-[#2bb32a] rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-white tracking-tight">EntryLab</span>
+          </Link>
+          <div className="hidden md:flex items-center gap-8 text-[#adb2b1]">
+            <Link href="/signals" className="hover:text-white transition-colors" data-testid="link-nav-signals">Free Signals</Link>
+            <a href="#pricing" className="hover:text-white transition-colors" data-testid="link-nav-pricing">Pricing</a>
+            <a href="#faq" className="hover:text-white transition-colors" data-testid="link-nav-faq">FAQ</a>
+          </div>
+          <Link href="/signals" className="signals-btn-outline hidden sm:inline-flex" data-testid="link-free-signals">
+            Free Channel
+          </Link>
+        </div>
+      </nav>
 
-              <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto" data-testid="text-hero-subtitle">
-                Join <span className="text-primary font-semibold">4,821+ traders</span> receiving daily premium signals with <span className="text-primary font-semibold">87.5% accuracy</span>
-              </p>
+      {/* Hero Section */}
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-16 md:pt-16 md:pb-24">
+        <div className="text-center space-y-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2bb32a]/10 border border-[#2bb32a]/30">
+            <Sparkles className="w-4 h-4 text-[#2bb32a]" />
+            <span className="text-[#2bb32a] text-sm font-medium">VIP Premium Signals</span>
+          </div>
 
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 max-w-4xl mx-auto">
-                {stats.map((stat, index) => (
-                  <Card key={index} className="bg-card/50 border-primary/20 hover-elevate" data-testid={`stat-${index}`}>
-                    <CardContent className="p-4 text-center">
-                      <stat.icon className="h-6 w-6 mx-auto mb-2 text-primary" />
-                      <div className="text-2xl font-bold text-foreground counter-animation">{stat.value}</div>
-                      <div className="text-xs text-muted-foreground mt-1">{stat.label}</div>
-                    </CardContent>
-                  </Card>
-                ))}
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight" data-testid="text-hero-title">
+            Unlock{" "}
+            <span className="signals-gradient-text">Premium</span>{" "}
+            Trading Signals
+          </h1>
+
+          <p className="text-lg md:text-xl text-[#adb2b1] max-w-2xl mx-auto leading-relaxed" data-testid="text-hero-subtitle">
+            Join <span className="text-[#2bb32a] font-semibold">4,821+ traders</span> receiving institutional-grade signals with <span className="text-[#2bb32a] font-semibold">87.5% accuracy</span>
+          </p>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 max-w-4xl mx-auto">
+            {stats.map((stat, index) => (
+              <div key={index} className="signals-glass-card p-4 text-center" data-testid={`stat-${index}`}>
+                <stat.icon className="h-6 w-6 mx-auto mb-2 text-[#2bb32a]" />
+                <div className="text-2xl font-bold text-white">{stat.value}</div>
+                <div className="text-xs text-[#adb2b1] mt-1">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 7 Day Trial CTA */}
+      <section className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pb-16">
+        <div className="signals-glass-card-solid p-6 md:p-8">
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="flex-shrink-0">
+              <div className="w-16 h-16 bg-[#2bb32a]/20 rounded-full flex items-center justify-center">
+                <Clock className="h-8 w-8 text-[#2bb32a]" />
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* 7 Day Trial CTA */}
-        <section className="py-8 px-4 bg-gradient-to-r from-primary/10 via-background to-primary/10">
-          <div className="container mx-auto max-w-4xl">
-            <Card className="border-primary/30 bg-card/80 backdrop-blur-sm">
-              <CardContent className="p-6 md:p-8">
-                <div className="flex flex-col md:flex-row items-center gap-6">
-                  <div className="flex-shrink-0">
-                    <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center">
-                      <Clock className="h-8 w-8 text-primary" />
-                    </div>
-                  </div>
-                  <div className="flex-1 text-center md:text-left">
-                    <h3 className="text-2xl font-bold mb-2">Not Sure? Try Us for 7 Days!</h3>
-                    <p className="text-muted-foreground mb-3">
-                      Start with our 7 Day VIP plan for just <span className="text-primary font-semibold">$39</span>. 
-                      Experience our premium signals, see real results, and decide if we're right for you. 
-                      No long-term commitment required.
-                    </p>
-                    <div className="flex flex-wrap gap-4 justify-center md:justify-start text-sm">
-                      <div className="flex items-center gap-1">
-                        <Check className="h-4 w-4 text-emerald-500" />
-                        <span>Full VIP access</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Check className="h-4 w-4 text-emerald-500" />
-                        <span>3-5 daily signals</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Check className="h-4 w-4 text-emerald-500" />
-                        <span>Cancel anytime</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <Button 
-                      size="lg" 
-                      className="px-8"
-                      onClick={() => {
-                        setSelectedPlan('weekly');
-                        document.getElementById('checkout-form')?.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                      data-testid="button-try-7day"
-                    >
-                      Try 7 Days - $39
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                  </div>
+            <div className="flex-1 text-center md:text-left">
+              <h3 className="text-2xl font-bold text-white mb-2">Not Sure? Try Us for 7 Days!</h3>
+              <p className="text-[#adb2b1] mb-3">
+                Start with our 7 Day VIP plan for just <span className="text-[#2bb32a] font-semibold">$39</span>. 
+                Experience our premium signals, see real results, and decide if we're right for you.
+              </p>
+              <div className="flex flex-wrap gap-4 justify-center md:justify-start text-sm">
+                <div className="flex items-center gap-1 text-white">
+                  <Check className="h-4 w-4 text-[#2bb32a]" />
+                  <span>Full VIP access</span>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        {/* Pricing Cards */}
-        <section className="py-12 px-4">
-          <div className="container mx-auto max-w-6xl">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold mb-4" data-testid="text-pricing-title">Choose Your Plan</h2>
-              <p className="text-xl text-muted-foreground">Cancel anytime • 7-day money-back guarantee</p>
+                <div className="flex items-center gap-1 text-white">
+                  <Check className="h-4 w-4 text-[#2bb32a]" />
+                  <span>3-5 daily signals</span>
+                </div>
+                <div className="flex items-center gap-1 text-white">
+                  <Check className="h-4 w-4 text-[#2bb32a]" />
+                  <span>Cancel anytime</span>
+                </div>
+              </div>
             </div>
+            <div className="flex-shrink-0">
+              <button 
+                className="signals-btn-primary"
+                onClick={() => {
+                  setSelectedPlan('weekly');
+                  document.getElementById('checkout-form')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                data-testid="button-try-7day"
+              >
+                Try 7 Days - $39
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
 
-            <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-              {pricingTiers.map((tier) => (
-                <Card 
-                  key={tier.id} 
-                  className={`relative ${tier.popular ? 'border-primary shadow-lg shadow-primary/20 md:scale-105' : ''} ${tier.tryNow ? 'border-emerald-500/50' : ''} hover-elevate cursor-pointer transition-all`}
-                  onClick={() => setSelectedPlan(tier.id as 'weekly' | 'monthly' | 'lifetime')}
-                  data-testid={`pricing-${tier.id}`}
-                >
-                  {tier.popular && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-primary text-primary-foreground glow-badge no-default-hover-elevate">
-                        <Sparkles className="h-3 w-3 mr-1" />
-                        Best Value
-                      </Badge>
+      {/* Pricing Cards */}
+      <section id="pricing" className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pb-16">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4" data-testid="text-pricing-title">Choose Your Plan</h2>
+          <p className="text-lg text-[#adb2b1]">Cancel anytime • 7-day money-back guarantee</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {pricingTiers.map((tier) => (
+            <div 
+              key={tier.id} 
+              className={`relative signals-glass-card p-6 cursor-pointer transition-all hover:border-[#2bb32a]/50 ${
+                tier.popular ? 'border-[#2bb32a] md:scale-105 shadow-lg shadow-[#2bb32a]/20' : ''
+              } ${tier.tryNow ? 'border-[#2bb32a]/50' : ''} ${
+                selectedPlan === tier.id ? 'ring-2 ring-[#2bb32a]' : ''
+              }`}
+              onClick={() => setSelectedPlan(tier.id as 'weekly' | 'monthly' | 'lifetime')}
+              data-testid={`pricing-${tier.id}`}
+            >
+              {tier.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#2bb32a] text-white text-xs font-medium">
+                    <Sparkles className="h-3 w-3" />
+                    Best Value
+                  </span>
+                </div>
+              )}
+              {tier.tryNow && !tier.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#2bb32a]/80 text-white text-xs font-medium">
+                    <Zap className="h-3 w-3" />
+                    Try Now
+                  </span>
+                </div>
+              )}
+
+              <div className="absolute top-4 right-4">
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                  selectedPlan === tier.id ? 'border-[#2bb32a] bg-[#2bb32a]' : 'border-[#3d544d]'
+                }`}>
+                  {selectedPlan === tier.id && <Check className="h-4 w-4 text-white" />}
+                </div>
+              </div>
+
+              <div className="pt-4 mb-4">
+                <h3 className="text-xl font-bold text-white mb-1">{tier.name}</h3>
+                <p className="text-sm text-[#adb2b1]">{tier.description}</p>
+                <div className="mt-4 space-y-2">
+                  <div>
+                    <span className="text-4xl font-bold text-white">{tier.price}</span>
+                    <span className="text-[#adb2b1] ml-2 text-base">{tier.period}</span>
+                  </div>
+                  {tier.savings && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="inline-flex px-2 py-1 rounded bg-[#2bb32a]/20 text-[#2bb32a] text-xs font-medium border border-[#2bb32a]/30">
+                        {tier.savings}
+                      </span>
                     </div>
                   )}
-                  {tier.tryNow && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-emerald-500 text-white no-default-hover-elevate">
-                        <Zap className="h-3 w-3 mr-1" />
-                        Try Now
-                      </Badge>
-                    </div>
-                  )}
-
-                  <div className="absolute top-4 right-4">
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedPlan === tier.id ? 'border-primary bg-primary' : 'border-muted-foreground/30'}`}>
-                      {selectedPlan === tier.id && <Check className="h-4 w-4 text-primary-foreground" />}
-                    </div>
-                  </div>
-
-                  <CardHeader className="pt-8">
-                    <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                    <CardDescription className="text-sm">{tier.description}</CardDescription>
-                    <div className="mt-4 space-y-2">
-                      <div>
-                        <span className="text-4xl font-bold">{tier.price}</span>
-                        <span className="text-muted-foreground ml-2 text-base">{tier.period}</span>
-                      </div>
-                      {tier.savings && (
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/30 no-default-hover-elevate">
-                            {tier.savings}
-                          </Badge>
-                        </div>
-                      )}
-                    </div>
-                  </CardHeader>
-
-                  <CardContent>
-                    <ul className="space-y-2">
-                      {tier.features.map((feature, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                          <span className="text-xs text-muted-foreground">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* Checkout Form */}
-            <Card id="checkout-form" className="max-w-2xl mx-auto mt-12 bg-card/80 backdrop-blur-sm border-primary/30 glow-card">
-              <CardHeader>
-                <CardTitle className="text-center text-2xl">Complete Your Subscription</CardTitle>
-                <CardDescription className="text-center">
-                  {pricingTiers.find(t => t.id === selectedPlan)?.name} Plan Selected
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-6">
-                <form onSubmit={handleCheckout} className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Email Address</label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                      <Input
-                        type="email"
-                        placeholder="your.email@example.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10 h-12 text-base"
-                        disabled={isSubmitting}
-                        required
-                        data-testid="input-email"
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      You'll receive channel access instructions at this email
-                    </p>
-                  </div>
-
-                  <div className="bg-muted/50 rounded-md p-4 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Plan</span>
-                      <span className="font-medium">{pricingTiers.find(t => t.id === selectedPlan)?.name}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Billing</span>
-                      <span className="font-medium">{pricingTiers.find(t => t.id === selectedPlan)?.period}</span>
-                    </div>
-                    {pricingTiers.find(t => t.id === selectedPlan)?.savings && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-emerald-500">Savings</span>
-                        <span className="font-medium text-emerald-500">{pricingTiers.find(t => t.id === selectedPlan)?.savings}</span>
-                      </div>
-                    )}
-                    <div className="pt-2 border-t border-border flex justify-between">
-                      <span className="font-semibold">Total</span>
-                      <span className="text-2xl font-bold text-primary">{pricingTiers.find(t => t.id === selectedPlan)?.price}</span>
-                    </div>
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    size="lg" 
-                    className="w-full h-14 text-lg hover:scale-105 transition-transform"
-                    disabled={isSubmitting}
-                    data-testid="button-checkout"
-                  >
-                    {isSubmitting ? "Redirecting to Checkout..." : "Proceed to Secure Checkout"}
-                    <Lock className="ml-2 h-5 w-5" />
-                  </Button>
-
-                  <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Shield className="h-4 w-4 text-primary" />
-                      <span>Secure Payment</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Zap className="h-4 w-4 text-primary" />
-                      <span>Instant Access</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Target className="h-4 w-4 text-primary" />
-                      <span>Cancel Anytime</span>
-                    </div>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        {/* Feature Comparison Table */}
-        <section className="py-20 px-4 bg-muted/30">
-          <div className="container mx-auto max-w-5xl">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold mb-4" data-testid="text-comparison-title">Compare Plans</h2>
-              <p className="text-xl text-muted-foreground">See what's included in each tier</p>
-            </div>
-
-            <Card>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border">
-                        <th className="text-left p-4 font-semibold">Feature</th>
-                        <th className="text-center p-4 font-semibold">7 Day</th>
-                        <th className="text-center p-4 font-semibold">Monthly</th>
-                        <th className="text-center p-4 font-semibold bg-primary/5">Lifetime</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {comparisonFeatures.map((feature, index) => (
-                        <tr key={index} className="border-b border-border last:border-b-0">
-                          <td className="p-4 text-sm font-medium">{feature.name}</td>
-                          <td className="p-4 text-center text-sm text-muted-foreground">{feature.weekly}</td>
-                          <td className="p-4 text-center text-sm">{feature.monthly}</td>
-                          <td className="p-4 text-center text-sm bg-primary/5 font-medium">{feature.lifetime}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
+              </div>
 
-        {/* FAQ Section */}
-        <section className="py-20 px-4">
-          <div className="container mx-auto max-w-4xl">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold mb-4" data-testid="text-faq-title">Frequently Asked Questions</h2>
-              <p className="text-xl text-muted-foreground">Everything you need to know</p>
+              <ul className="space-y-2">
+                {tier.features.map((feature, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-[#2bb32a] flex-shrink-0 mt-0.5" />
+                    <span className="text-xs text-[#adb2b1]">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* Checkout Form */}
+        <div id="checkout-form" className="signals-glass-card-solid max-w-2xl mx-auto mt-12 p-6 md:p-8">
+          <div className="text-center mb-6">
+            <h3 className="text-2xl font-bold text-white">Complete Your Subscription</h3>
+            <p className="text-[#adb2b1] mt-1">
+              {pricingTiers.find(t => t.id === selectedPlan)?.name} Plan Selected
+            </p>
+          </div>
+          
+          <form onSubmit={handleCheckout} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-white">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#8b9a8c]" />
+                <input
+                  type="email"
+                  placeholder="your.email@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 h-12 text-base bg-[#1a2420] border border-[#3d544d] rounded-lg text-white placeholder:text-[#5c6e60] focus:outline-none focus:ring-2 focus:ring-[#2bb32a] focus:border-transparent"
+                  disabled={isSubmitting}
+                  required
+                  data-testid="input-email"
+                />
+              </div>
+              <p className="text-xs text-[#8b9a8c]">
+                You'll receive channel access instructions at this email
+              </p>
             </div>
 
-            <Accordion type="single" collapsible className="space-y-4">
-              {faqs.map((faq, index) => (
-                <AccordionItem key={index} value={`item-${index}`} className="border rounded-md px-6 bg-card" data-testid={`faq-${index}`}>
-                  <AccordionTrigger className="text-left font-semibold hover:no-underline">
+            <div className="bg-[#1a2420] rounded-lg p-4 space-y-2 border border-[#3d544d]">
+              <div className="flex justify-between text-sm">
+                <span className="text-[#adb2b1]">Plan</span>
+                <span className="font-medium text-white">{pricingTiers.find(t => t.id === selectedPlan)?.name}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-[#adb2b1]">Billing</span>
+                <span className="font-medium text-white">{pricingTiers.find(t => t.id === selectedPlan)?.period}</span>
+              </div>
+              {pricingTiers.find(t => t.id === selectedPlan)?.savings && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#2bb32a]">Savings</span>
+                  <span className="font-medium text-[#2bb32a]">{pricingTiers.find(t => t.id === selectedPlan)?.savings}</span>
+                </div>
+              )}
+              <div className="pt-2 border-t border-[#3d544d] flex justify-between items-center">
+                <span className="font-semibold text-white">Total</span>
+                <span className="text-2xl font-bold text-[#2bb32a]">{pricingTiers.find(t => t.id === selectedPlan)?.price}</span>
+              </div>
+            </div>
+
+            <button 
+              type="submit" 
+              className="signals-btn-primary w-full justify-center text-lg py-4"
+              disabled={isSubmitting}
+              data-testid="button-checkout"
+            >
+              {isSubmitting ? "Redirecting to Checkout..." : "Proceed to Secure Checkout"}
+              <Lock className="ml-2 h-5 w-5" />
+            </button>
+
+            <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-[#adb2b1]">
+              <div className="flex items-center gap-1">
+                <Shield className="h-4 w-4 text-[#2bb32a]" />
+                <span>Secure Payment</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Zap className="h-4 w-4 text-[#2bb32a]" />
+                <span>Instant Access</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Target className="h-4 w-4 text-[#2bb32a]" />
+                <span>Cancel Anytime</span>
+              </div>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      {/* Feature Comparison Table */}
+      <section className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4" data-testid="text-comparison-title">Compare Plans</h2>
+          <p className="text-lg text-[#adb2b1]">See what's included in each tier</p>
+        </div>
+
+        <div className="signals-glass-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[#3d544d]">
+                  <th className="text-left p-4 font-semibold text-white">Feature</th>
+                  <th className="text-center p-4 font-semibold text-white">7 Day</th>
+                  <th className="text-center p-4 font-semibold text-white">Monthly</th>
+                  <th className="text-center p-4 font-semibold text-white bg-[#2bb32a]/10">Lifetime</th>
+                </tr>
+              </thead>
+              <tbody>
+                {comparisonFeatures.map((feature, index) => (
+                  <tr key={index} className="border-b border-[#3d544d]/50 last:border-b-0">
+                    <td className="p-4 text-sm font-medium text-white">{feature.name}</td>
+                    <td className="p-4 text-center text-sm text-[#adb2b1]">{feature.weekly}</td>
+                    <td className="p-4 text-center text-sm text-[#adb2b1]">{feature.monthly}</td>
+                    <td className="p-4 text-center text-sm bg-[#2bb32a]/10 font-medium text-[#2bb32a]">{feature.lifetime}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4" data-testid="text-faq-title">Frequently Asked Questions</h2>
+          <p className="text-lg text-[#adb2b1]">Everything you need to know</p>
+        </div>
+
+        <div className="space-y-4">
+          {faqs.map((faq, index) => (
+            <div key={index} className="signals-glass-card" data-testid={`faq-${index}`}>
+              <Accordion type="single" collapsible>
+                <AccordionItem value={`item-${index}`} className="border-none">
+                  <AccordionTrigger className="text-left font-semibold text-white hover:no-underline px-6 py-4">
                     {faq.question}
                   </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">
+                  <AccordionContent className="text-[#adb2b1] px-6 pb-4">
                     {faq.answer}
                   </AccordionContent>
                 </AccordionItem>
-              ))}
-            </Accordion>
+              </Accordion>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-16 pb-24">
+        <div className="signals-glass-card-solid text-center p-8 md:p-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Ready to Transform Your Trading?</h2>
+          <p className="text-lg text-[#adb2b1] mb-6">
+            Join 4,821+ traders profiting with our signals
+          </p>
+          
+          <div className="flex justify-center gap-2 flex-wrap mb-8">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} className="h-6 w-6 fill-[#2bb32a] text-[#2bb32a]" />
+            ))}
+            <span className="ml-2 text-[#adb2b1]">(4.9/5 from 1,200+ reviews)</span>
           </div>
-        </section>
 
-        {/* Final CTA */}
-        <section className="py-20 px-4 bg-muted/30">
-          <div className="container mx-auto max-w-4xl">
-            <Card className="bg-gradient-to-br from-primary/20 to-background border-primary/30 text-center p-8 md:p-12 glow-card">
-              <CardHeader>
-                <CardTitle className="text-3xl md:text-4xl mb-4">Ready to Transform Your Trading?</CardTitle>
-                <CardDescription className="text-base md:text-lg">
-                  Join 4,821+ traders profiting with our signals
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex justify-center gap-2 flex-wrap">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-6 w-6 fill-yellow-500 text-yellow-500" />
-                  ))}
-                  <span className="ml-2 text-muted-foreground">(4.9/5 from 1,200+ reviews)</span>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <a href="#pricing" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                    <Button size="lg" className="text-lg px-12 py-6 hover:scale-105 transition-transform" data-testid="button-cta-final">
-                      Get Premium Signals Now
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                  </a>
-                </div>
-
-                <p className="text-sm text-muted-foreground">
-                  7-day money-back guarantee • Cancel anytime • Instant access
-                </p>
-              </CardContent>
-            </Card>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+            <button 
+              onClick={() => document.getElementById('checkout-form')?.scrollIntoView({ behavior: 'smooth' })}
+              className="signals-btn-primary text-lg px-12"
+              data-testid="button-cta-final"
+            >
+              Get Premium Signals Now
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </button>
           </div>
-        </section>
-      </div>
-    </>
+
+          <p className="text-sm text-[#8b9a8c]">
+            7-day money-back guarantee • Cancel anytime • Instant access
+          </p>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-[#3d544d] py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-[#2bb32a] rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-white tracking-tight">EntryLab</span>
+          </div>
+          <p className="text-[#8b9a8c] text-sm">
+            Professional XAU/USD Trading Signals • Trusted by 4,800+ traders worldwide
+          </p>
+          <p className="text-[#5c6e60] text-xs mt-4">
+            © 2024 EntryLab. All rights reserved. Trading involves risk.
+          </p>
+        </div>
+      </footer>
+    </div>
   );
 }
