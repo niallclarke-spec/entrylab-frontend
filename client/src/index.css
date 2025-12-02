@@ -917,4 +917,70 @@
   .animate-pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
   }
+
+  /* Vertical candlestick pattern decoration */
+  .signals-candlestick-line {
+    position: fixed;
+    left: 2%;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.6;
+  }
+
+  /* Second candlestick line on right side */
+  .signals-candlestick-line-right {
+    position: fixed;
+    right: 2%;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.6;
+    transform: scaleX(-1);
+  }
+
+  /* Subtle animation for candlesticks */
+  @keyframes candlestick-float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .signals-candlestick-line svg,
+  .signals-candlestick-line-right svg {
+    animation: candlestick-float 8s ease-in-out infinite;
+  }
+
+  /* Fade gradient at top and bottom of candlestick lines */
+  .signals-candlestick-line::before,
+  .signals-candlestick-line::after,
+  .signals-candlestick-line-right::before,
+  .signals-candlestick-line-right::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 150px;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .signals-candlestick-line::before,
+  .signals-candlestick-line-right::before {
+    top: 0;
+    background: linear-gradient(to bottom, #1a1e1c 0%, transparent 100%);
+  }
+
+  .signals-candlestick-line::after,
+  .signals-candlestick-line-right::after {
+    bottom: 0;
+    background: linear-gradient(to top, #1a1e1c 0%, transparent 100%);
+  }
 }

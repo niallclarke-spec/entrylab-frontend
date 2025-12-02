@@ -177,6 +177,63 @@ function EmailCaptureForm({
   );
 }
 
+function CandlestickPattern() {
+  const candles = [
+    { type: 'bull', height: 45, wickTop: 8, wickBottom: 12 },
+    { type: 'bear', height: 35, wickTop: 15, wickBottom: 6 },
+    { type: 'bull', height: 55, wickTop: 10, wickBottom: 8 },
+    { type: 'bear', height: 25, wickTop: 12, wickBottom: 18 },
+    { type: 'bull', height: 65, wickTop: 6, wickBottom: 10 },
+    { type: 'bull', height: 40, wickTop: 14, wickBottom: 5 },
+    { type: 'bear', height: 50, wickTop: 8, wickBottom: 14 },
+    { type: 'bull', height: 30, wickTop: 20, wickBottom: 8 },
+    { type: 'bear', height: 45, wickTop: 10, wickBottom: 12 },
+    { type: 'bull', height: 60, wickTop: 5, wickBottom: 15 },
+    { type: 'bear', height: 35, wickTop: 18, wickBottom: 6 },
+    { type: 'bull', height: 50, wickTop: 12, wickBottom: 10 },
+    { type: 'bull', height: 70, wickTop: 8, wickBottom: 6 },
+    { type: 'bear', height: 40, wickTop: 14, wickBottom: 12 },
+    { type: 'bull', height: 45, wickTop: 10, wickBottom: 8 },
+  ];
+
+  return (
+    <div className="signals-candlestick-line hidden lg:block">
+      <svg viewBox="0 0 40 1200" className="w-10 h-full" preserveAspectRatio="xMidYMin slice">
+        {candles.map((candle, i) => {
+          const y = i * 80 + 20;
+          const color = candle.type === 'bull' ? '#2bb32a' : '#ef4444';
+          const opacity = 0.15 + (i % 3) * 0.1;
+          
+          return (
+            <g key={i} style={{ opacity }}>
+              {/* Wick */}
+              <line
+                x1="20"
+                y1={y - candle.wickTop}
+                x2="20"
+                y2={y + candle.height + candle.wickBottom}
+                stroke={color}
+                strokeWidth="1.5"
+              />
+              {/* Body */}
+              <rect
+                x="12"
+                y={y}
+                width="16"
+                height={candle.height}
+                fill={candle.type === 'bull' ? color : 'transparent'}
+                stroke={color}
+                strokeWidth="1.5"
+                rx="2"
+              />
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
 function SignalCard({ signal, index }: { signal: typeof sampleSignals[0]; index: number }) {
   const isActive = signal.status === "Active";
   return (
@@ -247,6 +304,57 @@ export default function SignalsLanding() {
       <div className="signals-bg-orb signals-bg-orb-1" />
       <div className="signals-bg-orb signals-bg-orb-2" />
       <div className="signals-bg-orb signals-bg-orb-3" />
+
+      {/* Vertical Candlestick Pattern Lines */}
+      <CandlestickPattern />
+      <div className="signals-candlestick-line-right hidden lg:block">
+        <svg viewBox="0 0 40 1200" className="w-10 h-full" preserveAspectRatio="xMidYMin slice">
+          {[
+            { type: 'bear', height: 40, wickTop: 12, wickBottom: 8 },
+            { type: 'bull', height: 55, wickTop: 8, wickBottom: 14 },
+            { type: 'bear', height: 30, wickTop: 18, wickBottom: 10 },
+            { type: 'bull', height: 50, wickTop: 6, wickBottom: 12 },
+            { type: 'bull', height: 65, wickTop: 10, wickBottom: 6 },
+            { type: 'bear', height: 35, wickTop: 14, wickBottom: 16 },
+            { type: 'bull', height: 45, wickTop: 8, wickBottom: 10 },
+            { type: 'bear', height: 55, wickTop: 12, wickBottom: 8 },
+            { type: 'bull', height: 40, wickTop: 16, wickBottom: 6 },
+            { type: 'bear', height: 30, wickTop: 10, wickBottom: 14 },
+            { type: 'bull', height: 60, wickTop: 8, wickBottom: 12 },
+            { type: 'bull', height: 45, wickTop: 14, wickBottom: 8 },
+            { type: 'bear', height: 50, wickTop: 6, wickBottom: 18 },
+            { type: 'bull', height: 35, wickTop: 12, wickBottom: 10 },
+            { type: 'bear', height: 45, wickTop: 10, wickBottom: 14 },
+          ].map((candle, i) => {
+            const y = i * 80 + 20;
+            const color = candle.type === 'bull' ? '#2bb32a' : '#ef4444';
+            const opacity = 0.15 + (i % 3) * 0.1;
+            
+            return (
+              <g key={i} style={{ opacity }}>
+                <line
+                  x1="20"
+                  y1={y - candle.wickTop}
+                  x2="20"
+                  y2={y + candle.height + candle.wickBottom}
+                  stroke={color}
+                  strokeWidth="1.5"
+                />
+                <rect
+                  x="12"
+                  y={y}
+                  width="16"
+                  height={candle.height}
+                  fill={candle.type === 'bull' ? color : 'transparent'}
+                  stroke={color}
+                  strokeWidth="1.5"
+                  rx="2"
+                />
+              </g>
+            );
+          })}
+        </svg>
+      </div>
 
       {/* Navbar */}
       <nav className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-6">
