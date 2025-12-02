@@ -688,7 +688,7 @@
   }
 
   .signals-page {
-    background-color: var(--signals-bg);
+    background-color: #1a1e1c !important;
     color: var(--signals-text);
     min-height: 100vh;
   }

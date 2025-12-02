@@ -258,10 +258,10 @@ export default function SignalsLanding() {
             <span className="text-xl font-bold text-white tracking-tight">EntryLab</span>
           </Link>
           <div className="hidden md:flex items-center gap-8 text-[#adb2b1]">
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#signals" className="hover:text-white transition-colors">Signals</a>
-            <a href="#testimonials" className="hover:text-white transition-colors">Reviews</a>
-            <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
+            <a href="#features" className="hover:text-white transition-colors" data-testid="link-nav-features">Features</a>
+            <a href="#signals" className="hover:text-white transition-colors" data-testid="link-nav-signals">Signals</a>
+            <a href="#testimonials" className="hover:text-white transition-colors" data-testid="link-nav-reviews">Reviews</a>
+            <a href="#faq" className="hover:text-white transition-colors" data-testid="link-nav-faq">FAQ</a>
           </div>
           <Link href="/subscribe" className="signals-btn-outline hidden sm:inline-flex" data-testid="link-subscribe-nav">
             Get Premium
@@ -317,8 +317,8 @@ export default function SignalsLanding() {
         <div className="signals-stats-bar">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4">
             {stats.map((stat, i) => (
-              <div key={i} className="text-center">
-                <p className="signals-stat-value">{stat.value}</p>
+              <div key={i} className="text-center" data-testid={`stat-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>
+                <p className="signals-stat-value" data-testid={`stat-value-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>{stat.value}</p>
                 <p className="signals-stat-label mt-2">{stat.label}</p>
               </div>
             ))}
@@ -518,16 +518,16 @@ export default function SignalsLanding() {
       <footer className="relative z-10 border-t border-[#3d544d]/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
-            <Link href="/" className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3" data-testid="link-footer-home">
               <div className="w-8 h-8 bg-[#2bb32a] rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-white">EntryLab</span>
             </Link>
             <div className="flex items-center gap-6 text-sm text-[#adb2b1]">
-              <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-              <a href="mailto:support@entrylab.io" className="hover:text-white transition-colors">Contact</a>
+              <Link href="/privacy" className="hover:text-white transition-colors" data-testid="link-privacy">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-white transition-colors" data-testid="link-terms">Terms of Service</Link>
+              <a href="mailto:support@entrylab.io" className="hover:text-white transition-colors" data-testid="link-contact">Contact</a>
             </div>
           </div>
           <div className="text-center text-xs text-[#adb2b1]/70 max-w-4xl mx-auto leading-relaxed">
