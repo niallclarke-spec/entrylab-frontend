@@ -177,58 +177,62 @@ function EmailCaptureForm({
   );
 }
 
-function CandlestickPattern() {
-  const candles = [
-    { type: 'bull', height: 45, wickTop: 8, wickBottom: 12 },
-    { type: 'bear', height: 35, wickTop: 15, wickBottom: 6 },
-    { type: 'bull', height: 55, wickTop: 10, wickBottom: 8 },
-    { type: 'bear', height: 25, wickTop: 12, wickBottom: 18 },
-    { type: 'bull', height: 65, wickTop: 6, wickBottom: 10 },
-    { type: 'bull', height: 40, wickTop: 14, wickBottom: 5 },
-    { type: 'bear', height: 50, wickTop: 8, wickBottom: 14 },
-    { type: 'bull', height: 30, wickTop: 20, wickBottom: 8 },
-    { type: 'bear', height: 45, wickTop: 10, wickBottom: 12 },
-    { type: 'bull', height: 60, wickTop: 5, wickBottom: 15 },
-    { type: 'bear', height: 35, wickTop: 18, wickBottom: 6 },
-    { type: 'bull', height: 50, wickTop: 12, wickBottom: 10 },
-    { type: 'bull', height: 70, wickTop: 8, wickBottom: 6 },
-    { type: 'bear', height: 40, wickTop: 14, wickBottom: 12 },
-    { type: 'bull', height: 45, wickTop: 10, wickBottom: 8 },
-  ];
-
+function FlowingLine() {
   return (
-    <div className="signals-candlestick-line hidden lg:block">
-      <svg viewBox="0 0 40 1200" className="w-10 h-full" preserveAspectRatio="xMidYMin slice">
-        {candles.map((candle, i) => {
-          const y = i * 80 + 20;
-          const color = candle.type === 'bull' ? '#2bb32a' : '#ef4444';
-          const opacity = 0.15 + (i % 3) * 0.1;
-          
-          return (
-            <g key={i} style={{ opacity }}>
-              {/* Wick */}
-              <line
-                x1="20"
-                y1={y - candle.wickTop}
-                x2="20"
-                y2={y + candle.height + candle.wickBottom}
-                stroke={color}
-                strokeWidth="1.5"
-              />
-              {/* Body */}
-              <rect
-                x="12"
-                y={y}
-                width="16"
-                height={candle.height}
-                fill={candle.type === 'bull' ? color : 'transparent'}
-                stroke={color}
-                strokeWidth="1.5"
-                rx="2"
-              />
-            </g>
-          );
-        })}
+    <div className="signals-flowing-line hidden lg:block">
+      <svg 
+        viewBox="0 0 100 3000" 
+        className="w-full h-full" 
+        preserveAspectRatio="xMidYMin slice"
+        fill="none"
+      >
+        <defs>
+          <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#2bb32a" stopOpacity="0" />
+            <stop offset="10%" stopColor="#2bb32a" stopOpacity="0.4" />
+            <stop offset="50%" stopColor="#2bb32a" stopOpacity="0.6" />
+            <stop offset="90%" stopColor="#2bb32a" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#2bb32a" stopOpacity="0" />
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        {/* Main flowing line - like a price chart movement */}
+        <path
+          d="M 50 0 
+             C 50 100, 80 150, 60 250
+             S 20 400, 50 500
+             S 90 650, 70 750
+             S 30 900, 50 1000
+             S 85 1150, 65 1250
+             S 25 1400, 50 1500
+             S 80 1650, 60 1750
+             S 30 1900, 50 2000
+             S 85 2150, 65 2250
+             S 25 2400, 50 2500
+             S 80 2650, 60 2750
+             S 40 2900, 50 3000"
+          stroke="url(#lineGradient)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          filter="url(#glow)"
+        />
+        {/* Small accent dots along the line - like price points */}
+        <circle cx="60" cy="250" r="3" fill="#2bb32a" opacity="0.5" />
+        <circle cx="50" cy="500" r="3" fill="#2bb32a" opacity="0.6" />
+        <circle cx="70" cy="750" r="3" fill="#2bb32a" opacity="0.4" />
+        <circle cx="50" cy="1000" r="3" fill="#2bb32a" opacity="0.5" />
+        <circle cx="65" cy="1250" r="3" fill="#2bb32a" opacity="0.6" />
+        <circle cx="50" cy="1500" r="3" fill="#2bb32a" opacity="0.4" />
+        <circle cx="60" cy="1750" r="3" fill="#2bb32a" opacity="0.5" />
+        <circle cx="50" cy="2000" r="3" fill="#2bb32a" opacity="0.6" />
+        <circle cx="65" cy="2250" r="3" fill="#2bb32a" opacity="0.4" />
+        <circle cx="50" cy="2500" r="3" fill="#2bb32a" opacity="0.5" />
       </svg>
     </div>
   );
@@ -305,56 +309,8 @@ export default function SignalsLanding() {
       <div className="signals-bg-orb signals-bg-orb-2" />
       <div className="signals-bg-orb signals-bg-orb-3" />
 
-      {/* Vertical Candlestick Pattern Lines */}
-      <CandlestickPattern />
-      <div className="signals-candlestick-line-right hidden lg:block">
-        <svg viewBox="0 0 40 1200" className="w-10 h-full" preserveAspectRatio="xMidYMin slice">
-          {[
-            { type: 'bear', height: 40, wickTop: 12, wickBottom: 8 },
-            { type: 'bull', height: 55, wickTop: 8, wickBottom: 14 },
-            { type: 'bear', height: 30, wickTop: 18, wickBottom: 10 },
-            { type: 'bull', height: 50, wickTop: 6, wickBottom: 12 },
-            { type: 'bull', height: 65, wickTop: 10, wickBottom: 6 },
-            { type: 'bear', height: 35, wickTop: 14, wickBottom: 16 },
-            { type: 'bull', height: 45, wickTop: 8, wickBottom: 10 },
-            { type: 'bear', height: 55, wickTop: 12, wickBottom: 8 },
-            { type: 'bull', height: 40, wickTop: 16, wickBottom: 6 },
-            { type: 'bear', height: 30, wickTop: 10, wickBottom: 14 },
-            { type: 'bull', height: 60, wickTop: 8, wickBottom: 12 },
-            { type: 'bull', height: 45, wickTop: 14, wickBottom: 8 },
-            { type: 'bear', height: 50, wickTop: 6, wickBottom: 18 },
-            { type: 'bull', height: 35, wickTop: 12, wickBottom: 10 },
-            { type: 'bear', height: 45, wickTop: 10, wickBottom: 14 },
-          ].map((candle, i) => {
-            const y = i * 80 + 20;
-            const color = candle.type === 'bull' ? '#2bb32a' : '#ef4444';
-            const opacity = 0.15 + (i % 3) * 0.1;
-            
-            return (
-              <g key={i} style={{ opacity }}>
-                <line
-                  x1="20"
-                  y1={y - candle.wickTop}
-                  x2="20"
-                  y2={y + candle.height + candle.wickBottom}
-                  stroke={color}
-                  strokeWidth="1.5"
-                />
-                <rect
-                  x="12"
-                  y={y}
-                  width="16"
-                  height={candle.height}
-                  fill={candle.type === 'bull' ? color : 'transparent'}
-                  stroke={color}
-                  strokeWidth="1.5"
-                  rx="2"
-                />
-              </g>
-            );
-          })}
-        </svg>
-      </div>
+      {/* Flowing Decorative Line */}
+      <FlowingLine />
 
       {/* Navbar */}
       <nav className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-6">
