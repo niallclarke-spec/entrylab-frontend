@@ -220,6 +220,117 @@ function SignalCard({ signal, index }: { signal: typeof sampleSignals[0]; index:
   );
 }
 
+const telegramMessages = [
+  { type: "signal", direction: "BUY", pair: "XAU/USD", entry: "2,045.50", sl: "2,038.00", tp: "2,068.00", time: "10:32 AM" },
+  { type: "update", text: "TP1 Hit! +$450 secured 💰", time: "11:15 AM" },
+  { type: "signal", direction: "SELL", pair: "XAU/USD", entry: "2,072.25", sl: "2,080.00", tp: "2,052.00", time: "2:45 PM" },
+  { type: "analysis", text: "Gold showing strong resistance at 2,075. Watch for reversal patterns.", time: "3:20 PM" },
+  { type: "result", text: "Trade closed: +$1,340 profit! 🎯", profit: "+$1,340", time: "4:55 PM" },
+  { type: "signal", direction: "BUY", pair: "XAU/USD", entry: "2,018.80", sl: "2,012.00", tp: "2,035.00", time: "9:15 AM" },
+  { type: "update", text: "Moving SL to breakeven - risk free trade now ✅", time: "10:30 AM" },
+  { type: "result", text: "Another winner! +$650 in the bag 💵", profit: "+$650", time: "12:45 PM" },
+];
+
+function TelegramMessage({ message, index }: { message: typeof telegramMessages[0]; index: number }) {
+  if (message.type === "signal") {
+    return (
+      <div className="bg-[#1c2b1e] rounded-lg p-3 mb-2 border border-[#2bb32a]/30">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-white font-bold text-sm">{message.pair}</span>
+            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${message.direction === 'BUY' ? 'bg-[#2bb32a] text-white' : 'bg-red-500 text-white'}`}>
+              {message.direction}
+            </span>
+          </div>
+          <span className="text-[#adb2b1] text-[10px]">{message.time}</span>
+        </div>
+        <div className="grid grid-cols-3 gap-2 text-[11px]">
+          <div>
+            <p className="text-[#adb2b1]">Entry</p>
+            <p className="text-white font-mono">{message.entry}</p>
+          </div>
+          <div>
+            <p className="text-[#adb2b1]">SL</p>
+            <p className="text-red-400 font-mono">{message.sl}</p>
+          </div>
+          <div>
+            <p className="text-[#adb2b1]">TP</p>
+            <p className="text-[#2bb32a] font-mono">{message.tp}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (message.type === "result") {
+    return (
+      <div className="bg-[#1c2b1e] rounded-lg p-3 mb-2 border border-[#2bb32a]/30">
+        <div className="flex items-center justify-between">
+          <p className="text-white text-sm">{message.text}</p>
+          <span className="text-[#adb2b1] text-[10px]">{message.time}</span>
+        </div>
+        <p className="text-[#2bb32a] font-bold text-lg mt-1">{message.profit}</p>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="bg-[#212d23] rounded-lg p-3 mb-2">
+      <div className="flex items-center justify-between">
+        <p className="text-white text-sm flex-1">{message.text}</p>
+        <span className="text-[#adb2b1] text-[10px] ml-2">{message.time}</span>
+      </div>
+    </div>
+  );
+}
+
+function PhoneMockup() {
+  return (
+    <div className="relative mx-auto" style={{ width: "300px", height: "620px" }}>
+      {/* Glow effect behind phone */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#2bb32a]/30 to-transparent rounded-[3rem] blur-2xl scale-110" />
+      
+      {/* Phone frame */}
+      <div className="relative w-full h-full bg-[#0a0a0a] rounded-[3rem] border-[8px] border-[#2a2a2a] shadow-2xl overflow-hidden">
+        {/* Dynamic Island / Notch */}
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-7 bg-black rounded-full z-20" />
+        
+        {/* Screen content */}
+        <div className="absolute inset-0 bg-[#0e1210] pt-12 pb-4 overflow-hidden">
+          {/* Telegram header */}
+          <div className="px-4 pb-3 border-b border-[#2a3530] flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#2bb32a] to-[#1a8c1a] flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="text-white font-semibold text-sm">EntryLab Signals</p>
+              <p className="text-[#2bb32a] text-xs">4,823 members</p>
+            </div>
+            <SiTelegram className="w-5 h-5 text-[#2bb32a]" />
+          </div>
+          
+          {/* Messages container with animation */}
+          <div className="h-full overflow-hidden relative">
+            <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-[#0e1210] to-transparent z-10" />
+            <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#0e1210] to-transparent z-10" />
+            
+            {/* Scrolling messages */}
+            <div className="animate-telegram-scroll px-3 pt-4">
+              {/* Duplicate messages for seamless loop */}
+              {[...telegramMessages, ...telegramMessages].map((msg, i) => (
+                <TelegramMessage key={i} message={msg} index={i} />
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {/* Home indicator */}
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/30 rounded-full" />
+      </div>
+    </div>
+  );
+}
+
 export default function SignalsLanding() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [accuracy, setAccuracy] = useState(87);
@@ -301,14 +412,9 @@ export default function SignalsLanding() {
             </div>
           </div>
 
-          {/* Hero Visual - Signal Preview Cards */}
-          <div className="relative hidden lg:block">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#2bb32a]/20 to-transparent rounded-3xl blur-3xl" />
-            <div className="relative space-y-4">
-              {sampleSignals.slice(0, 2).map((signal, i) => (
-                <SignalCard key={i} signal={signal} index={i} />
-              ))}
-            </div>
+          {/* Hero Visual - iPhone Mockup with Telegram */}
+          <div className="relative hidden lg:flex justify-center">
+            <PhoneMockup />
           </div>
         </div>
       </section>

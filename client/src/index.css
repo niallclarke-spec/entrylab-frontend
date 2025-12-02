@@ -918,4 +918,22 @@
     animation: pulse-glow 2s ease-in-out infinite;
   }
 
+  /* Telegram message scroll animation */
+  @keyframes telegram-scroll {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(-50%);
+    }
+  }
+
+  .animate-telegram-scroll {
+    animation: telegram-scroll 25s linear infinite;
+  }
+
+  .animate-telegram-scroll:hover {
+    animation-play-state: paused;
+  }
+
 }
