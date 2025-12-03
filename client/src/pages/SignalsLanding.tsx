@@ -4,7 +4,7 @@ import { SiTelegram } from "react-icons/si";
 import { Helmet } from "react-helmet-async";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 const stats = [
   { value: "87%", label: "Win Rate" },
@@ -113,6 +113,7 @@ function EmailCaptureForm({
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const suffix = testIdSuffix ? `-${testIdSuffix}` : "";
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -133,18 +134,14 @@ function EmailCaptureForm({
         utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign'),
         utm_source: new URLSearchParams(window.location.search).get('utm_source'),
       });
-      toast({
-        title: "Welcome to EntryLab!",
-        description: "Check your email for your free Telegram channel invite.",
-      });
-      setEmail("");
+      // Redirect to confirmation page on success
+      setLocation('/free-access');
     } catch {
       toast({
         title: "Something went wrong",
         description: "Please try again or contact support.",
         variant: "destructive"
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
