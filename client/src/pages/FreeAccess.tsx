@@ -125,9 +125,9 @@ export default function FreeAccess() {
           </ul>
 
           <Link href="/subscribe" className="block">
-            <button className="signals-btn-secondary w-full justify-center" data-testid="button-upgrade-premium">
+            <button className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-transparent border-2 border-[#2bb32a] text-[#2bb32a] rounded-full font-semibold hover:bg-[#2bb32a]/10 transition-colors" data-testid="button-upgrade-premium">
               View Premium Plans
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <ArrowRight className="h-5 w-5" />
             </button>
           </Link>
         </div>
