@@ -259,3 +259,117 @@ export function getCancellationEmailHtml(): string {
 </html>
   `;
 }
+
+export function getFreeChannelEmailHtml(channelLink: string): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to EntryLab Free Channel</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f4f4;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 600px;">
+          <tr>
+            <td style="padding: 40px 30px;">
+              <!-- Header with Logo -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td align="center" style="padding-bottom: 30px;">
+                    <img src="https://entrylab.io/assets/entrylab-logo-green.png" alt="EntryLab" height="40" style="display: block; height: 40px; width: auto;" />
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-bottom: 20px;">
+                    <h1 style="color: #1a1a1a; font-size: 32px; margin: 0; font-weight: 600; line-height: 1.3;">Welcome to EntryLab!</h1>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- Content -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="color: #333333; font-size: 18px; line-height: 1.7;">
+                    <p style="margin: 0 0 24px 0; text-align: center;">Thanks for signing up! Join our free Telegram channel to receive:</p>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- Benefits List -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 24px 0;">
+                <tr>
+                  <td align="center">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="text-align: left;">
+                      <tr>
+                        <td style="padding: 10px 0; color: #333333; font-size: 18px;">
+                          <span style="color: #2bb32a; font-weight: bold;">&#10003;</span> Market analysis and insights
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px 0; color: #333333; font-size: 18px;">
+                          <span style="color: #2bb32a; font-weight: bold;">&#10003;</span> Educational trading content
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px 0; color: #333333; font-size: 18px;">
+                          <span style="color: #2bb32a; font-weight: bold;">&#10003;</span> Occasional trade ideas
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px 0; color: #333333; font-size: 18px;">
+                          <span style="color: #2bb32a; font-weight: bold;">&#10003;</span> Community discussions
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- CTA Button -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 32px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="${channelLink}" target="_blank" rel="noopener" style="display: inline-block; background-color: #2bb32a; color: #ffffff !important; text-decoration: none; padding: 18px 48px; border-radius: 8px; font-weight: 600; font-size: 18px;">Join Free Channel</a>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- Upgrade Box -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 28px 0;">
+                <tr>
+                  <td style="background-color: #e8f5e9; border-left: 4px solid #2bb32a; padding: 18px; border-radius: 4px;">
+                    <p style="margin: 0; color: #333333; font-size: 17px; line-height: 1.6;"><strong>Want more?</strong> Upgrade to premium for real-time trading signals with 87% win rate and exclusive entry/exit strategies.</p>
+                  </td>
+                </tr>
+              </table>
+              
+              <!-- Footer -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top: 40px;">
+                <tr>
+                  <td style="border-top: 1px solid #e5e7eb; padding-top: 24px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td align="center" style="color: #666666; font-size: 15px; line-height: 1.7;">
+                          <p style="margin: 0 0 10px 0;">Questions? Contact us at support@entrylab.io</p>
+                          <p style="margin: 0 0 18px 0;">&copy; 2025 EntryLab. All rights reserved.</p>
+                          <p style="margin: 0; font-size: 14px; color: #888888;">EntryLab Trading Intelligence | Dublin, Ireland</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+}
