@@ -851,9 +851,7 @@
 
   /* Testimonial cards */
   .signals-testimonial-card {
-    background: rgba(39, 50, 47, 0.24);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: #ffffff;
     border-radius: 32px;
     padding: 48px 24px;
   }

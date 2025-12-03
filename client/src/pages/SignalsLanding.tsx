@@ -748,17 +748,17 @@ export default function SignalsLanding() {
         <div className="grid md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, i) => (
             <div key={i} className="signals-testimonial-card">
-              <div className="signals-icon-box mb-8">
+              <div className="w-12 h-12 rounded-full bg-[#2bb32a]/10 flex items-center justify-center mb-8">
                 <MessageCircle className="w-6 h-6 text-[#2bb32a]" />
               </div>
-              <p className="text-white text-lg mb-8 leading-relaxed">"{testimonial.quote}"</p>
+              <p className="text-[#1a1e1c] text-lg mb-8 leading-relaxed">"{testimonial.quote}"</p>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-[#3d544d] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-[#2bb32a] flex items-center justify-center">
                   <span className="text-white font-medium">{testimonial.avatar}</span>
                 </div>
                 <div>
-                  <p className="text-white font-medium">{testimonial.author}</p>
-                  <p className="text-[#adb2b1] text-sm">{testimonial.role}</p>
+                  <p className="text-[#1a1e1c] font-medium">{testimonial.author}</p>
+                  <p className="text-[#6b7280] text-sm">{testimonial.role}</p>
                 </div>
               </div>
             </div>
