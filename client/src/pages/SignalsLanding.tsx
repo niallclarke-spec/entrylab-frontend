@@ -613,7 +613,7 @@ export default function SignalsLanding() {
             </div>
             
             {/* Stats card below phone - overlapping slightly */}
-            <div className="relative -mt-8 w-[95vw] max-w-[380px] z-10">
+            <div className="relative -mt-8 w-[98vw] max-w-[400px] z-10">
               <div className="bg-[#1a2420]/90 backdrop-blur-xl border border-[#2bb32a]/35 rounded-2xl py-6 px-5">
                 <div className="grid grid-cols-2 gap-5">
                   <div className="text-center">
@@ -654,7 +654,7 @@ export default function SignalsLanding() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-32">
+      <section id="features" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-32">
         <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-16">
           What do we offer?
         </h2>
