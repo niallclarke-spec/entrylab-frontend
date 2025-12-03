@@ -1,60 +1,29 @@
-import { Check, TrendingUp, Mail, ExternalLink, Sparkles, ArrowRight, MessageCircle, Users, Zap } from "lucide-react";
+import { useState } from "react";
+import { TrendingUp, ExternalLink, Copy, CheckCircle, Zap, Target, Shield, ArrowRight } from "lucide-react";
 import { SiTelegram } from "react-icons/si";
 import { Helmet } from "react-helmet-async";
 import { Link } from "wouter";
 
 const FREE_CHANNEL_LINK = "https://t.me/entrylabs";
 
-const benefits = [
-  {
-    icon: MessageCircle,
-    title: "Market Analysis",
-    description: "Daily insights on XAU/USD movements"
-  },
-  {
-    icon: Users,
-    title: "Trading Community",
-    description: "Connect with fellow traders"
-  },
-  {
-    icon: Zap,
-    title: "Educational Content",
-    description: "Learn our proven methodology"
-  }
-];
-
-const nextSteps = [
-  {
-    icon: SiTelegram,
-    title: "Join Our Free Telegram Channel",
-    description: "Click the button below to join our community of traders. Get market insights, educational content, and trade ideas.",
-    action: {
-      label: "Join Free Channel",
-      url: FREE_CHANNEL_LINK,
-      external: true
-    }
-  },
-  {
-    icon: Mail,
-    title: "Check Your Email",
-    description: "We've sent you a welcome email with your channel invite link. Check your spam folder if you don't see it.",
-    action: null
-  },
-  {
-    icon: Sparkles,
-    title: "Upgrade to Premium",
-    description: "Ready for real-time signals with 87% win rate? Upgrade anytime for full access to our private VIP channel.",
-    action: {
-      label: "View Premium Plans",
-      url: "/subscribe",
-      external: false
-    }
-  }
+const premiumBenefits = [
+  "87% verified win rate on XAU/USD",
+  "3-5 real-time signals daily",
+  "Precise entry, stop-loss & take-profit levels",
+  "24/7 analyst support in private channel",
 ];
 
 export default function FreeAccess() {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(FREE_CHANNEL_LINK);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <div className="signals-page relative overflow-hidden">
+    <div className="signals-page relative overflow-hidden min-h-screen">
       <Helmet>
         <title>Welcome to EntryLab | Free Telegram Channel Access</title>
         <meta name="description" content="You're in! Join our free Telegram channel for market analysis, educational content, and trade ideas." />
@@ -62,7 +31,6 @@ export default function FreeAccess() {
 
       <div className="signals-bg-orb signals-bg-orb-1" />
       <div className="signals-bg-orb signals-bg-orb-2" />
-      <div className="signals-bg-orb signals-bg-orb-3" />
 
       <nav className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex items-center justify-between">
@@ -75,121 +43,93 @@ export default function FreeAccess() {
         </div>
       </nav>
 
-      <section className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-16">
-        <div className="text-center space-y-8">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-[#2bb32a]/20 rounded-full border-4 border-[#2bb32a]/40 animate-pulse">
-            <Check className="w-12 h-12 text-[#2bb32a]" />
+      <section className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 pt-12 pb-16">
+        <div className="text-center space-y-6">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-[#2bb32a] rounded-full">
+            <SiTelegram className="w-10 h-10 text-white" />
           </div>
 
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2bb32a]/10 border border-[#2bb32a]/30">
-              <Sparkles className="w-4 h-4 text-[#2bb32a]" />
-              <span className="text-[#2bb32a] text-sm font-medium" data-testid="badge-success">You're In!</span>
-            </div>
-
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight" data-testid="text-hero-title">
-              Welcome to{" "}
-              <span className="signals-gradient-text">EntryLab!</span>
+          <div className="space-y-3">
+            <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight" data-testid="text-hero-title">
+              You're In!
             </h1>
-
-            <p className="text-lg md:text-xl text-[#adb2b1] max-w-2xl mx-auto" data-testid="text-hero-subtitle">
-              Join our free Telegram channel and start learning from professional XAU/USD traders
+            <p className="text-lg text-[#adb2b1]" data-testid="text-hero-subtitle">
+              Join our free Telegram channel to get started
             </p>
           </div>
-
-          <div className="grid md:grid-cols-3 gap-4 mt-12 max-w-3xl mx-auto">
-            {benefits.map((benefit, index) => (
-              <div key={index} className="signals-glass-card p-6 text-center" data-testid={`benefit-${index}`}>
-                <div className="mx-auto w-12 h-12 bg-[#2bb32a]/20 rounded-full flex items-center justify-center mb-3">
-                  <benefit.icon className="h-6 w-6 text-[#2bb32a]" />
-                </div>
-                <h3 className="font-semibold text-white">{benefit.title}</h3>
-                <p className="text-sm text-[#adb2b1] mt-1">{benefit.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pb-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4" data-testid="text-steps-title">Next Steps</h2>
-          <p className="text-lg text-[#adb2b1]">Here's what to do next</p>
         </div>
 
-        <div className="space-y-6">
-          {nextSteps.map((step, index) => (
-            <div key={index} className="signals-glass-card p-6" data-testid={`step-${index}`}>
-              <div className="flex flex-col md:flex-row items-start gap-4">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-[#2bb32a]/20 rounded-full flex items-center justify-center">
-                    <step.icon className="h-6 w-6 text-[#2bb32a]" />
-                  </div>
-                </div>
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className="inline-flex px-2 py-1 rounded bg-[#2bb32a]/20 text-[#2bb32a] text-xs font-medium border border-[#2bb32a]/30">
-                      Step {index + 1}
-                    </span>
-                    <h3 className="text-xl font-bold text-white">{step.title}</h3>
-                  </div>
-                  <p className="text-[#adb2b1]">{step.description}</p>
-                </div>
-              </div>
-              
-              {step.action && (
-                <div className="mt-4 pl-0 md:pl-16">
-                  {step.action.external ? (
-                    <a 
-                      href={step.action.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="block w-full md:w-auto"
-                    >
-                      <button className="signals-btn-primary w-full md:w-auto" data-testid={`button-step-${index}`}>
-                        <SiTelegram className="mr-2 h-5 w-5" />
-                        {step.action.label}
-                        <ExternalLink className="ml-2 h-5 w-5" />
-                      </button>
-                    </a>
-                  ) : (
-                    <Link href={step.action.url} className="block w-full md:w-auto">
-                      <button className="signals-btn-secondary w-full md:w-auto" data-testid={`button-step-${index}`}>
-                        {step.action.label}
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </button>
-                    </Link>
-                  )}
-                </div>
+        <div className="mt-10 signals-glass-card p-6 md:p-8">
+          <p className="text-sm text-[#adb2b1] mb-3 text-center">Your channel invite link:</p>
+          
+          <div className="flex items-center gap-2 p-3 bg-[#1a2420] rounded-lg border border-[#3d544d]">
+            <code className="flex-1 text-sm md:text-base font-mono text-[#2bb32a] truncate" data-testid="text-channel-link">
+              {FREE_CHANNEL_LINK}
+            </code>
+            <button 
+              onClick={handleCopy}
+              className="flex-shrink-0 p-2 hover:bg-[#3d544d] rounded-md transition-colors"
+              data-testid="button-copy-link"
+            >
+              {copied ? (
+                <CheckCircle className="h-5 w-5 text-[#2bb32a]" />
+              ) : (
+                <Copy className="h-5 w-5 text-[#adb2b1]" />
               )}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pb-24">
-        <div className="signals-glass-card-solid text-center p-8 md:p-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4" data-testid="text-cta-title">Ready to Join?</h2>
-          <p className="text-lg text-[#adb2b1] mb-8">
-            Click the button below to join our free Telegram channel
-          </p>
+            </button>
+          </div>
 
           <a 
             href={FREE_CHANNEL_LINK} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="inline-block"
+            className="block mt-6"
           >
-            <button className="signals-btn-primary text-lg px-10 py-5" data-testid="button-join-channel">
-              <SiTelegram className="mr-3 h-6 w-6" />
-              Join Free Telegram Channel
-              <ExternalLink className="ml-3 h-5 w-5" />
+            <button className="signals-btn-primary w-full justify-center text-lg py-4" data-testid="button-join-channel">
+              <SiTelegram className="mr-2 h-5 w-5" />
+              Join Free Channel
+              <ExternalLink className="ml-2 h-5 w-5" />
             </button>
           </a>
 
-          <p className="text-sm text-[#8b9a8c] mt-6">
-            We've also sent you an email with the channel link for safekeeping
+          <p className="text-xs text-[#8b9a8c] mt-4 text-center">
+            We've also sent this link to your email
           </p>
+        </div>
+      </section>
+
+      <section className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 pb-24">
+        <div className="signals-glass-card-solid p-6 md:p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-[#2bb32a]/20 rounded-full flex items-center justify-center">
+              <Zap className="h-5 w-5 text-[#2bb32a]" />
+            </div>
+            <h2 className="text-xl md:text-2xl font-bold text-white" data-testid="text-upgrade-title">
+              Want Real-Time Trading Signals?
+            </h2>
+          </div>
+
+          <p className="text-[#adb2b1] mb-6">
+            Upgrade to Premium for direct access to our private VIP channel with institutional-grade XAU/USD signals.
+          </p>
+
+          <ul className="space-y-3 mb-8">
+            {premiumBenefits.map((benefit, index) => (
+              <li key={index} className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-5 h-5 bg-[#2bb32a]/20 rounded-full flex items-center justify-center mt-0.5">
+                  <Target className="h-3 w-3 text-[#2bb32a]" />
+                </div>
+                <span className="text-white text-sm md:text-base">{benefit}</span>
+              </li>
+            ))}
+          </ul>
+
+          <Link href="/subscribe" className="block">
+            <button className="signals-btn-secondary w-full justify-center" data-testid="button-upgrade-premium">
+              View Premium Plans
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </button>
+          </Link>
         </div>
       </section>
 
@@ -202,7 +142,7 @@ export default function FreeAccess() {
             <span className="text-xl font-bold text-white tracking-tight">EntryLab</span>
           </div>
           <p className="text-[#8b9a8c] text-sm">
-            Professional XAU/USD Trading Signals • Trusted by 4,800+ traders worldwide
+            Professional XAU/USD Trading Signals
           </p>
           <p className="text-[#5c6e60] text-xs mt-4">
             © 2024 EntryLab. All rights reserved. Trading involves risk.
