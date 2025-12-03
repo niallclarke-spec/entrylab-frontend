@@ -14,11 +14,20 @@ export function getWelcomeEmailHtml(inviteLink: string): string {
         <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 600px;">
           <tr>
             <td style="padding: 40px 30px;">
-              <!-- Header with Logo -->
+              <!-- Header with Logo (matching signals page style) -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
                   <td align="center" style="padding-bottom: 30px;">
-                    <img src="https://entrylab.io/assets/logo.png" alt="EntryLab" width="180" style="display: block; max-width: 180px; height: auto;" />
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="background-color: #2bb32a; border-radius: 8px; width: 36px; height: 36px; text-align: center; vertical-align: middle;">
+                          <span style="color: #ffffff; font-size: 18px; font-weight: bold; line-height: 36px;">&#8593;</span>
+                        </td>
+                        <td style="padding-left: 12px;">
+                          <span style="font-size: 24px; font-weight: 700; color: #1a1a1a; letter-spacing: -0.5px;">EntryLab</span>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
                 <tr>
@@ -144,11 +153,20 @@ export function getCancellationEmailHtml(): string {
         <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 600px;">
           <tr>
             <td style="padding: 40px 30px;">
-              <!-- Header with Logo -->
+              <!-- Header with Logo (matching signals page style) -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
                   <td align="center" style="padding-bottom: 30px;">
-                    <img src="https://entrylab.io/assets/logo.png" alt="EntryLab" width="180" style="display: block; max-width: 180px; height: auto;" />
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="background-color: #2bb32a; border-radius: 8px; width: 36px; height: 36px; text-align: center; vertical-align: middle;">
+                          <span style="color: #ffffff; font-size: 18px; font-weight: bold; line-height: 36px;">&#8593;</span>
+                        </td>
+                        <td style="padding-left: 12px;">
+                          <span style="font-size: 24px; font-weight: 700; color: #1a1a1a; letter-spacing: -0.5px;">EntryLab</span>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
                 <tr>
