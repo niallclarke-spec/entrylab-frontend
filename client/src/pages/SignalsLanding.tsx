@@ -617,25 +617,25 @@ export default function SignalsLanding() {
                 </div>
               </div>
               
-              {/* Stats card overlay positioned at bottom */}
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[calc(100%+40px)] z-10">
-                <div className="signals-stats-bar">
+              {/* Stats card overlay positioned at bottom - dark glass style */}
+              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%+60px)] z-10">
+                <div className="bg-[#1a2420]/95 backdrop-blur-md border border-[#2bb32a]/30 rounded-2xl p-5 shadow-xl">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center">
-                      <p className="signals-stat-value">87%</p>
-                      <p className="signals-stat-label mt-1">Win Rate</p>
+                      <p className="text-[#2bb32a] text-2xl font-bold">87%</p>
+                      <p className="text-[#8b9a8c] text-xs mt-1">Win Rate</p>
                     </div>
                     <div className="text-center">
-                      <p className="signals-stat-value">4.8k+</p>
-                      <p className="signals-stat-label mt-1">Active Traders</p>
+                      <p className="text-[#2bb32a] text-2xl font-bold">4.8k+</p>
+                      <p className="text-[#8b9a8c] text-xs mt-1">Active Traders</p>
                     </div>
                     <div className="text-center">
-                      <p className="signals-stat-value">2,400+</p>
-                      <p className="signals-stat-label mt-1">Signals Delivered</p>
+                      <p className="text-[#2bb32a] text-2xl font-bold">2,400+</p>
+                      <p className="text-[#8b9a8c] text-xs mt-1">Signals Delivered</p>
                     </div>
                     <div className="text-center">
-                      <p className="signals-stat-value">$2.1M+</p>
-                      <p className="signals-stat-label mt-1">Profits Generated</p>
+                      <p className="text-[#2bb32a] text-2xl font-bold">$2.1M+</p>
+                      <p className="text-[#8b9a8c] text-xs mt-1">Profits Generated</p>
                     </div>
                   </div>
                 </div>
