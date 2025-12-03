@@ -1591,6 +1591,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Continue - don't block free signup
       }
 
+      // Send welcome email with free channel link (non-blocking)
+      try {
+        const { getUncachableResendClient } = await import('./resendClient');
+        const { getFreeChannelEmailHtml } = await import('./emailTemplates');
+        
+        const { client, fromEmail } = await getUncachableResendClient();
+        const emailHtml = getFreeChannelEmailHtml(FREE_CHANNEL_LINK);
+        
+        await client.emails.send({
+          from: `EntryLab Signals <${fromEmail}>`,
+          to: email,
+          subject: 'Welcome to EntryLab - Join Our Free Channel!',
+          html: emailHtml,
+        });
+        console.log(`Free channel welcome email sent to: ${email}`);
+      } catch (emailError) {
+        console.error('Failed to send welcome email:', emailError);
+        // Continue - don't block signup even if email fails
+      }
+
       // Always return static public channel link for free users
       res.json({
         success: true,
