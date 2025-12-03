@@ -575,68 +575,62 @@ export default function SignalsLanding() {
             <PhoneMockup />
           </div>
 
-          {/* Mobile version - phone with stats card overlay */}
-          <div className="relative lg:hidden mt-8 flex justify-center">
-            <div className="relative" style={{ width: "290px", height: "400px" }}>
-              {/* Phone mockup scaled down */}
-              <div className="absolute inset-0 overflow-hidden">
-                <div className="transform scale-[0.75] origin-top" style={{ marginLeft: "-45px" }}>
-                  <div style={{ width: "380px", height: "720px" }}>
-                    <div className="relative w-full h-full bg-[#1a1a1a] rounded-[3rem] border-[12px] border-[#333] shadow-2xl overflow-hidden">
-                      <div className="absolute top-3 left-1/2 -translate-x-1/2 w-32 h-8 bg-black rounded-full z-20" />
-                      <div className="absolute inset-0 bg-[#0e1621] flex flex-col overflow-hidden">
-                        <div className="h-12 flex-shrink-0" />
-                        <div className="px-3 py-2 bg-[#17212b] flex items-center gap-2 flex-shrink-0 border-b border-[#0e1621]">
-                          <ChevronLeft className="w-6 h-6 text-[#6ab2f2]" />
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#2bb32a] to-[#1a8c1a] flex items-center justify-center flex-shrink-0">
-                            <TrendingUp className="w-4 h-4 text-white" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-white font-semibold text-[14px] truncate">EntryLab VIP Signals</p>
-                            <p className="text-[#6d7f8f] text-[11px]">4,823 subscribers</p>
-                          </div>
-                          <Bell className="w-5 h-5 text-[#6d7f8f]" />
-                        </div>
-                        <div className="px-3 py-2 bg-[#1b2735] flex items-center gap-2 flex-shrink-0 border-l-2 border-[#6ab2f2]">
-                          <Pin className="w-4 h-4 text-[#6ab2f2] rotate-45" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[#6ab2f2] text-[11px] font-medium">Pinned Message</p>
-                            <p className="text-[#6d7f8f] text-[11px] truncate">Active: XAU/USD BUY @ 2,645.50</p>
-                          </div>
-                        </div>
-                        <div className="flex-1 overflow-hidden relative">
-                          <div className="animate-telegram-scroll px-3 pt-3">
-                            {[...telegramMessages, ...telegramMessages].map((msg, i) => (
-                              <TelegramMessage key={i} message={msg} index={i} />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
+          {/* Mobile version - phone with stats card below */}
+          <div className="relative lg:hidden mt-8 flex flex-col items-center overflow-visible">
+            {/* Phone mockup - larger size */}
+            <div className="relative w-[85vw] max-w-[340px]" style={{ height: "520px" }}>
+              <div className="absolute inset-0 bg-[#1a1a1a] rounded-[2.5rem] border-[10px] border-[#333] shadow-2xl overflow-hidden">
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-7 bg-black rounded-full z-20" />
+                <div className="absolute inset-0 bg-[#0e1621] flex flex-col overflow-hidden">
+                  <div className="h-10 flex-shrink-0" />
+                  <div className="px-3 py-2 bg-[#17212b] flex items-center gap-2 flex-shrink-0 border-b border-[#0e1621]">
+                    <ChevronLeft className="w-5 h-5 text-[#6ab2f2]" />
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#2bb32a] to-[#1a8c1a] flex items-center justify-center flex-shrink-0">
+                      <TrendingUp className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-semibold text-[13px] truncate">EntryLab VIP Signals</p>
+                      <p className="text-[#6d7f8f] text-[10px]">4,823 subscribers</p>
+                    </div>
+                    <Bell className="w-4 h-4 text-[#6d7f8f]" />
+                  </div>
+                  <div className="px-3 py-1.5 bg-[#1b2735] flex items-center gap-2 flex-shrink-0 border-l-2 border-[#6ab2f2]">
+                    <Pin className="w-3 h-3 text-[#6ab2f2] rotate-45" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[#6ab2f2] text-[10px] font-medium">Pinned Message</p>
+                      <p className="text-[#6d7f8f] text-[10px] truncate">Active: XAU/USD BUY @ 2,645.50</p>
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-hidden relative">
+                    <div className="animate-telegram-scroll px-3 pt-2">
+                      {[...telegramMessages, ...telegramMessages].map((msg, i) => (
+                        <TelegramMessage key={i} message={msg} index={i} />
+                      ))}
                     </div>
                   </div>
                 </div>
               </div>
-              
-              {/* Stats card overlay positioned at bottom - dark glass style */}
-              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%+60px)] z-10">
-                <div className="bg-[#1a2420]/95 backdrop-blur-md border border-[#2bb32a]/30 rounded-2xl p-5 shadow-xl">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center">
-                      <p className="text-[#2bb32a] text-2xl font-bold">87%</p>
-                      <p className="text-[#8b9a8c] text-xs mt-1">Win Rate</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-[#2bb32a] text-2xl font-bold">4.8k+</p>
-                      <p className="text-[#8b9a8c] text-xs mt-1">Active Traders</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-[#2bb32a] text-2xl font-bold">2,400+</p>
-                      <p className="text-[#8b9a8c] text-xs mt-1">Signals Delivered</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-[#2bb32a] text-2xl font-bold">$2.1M+</p>
-                      <p className="text-[#8b9a8c] text-xs mt-1">Profits Generated</p>
-                    </div>
+            </div>
+            
+            {/* Stats card below phone - overlapping slightly */}
+            <div className="relative -mt-8 w-[92vw] max-w-[360px] z-10">
+              <div className="bg-[#1a2420]/90 backdrop-blur-xl border border-[#2bb32a]/35 rounded-2xl py-6 px-5 shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
+                <div className="grid grid-cols-2 gap-5">
+                  <div className="text-center">
+                    <p className="text-white text-3xl font-bold">87%</p>
+                    <p className="text-[#7ba686] text-sm mt-1">Win Rate</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-white text-3xl font-bold">4.8k+</p>
+                    <p className="text-[#7ba686] text-sm mt-1">Active Traders</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-white text-3xl font-bold">2,400+</p>
+                    <p className="text-[#7ba686] text-sm mt-1">Signals Delivered</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-white text-3xl font-bold">$2.1M+</p>
+                    <p className="text-[#7ba686] text-sm mt-1">Profits Generated</p>
                   </div>
                 </div>
               </div>
