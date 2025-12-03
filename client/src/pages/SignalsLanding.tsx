@@ -576,12 +576,11 @@ export default function SignalsLanding() {
           </div>
 
           {/* Mobile version - phone with stats card overlay */}
-          <div className="relative lg:hidden mt-8">
-            {/* Phone container - centered */}
-            <div className="flex justify-center">
-              <div className="relative" style={{ height: "420px" }}>
-                {/* Phone mockup without glow effect for mobile */}
-                <div className="transform scale-[0.75] origin-top">
+          <div className="relative lg:hidden mt-8 flex justify-center">
+            <div className="relative" style={{ width: "290px", height: "400px" }}>
+              {/* Phone mockup scaled down */}
+              <div className="absolute inset-0 overflow-hidden">
+                <div className="transform scale-[0.75] origin-top" style={{ marginLeft: "-45px" }}>
                   <div style={{ width: "380px", height: "720px" }}>
                     <div className="relative w-full h-full bg-[#1a1a1a] rounded-[3rem] border-[12px] border-[#333] shadow-2xl overflow-hidden">
                       <div className="absolute top-3 left-1/2 -translate-x-1/2 w-32 h-8 bg-black rounded-full z-20" />
@@ -617,27 +616,27 @@ export default function SignalsLanding() {
                   </div>
                 </div>
               </div>
-            </div>
-            
-            {/* Stats card overlay at bottom */}
-            <div className="relative -mt-16 mx-auto max-w-sm">
-              <div className="signals-stats-bar">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center">
-                    <p className="signals-stat-value">87%</p>
-                    <p className="signals-stat-label mt-1">Win Rate</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="signals-stat-value">4.8k+</p>
-                    <p className="signals-stat-label mt-1">Active Traders</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="signals-stat-value">2,400+</p>
-                    <p className="signals-stat-label mt-1">Signals Delivered</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="signals-stat-value">$2.1M+</p>
-                    <p className="signals-stat-label mt-1">Profits Generated</p>
+              
+              {/* Stats card overlay positioned at bottom */}
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[calc(100%+40px)] z-10">
+                <div className="signals-stats-bar">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center">
+                      <p className="signals-stat-value">87%</p>
+                      <p className="signals-stat-label mt-1">Win Rate</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="signals-stat-value">4.8k+</p>
+                      <p className="signals-stat-label mt-1">Active Traders</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="signals-stat-value">2,400+</p>
+                      <p className="signals-stat-label mt-1">Signals Delivered</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="signals-stat-value">$2.1M+</p>
+                      <p className="signals-stat-label mt-1">Profits Generated</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -646,8 +645,8 @@ export default function SignalsLanding() {
         </div>
       </section>
 
-      {/* Stats Bar */}
-      <section className="relative z-10 max-w-6xl mx-auto px-3 sm:px-6 -mt-8">
+      {/* Stats Bar - hidden on mobile since it's in the phone overlay */}
+      <section className="relative z-10 max-w-6xl mx-auto px-3 sm:px-6 -mt-8 hidden lg:block">
         <div className="signals-stats-bar">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
             {stats.map((stat, i) => (
