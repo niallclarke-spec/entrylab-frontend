@@ -347,46 +347,65 @@ function TelegramMessage({ message, index }: { message: typeof telegramMessages[
 }
 
 const floatingNotifications = [
-  { type: "signal", text: "New signal posted!", icon: "arrow", delay: 0 },
-  { type: "profit", text: "TP2 Hit!", icon: "check", delay: 3 },
-  { type: "members", text: "12 traders online", icon: "users", delay: 6 },
-  { type: "signal", text: "TP1 Hit!", icon: "target", delay: 9 },
+  { type: "profit", text: "+127 pips", subtext: "Today's profit", icon: "trending", style: "card", delay: 0 },
+  { type: "signal", text: "TP2 Hit!", subtext: "XAU/USD", icon: "check", style: "pill", delay: 3 },
+  { type: "members", text: "847", subtext: "Active traders", icon: "users", style: "card", delay: 6 },
+  { type: "alert", text: "New Signal!", subtext: "Just now", icon: "bell", style: "pill", delay: 9 },
 ];
 
 function FloatingNotification({ notification, index }: { notification: typeof floatingNotifications[0]; index: number }) {
   const positions = [
-    { top: "15%", right: "-80px" },
-    { top: "40%", left: "-90px" },
-    { top: "65%", right: "-75px" },
-    { top: "85%", left: "-85px" },
+    { top: "8%", right: "calc(100% + 24px)" },
+    { top: "35%", left: "calc(100% + 24px)" },
+    { top: "58%", right: "calc(100% + 24px)" },
+    { top: "78%", left: "calc(100% + 24px)" },
   ];
   
   const pos = positions[index % positions.length];
-  const isLeft = 'left' in pos;
+  
+  if (notification.style === "card") {
+    return (
+      <div 
+        className="absolute hidden xl:block w-36 p-4 rounded-2xl bg-[#1a2420]/95 backdrop-blur-md border border-[#2bb32a]/20 shadow-xl animate-float-notification"
+        style={{ 
+          ...pos,
+          animationDelay: `${notification.delay}s`,
+        }}
+      >
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
+          notification.type === 'profit' ? 'bg-[#2bb32a]/20' : 'bg-[#3d544d]'
+        }`}>
+          {notification.icon === 'trending' && <TrendingUp className="w-5 h-5 text-[#2bb32a]" />}
+          {notification.icon === 'users' && <Users className="w-5 h-5 text-[#2bb32a]" />}
+        </div>
+        <p className={`text-xl font-bold ${notification.type === 'profit' ? 'text-[#2bb32a]' : 'text-white'}`}>
+          {notification.text}
+        </p>
+        <p className="text-[#8b9a8c] text-xs mt-1">{notification.subtext}</p>
+      </div>
+    );
+  }
   
   return (
     <div 
-      className="absolute hidden xl:flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1a2420]/90 backdrop-blur-sm border border-[#2bb32a]/30 shadow-lg animate-float-notification"
+      className="absolute hidden xl:flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-[#1a2420]/95 backdrop-blur-md border border-[#2bb32a]/20 shadow-xl animate-float-notification"
       style={{ 
         ...pos,
         animationDelay: `${notification.delay}s`,
       }}
     >
-      <div className={`w-7 h-7 rounded-full flex items-center justify-center ${
-        notification.type === 'profit' ? 'bg-[#2bb32a]' : 
-        notification.type === 'signal' ? 'bg-[#2bb32a]/20' : 
-        'bg-[#3d544d]'
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+        notification.type === 'signal' ? 'bg-[#2bb32a]' : 'bg-[#2bb32a]/20'
       }`}>
         {notification.icon === 'check' && <Check className="w-4 h-4 text-white" />}
-        {notification.icon === 'arrow' && <ArrowRight className="w-4 h-4 text-[#2bb32a]" />}
-        {notification.icon === 'users' && <Users className="w-4 h-4 text-[#2bb32a]" />}
-        {notification.icon === 'target' && <Target className="w-4 h-4 text-[#2bb32a]" />}
+        {notification.icon === 'bell' && <Bell className="w-4 h-4 text-[#2bb32a]" />}
       </div>
-      <span className={`text-sm font-medium whitespace-nowrap ${
-        notification.type === 'profit' ? 'text-[#2bb32a]' : 'text-white'
-      }`}>
-        {notification.text}
-      </span>
+      <div>
+        <p className={`text-sm font-semibold ${notification.type === 'signal' ? 'text-[#2bb32a]' : 'text-white'}`}>
+          {notification.text}
+        </p>
+        <p className="text-[#8b9a8c] text-[10px]">{notification.subtext}</p>
+      </div>
     </div>
   );
 }
