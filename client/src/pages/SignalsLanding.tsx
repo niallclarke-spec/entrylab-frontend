@@ -355,10 +355,10 @@ const floatingNotifications = [
 
 function FloatingNotification({ notification, index }: { notification: typeof floatingNotifications[0]; index: number }) {
   const positions = [
-    { top: "8%", right: "calc(100% + 24px)" },
-    { top: "35%", left: "calc(100% + 24px)" },
-    { top: "58%", right: "calc(100% + 24px)" },
-    { top: "78%", left: "calc(100% + 24px)" },
+    { top: "5%", right: "calc(100% + 20px)" },
+    { top: "25%", left: "calc(100% + 20px)" },
+    { top: "45%", right: "calc(100% + 20px)" },
+    { top: "65%", left: "calc(100% + 20px)" },
   ];
   
   const pos = positions[index % positions.length];
