@@ -534,9 +534,9 @@ export default function SignalsLanding() {
       </section>
 
       {/* Stats Bar */}
-      <section className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 -mt-8">
+      <section className="relative z-10 max-w-6xl mx-auto px-3 sm:px-6 -mt-8">
         <div className="signals-stats-bar">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
             {stats.map((stat, i) => (
               <div key={i} className="text-center" data-testid={`stat-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>
                 <p className="signals-stat-value" data-testid={`stat-value-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>{stat.value}</p>
