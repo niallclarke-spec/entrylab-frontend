@@ -748,7 +748,7 @@ export default function SignalsLanding() {
         <div className="grid md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, i) => (
             <div key={i} className="signals-testimonial-card">
-              <div className="flex justify-center mb-6">
+              <div className="flex justify-end mb-6">
                 {[...Array(5)].map((_, starIndex) => (
                   <Star key={starIndex} className="w-5 h-5 text-[#00b67a] fill-[#00b67a]" />
                 ))}
