@@ -147,15 +147,15 @@ function EmailCaptureForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 w-full max-w-lg mx-auto">
+    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 w-full max-w-xl">
       <div className="flex-1 relative">
-        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#adb2b1]" />
+        <SiTelegram className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#2bb32a]" />
         <input
           type="email"
           placeholder="Enter your email address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full pl-12 pr-4 py-4 bg-[#273028] border border-[#3d544d] rounded-full text-white placeholder:text-[#adb2b1] focus:outline-none focus:border-[#2bb32a] transition-colors"
+          className="w-full pl-12 pr-4 py-4 bg-[#273028] border border-[#3d544d] rounded-full text-white placeholder:text-[#adb2b1] focus:outline-none focus:border-[#2bb32a] focus:shadow-[0_0_20px_rgba(43,179,42,0.3)] transition-all shadow-[0_0_15px_rgba(43,179,42,0.15)]"
           disabled={isSubmitting}
           required
           data-testid={`input-email${suffix}`}
