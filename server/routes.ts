@@ -1856,11 +1856,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use static imports (defined at top of file)
       const { client, fromEmail } = await getUncachableResendClient();
       
+      const emailHtml = getWelcomeEmailHtml(telegramLink);
+      console.log('Email HTML preview (first 500 chars):', emailHtml.substring(0, 500));
+      
       await client.emails.send({
         from: fromEmail,
         to: email,
         subject: 'Welcome to EntryLab Premium Signals!',
-        html: getWelcomeEmailHtml(telegramLink),
+        html: emailHtml,
         text: `Welcome to EntryLab Premium Signals!\n\nYour subscription is now active. Join our private Telegram channel: ${telegramLink}\n\nQuestions? Contact us at support@entrylab.io`,
       });
 
