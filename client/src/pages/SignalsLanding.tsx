@@ -155,7 +155,7 @@ function EmailCaptureForm({
           placeholder="Enter your email address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full pl-12 pr-4 py-4 bg-[#273028] border border-[#2bb32a]/40 rounded-full text-white placeholder:text-[#adb2b1] focus:outline-none focus:border-[#2bb32a] focus:shadow-[0_0_30px_rgba(43,179,42,0.4)] transition-all shadow-[0_0_25px_rgba(43,179,42,0.25)]"
+          className="w-full pl-12 pr-4 py-4 bg-[#273028] border border-[#2bb32a]/50 rounded-full text-white placeholder:text-[#adb2b1] focus:outline-none focus:border-[#2bb32a] focus:shadow-[0_0_40px_rgba(43,179,42,0.6),0_0_20px_rgba(43,179,42,0.4)] transition-all shadow-[0_0_35px_rgba(43,179,42,0.4),0_0_15px_rgba(43,179,42,0.3)]"
           disabled={isSubmitting}
           required
           data-testid={`input-email${suffix}`}
