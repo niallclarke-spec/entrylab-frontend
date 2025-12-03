@@ -520,10 +520,10 @@ export default function Subscribe() {
             <div key={index} className="signals-glass-card" data-testid={`faq-${index}`}>
               <Accordion type="single" collapsible>
                 <AccordionItem value={`item-${index}`} className="border-none">
-                  <AccordionTrigger className="text-left font-semibold text-white hover:no-underline px-6 py-4">
+                  <AccordionTrigger className="text-left font-semibold text-white hover:no-underline px-6 py-4 [&>svg]:text-[#adb2b1]">
                     {faq.question}
                   </AccordionTrigger>
-                  <AccordionContent className="text-[#adb2b1] px-6 pb-4">
+                  <AccordionContent className="px-6 pb-4" style={{ color: '#adb2b1' }}>
                     {faq.answer}
                   </AccordionContent>
                 </AccordionItem>
