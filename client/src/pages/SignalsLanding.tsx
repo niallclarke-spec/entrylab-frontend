@@ -104,11 +104,13 @@ function FAQItem({ question, answer, isOpen, onClick }: { question: string; answ
 function EmailCaptureForm({ 
   testIdSuffix = "",
   buttonText = "Get Free Access",
-  showIcon = true 
+  showIcon = true,
+  centered = false
 }: { 
   testIdSuffix?: string;
   buttonText?: string;
   showIcon?: boolean;
+  centered?: boolean;
 }) {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -147,7 +149,7 @@ function EmailCaptureForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 w-full max-w-xl">
+    <form onSubmit={handleSubmit} className={`flex flex-col sm:flex-row gap-3 w-full max-w-xl ${centered ? 'mx-auto' : ''}`}>
       <div className="flex-1 relative">
         <SiTelegram className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#229ED9]" />
         <input
@@ -627,7 +629,7 @@ export default function SignalsLanding() {
             Join our free Telegram channel and start receiving market insights today. 
             No credit card required.
           </p>
-          <EmailCaptureForm testIdSuffix="mid" buttonText="Join Free" />
+          <EmailCaptureForm testIdSuffix="mid" buttonText="Join Free" centered />
         </div>
       </section>
 
@@ -685,7 +687,7 @@ export default function SignalsLanding() {
             <p className="text-[#adb2b1] text-lg max-w-md">
               Join our free Telegram channel and see why thousands of traders trust EntryLab for XAU/USD signals.
             </p>
-            <EmailCaptureForm testIdSuffix="footer" />
+            <EmailCaptureForm testIdSuffix="footer" centered />
             <div className="flex flex-wrap gap-6 pt-4 text-sm text-[#adb2b1]">
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-[#2bb32a]" />
