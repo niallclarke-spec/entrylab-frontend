@@ -575,13 +575,13 @@ export default function SignalsLanding() {
             <PhoneMockup />
           </div>
 
-          {/* Mobile version - cropped phone with full-width green overlay */}
+          {/* Mobile version - phone with stats card overlay */}
           <div className="relative lg:hidden mt-8">
             {/* Phone container - centered */}
             <div className="flex justify-center">
-              <div className="relative" style={{ height: "480px", width: "300px" }}>
+              <div className="relative" style={{ height: "420px" }}>
                 {/* Phone mockup without glow effect for mobile */}
-                <div className="transform scale-[0.8] origin-top-center" style={{ marginLeft: "-40px" }}>
+                <div className="transform scale-[0.75] origin-top">
                   <div style={{ width: "380px", height: "720px" }}>
                     <div className="relative w-full h-full bg-[#1a1a1a] rounded-[3rem] border-[12px] border-[#333] shadow-2xl overflow-hidden">
                       <div className="absolute top-3 left-1/2 -translate-x-1/2 w-32 h-8 bg-black rounded-full z-20" />
@@ -619,10 +619,28 @@ export default function SignalsLanding() {
               </div>
             </div>
             
-            {/* Full-width solid green overlay at bottom - covers last quarter */}
-            <div className="absolute bottom-0 left-0 right-0 h-24 bg-[#2bb32a] flex flex-col items-center justify-center px-4 -mx-4">
-              <p className="text-white font-bold text-lg text-center mb-1">See what you're missing</p>
-              <p className="text-white/90 text-sm text-center">Join 4,800+ traders getting daily signals</p>
+            {/* Stats card overlay at bottom */}
+            <div className="relative -mt-16 mx-auto max-w-sm">
+              <div className="signals-stats-bar">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center">
+                    <p className="signals-stat-value">87%</p>
+                    <p className="signals-stat-label mt-1">Win Rate</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="signals-stat-value">4.8k+</p>
+                    <p className="signals-stat-label mt-1">Active Traders</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="signals-stat-value">2,400+</p>
+                    <p className="signals-stat-label mt-1">Signals Delivered</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="signals-stat-value">$2.1M+</p>
+                    <p className="signals-stat-label mt-1">Profits Generated</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
