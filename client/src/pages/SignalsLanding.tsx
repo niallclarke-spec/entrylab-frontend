@@ -220,28 +220,66 @@ function SignalCard({ signal, index }: { signal: typeof sampleSignals[0]; index:
 }
 
 const telegramMessages = [
-  { type: "signal", direction: "BUY", pair: "XAU/USD", entry: "2,045.50", sl: "2,038.00", tp: "2,068.00", time: "10:32", pinned: true },
-  { type: "update", text: "TP1 Hit! +$450 secured", time: "11:15" },
-  { type: "signal", direction: "SELL", pair: "XAU/USD", entry: "2,072.25", sl: "2,080.00", tp: "2,052.00", time: "14:45" },
-  { type: "analysis", text: "Gold showing strong resistance at 2,075. Watch for reversal patterns.", time: "15:20" },
-  { type: "result", text: "Trade closed with profit!", profit: "+$1,340", time: "16:55" },
-  { type: "signal", direction: "BUY", pair: "XAU/USD", entry: "2,018.80", sl: "2,012.00", tp: "2,035.00", time: "09:15" },
-  { type: "update", text: "Moving SL to breakeven - risk free trade now", time: "10:30" },
-  { type: "result", text: "Another winner closed!", profit: "+$650", time: "12:45" },
+  { type: "signal", direction: "BUY", pair: "XAU/USD", entry: "2,645.50", sl: "2,638.00", tp: "2,668.00", time: "09:15", reactions: ["🔥", "12"] },
+  { type: "update", text: "Take Profit 1 HIT!! Moving SL to breakeven", time: "10:42", reactions: ["🎯", "8"] },
+  { type: "update", text: "Take Profit 2 HIT!! Letting runners ride", time: "11:28", reactions: ["💰", "15"] },
+  { type: "signal", direction: "SELL", pair: "XAU/USD", entry: "2,672.25", sl: "2,680.00", tp: "2,652.00", time: "14:05" },
+  { type: "update", text: "Take Profit 1 HIT!!", time: "15:18", reactions: ["✅", "6"] },
+  { type: "recap", time: "18:00", reactions: ["🚀", "24"] },
+  { type: "signal", direction: "BUY", pair: "XAU/USD", entry: "2,618.80", sl: "2,612.00", tp: "2,635.00", time: "08:30" },
+  { type: "analysis", text: "Strong support forming at 2,615. Watching for continuation.", time: "09:45" },
 ];
 
 function TelegramMessage({ message, index }: { message: typeof telegramMessages[0]; index: number }) {
   const ReadReceipt = () => (
-    <span className="inline-flex items-center text-[#2bb32a] ml-1">
+    <span className="inline-flex items-center text-[#34B7F1] ml-1">
       <Check className="w-3 h-3" />
       <Check className="w-3 h-3 -ml-1.5" />
     </span>
   );
 
+  const Reactions = ({ reactions }: { reactions?: string[] }) => {
+    if (!reactions || reactions.length === 0) return null;
+    return (
+      <div className="flex items-center gap-1 mt-2">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#232e3c] text-[11px]">
+          <span>{reactions[0]}</span>
+          <span className="text-[#8b9a8c]">{reactions[1]}</span>
+        </span>
+      </div>
+    );
+  };
+
+  // Weekly recap message
+  if (message.type === "recap") {
+    return (
+      <div className="mb-3">
+        <div className="bg-[#182533] rounded-2xl rounded-tl-sm p-3 max-w-[95%] shadow-sm">
+          <p className="text-white font-bold text-[13px] mb-2">Weekly Recap:</p>
+          <div className="space-y-1 text-[12px] font-mono">
+            <p className="text-white">Monday - <span className="text-[#2bb32a]">+90 Pips</span> <span className="text-[#2bb32a]">&#10003;</span></p>
+            <p className="text-white">Tuesday - <span className="text-[#2bb32a]">+44 Pips</span> <span className="text-[#2bb32a]">&#10003;</span></p>
+            <p className="text-white">Wednesday - <span className="text-[#e53935]">-28 Pips</span> <span className="text-[#e53935]">&#10007;</span></p>
+            <p className="text-white">Thursday - <span className="text-[#2bb32a]">+67 Pips</span> <span className="text-[#2bb32a]">&#10003;</span></p>
+            <p className="text-white">Friday - <span className="text-[#2bb32a]">+112 Pips</span> <span className="text-[#2bb32a]">&#10003;</span></p>
+          </div>
+          <p className="text-[#2bb32a] font-bold text-[13px] mt-2 pt-2 border-t border-[#2d3d4d]">Total: +285 Pips</p>
+          <div className="flex items-center justify-between mt-2">
+            <Reactions reactions={message.reactions} />
+            <div className="flex items-center gap-1">
+              <span className="text-[#8b9a8c] text-[10px]">{message.time}</span>
+              <ReadReceipt />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (message.type === "signal") {
     return (
       <div className="mb-3">
-        <div className="bg-[#182c1a] rounded-2xl rounded-tl-sm p-3 max-w-[95%] shadow-sm">
+        <div className="bg-[#182533] rounded-2xl rounded-tl-sm p-3 max-w-[95%] shadow-sm">
           {/* Signal header */}
           <div className="flex items-center gap-2 mb-2">
             <span className="text-white font-bold text-[13px]">{message.pair}</span>
@@ -264,25 +302,31 @@ function TelegramMessage({ message, index }: { message: typeof telegramMessages[
               <p className="text-[#2bb32a] font-mono font-medium">{message.tp}</p>
             </div>
           </div>
-          {/* Timestamp and read receipt */}
-          <div className="flex items-center justify-end gap-1 mt-1">
-            <span className="text-[#8b9a8c] text-[10px]">{message.time}</span>
-            <ReadReceipt />
+          {/* Reactions and timestamp */}
+          <div className="flex items-center justify-between mt-1">
+            <Reactions reactions={message.reactions} />
+            <div className="flex items-center gap-1">
+              <span className="text-[#8b9a8c] text-[10px]">{message.time}</span>
+              <ReadReceipt />
+            </div>
           </div>
         </div>
       </div>
     );
   }
   
-  if (message.type === "result") {
+  // Update messages (TP hits, etc)
+  if (message.type === "update") {
     return (
       <div className="mb-3">
-        <div className="bg-[#182c1a] rounded-2xl rounded-tl-sm p-3 max-w-[95%] shadow-sm">
-          <p className="text-white text-[13px] mb-1">{message.text}</p>
-          <p className="text-[#2bb32a] font-bold text-base">{message.profit}</p>
-          <div className="flex items-center justify-end gap-1 mt-1">
-            <span className="text-[#8b9a8c] text-[10px]">{message.time}</span>
-            <ReadReceipt />
+        <div className="bg-[#182533] rounded-2xl rounded-tl-sm p-3 max-w-[95%] shadow-sm">
+          <p className="text-[#2bb32a] font-bold text-[13px]">{message.text}</p>
+          <div className="flex items-center justify-between mt-2">
+            <Reactions reactions={message.reactions} />
+            <div className="flex items-center gap-1">
+              <span className="text-[#8b9a8c] text-[10px]">{message.time}</span>
+              <ReadReceipt />
+            </div>
           </div>
         </div>
       </div>
@@ -291,7 +335,7 @@ function TelegramMessage({ message, index }: { message: typeof telegramMessages[
   
   return (
     <div className="mb-3">
-      <div className="bg-[#1e2d20] rounded-2xl rounded-tl-sm p-3 max-w-[95%] shadow-sm">
+      <div className="bg-[#1e2a36] rounded-2xl rounded-tl-sm p-3 max-w-[95%] shadow-sm">
         <p className="text-white text-[13px]">{message.text}</p>
         <div className="flex items-center justify-end gap-1 mt-1">
           <span className="text-[#8b9a8c] text-[10px]">{message.time}</span>
@@ -304,9 +348,9 @@ function TelegramMessage({ message, index }: { message: typeof telegramMessages[
 
 const floatingNotifications = [
   { type: "signal", text: "New signal posted!", icon: "arrow", delay: 0 },
-  { type: "profit", text: "+$890 closed", icon: "check", delay: 3 },
+  { type: "profit", text: "TP2 Hit!", icon: "check", delay: 3 },
   { type: "members", text: "12 traders online", icon: "users", delay: 6 },
-  { type: "signal", text: "TP1 hit!", icon: "target", delay: 9 },
+  { type: "signal", text: "TP1 Hit!", icon: "target", delay: 9 },
 ];
 
 function FloatingNotification({ notification, index }: { notification: typeof floatingNotifications[0]; index: number }) {
@@ -359,36 +403,36 @@ function PhoneMockup() {
         <div className="absolute top-3 left-1/2 -translate-x-1/2 w-32 h-8 bg-black rounded-full z-20" />
         
         {/* Screen content */}
-        <div className="absolute inset-0 bg-[#0e1210] flex flex-col overflow-hidden">
+        <div className="absolute inset-0 bg-[#0e1621] flex flex-col overflow-hidden">
           {/* Status bar area */}
           <div className="h-12 flex-shrink-0" />
           
           {/* Telegram header */}
-          <div className="px-3 py-2 bg-[#17201c] flex items-center gap-2 flex-shrink-0 border-b border-[#0e1210]">
-            <ChevronLeft className="w-6 h-6 text-[#2bb32a]" />
+          <div className="px-3 py-2 bg-[#17212b] flex items-center gap-2 flex-shrink-0 border-b border-[#0e1621]">
+            <ChevronLeft className="w-6 h-6 text-[#6ab2f2]" />
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#2bb32a] to-[#1a8c1a] flex items-center justify-center flex-shrink-0">
               <TrendingUp className="w-4 h-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-white font-semibold text-[14px] truncate">EntryLab Signals</p>
-              <p className="text-[#8b9a8c] text-[11px]">4,823 subscribers</p>
+              <p className="text-[#6d7f8f] text-[11px]">4,823 subscribers</p>
             </div>
-            <Bell className="w-5 h-5 text-[#8b9a8c]" />
+            <Bell className="w-5 h-5 text-[#6d7f8f]" />
           </div>
           
           {/* Pinned message */}
-          <div className="px-3 py-2 bg-[#1a2420] flex items-center gap-2 flex-shrink-0 border-l-2 border-[#2bb32a]">
-            <Pin className="w-4 h-4 text-[#2bb32a] rotate-45" />
+          <div className="px-3 py-2 bg-[#1b2735] flex items-center gap-2 flex-shrink-0 border-l-2 border-[#6ab2f2]">
+            <Pin className="w-4 h-4 text-[#6ab2f2] rotate-45" />
             <div className="flex-1 min-w-0">
-              <p className="text-[#2bb32a] text-[11px] font-medium">Pinned Message</p>
-              <p className="text-[#8b9a8c] text-[11px] truncate">Active: XAU/USD BUY @ 2,045.50</p>
+              <p className="text-[#6ab2f2] text-[11px] font-medium">Pinned Message</p>
+              <p className="text-[#6d7f8f] text-[11px] truncate">Active: XAU/USD BUY @ 2,645.50</p>
             </div>
           </div>
           
           {/* Messages container with animation */}
           <div className="flex-1 overflow-hidden relative">
-            <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-[#0e1210] to-transparent z-10" />
-            <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#0e1210] to-transparent z-10" />
+            <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-[#0e1621] to-transparent z-10" />
+            <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#0e1621] to-transparent z-10" />
             
             {/* Scrolling messages */}
             <div className="animate-telegram-scroll px-3 pt-3">
@@ -399,11 +443,11 @@ function PhoneMockup() {
           </div>
           
           {/* Input bar */}
-          <div className="px-3 py-2 bg-[#17201c] flex items-center gap-2 flex-shrink-0">
-            <div className="flex-1 bg-[#1e2d20] rounded-full px-4 py-2 flex items-center">
-              <span className="text-[#5c6e60] text-[13px]">Message...</span>
+          <div className="px-3 py-2 bg-[#17212b] flex items-center gap-2 flex-shrink-0">
+            <div className="flex-1 bg-[#242f3d] rounded-full px-4 py-2 flex items-center">
+              <span className="text-[#6d7f8f] text-[13px]">Message...</span>
             </div>
-            <div className="w-9 h-9 rounded-full bg-[#2bb32a] flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 rounded-full bg-[#5288c1] flex items-center justify-center flex-shrink-0">
               <SiTelegram className="w-4 h-4 text-white" />
             </div>
           </div>
