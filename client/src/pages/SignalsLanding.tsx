@@ -613,8 +613,8 @@ export default function SignalsLanding() {
             </div>
             
             {/* Stats card below phone - overlapping slightly */}
-            <div className="relative -mt-8 w-[92vw] max-w-[360px] z-10">
-              <div className="bg-[#1a2420]/90 backdrop-blur-xl border border-[#2bb32a]/35 rounded-2xl py-6 px-5 shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
+            <div className="relative -mt-8 w-[95vw] max-w-[380px] z-10">
+              <div className="bg-[#1a2420]/90 backdrop-blur-xl border border-[#2bb32a]/35 rounded-2xl py-6 px-5">
                 <div className="grid grid-cols-2 gap-5">
                   <div className="text-center">
                     <p className="text-white text-3xl font-bold">87%</p>
