@@ -121,13 +121,22 @@ export class WebhookHandlers {
         })
         .returning();
     } else {
+      // Check if this is a NEW subscription (different from the one we sent welcome email for)
+      const isNewSubscription = subscriptionId && user.stripeSubscriptionId !== subscriptionId;
+      
       [user] = await db.update(signalUsers)
         .set({ 
           stripeCustomerId: customerId,
           stripeSubscriptionId: subscriptionId,
+          // Reset welcome email flag if this is a new subscription so they get a fresh email
+          welcomeEmailSent: isNewSubscription ? false : user.welcomeEmailSent,
         })
         .where(eq(signalUsers.id, user.id))
         .returning();
+      
+      if (isNewSubscription) {
+        console.log(`New subscription detected for ${email}, resetting welcome email flag`);
+      }
     }
 
     console.log(`Checkout completed for ${email}, subscription: ${subscriptionId}`);

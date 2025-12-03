@@ -1825,6 +1825,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin endpoint to manually resend welcome email (protected by admin key)
+  app.post('/api/admin/resend-welcome-email', async (req, res) => {
+    try {
+      const { email, adminKey } = req.body;
+      
+      // Simple admin key protection - check against env var
+      const expectedKey = process.env.ADMIN_API_KEY || 'entrylab-admin-2024';
+      if (adminKey !== expectedKey) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      if (!email) {
+        return res.status(400).json({ error: 'Email required' });
+      }
+
+      const [user] = await db.select()
+        .from(signalUsers)
+        .where(eq(signalUsers.email, email));
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Get invite link (use existing or fallback)
+      const telegramLink = user.telegramInviteLink || 'https://t.me/+TbJsf9xRrNkwN2E0';
+
+      // Import email templates and resend client
+      const { getWelcomeEmailHtml } = await import('./emailTemplates.js');
+      const { getUncachableResendClient } = await import('./resendClient.js');
+
+      const { client, fromEmail } = await getUncachableResendClient();
+      
+      await client.emails.send({
+        from: fromEmail,
+        to: email,
+        subject: 'Welcome to EntryLab Premium Signals!',
+        html: getWelcomeEmailHtml(telegramLink),
+        text: `Welcome to EntryLab Premium Signals!\n\nYour subscription is now active. Join our private Telegram channel: ${telegramLink}\n\nQuestions? Contact us at support@entrylab.io`,
+      });
+
+      // Update the flag
+      await db.update(signalUsers)
+        .set({ welcomeEmailSent: true })
+        .where(eq(signalUsers.id, user.id));
+
+      console.log(`Admin: Welcome email manually sent to ${email}`);
+
+      res.json({ 
+        success: true, 
+        message: `Welcome email sent to ${email}`,
+        inviteLink: telegramLink
+      });
+
+    } catch (error: any) {
+      console.error('Admin resend email error:', error);
+      res.status(500).json({ error: 'Failed to send email: ' + error.message });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
