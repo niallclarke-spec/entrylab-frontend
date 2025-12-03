@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowRight, TrendingUp, Shield, BarChart3, Target, Clock, Users, ChevronDown, ChevronUp, Mail, MessageCircle, Check, Zap, ChevronLeft, Pin, Bell } from "lucide-react";
+import { ArrowRight, TrendingUp, Shield, BarChart3, Target, Clock, Users, ChevronDown, ChevronUp, Mail, MessageCircle, Check, Zap, ChevronLeft, Pin, Bell, Star } from "lucide-react";
 import { SiTelegram } from "react-icons/si";
 import { Helmet } from "react-helmet-async";
 import { useToast } from "@/hooks/use-toast";
@@ -748,8 +748,10 @@ export default function SignalsLanding() {
         <div className="grid md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, i) => (
             <div key={i} className="signals-testimonial-card">
-              <div className="w-12 h-12 rounded-full bg-[#2bb32a]/10 flex items-center justify-center mb-8">
-                <MessageCircle className="w-6 h-6 text-[#2bb32a]" />
+              <div className="flex justify-center mb-6">
+                {[...Array(5)].map((_, starIndex) => (
+                  <Star key={starIndex} className="w-5 h-5 text-[#00b67a] fill-[#00b67a]" />
+                ))}
               </div>
               <p className="text-[#1a1e1c] text-lg mb-8 leading-relaxed">"{testimonial.quote}"</p>
               <div className="flex items-center gap-3">
