@@ -414,7 +414,7 @@ function PhoneMockup() {
               <TrendingUp className="w-4 h-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-white font-semibold text-[14px] truncate">EntryLab Signals</p>
+              <p className="text-white font-semibold text-[14px] truncate">EntryLab VIP Signals</p>
               <p className="text-[#6d7f8f] text-[11px]">4,823 subscribers</p>
             </div>
             <Bell className="w-5 h-5 text-[#6d7f8f]" />
@@ -544,6 +544,7 @@ export default function SignalsLanding() {
           </div>
 
           {/* Hero Visual - iPhone Mockup with Telegram */}
+          {/* Desktop version - full phone */}
           <div className="relative hidden lg:flex justify-center">
             {/* Decorative green rings */}
             <div className="absolute w-[500px] h-[500px] rounded-full border border-[#2bb32a]/10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
@@ -572,6 +573,22 @@ export default function SignalsLanding() {
             </div>
             
             <PhoneMockup />
+          </div>
+
+          {/* Mobile version - cropped phone with green overlay */}
+          <div className="relative flex lg:hidden justify-center mt-8">
+            <div className="relative overflow-hidden rounded-t-[2.5rem]" style={{ height: "420px" }}>
+              {/* Scaled down phone mockup */}
+              <div className="transform scale-[0.85] origin-top">
+                <PhoneMockup />
+              </div>
+              
+              {/* Green gradient overlay at bottom */}
+              <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#2bb32a] via-[#2bb32a]/95 to-transparent flex flex-col items-center justify-end pb-6 px-4">
+                <p className="text-white font-bold text-lg text-center mb-1">See what you're missing</p>
+                <p className="text-white/80 text-sm text-center">Join 4,800+ traders getting daily signals</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
