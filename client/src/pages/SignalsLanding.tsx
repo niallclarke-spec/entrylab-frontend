@@ -150,7 +150,7 @@ function EmailCaptureForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 w-full max-w-lg">
+    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 w-full max-w-lg mx-auto">
       <div className="flex-1 relative">
         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#adb2b1]" />
         <input
