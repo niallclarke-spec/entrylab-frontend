@@ -9,6 +9,8 @@ import { sendReviewNotification, sendTelegramMessage, getTelegramBot } from "./t
 import { generateStructuredData } from "./structured-data";
 import { getUncachableStripeClient } from "./stripeClient";
 import { eq } from "drizzle-orm";
+import { getWelcomeEmailHtml } from "./emailTemplates";
+import { getUncachableResendClient } from "./resendClient";
 
 // Cache key for published reviews - used for cache invalidation after approval/rejection
 const REVIEWS_CACHE_KEY = 'https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed';
@@ -1851,10 +1853,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get invite link (use existing or fallback)
       const telegramLink = user.telegramInviteLink || 'https://t.me/+TbJsf9xRrNkwN2E0';
 
-      // Import email templates and resend client
-      const { getWelcomeEmailHtml } = await import('./emailTemplates.js');
-      const { getUncachableResendClient } = await import('./resendClient.js');
-
+      // Use static imports (defined at top of file)
       const { client, fromEmail } = await getUncachableResendClient();
       
       await client.emails.send({
