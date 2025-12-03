@@ -654,7 +654,7 @@ export default function SignalsLanding() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-24 md:py-32">
+      <section id="features" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-32">
         <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-16">
           What do we offer?
         </h2>
