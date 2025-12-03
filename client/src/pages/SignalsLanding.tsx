@@ -575,51 +575,54 @@ export default function SignalsLanding() {
             <PhoneMockup />
           </div>
 
-          {/* Mobile version - cropped phone with green overlay */}
-          <div className="relative flex lg:hidden justify-center mt-8">
-            <div className="relative overflow-hidden" style={{ height: "420px", width: "320px" }}>
-              {/* Phone mockup without glow effect for mobile */}
-              <div className="transform scale-[0.85] origin-top">
-                <div style={{ width: "380px", height: "720px" }}>
-                  <div className="relative w-full h-full bg-[#1a1a1a] rounded-[3rem] border-[12px] border-[#333] shadow-2xl overflow-hidden">
-                    <div className="absolute top-3 left-1/2 -translate-x-1/2 w-32 h-8 bg-black rounded-full z-20" />
-                    <div className="absolute inset-0 bg-[#0e1621] flex flex-col overflow-hidden">
-                      <div className="h-12 flex-shrink-0" />
-                      <div className="px-3 py-2 bg-[#17212b] flex items-center gap-2 flex-shrink-0 border-b border-[#0e1621]">
-                        <ChevronLeft className="w-6 h-6 text-[#6ab2f2]" />
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#2bb32a] to-[#1a8c1a] flex items-center justify-center flex-shrink-0">
-                          <TrendingUp className="w-4 h-4 text-white" />
+          {/* Mobile version - cropped phone with full-width green overlay */}
+          <div className="relative lg:hidden mt-8">
+            {/* Phone container - centered */}
+            <div className="flex justify-center">
+              <div className="relative" style={{ height: "480px", width: "300px" }}>
+                {/* Phone mockup without glow effect for mobile */}
+                <div className="transform scale-[0.8] origin-top-center" style={{ marginLeft: "-40px" }}>
+                  <div style={{ width: "380px", height: "720px" }}>
+                    <div className="relative w-full h-full bg-[#1a1a1a] rounded-[3rem] border-[12px] border-[#333] shadow-2xl overflow-hidden">
+                      <div className="absolute top-3 left-1/2 -translate-x-1/2 w-32 h-8 bg-black rounded-full z-20" />
+                      <div className="absolute inset-0 bg-[#0e1621] flex flex-col overflow-hidden">
+                        <div className="h-12 flex-shrink-0" />
+                        <div className="px-3 py-2 bg-[#17212b] flex items-center gap-2 flex-shrink-0 border-b border-[#0e1621]">
+                          <ChevronLeft className="w-6 h-6 text-[#6ab2f2]" />
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#2bb32a] to-[#1a8c1a] flex items-center justify-center flex-shrink-0">
+                            <TrendingUp className="w-4 h-4 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white font-semibold text-[14px] truncate">EntryLab VIP Signals</p>
+                            <p className="text-[#6d7f8f] text-[11px]">4,823 subscribers</p>
+                          </div>
+                          <Bell className="w-5 h-5 text-[#6d7f8f]" />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white font-semibold text-[14px] truncate">EntryLab VIP Signals</p>
-                          <p className="text-[#6d7f8f] text-[11px]">4,823 subscribers</p>
+                        <div className="px-3 py-2 bg-[#1b2735] flex items-center gap-2 flex-shrink-0 border-l-2 border-[#6ab2f2]">
+                          <Pin className="w-4 h-4 text-[#6ab2f2] rotate-45" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[#6ab2f2] text-[11px] font-medium">Pinned Message</p>
+                            <p className="text-[#6d7f8f] text-[11px] truncate">Active: XAU/USD BUY @ 2,645.50</p>
+                          </div>
                         </div>
-                        <Bell className="w-5 h-5 text-[#6d7f8f]" />
-                      </div>
-                      <div className="px-3 py-2 bg-[#1b2735] flex items-center gap-2 flex-shrink-0 border-l-2 border-[#6ab2f2]">
-                        <Pin className="w-4 h-4 text-[#6ab2f2] rotate-45" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[#6ab2f2] text-[11px] font-medium">Pinned Message</p>
-                          <p className="text-[#6d7f8f] text-[11px] truncate">Active: XAU/USD BUY @ 2,645.50</p>
-                        </div>
-                      </div>
-                      <div className="flex-1 overflow-hidden relative">
-                        <div className="animate-telegram-scroll px-3 pt-3">
-                          {[...telegramMessages, ...telegramMessages].map((msg, i) => (
-                            <TelegramMessage key={i} message={msg} index={i} />
-                          ))}
+                        <div className="flex-1 overflow-hidden relative">
+                          <div className="animate-telegram-scroll px-3 pt-3">
+                            {[...telegramMessages, ...telegramMessages].map((msg, i) => (
+                              <TelegramMessage key={i} message={msg} index={i} />
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              
-              {/* Solid green overlay at bottom */}
-              <div className="absolute bottom-0 left-0 right-0 h-28 bg-[#2bb32a] flex flex-col items-center justify-center px-4">
-                <p className="text-white font-bold text-lg text-center mb-1">See what you're missing</p>
-                <p className="text-white/90 text-sm text-center">Join 4,800+ traders getting daily signals</p>
-              </div>
+            </div>
+            
+            {/* Full-width solid green overlay at bottom - covers last quarter */}
+            <div className="absolute bottom-0 left-0 right-0 h-24 bg-[#2bb32a] flex flex-col items-center justify-center px-4 -mx-4">
+              <p className="text-white font-bold text-lg text-center mb-1">See what you're missing</p>
+              <p className="text-white/90 text-sm text-center">Join 4,800+ traders getting daily signals</p>
             </div>
           </div>
         </div>
