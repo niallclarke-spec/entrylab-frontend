@@ -684,17 +684,31 @@ export default function SignalsLanding() {
                   <stop offset="100%" stopColor="rgba(43, 179, 42, 0.4)" />
                 </linearGradient>
                 <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="rgba(43, 179, 42, 0.3)" />
-                  <stop offset="50%" stopColor="rgba(34, 158, 217, 0.9)" />
-                  <stop offset="100%" stopColor="rgba(34, 158, 217, 0.5)" />
+                  <stop offset="0%" stopColor="rgba(34, 158, 217, 0.4)" />
+                  <stop offset="50%" stopColor="rgba(34, 158, 217, 1)" />
+                  <stop offset="100%" stopColor="rgba(34, 158, 217, 0.6)" />
                 </linearGradient>
+                <filter id="glowBlue" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="0.5" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+                <filter id="glowGreen" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="0.5" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
               </defs>
               {/* Green lines from sources to center */}
-              <path d="M 20 25 Q 35 25 42 50" stroke="url(#greenGradient)" strokeWidth="0.4" fill="none" className="animated-path" style={{ animationDelay: "0s" }} />
-              <path d="M 20 50 L 42 50" stroke="url(#greenGradient)" strokeWidth="0.4" fill="none" className="animated-path" style={{ animationDelay: "0.5s" }} />
-              <path d="M 20 75 Q 35 75 42 50" stroke="url(#greenGradient)" strokeWidth="0.4" fill="none" className="animated-path" style={{ animationDelay: "1s" }} />
+              <path d="M 18 25 Q 32 25 40 50" stroke="url(#greenGradient)" strokeWidth="0.5" fill="none" className="animated-path" filter="url(#glowGreen)" style={{ animationDelay: "0s" }} />
+              <path d="M 18 50 L 40 50" stroke="url(#greenGradient)" strokeWidth="0.5" fill="none" className="animated-path" filter="url(#glowGreen)" style={{ animationDelay: "0.5s" }} />
+              <path d="M 18 75 Q 32 75 40 50" stroke="url(#greenGradient)" strokeWidth="0.5" fill="none" className="animated-path" filter="url(#glowGreen)" style={{ animationDelay: "1s" }} />
               {/* Blue line from center to Telegram */}
-              <path d="M 58 50 L 80 50" stroke="url(#blueGradient)" strokeWidth="0.4" fill="none" className="animated-path" style={{ animationDelay: "1.5s" }} />
+              <path d="M 60 50 L 82 50" stroke="url(#blueGradient)" strokeWidth="0.5" fill="none" className="animated-path" filter="url(#glowBlue)" style={{ animationDelay: "1.5s" }} />
             </svg>
 
             {/* Left Column - Data Sources */}
