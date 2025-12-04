@@ -13,24 +13,6 @@ const stats = [
   { value: "$2.1M+", label: "Profits Generated" },
 ];
 
-const features = [
-  {
-    icon: Target,
-    title: "Precision Entries",
-    description: "AI-powered analysis identifies optimal XAU/USD entry points with institutional-grade accuracy.",
-  },
-  {
-    icon: Shield,
-    title: "Risk Management",
-    description: "Every signal includes precise stop-loss and take-profit levels to protect your capital.",
-  },
-  {
-    icon: BarChart3,
-    title: "Real-Time Alerts",
-    description: "Instant Telegram notifications ensure you never miss a high-probability trading opportunity.",
-  },
-];
-
 const testimonials = [
   {
     quote: "The analysis quality is institutional-grade. Finally, signals I can trust with my capital.",
@@ -851,23 +833,44 @@ export default function SignalsLanding() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-20 md:py-28">
-        <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
-          What do we offer?
-        </h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          {features.map((feature, i) => (
-            <div key={i} className="flex gap-6">
-              <div className="signals-icon-box flex-shrink-0">
-                <feature.icon className="w-8 h-8 text-[#2bb32a]" />
-              </div>
-              <div>
-                <h3 className="text-xl md:text-2xl font-medium text-white mb-2">{feature.title}</h3>
-                <p className="text-[#adb2b1] leading-relaxed">{feature.description}</p>
-              </div>
-            </div>
-          ))}
+      {/* Features Section - Editorial Style */}
+      <section id="features" className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-20 md:py-28">
+        <div className="text-center space-y-6">
+          <p className="text-[#2bb32a] font-medium tracking-wide uppercase text-sm">Built for Serious Traders</p>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight max-w-3xl mx-auto">
+            Institutional-grade analysis.<br className="hidden sm:block" /> Delivered to your phone.
+          </h2>
+          <p className="text-[#adb2b1] text-lg max-w-2xl mx-auto">
+            No guesswork. No noise. Just precise XAU/USD signals backed by data-driven analysis and years of market expertise.
+          </p>
+        </div>
+        
+        {/* Feature Pills */}
+        <div className="flex flex-wrap justify-center gap-3 md:gap-4 mt-12">
+          <div className="feature-pill" data-testid="pill-precision-entries">
+            <Target className="w-4 h-4 text-[#2bb32a]" />
+            <span>Precision Entries</span>
+          </div>
+          <div className="feature-pill" data-testid="pill-risk-management">
+            <Shield className="w-4 h-4 text-[#2bb32a]" />
+            <span>Risk Management</span>
+          </div>
+          <div className="feature-pill" data-testid="pill-real-time-alerts">
+            <Zap className="w-4 h-4 text-[#2bb32a]" />
+            <span>Real-Time Alerts</span>
+          </div>
+          <div className="feature-pill" data-testid="pill-verified-results">
+            <TrendingUp className="w-4 h-4 text-[#2bb32a]" />
+            <span>Verified Results</span>
+          </div>
+          <div className="feature-pill" data-testid="pill-24-5-coverage">
+            <Clock className="w-4 h-4 text-[#2bb32a]" />
+            <span>24/5 Coverage</span>
+          </div>
+          <div className="feature-pill" data-testid="pill-expert-analysis">
+            <Users className="w-4 h-4 text-[#2bb32a]" />
+            <span>Expert Analysis</span>
+          </div>
         </div>
       </section>
 

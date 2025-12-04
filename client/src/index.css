@@ -1199,6 +1199,27 @@
     }
   }
 
+  /* Feature Pills */
+  .feature-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: rgba(43, 179, 42, 0.08);
+    border: 1px solid rgba(43, 179, 42, 0.2);
+    border-radius: 9999px;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .feature-pill:hover {
+    background: rgba(43, 179, 42, 0.15);
+    border-color: rgba(43, 179, 42, 0.4);
+    transform: translateY(-1px);
+  }
+
   /* Traveling orb animation */
   .animate-travel-orb {
     animation: travelOrb 2.5s ease-in-out infinite;
