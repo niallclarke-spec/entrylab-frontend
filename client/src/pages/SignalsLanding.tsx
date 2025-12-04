@@ -759,10 +759,15 @@ export default function SignalsLanding() {
               </div>
             </div>
 
-            {/* Blue line connector - HTML approach */}
+            {/* Blue line connector with traveling orb */}
             <div className="flex items-center justify-center">
-              <div className="w-full h-0.5 bg-gradient-to-r from-[#2bb32a]/50 via-[#229ED9] to-[#229ED9] shadow-[0_0_10px_#229ED9] relative">
-                <div className="absolute inset-0 bg-[#229ED9] animate-pulse opacity-50" />
+              <div className="w-full h-0.5 bg-gradient-to-r from-[#2bb32a]/30 via-[#229ED9]/60 to-[#229ED9]/80 relative overflow-visible">
+                {/* Static glow */}
+                <div className="absolute inset-0 shadow-[0_0_8px_#229ED9]" />
+                {/* Traveling orb */}
+                <div className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#229ED9] shadow-[0_0_12px_#229ED9,0_0_24px_#229ED9,0_0_36px_rgba(34,158,217,0.5)] animate-travel-orb" />
+                {/* Secondary trailing orb */}
+                <div className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#229ED9]/80 shadow-[0_0_8px_#229ED9,0_0_16px_rgba(34,158,217,0.4)] animate-travel-orb-delayed" />
               </div>
             </div>
 

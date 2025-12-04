@@ -1199,4 +1199,38 @@
     }
   }
 
+  /* Traveling orb animation */
+  .animate-travel-orb {
+    animation: travelOrb 2.5s ease-in-out infinite;
+  }
+
+  .animate-travel-orb-delayed {
+    animation: travelOrb 2.5s ease-in-out infinite;
+    animation-delay: 0.3s;
+  }
+
+  @keyframes travelOrb {
+    0% {
+      left: -8px;
+      opacity: 0;
+      transform: translateY(-50%) scale(0.5);
+    }
+    10% {
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+    }
+    50% {
+      transform: translateY(-50%) scale(1.2);
+    }
+    90% {
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+    }
+    100% {
+      left: calc(100% - 8px);
+      opacity: 0;
+      transform: translateY(-50%) scale(0.5);
+    }
+  }
+
 }
