@@ -1128,4 +1128,75 @@
     }
   }
 
+  /* Horizontal flow lines */
+  .flow-line-horizontal {
+    position: relative;
+    box-shadow: 0 0 8px rgba(43, 179, 42, 0.5);
+  }
+
+  .flow-line-horizontal::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: 0;
+    width: 20px;
+    height: 8px;
+    background: radial-gradient(ellipse at center, #2bb32a 0%, transparent 70%);
+    border-radius: 50%;
+    animation: flowDotHorizontal 2s ease-in-out infinite;
+  }
+
+  @keyframes flowDotHorizontal {
+    0% {
+      left: 0%;
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      left: 100%;
+      opacity: 0;
+    }
+  }
+
+  /* Blue flow line for Telegram */
+  .flow-line-blue {
+    background: linear-gradient(to right, rgba(34, 158, 217, 0.3), #229ED9, rgba(34, 158, 217, 0.6));
+    box-shadow: 0 0 12px rgba(34, 158, 217, 0.6);
+  }
+
+  .flow-line-blue::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: 0;
+    width: 20px;
+    height: 8px;
+    background: radial-gradient(ellipse at center, #229ED9 0%, transparent 70%);
+    border-radius: 50%;
+    animation: flowDotBlue 2s ease-in-out infinite;
+    animation-delay: 1s;
+  }
+
+  @keyframes flowDotBlue {
+    0% {
+      left: 0%;
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      left: 100%;
+      opacity: 0;
+    }
+  }
+
 }
