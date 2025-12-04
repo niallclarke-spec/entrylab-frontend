@@ -1199,25 +1199,18 @@
     }
   }
 
-  /* Feature Pills */
-  .feature-pill {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    background: rgba(43, 179, 42, 0.08);
-    border: 1px solid rgba(43, 179, 42, 0.2);
-    border-radius: 9999px;
-    color: #ffffff;
-    font-size: 0.875rem;
-    font-weight: 500;
+  /* Feature Cards */
+  .feature-card {
+    padding: 1.25rem;
+    background: rgba(26, 30, 28, 0.6);
+    border: 1px solid rgba(43, 179, 42, 0.15);
+    border-radius: 0.75rem;
     transition: all 0.2s ease;
   }
 
-  .feature-pill:hover {
-    background: rgba(43, 179, 42, 0.15);
-    border-color: rgba(43, 179, 42, 0.4);
-    transform: translateY(-1px);
+  .feature-card:hover {
+    background: rgba(26, 30, 28, 0.8);
+    border-color: rgba(43, 179, 42, 0.3);
   }
 
   /* Traveling orb animation */

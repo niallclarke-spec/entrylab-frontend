@@ -833,43 +833,97 @@ export default function SignalsLanding() {
         </div>
       </section>
 
-      {/* Features Section - Editorial Style */}
-      <section id="features" className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-20 md:py-28">
-        <div className="text-center space-y-6">
-          <p className="text-[#2bb32a] font-medium tracking-wide uppercase text-sm">Built for Serious Traders</p>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight max-w-3xl mx-auto">
-            Institutional-grade analysis.<br className="hidden sm:block" /> Delivered to your phone.
+      {/* Features Section - Proof Grid */}
+      <section id="features" className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-20 md:py-28">
+        {/* Section Header - Left Aligned */}
+        <div className="mb-12">
+          <p className="text-[#2bb32a] font-medium tracking-wide uppercase text-sm mb-3">Core Signal Advantages</p>
+          <h2 className="text-2xl md:text-3xl font-semibold text-white mb-4">
+            Why traders choose EntryLab signals
           </h2>
-          <p className="text-[#adb2b1] text-lg max-w-2xl mx-auto">
-            No guesswork. No noise. Just precise XAU/USD signals backed by data-driven analysis and years of market expertise.
+          <p className="text-[#adb2b1] max-w-xl">
+            Every signal is backed by quantifiable data, strict risk parameters, and verified track records.
           </p>
         </div>
         
-        {/* Feature Pills */}
-        <div className="flex flex-wrap justify-center gap-3 md:gap-4 mt-12">
-          <div className="feature-pill" data-testid="pill-precision-entries">
-            <Target className="w-4 h-4 text-[#2bb32a]" />
-            <span>Precision Entries</span>
+        {/* Features Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Feature Card 1 */}
+          <div className="feature-card" data-testid="card-precision-entries">
+            <div className="flex items-start gap-4">
+              <div className="p-2.5 rounded-lg bg-[#2bb32a]/10 border border-[#2bb32a]/20">
+                <Target className="w-5 h-5 text-[#2bb32a]" />
+              </div>
+              <div>
+                <h3 className="text-white font-medium mb-1">Precision Entries</h3>
+                <p className="text-[#adb2b1] text-sm leading-relaxed">Exact price levels with tight spreads. No vague "around this area" calls.</p>
+              </div>
+            </div>
           </div>
-          <div className="feature-pill" data-testid="pill-risk-management">
-            <Shield className="w-4 h-4 text-[#2bb32a]" />
-            <span>Risk Management</span>
+
+          {/* Feature Card 2 */}
+          <div className="feature-card" data-testid="card-risk-management">
+            <div className="flex items-start gap-4">
+              <div className="p-2.5 rounded-lg bg-[#2bb32a]/10 border border-[#2bb32a]/20">
+                <Shield className="w-5 h-5 text-[#2bb32a]" />
+              </div>
+              <div>
+                <h3 className="text-white font-medium mb-1">Defined Risk</h3>
+                <p className="text-[#adb2b1] text-sm leading-relaxed">Every signal includes SL/TP levels. 1:2 minimum risk-reward ratio.</p>
+              </div>
+            </div>
           </div>
-          <div className="feature-pill" data-testid="pill-real-time-alerts">
-            <Zap className="w-4 h-4 text-[#2bb32a]" />
-            <span>Real-Time Alerts</span>
+
+          {/* Feature Card 3 */}
+          <div className="feature-card" data-testid="card-real-time-alerts">
+            <div className="flex items-start gap-4">
+              <div className="p-2.5 rounded-lg bg-[#2bb32a]/10 border border-[#2bb32a]/20">
+                <Zap className="w-5 h-5 text-[#2bb32a]" />
+              </div>
+              <div>
+                <h3 className="text-white font-medium mb-1">Instant Delivery</h3>
+                <p className="text-[#adb2b1] text-sm leading-relaxed">Telegram push notifications. Execute within seconds of signal release.</p>
+              </div>
+            </div>
           </div>
-          <div className="feature-pill" data-testid="pill-verified-results">
-            <TrendingUp className="w-4 h-4 text-[#2bb32a]" />
-            <span>Verified Results</span>
+
+          {/* Feature Card 4 */}
+          <div className="feature-card" data-testid="card-verified-results">
+            <div className="flex items-start gap-4">
+              <div className="p-2.5 rounded-lg bg-[#2bb32a]/10 border border-[#2bb32a]/20">
+                <TrendingUp className="w-5 h-5 text-[#2bb32a]" />
+              </div>
+              <div>
+                <h3 className="text-white font-medium mb-1">Verified Track Record</h3>
+                <p className="text-[#adb2b1] text-sm leading-relaxed">Public performance history. No cherry-picked screenshots.</p>
+              </div>
+            </div>
           </div>
-          <div className="feature-pill" data-testid="pill-24-5-coverage">
-            <Clock className="w-4 h-4 text-[#2bb32a]" />
-            <span>24/5 Coverage</span>
+
+          {/* Feature Card 5 */}
+          <div className="feature-card" data-testid="card-market-coverage">
+            <div className="flex items-start gap-4">
+              <div className="p-2.5 rounded-lg bg-[#2bb32a]/10 border border-[#2bb32a]/20">
+                <Clock className="w-5 h-5 text-[#2bb32a]" />
+              </div>
+              <div>
+                <h3 className="text-white font-medium mb-1">24/5 Market Coverage</h3>
+                <p className="text-[#adb2b1] text-sm leading-relaxed">Active during all major sessions. London, NY, and Asian overlap.</p>
+              </div>
+            </div>
           </div>
-          <div className="feature-pill" data-testid="pill-expert-analysis">
-            <Users className="w-4 h-4 text-[#2bb32a]" />
-            <span>Expert Analysis</span>
+
+          {/* Feature Card 6 */}
+          <div className="feature-card" data-testid="card-expert-analysis">
+            <div className="flex items-start gap-4">
+              <div className="p-2.5 rounded-lg bg-[#2bb32a]/10 border border-[#2bb32a]/20">
+                <BarChart3 className="w-5 h-5 text-[#2bb32a]" />
+              </div>
+              <div>
+                <h3 className="text-white font-medium mb-1">Technical Rationale</h3>
+                <p className="text-[#adb2b1] text-sm leading-relaxed">Learn the "why" behind each trade. SMC, liquidity, structure analysis.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
