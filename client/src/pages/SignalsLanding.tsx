@@ -657,28 +657,8 @@ export default function SignalsLanding() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-8 md:py-32">
-        <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-16">
-          What do we offer?
-        </h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          {features.map((feature, i) => (
-            <div key={i} className="flex gap-6">
-              <div className="signals-icon-box flex-shrink-0">
-                <feature.icon className="w-8 h-8 text-[#2bb32a]" />
-              </div>
-              <div>
-                <h3 className="text-xl md:text-2xl font-medium text-white mb-2">{feature.title}</h3>
-                <p className="text-[#adb2b1] leading-relaxed">{feature.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* How It Works - Data Flow Section */}
-      <section className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-24 md:py-32 overflow-hidden">
+      <section className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-16 md:py-24 overflow-hidden">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             How It <span className="signals-gradient-text">Works</span>
@@ -837,6 +817,26 @@ export default function SignalsLanding() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-8 md:py-32">
+        <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-16">
+          What do we offer?
+        </h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          {features.map((feature, i) => (
+            <div key={i} className="flex gap-6">
+              <div className="signals-icon-box flex-shrink-0">
+                <feature.icon className="w-8 h-8 text-[#2bb32a]" />
+              </div>
+              <div>
+                <h3 className="text-xl md:text-2xl font-medium text-white mb-2">{feature.title}</h3>
+                <p className="text-[#adb2b1] leading-relaxed">{feature.description}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
