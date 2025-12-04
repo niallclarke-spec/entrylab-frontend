@@ -766,7 +766,7 @@ export default function SignalsLanding() {
                 </div>
                 <div>
                   <p className="text-white font-medium">Telegram</p>
-                  <p className="text-[#8b9a8c] text-xs">Signal Delivery</p>
+                  <p className="text-[#8b9a8c] text-xs">EntryLab VIP</p>
                 </div>
               </div>
             </div>
@@ -817,10 +817,11 @@ export default function SignalsLanding() {
             </div>
           </div>
 
-          {/* Flow Arrow Down */}
+          {/* Flow Arrow Down - Blue for Telegram */}
           <div className="flex justify-center py-2">
-            <div className="w-0.5 h-8 bg-gradient-to-b from-[#2bb32a] to-[#229ED9] relative">
-              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-6 border-l-transparent border-r-transparent border-t-[#229ED9]" />
+            <div className="relative">
+              <div className="w-1 h-10 bg-gradient-to-b from-[#229ED9]/60 to-[#229ED9] rounded-full shadow-[0_0_12px_rgba(34,158,217,0.6)]" />
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] border-l-transparent border-r-transparent border-t-[#229ED9]" style={{ filter: "drop-shadow(0 0 6px rgba(34, 158, 217, 0.8))" }} />
             </div>
           </div>
 
@@ -832,7 +833,7 @@ export default function SignalsLanding() {
               </div>
               <div>
                 <p className="text-white font-semibold">Telegram</p>
-                <p className="text-[#8b9a8c] text-xs">Signal Delivery</p>
+                <p className="text-[#8b9a8c] text-xs">EntryLab VIP</p>
               </div>
             </div>
           </div>
