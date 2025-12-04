@@ -708,7 +708,7 @@ export default function SignalsLanding() {
               <path d="M 18 50 L 40 50" stroke="url(#greenGradient)" strokeWidth="0.5" fill="none" className="animated-path" filter="url(#glowGreen)" style={{ animationDelay: "0.5s" }} />
               <path d="M 18 75 Q 32 75 40 50" stroke="url(#greenGradient)" strokeWidth="0.5" fill="none" className="animated-path" filter="url(#glowGreen)" style={{ animationDelay: "1s" }} />
               {/* Blue line from center to Telegram */}
-              <path d="M 60 50 L 82 50" stroke="url(#blueGradient)" strokeWidth="0.5" fill="none" className="animated-path" filter="url(#glowBlue)" style={{ animationDelay: "1.5s" }} />
+              <line x1="57" y1="50" x2="83" y2="50" stroke="#229ED9" strokeWidth="0.6" filter="url(#glowBlue)" className="animated-path" style={{ animationDelay: "1.5s" }} />
             </svg>
 
             {/* Left Column - Data Sources */}
