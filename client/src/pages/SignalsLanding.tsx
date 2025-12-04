@@ -718,7 +718,7 @@ export default function SignalsLanding() {
                   <SiX className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-white font-medium text-sm">X / Twitter</p>
+                  <p className="text-white font-medium text-sm">X / Twitter API</p>
                   <p className="text-[#8b9a8c] text-xs">Sentiment Data</p>
                 </div>
               </div>
@@ -792,7 +792,7 @@ export default function SignalsLanding() {
               <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center mb-2">
                 <SiX className="w-5 h-5 text-white" />
               </div>
-              <p className="text-white font-medium text-xs">X Data</p>
+              <p className="text-white font-medium text-xs">X API</p>
             </div>
             <div className="data-flow-card flex flex-col items-center text-center p-4">
               <div className="w-10 h-10 rounded-xl bg-[#2bb32a]/20 flex items-center justify-center mb-2">
