@@ -759,8 +759,12 @@ export default function SignalsLanding() {
               </div>
             </div>
 
-            {/* Spacer for grid */}
-            <div />
+            {/* Blue line connector - HTML approach */}
+            <div className="flex items-center justify-center">
+              <div className="w-full h-0.5 bg-gradient-to-r from-[#2bb32a]/50 via-[#229ED9] to-[#229ED9] shadow-[0_0_10px_#229ED9] relative">
+                <div className="absolute inset-0 bg-[#229ED9] animate-pulse opacity-50" />
+              </div>
+            </div>
 
             {/* Right - Telegram Output */}
             <div className="z-10">
