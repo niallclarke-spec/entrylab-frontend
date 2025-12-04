@@ -670,14 +670,35 @@ export default function SignalsLanding() {
 
         {/* Desktop Flow Diagram */}
         <div className="hidden lg:block relative">
-          <div className="relative flex items-center justify-between" style={{ minHeight: "320px" }}>
-            {/* Connecting lines - Green from sources to center */}
-            <div className="absolute left-[192px] top-[50%] w-[calc(50%-192px-68px)] h-0.5 bg-gradient-to-r from-[#2bb32a]/20 via-[#2bb32a] to-[#2bb32a]/40 flow-line-horizontal" />
-            
-            {/* Connecting line - Blue from center to Telegram */}
-            <div className="absolute right-[192px] top-[50%] w-[calc(50%-192px-68px)] h-0.5 flow-line-blue" />
+          <div className="relative grid grid-cols-[200px_1fr_144px_1fr_200px] items-center gap-4" style={{ minHeight: "280px" }}>
+            {/* SVG Connection Lines - Responsive */}
+            <svg 
+              className="absolute inset-0 w-full h-full pointer-events-none z-0" 
+              viewBox="0 0 100 100" 
+              preserveAspectRatio="none"
+            >
+              <defs>
+                <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="rgba(43, 179, 42, 0.2)" />
+                  <stop offset="50%" stopColor="rgba(43, 179, 42, 0.8)" />
+                  <stop offset="100%" stopColor="rgba(43, 179, 42, 0.4)" />
+                </linearGradient>
+                <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="rgba(43, 179, 42, 0.3)" />
+                  <stop offset="50%" stopColor="rgba(34, 158, 217, 0.9)" />
+                  <stop offset="100%" stopColor="rgba(34, 158, 217, 0.5)" />
+                </linearGradient>
+              </defs>
+              {/* Green lines from sources to center */}
+              <path d="M 20 25 Q 35 25 42 50" stroke="url(#greenGradient)" strokeWidth="0.4" fill="none" className="animated-path" style={{ animationDelay: "0s" }} />
+              <path d="M 20 50 L 42 50" stroke="url(#greenGradient)" strokeWidth="0.4" fill="none" className="animated-path" style={{ animationDelay: "0.5s" }} />
+              <path d="M 20 75 Q 35 75 42 50" stroke="url(#greenGradient)" strokeWidth="0.4" fill="none" className="animated-path" style={{ animationDelay: "1s" }} />
+              {/* Blue line from center to Telegram */}
+              <path d="M 58 50 L 80 50" stroke="url(#blueGradient)" strokeWidth="0.4" fill="none" className="animated-path" style={{ animationDelay: "1.5s" }} />
+            </svg>
+
             {/* Left Column - Data Sources */}
-            <div className="flex flex-col gap-6 w-48">
+            <div className="flex flex-col gap-5 z-10">
               <div className="data-flow-card flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center flex-shrink-0">
                   <SiX className="w-5 h-5 text-white" />
@@ -709,8 +730,11 @@ export default function SignalsLanding() {
               </div>
             </div>
 
+            {/* Spacer for grid */}
+            <div />
+
             {/* Center - Analysis Hub */}
-            <div className="relative">
+            <div className="relative flex justify-center z-10">
               <div className="absolute inset-0 bg-[#2bb32a]/20 rounded-full blur-3xl scale-150 glow-pulse" />
               <div className="data-flow-center w-36 h-36 flex flex-col items-center justify-center relative z-10">
                 <div className="w-12 h-12 rounded-full bg-[#2bb32a]/30 flex items-center justify-center mb-2">
@@ -721,8 +745,11 @@ export default function SignalsLanding() {
               </div>
             </div>
 
+            {/* Spacer for grid */}
+            <div />
+
             {/* Right - Telegram Output */}
-            <div className="w-48">
+            <div className="z-10">
               <div className="data-flow-card flex items-center gap-3 border-[#229ED9]/30 hover:border-[#229ED9]/60 hover:shadow-[0_0_30px_rgba(34,158,217,0.2)]">
                 <div className="w-12 h-12 rounded-xl bg-[#229ED9] flex items-center justify-center flex-shrink-0">
                   <SiTelegram className="w-6 h-6 text-white" />
