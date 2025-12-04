@@ -1002,4 +1002,130 @@
     animation-fill-mode: both;
   }
 
+  /* Data Flow Section Styles */
+  .data-flow-card {
+    background: rgba(39, 50, 47, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(43, 179, 42, 0.15);
+    border-radius: 16px;
+    padding: 20px 24px;
+    transition: all 0.3s ease;
+  }
+
+  .data-flow-card:hover {
+    border-color: rgba(43, 179, 42, 0.4);
+    box-shadow: 0 0 30px rgba(43, 179, 42, 0.15);
+  }
+
+  .data-flow-center {
+    background: radial-gradient(circle at center, rgba(43, 179, 42, 0.15) 0%, transparent 70%);
+    border: 2px solid rgba(43, 179, 42, 0.4);
+    border-radius: 50%;
+  }
+
+  /* Animated flowing line */
+  .flow-line {
+    position: absolute;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(43, 179, 42, 0.6), transparent);
+    overflow: hidden;
+  }
+
+  .flow-line::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, #2bb32a, rgba(43, 179, 42, 0.8), transparent);
+    animation: flowPulse 2s ease-in-out infinite;
+  }
+
+  .flow-line-reverse::after {
+    animation: flowPulseReverse 2s ease-in-out infinite;
+  }
+
+  @keyframes flowPulse {
+    0% {
+      left: -100%;
+    }
+    100% {
+      left: 100%;
+    }
+  }
+
+  @keyframes flowPulseReverse {
+    0% {
+      left: 100%;
+    }
+    100% {
+      left: -100%;
+    }
+  }
+
+  /* Glowing dot animation */
+  .flow-dot {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: #2bb32a;
+    border-radius: 50%;
+    box-shadow: 0 0 12px #2bb32a, 0 0 24px rgba(43, 179, 42, 0.5);
+    animation: flowDot 3s ease-in-out infinite;
+  }
+
+  @keyframes flowDot {
+    0%, 100% {
+      opacity: 0;
+      transform: translateX(0);
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(calc(100% + 50px));
+    }
+  }
+
+  /* SVG path animation */
+  .animated-path {
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: drawPath 3s ease-in-out infinite;
+  }
+
+  @keyframes drawPath {
+    0% {
+      stroke-dashoffset: 200;
+      opacity: 0.3;
+    }
+    50% {
+      stroke-dashoffset: 0;
+      opacity: 1;
+    }
+    100% {
+      stroke-dashoffset: -200;
+      opacity: 0.3;
+    }
+  }
+
+  .glow-pulse {
+    animation: glowPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes glowPulse {
+    0%, 100% {
+      filter: drop-shadow(0 0 8px rgba(43, 179, 42, 0.4));
+    }
+    50% {
+      filter: drop-shadow(0 0 20px rgba(43, 179, 42, 0.8));
+    }
+  }
+
 }

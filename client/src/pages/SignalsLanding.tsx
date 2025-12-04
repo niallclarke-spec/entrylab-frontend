@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { ArrowRight, TrendingUp, Shield, BarChart3, Target, Clock, Users, ChevronDown, ChevronUp, Mail, MessageCircle, Check, Zap, ChevronLeft, Pin, Bell, Star } from "lucide-react";
-import { SiTelegram } from "react-icons/si";
+import { SiTelegram, SiX } from "react-icons/si";
 import { Helmet } from "react-helmet-async";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -674,6 +674,168 @@ export default function SignalsLanding() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* How It Works - Data Flow Section */}
+      <section className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-24 md:py-32 overflow-hidden">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            How It <span className="signals-gradient-text">Works</span>
+          </h2>
+          <p className="text-[#adb2b1] text-lg max-w-2xl mx-auto">
+            Our signals are crafted through a comprehensive analysis pipeline, combining multiple data sources with expert human review
+          </p>
+        </div>
+
+        {/* Desktop Flow Diagram */}
+        <div className="hidden lg:block relative">
+          {/* SVG Connection Lines */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ minHeight: "320px" }}>
+            <defs>
+              <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="rgba(43, 179, 42, 0.1)" />
+                <stop offset="50%" stopColor="rgba(43, 179, 42, 0.8)" />
+                <stop offset="100%" stopColor="rgba(43, 179, 42, 0.1)" />
+              </linearGradient>
+              <linearGradient id="lineGradientBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="rgba(43, 179, 42, 0.1)" />
+                <stop offset="50%" stopColor="rgba(34, 158, 217, 0.8)" />
+                <stop offset="100%" stopColor="rgba(34, 158, 217, 0.3)" />
+              </linearGradient>
+            </defs>
+            {/* Lines from sources to center */}
+            <path d="M 200 80 Q 350 80 420 160" stroke="url(#lineGradient)" strokeWidth="2" fill="none" className="animated-path" style={{ animationDelay: "0s" }} />
+            <path d="M 200 160 L 420 160" stroke="url(#lineGradient)" strokeWidth="2" fill="none" className="animated-path" style={{ animationDelay: "0.5s" }} />
+            <path d="M 200 240 Q 350 240 420 160" stroke="url(#lineGradient)" strokeWidth="2" fill="none" className="animated-path" style={{ animationDelay: "1s" }} />
+            {/* Line from center to Telegram */}
+            <path d="M 580 160 L 800 160" stroke="url(#lineGradientBlue)" strokeWidth="2" fill="none" className="animated-path" style={{ animationDelay: "1.5s" }} />
+          </svg>
+
+          <div className="relative flex items-center justify-between" style={{ minHeight: "320px" }}>
+            {/* Left Column - Data Sources */}
+            <div className="flex flex-col gap-6 w-48">
+              <div className="data-flow-card flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center flex-shrink-0">
+                  <SiX className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-white font-medium text-sm">X / Twitter</p>
+                  <p className="text-[#8b9a8c] text-xs">Sentiment Data</p>
+                </div>
+              </div>
+              
+              <div className="data-flow-card flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#2bb32a]/20 flex items-center justify-center flex-shrink-0">
+                  <BarChart3 className="w-5 h-5 text-[#2bb32a]" />
+                </div>
+                <div>
+                  <p className="text-white font-medium text-sm">Market Data</p>
+                  <p className="text-[#8b9a8c] text-xs">Price Action</p>
+                </div>
+              </div>
+              
+              <div className="data-flow-card flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#f59e0b]/20 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-5 h-5 text-[#f59e0b]" />
+                </div>
+                <div>
+                  <p className="text-white font-medium text-sm">Fundamentals</p>
+                  <p className="text-[#8b9a8c] text-xs">Economic Data</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Center - Analysis Hub */}
+            <div className="relative">
+              <div className="absolute inset-0 bg-[#2bb32a]/20 rounded-full blur-3xl scale-150 glow-pulse" />
+              <div className="data-flow-center w-36 h-36 flex flex-col items-center justify-center relative z-10">
+                <div className="w-12 h-12 rounded-full bg-[#2bb32a]/30 flex items-center justify-center mb-2">
+                  <Users className="w-6 h-6 text-[#2bb32a]" />
+                </div>
+                <p className="text-white font-semibold text-sm">Analysis</p>
+                <p className="text-[#8b9a8c] text-xs">Team</p>
+              </div>
+            </div>
+
+            {/* Right - Telegram Output */}
+            <div className="w-48">
+              <div className="data-flow-card flex items-center gap-3 border-[#229ED9]/30 hover:border-[#229ED9]/60 hover:shadow-[0_0_30px_rgba(34,158,217,0.2)]">
+                <div className="w-12 h-12 rounded-xl bg-[#229ED9] flex items-center justify-center flex-shrink-0">
+                  <SiTelegram className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-white font-medium">Telegram</p>
+                  <p className="text-[#8b9a8c] text-xs">Signal Delivery</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Flow Diagram */}
+        <div className="lg:hidden space-y-4">
+          {/* Data Sources */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="data-flow-card flex flex-col items-center text-center p-4">
+              <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center mb-2">
+                <SiX className="w-5 h-5 text-white" />
+              </div>
+              <p className="text-white font-medium text-xs">X Data</p>
+            </div>
+            <div className="data-flow-card flex flex-col items-center text-center p-4">
+              <div className="w-10 h-10 rounded-xl bg-[#2bb32a]/20 flex items-center justify-center mb-2">
+                <BarChart3 className="w-5 h-5 text-[#2bb32a]" />
+              </div>
+              <p className="text-white font-medium text-xs">Markets</p>
+            </div>
+            <div className="data-flow-card flex flex-col items-center text-center p-4">
+              <div className="w-10 h-10 rounded-xl bg-[#f59e0b]/20 flex items-center justify-center mb-2">
+                <TrendingUp className="w-5 h-5 text-[#f59e0b]" />
+              </div>
+              <p className="text-white font-medium text-xs">Fundamentals</p>
+            </div>
+          </div>
+
+          {/* Flow Arrow Down */}
+          <div className="flex justify-center py-2">
+            <div className="w-0.5 h-8 bg-gradient-to-b from-[#2bb32a] to-[#2bb32a]/30 relative">
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-6 border-l-transparent border-r-transparent border-t-[#2bb32a]/30" />
+            </div>
+          </div>
+
+          {/* Analysis Hub */}
+          <div className="flex justify-center">
+            <div className="data-flow-card flex items-center gap-4 px-6">
+              <div className="w-12 h-12 rounded-full bg-[#2bb32a]/20 flex items-center justify-center">
+                <Users className="w-6 h-6 text-[#2bb32a]" />
+              </div>
+              <div>
+                <p className="text-white font-semibold">Analysis Team</p>
+                <p className="text-[#8b9a8c] text-xs">Expert Review</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Flow Arrow Down */}
+          <div className="flex justify-center py-2">
+            <div className="w-0.5 h-8 bg-gradient-to-b from-[#2bb32a] to-[#229ED9] relative">
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-6 border-l-transparent border-r-transparent border-t-[#229ED9]" />
+            </div>
+          </div>
+
+          {/* Telegram Output */}
+          <div className="flex justify-center">
+            <div className="data-flow-card flex items-center gap-4 px-6 border-[#229ED9]/30">
+              <div className="w-12 h-12 rounded-xl bg-[#229ED9] flex items-center justify-center">
+                <SiTelegram className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-white font-semibold">Telegram</p>
+                <p className="text-[#8b9a8c] text-xs">Signal Delivery</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
