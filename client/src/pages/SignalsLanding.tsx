@@ -512,7 +512,7 @@ export default function SignalsLanding() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-24 md:pt-20 md:pb-32">
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-16 pb-20 md:pt-24 md:pb-28">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
           <div className="space-y-8">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight">
@@ -658,8 +658,8 @@ export default function SignalsLanding() {
       </section>
 
       {/* How It Works - Data Flow Section */}
-      <section className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-16 md:py-24 overflow-hidden">
-        <div className="text-center mb-16">
+      <section className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-20 md:py-28 overflow-hidden">
+        <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             How It <span className="signals-gradient-text">Works</span>
           </h2>
@@ -852,8 +852,8 @@ export default function SignalsLanding() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-8 md:py-32">
-        <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-16">
+      <section id="features" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-20 md:py-28">
+        <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
           What do we offer?
         </h2>
         <div className="grid md:grid-cols-3 gap-8">
@@ -872,7 +872,7 @@ export default function SignalsLanding() {
       </section>
 
       {/* Signal Preview Section */}
-      <section id="signals" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-24 md:py-32">
+      <section id="signals" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-20 md:py-28">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div className="space-y-6 order-2 lg:order-1">
             <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight">
@@ -921,7 +921,7 @@ export default function SignalsLanding() {
       </section>
 
       {/* Mid-page CTA */}
-      <section className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-16">
+      <section className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-20 md:py-28">
         <div className="signals-glass-card-solid p-8 md:p-12 text-center">
           <div className="inline-flex items-center gap-2 bg-[#2bb32a]/20 px-4 py-2 rounded-full mb-6">
             <SiTelegram className="w-5 h-5 text-[#2bb32a]" />
@@ -939,8 +939,8 @@ export default function SignalsLanding() {
       </section>
 
       {/* Testimonials */}
-      <section id="testimonials" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-24 md:py-32">
-        <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-16">
+      <section id="testimonials" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-20 md:py-28">
+        <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
           What traders are saying
         </h2>
         <div className="grid md:grid-cols-3 gap-8">
@@ -967,8 +967,8 @@ export default function SignalsLanding() {
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-24 md:py-32">
-        <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-16">
+      <section id="faq" className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-20 md:py-28">
+        <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
           Frequently Asked Questions
         </h2>
         <div className="space-y-2">
@@ -985,7 +985,7 @@ export default function SignalsLanding() {
       </section>
 
       {/* Footer CTA */}
-      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-24 md:py-32">
+      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-20 md:py-28">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight">
