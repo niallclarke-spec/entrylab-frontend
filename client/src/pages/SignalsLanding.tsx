@@ -512,10 +512,10 @@ export default function SignalsLanding() {
             <div className="flex items-center gap-4 pt-4">
               <div className="flex -space-x-3">
                 {[
-                  { initial: 'M', bg: 'bg-[#229ED9]' },
+                  { initial: 'M', bg: 'bg-[#2bb32a]' },
                   { initial: 'S', bg: 'bg-[#229ED9]' },
-                  { initial: 'D', bg: 'bg-[#229ED9]' },
-                  { initial: 'J', bg: 'bg-[#229ED9]' },
+                  { initial: 'D', bg: 'bg-[#f59e0b]' },
+                  { initial: 'J', bg: 'bg-[#ec4899]' },
                 ].map((avatar, i) => (
                   <div key={i} className={`w-10 h-10 rounded-full ${avatar.bg} border-2 border-[#1a1e1c] flex items-center justify-center`}>
                     <span className="text-sm font-medium text-white">{avatar.initial}</span>
