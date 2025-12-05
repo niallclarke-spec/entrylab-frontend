@@ -590,7 +590,7 @@ export default function SignalsLanding() {
             </div>
             
             {/* Win rate badge - bottom left */}
-            <div className="absolute -bottom-4 left-0 xl:left-[7px] hidden xl:flex items-center gap-3 px-4 py-3 rounded-xl bg-[#1a2420]/80 backdrop-blur-sm border border-[#2bb32a]/30">
+            <div className="absolute -bottom-4 left-0 xl:-left-[3px] hidden xl:flex items-center gap-3 px-4 py-3 rounded-xl bg-[#1a2420]/80 backdrop-blur-sm border border-[#2bb32a]/30">
               <div className="w-10 h-10 rounded-full bg-[#2bb32a]/20 flex items-center justify-center">
                 <BarChart3 className="w-5 h-5 text-[#2bb32a]" />
               </div>
