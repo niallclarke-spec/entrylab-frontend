@@ -386,7 +386,7 @@ function FloatingNotification({ notification, index }: { notification: typeof fl
     { top: "15%", right: "-80px" },
     { top: "40%", left: "-90px" },
     { top: "65%", right: "-75px" },
-    { top: "85%", left: "-85px" },
+    { top: "calc(85% - 15px)", left: "-85px" },
   ];
   
   const pos = positions[index % positions.length];
