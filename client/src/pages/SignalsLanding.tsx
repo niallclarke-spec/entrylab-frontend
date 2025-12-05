@@ -198,7 +198,7 @@ function TradeDistribution() {
           </div>
         </div>
       </div>
-      <p className="text-[#6b7280] text-sm mt-6">Based on a model Gold portfolio following every signal with 1% risk.</p>
+      <p className="text-sm mt-6 text-[#858ea1]">Based on a XAU/USD Portfolio following every signal with 1% risk.</p>
     </div>
   );
 }
@@ -511,13 +511,10 @@ export default function SignalsLanding() {
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://entrylab.io/signals" />
       </Helmet>
-
       {/* Background Orbs */}
       <div className="signals-bg-orb signals-bg-orb-1" />
       <div className="signals-bg-orb signals-bg-orb-2" />
       <div className="signals-bg-orb signals-bg-orb-3" />
-
-
       {/* Navbar */}
       <nav className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex items-center justify-between">
@@ -538,7 +535,6 @@ export default function SignalsLanding() {
           </Link>
         </div>
       </nav>
-
       {/* Hero Section */}
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-16 pb-20 md:pt-24 md:pb-28">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
@@ -670,7 +666,6 @@ export default function SignalsLanding() {
           </div>
         </div>
       </section>
-
       {/* Stats Bar - hidden on mobile since it's in the phone overlay */}
       <section className="relative z-10 max-w-6xl mx-auto px-3 sm:px-6 -mt-8 hidden lg:block">
         <div className="signals-stats-bar">
@@ -684,7 +679,6 @@ export default function SignalsLanding() {
           </div>
         </div>
       </section>
-
       {/* How It Works - Data Flow Section */}
       <section className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-20 md:py-28 overflow-hidden">
         <div className="text-center mb-12">
@@ -878,7 +872,6 @@ export default function SignalsLanding() {
           </div>
         </div>
       </section>
-
       {/* Features Section - Proof Grid */}
       <section id="features" className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-20 md:py-28">
         {/* Section Header - Left Aligned */}
@@ -973,7 +966,6 @@ export default function SignalsLanding() {
           </div>
         </div>
       </section>
-
       {/* Signal Preview Section */}
       <section id="signals" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-20 md:py-28">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -1023,7 +1015,6 @@ export default function SignalsLanding() {
           </div>
         </div>
       </section>
-
       {/* Mid-page CTA */}
       <section className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-20 md:py-28">
         <div className="signals-glass-card-solid p-8 md:p-12 text-center">
@@ -1041,7 +1032,6 @@ export default function SignalsLanding() {
           <EmailCaptureForm testIdSuffix="mid" buttonText="Join Free" centered />
         </div>
       </section>
-
       {/* Testimonials */}
       <section id="testimonials" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-20 md:py-28">
         <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
@@ -1069,7 +1059,6 @@ export default function SignalsLanding() {
           ))}
         </div>
       </section>
-
       {/* FAQ Section */}
       <section id="faq" className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-20 md:py-28">
         <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
@@ -1087,7 +1076,6 @@ export default function SignalsLanding() {
           ))}
         </div>
       </section>
-
       {/* Footer CTA */}
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-20 md:py-28">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -1144,7 +1132,6 @@ export default function SignalsLanding() {
           </div>
         </div>
       </section>
-
       {/* Risk Disclaimer Footer */}
       <footer className="relative z-10 border-t border-[#3d544d]/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
