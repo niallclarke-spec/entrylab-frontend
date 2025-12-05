@@ -161,44 +161,44 @@ function EmailCaptureForm({
 function TradeDistribution() {
   const winRate = 82.03;
   const loseRate = 17.97;
-  const circumference = 2 * Math.PI * 40;
+  const circumference = 2 * Math.PI * 45;
   const winOffset = circumference * (1 - winRate / 100);
   
   return (
-    <div className="trade-distribution-card" data-testid="trade-distribution">
-      <h4 className="text-white font-medium mb-4">Trade distribution (last 90 days)</h4>
-      <div className="flex items-center gap-6">
-        <div className="relative w-24 h-24 flex-shrink-0">
+    <div className="trade-distribution-card-lg" data-testid="trade-distribution">
+      <h4 className="text-white font-semibold text-lg mb-6">Trade distribution (last 90 days)</h4>
+      <div className="flex items-center gap-8">
+        <div className="relative w-32 h-32 flex-shrink-0">
           <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="40" fill="none" stroke="#3d3d3d" strokeWidth="8" />
+            <circle cx="50" cy="50" r="45" fill="none" stroke="#3d3d3d" strokeWidth="6" />
             <circle 
-              cx="50" cy="50" r="40" 
+              cx="50" cy="50" r="45" 
               fill="none" 
               stroke="#c9a227" 
-              strokeWidth="8"
+              strokeWidth="6"
               strokeDasharray={circumference}
               strokeDashoffset={winOffset}
               strokeLinecap="round"
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-[#c9a227] font-bold text-sm">{winRate}%</span>
+            <span className="text-[#c9a227] font-bold text-lg">{winRate}%</span>
           </div>
         </div>
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#2bb32a]" />
-            <span className="text-[#adb2b1] text-sm">Winning trades</span>
-            <span className="text-white font-medium text-sm ml-auto">{winRate}%</span>
+        <div className="space-y-4 flex-1">
+          <div className="flex items-center gap-4">
+            <span className="w-3 h-3 rounded-full bg-[#2bb32a]" />
+            <span className="text-[#adb2b1]">Winning trades</span>
+            <span className="text-white font-semibold ml-auto">{winRate}%</span>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-            <span className="text-[#adb2b1] text-sm">Losing trades</span>
-            <span className="text-white font-medium text-sm ml-auto">{loseRate}%</span>
+          <div className="flex items-center gap-4">
+            <span className="w-3 h-3 rounded-full bg-red-500" />
+            <span className="text-[#adb2b1]">Losing trades</span>
+            <span className="text-white font-semibold ml-auto">{loseRate}%</span>
           </div>
         </div>
       </div>
-      <p className="text-[#6b7280] text-xs mt-4">Based on a model Gold portfolio following every signal with 1% risk.</p>
+      <p className="text-[#6b7280] text-sm mt-6">Based on a model Gold portfolio following every signal with 1% risk.</p>
     </div>
   );
 }
@@ -975,22 +975,52 @@ export default function SignalsLanding() {
       </section>
 
       {/* Signal Preview Section */}
-      <section id="signals" className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-20 md:py-28">
-        <div className="text-center mb-12">
-          <p className="text-[#2bb32a] font-medium tracking-wide uppercase text-sm mb-3">Live Performance</p>
-          <h2 className="text-2xl md:text-3xl font-semibold text-white">
-            Recent XAU/USD signals
-          </h2>
-        </div>
-        
-        <div className="space-y-4 max-w-xl mx-auto">
-          {sampleSignals.map((signal, i) => (
-            <SignalCard key={i} signal={signal} index={i} />
-          ))}
-        </div>
-        
-        <div className="mt-8 max-w-xl mx-auto">
-          <TradeDistribution />
+      <section id="signals" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-20 md:py-28">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Left Column - Text */}
+          <div className="space-y-6 order-2 lg:order-1">
+            <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight">
+              See Our Signals in Action
+            </h2>
+            <p className="text-[#adb2b1] text-lg leading-relaxed">
+              Every signal includes precise entry, stop-loss, and take-profit levels. 
+              Our methodology combines technical analysis with market structure 
+              to identify high-probability XAU/USD opportunities.
+            </p>
+            <div className="space-y-4 pt-4">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full bg-[#2bb32a]/20 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-[#2bb32a]" />
+                </div>
+                <span className="text-white">Real-time Telegram delivery</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full bg-[#2bb32a]/20 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-[#2bb32a]" />
+                </div>
+                <span className="text-white">Clear risk/reward ratios</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full bg-[#2bb32a]/20 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-[#2bb32a]" />
+                </div>
+                <span className="text-white">Verified 82% win rate</span>
+              </div>
+            </div>
+            <div className="pt-4">
+              <Link href="/subscribe">
+                <button className="signals-btn-primary" data-testid="button-view-pricing">
+                  View Premium Plans
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </Link>
+            </div>
+          </div>
+          
+          {/* Right Column - Trade Distribution Widget */}
+          <div className="order-1 lg:order-2">
+            <TradeDistribution />
+          </div>
         </div>
       </section>
 
