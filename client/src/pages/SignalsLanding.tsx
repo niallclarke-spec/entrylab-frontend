@@ -877,7 +877,7 @@ export default function SignalsLanding() {
         {/* Section Header - Left Aligned */}
         <div className="mb-12">
           <p className="text-[#2bb32a] font-medium tracking-wide uppercase text-sm mb-3">Core Signal Advantages</p>
-          <h2 className="text-2xl md:text-3xl font-semibold text-white mb-4">
+          <h2 className="md:text-3xl font-semibold text-white mb-4 text-[36px]">
             Why traders choose EntryLab signals
           </h2>
           <p className="text-[#adb2b1] max-w-xl">
