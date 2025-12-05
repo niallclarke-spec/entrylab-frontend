@@ -574,11 +574,15 @@ export default function Subscribe() {
             </div>
             <span className="text-xl font-bold text-white tracking-tight">EntryLab</span>
           </div>
+          <div className="flex items-center justify-center gap-6 text-sm text-[#adb2b1] mb-4">
+            <Link href="/terms" className="hover:text-white transition-colors" data-testid="link-terms">Terms & Conditions</Link>
+            <a href="mailto:support@entrylab.io" className="hover:text-white transition-colors" data-testid="link-contact">Contact</a>
+          </div>
           <p className="text-[#8b9a8c] text-sm">
             Professional XAU/USD Trading Signals • Trusted by 4,800+ traders worldwide
           </p>
           <p className="text-[#5c6e60] text-xs mt-4">
-            © 2024 EntryLab. All rights reserved. Trading involves risk.
+            © {new Date().getFullYear()} EntryLab. All rights reserved. Trading involves risk.
           </p>
         </div>
       </footer>
