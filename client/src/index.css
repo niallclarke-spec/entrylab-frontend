@@ -1213,6 +1213,28 @@
     border-color: rgba(43, 179, 42, 0.3);
   }
 
+  /* New Signal Cards */
+  .signal-card-new {
+    padding: 1.25rem 1.5rem;
+    background: rgba(26, 30, 28, 0.8);
+    border: 1px solid rgba(43, 179, 42, 0.15);
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+  }
+
+  .signal-card-active {
+    border-color: rgba(43, 179, 42, 0.5);
+    box-shadow: 0 0 20px rgba(43, 179, 42, 0.15), inset 0 0 20px rgba(43, 179, 42, 0.05);
+  }
+
+  /* Trade Distribution Card */
+  .trade-distribution-card {
+    padding: 1.25rem 1.5rem;
+    background: rgba(26, 30, 28, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.75rem;
+  }
+
   /* Traveling orb animation */
   .animate-travel-orb {
     animation: travelOrb 2.5s ease-in-out infinite;

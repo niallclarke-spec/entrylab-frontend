@@ -158,43 +158,89 @@ function EmailCaptureForm({
   );
 }
 
+function TradeDistribution() {
+  const winRate = 82.03;
+  const loseRate = 17.97;
+  const circumference = 2 * Math.PI * 40;
+  const winOffset = circumference * (1 - winRate / 100);
+  
+  return (
+    <div className="trade-distribution-card" data-testid="trade-distribution">
+      <h4 className="text-white font-medium mb-4">Trade distribution (last 90 days)</h4>
+      <div className="flex items-center gap-6">
+        <div className="relative w-24 h-24 flex-shrink-0">
+          <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#3d3d3d" strokeWidth="8" />
+            <circle 
+              cx="50" cy="50" r="40" 
+              fill="none" 
+              stroke="#c9a227" 
+              strokeWidth="8"
+              strokeDasharray={circumference}
+              strokeDashoffset={winOffset}
+              strokeLinecap="round"
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-[#c9a227] font-bold text-sm">{winRate}%</span>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#2bb32a]" />
+            <span className="text-[#adb2b1] text-sm">Winning trades</span>
+            <span className="text-white font-medium text-sm ml-auto">{winRate}%</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+            <span className="text-[#adb2b1] text-sm">Losing trades</span>
+            <span className="text-white font-medium text-sm ml-auto">{loseRate}%</span>
+          </div>
+        </div>
+      </div>
+      <p className="text-[#6b7280] text-xs mt-4">Based on a model Gold portfolio following every signal with 1% risk.</p>
+    </div>
+  );
+}
+
 function SignalCard({ signal, index }: { signal: typeof sampleSignals[0]; index: number }) {
   const isActive = signal.status === "Active";
   return (
     <div 
-      className={`signals-signal-card p-4 md:p-6 ${isActive ? 'animate-pulse-glow' : ''}`}
-      style={{ animationDelay: `${index * 0.2}s` }}
+      className={`signal-card-new ${isActive ? 'signal-card-active' : ''}`}
+      style={{ animationDelay: `${index * 0.1}s` }}
+      data-testid={`signal-card-${index}`}
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-3">
           <span className="text-lg font-bold text-white">{signal.pair}</span>
-          <span className={`px-2 py-1 rounded text-xs font-bold ${signal.direction === 'BUY' ? 'bg-[#2bb32a]/20 text-[#2bb32a]' : 'bg-red-500/20 text-red-400'}`}>
+          <span className={`px-2.5 py-1 rounded text-xs font-bold ${signal.direction === 'BUY' ? 'bg-[#2bb32a] text-white' : 'bg-red-500 text-white'}`}>
             {signal.direction}
           </span>
         </div>
-        <span className={`text-sm font-medium ${isActive ? 'text-[#2bb32a]' : 'text-[#adb2b1]'}`}>
-          {isActive && <span className="inline-block w-2 h-2 bg-[#2bb32a] rounded-full mr-2 animate-pulse" />}
+        <span className={`text-sm font-medium flex items-center gap-2 ${isActive ? 'text-[#2bb32a]' : 'text-[#adb2b1]'}`}>
+          {isActive && <span className="w-2 h-2 bg-[#2bb32a] rounded-full animate-pulse" />}
           {signal.status}
         </span>
       </div>
-      <div className="grid grid-cols-3 gap-4 text-sm mb-4">
+      <div className="grid grid-cols-3 gap-4 text-sm mb-5">
         <div>
-          <p className="text-[#adb2b1] mb-1">Entry</p>
-          <p className="text-white font-mono">{signal.entry}</p>
+          <p className="text-[#6b7280] text-xs mb-1">Entry</p>
+          <p className="text-white font-mono font-medium">{signal.entry}</p>
         </div>
         <div>
-          <p className="text-[#adb2b1] mb-1">Stop Loss</p>
-          <p className="text-red-400 font-mono">{signal.sl}</p>
+          <p className="text-[#6b7280] text-xs mb-1">Stop Loss</p>
+          <p className="text-red-400 font-mono font-medium">{signal.sl}</p>
         </div>
         <div>
-          <p className="text-[#adb2b1] mb-1">Take Profit</p>
-          <p className="text-[#2bb32a] font-mono">{signal.tp}</p>
+          <p className="text-[#6b7280] text-xs mb-1">Take Profit</p>
+          <p className="text-[#2bb32a] font-mono font-medium">{signal.tp}</p>
         </div>
       </div>
       {!isActive && (
-        <div className="pt-4 border-t border-[#3d544d]">
-          <p className="text-[#adb2b1] text-sm">Result</p>
-          <p className="text-[#2bb32a] text-xl font-bold">{signal.profit}</p>
+        <div className="pt-4 border-t border-[#2a2e2c]">
+          <p className="text-[#6b7280] text-xs mb-1">Result</p>
+          <p className="text-[#2bb32a] font-mono font-bold text-lg">{signal.profit}</p>
         </div>
       )}
     </div>
@@ -929,51 +975,22 @@ export default function SignalsLanding() {
       </section>
 
       {/* Signal Preview Section */}
-      <section id="signals" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-20 md:py-28">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <div className="space-y-6 order-2 lg:order-1">
-            <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight">
-              See Our Signals in Action
-            </h2>
-            <p className="text-[#adb2b1] text-lg leading-relaxed">
-              Every signal includes precise entry, stop-loss, and take-profit levels. 
-              Our methodology combines technical analysis with AI-powered market sentiment 
-              to identify high-probability XAU/USD opportunities.
-            </p>
-            <div className="space-y-4 pt-4">
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-[#2bb32a]/20 flex items-center justify-center">
-                  <Check className="w-4 h-4 text-[#2bb32a]" />
-                </div>
-                <span className="text-white">Real-time Telegram delivery</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-[#2bb32a]/20 flex items-center justify-center">
-                  <Check className="w-4 h-4 text-[#2bb32a]" />
-                </div>
-                <span className="text-white">Clear risk/reward ratios</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-[#2bb32a]/20 flex items-center justify-center">
-                  <Check className="w-4 h-4 text-[#2bb32a]" />
-                </div>
-                <span className="text-white">Verified {accuracy}% win rate</span>
-              </div>
-            </div>
-            <div className="pt-4">
-              <Link href="/subscribe">
-                <button className="signals-btn-primary" data-testid="button-view-pricing">
-                  View Premium Plans
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-              </Link>
-            </div>
-          </div>
-          <div className="space-y-4 order-1 lg:order-2">
-            {sampleSignals.map((signal, i) => (
-              <SignalCard key={i} signal={signal} index={i} />
-            ))}
-          </div>
+      <section id="signals" className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-20 md:py-28">
+        <div className="text-center mb-12">
+          <p className="text-[#2bb32a] font-medium tracking-wide uppercase text-sm mb-3">Live Performance</p>
+          <h2 className="text-2xl md:text-3xl font-semibold text-white">
+            Recent XAU/USD signals
+          </h2>
+        </div>
+        
+        <div className="space-y-4 max-w-xl mx-auto">
+          {sampleSignals.map((signal, i) => (
+            <SignalCard key={i} signal={signal} index={i} />
+          ))}
+        </div>
+        
+        <div className="mt-8 max-w-xl mx-auto">
+          <TradeDistribution />
         </div>
       </section>
 
