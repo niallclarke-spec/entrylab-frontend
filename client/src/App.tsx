@@ -9,6 +9,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { autoPrefetchRoutes } from "@/lib/prefetch";
+import { CookieConsent } from "@/components/CookieConsent";
 
 const Home = lazy(() => import("@/pages/Home"));
 const Article = lazy(() => import("@/pages/Article"));
@@ -156,6 +157,7 @@ function App() {
             <TooltipProvider>
               <Toaster />
               <Router />
+              <CookieConsent />
             </TooltipProvider>
           </ThemeProvider>
         </HelmetProvider>
