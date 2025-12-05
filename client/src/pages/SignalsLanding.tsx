@@ -41,7 +41,7 @@ const faqs = [
   },
   {
     question: "How are signals delivered?",
-    answer: "All signals are delivered instantly via Telegram with clear entry price, stop-loss, and take-profit levels. Premium members receive real-time alerts as opportunities arise.",
+    answer: "All signals are delivered instantly to our VIP Telegram channel ( EntryLab VIP ) with clear entry price, stop-loss, and take-profit levels.",
   },
   {
     question: "What's your verified win rate?",
