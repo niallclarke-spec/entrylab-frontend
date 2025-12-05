@@ -37,7 +37,7 @@ const testimonials = [
 const faqs = [
   {
     question: "What is included in the free Telegram channel?",
-    answer: "Our free channel gives you access to market analysis, educational content, and occasional trade ideas. You'll see the quality of our methodology before committing to premium signals.",
+    answer: "Our free channel gives you full visibility of our VIP Channels win rate and weekly recaps",
   },
   {
     question: "How are signals delivered?",
