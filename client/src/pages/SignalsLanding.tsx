@@ -969,8 +969,13 @@ export default function SignalsLanding() {
       {/* Signal Preview Section */}
       <section id="signals" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-20 md:py-28">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Left Column - Text */}
-          <div className="space-y-6 order-2 lg:order-1">
+          {/* Left Column - Trade Distribution Widget */}
+          <div className="order-1 lg:order-1">
+            <TradeDistribution />
+          </div>
+          
+          {/* Right Column - Text */}
+          <div className="space-y-6 order-2 lg:order-2">
             <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight">
               See Our Signals in Action
             </h2>
@@ -1007,11 +1012,6 @@ export default function SignalsLanding() {
                 </button>
               </Link>
             </div>
-          </div>
-          
-          {/* Right Column - Trade Distribution Widget */}
-          <div className="order-1 lg:order-2">
-            <TradeDistribution />
           </div>
         </div>
       </section>
