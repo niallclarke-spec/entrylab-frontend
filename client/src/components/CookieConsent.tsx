@@ -13,6 +13,38 @@ interface ConsentData {
   expiry: number;
 }
 
+declare global {
+  interface Window {
+    dataLayer: any[];
+  }
+}
+
+function gtag(...args: any[]) {
+  if (typeof window !== 'undefined') {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(arguments);
+  }
+}
+
+function updateGoogleConsent(granted: boolean): void {
+  const consentState = granted ? 'granted' : 'denied';
+  
+  gtag('consent', 'update', {
+    'ad_storage': consentState,
+    'ad_user_data': consentState,
+    'ad_personalization': consentState,
+    'analytics_storage': consentState,
+    'personalization_storage': consentState,
+  });
+  
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    window.dataLayer.push({
+      event: 'consent_update',
+      consent_status: granted ? 'accepted' : 'rejected',
+    });
+  }
+}
+
 function getStoredConsent(): ConsentData | null {
   try {
     const stored = localStorage.getItem(COOKIE_CONSENT_KEY);
@@ -57,12 +89,14 @@ export function CookieConsent() {
 
   const handleAccept = () => {
     setStoredConsent('accepted');
+    updateGoogleConsent(true);
     setIsAnimating(false);
     setTimeout(() => setIsVisible(false), 300);
   };
 
   const handleReject = () => {
     setStoredConsent('rejected');
+    updateGoogleConsent(false);
     setIsAnimating(false);
     setTimeout(() => setIsVisible(false), 300);
   };

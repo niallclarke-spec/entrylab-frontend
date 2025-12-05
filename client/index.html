@@ -183,6 +183,48 @@
     </script>
     
     
+    <!-- Google Consent Mode v2 - Must load BEFORE GTM -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      
+      // Check for existing consent in localStorage
+      var storedConsent = null;
+      try {
+        var stored = localStorage.getItem('entrylab_cookie_consent');
+        if (stored) {
+          var parsed = JSON.parse(stored);
+          if (parsed.expiry && Date.now() < parsed.expiry) {
+            storedConsent = parsed.status;
+          }
+        }
+      } catch(e) {}
+      
+      // Set default consent state based on stored preference
+      if (storedConsent === 'accepted') {
+        gtag('consent', 'default', {
+          'ad_storage': 'granted',
+          'ad_user_data': 'granted',
+          'ad_personalization': 'granted',
+          'analytics_storage': 'granted',
+          'functionality_storage': 'granted',
+          'personalization_storage': 'granted',
+          'security_storage': 'granted'
+        });
+      } else {
+        // Default to denied until user consents
+        gtag('consent', 'default', {
+          'ad_storage': 'denied',
+          'ad_user_data': 'denied',
+          'ad_personalization': 'denied',
+          'analytics_storage': 'denied',
+          'functionality_storage': 'granted',
+          'personalization_storage': 'denied',
+          'security_storage': 'granted'
+        });
+      }
+    </script>
+    
     <!-- Defer Google Tag Manager to not block rendering -->
     <script>
       (function() {
@@ -191,7 +233,6 @@
         gtmScript.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-KPCJDF2M';
         var firstScript = document.getElementsByTagName('script')[0];
         firstScript.parentNode.insertBefore(gtmScript, firstScript);
-        window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
       })();
     </script>
