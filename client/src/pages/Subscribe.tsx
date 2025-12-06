@@ -247,9 +247,9 @@ export default function Subscribe() {
       {/* Hero Section */}
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-16 md:pt-16 md:pb-24">
         <div className="text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#d4a012]/20 via-[#f5c842]/20 to-[#d4a012]/20 border border-[#d4a012]/40 shadow-lg shadow-[#d4a012]/10">
-            <Sparkles className="w-4 h-4 text-[#f5c842]" />
-            <span className="bg-gradient-to-r from-[#d4a012] via-[#f5c842] to-[#d4a012] bg-clip-text text-transparent text-sm font-semibold tracking-wide">VIP Premium Signals</span>
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#b8860b]/25 via-[#ffd700]/30 to-[#b8860b]/25 border border-[#ffd700]/50 shadow-[0_0_20px_rgba(255,215,0,0.3)]">
+            <Sparkles className="w-4 h-4 text-[#ffd700] drop-shadow-[0_0_4px_rgba(255,215,0,0.8)]" />
+            <span className="bg-gradient-to-r from-[#c9a227] via-[#ffd700] to-[#c9a227] bg-clip-text text-transparent text-sm font-bold tracking-wide drop-shadow-[0_0_8px_rgba(255,215,0,0.5)]">VIP Premium Signals</span>
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight" data-testid="text-hero-title">
