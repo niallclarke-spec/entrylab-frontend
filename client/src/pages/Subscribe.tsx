@@ -247,9 +247,9 @@ export default function Subscribe() {
       {/* Hero Section */}
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-16 md:pt-16 md:pb-24">
         <div className="text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2bb32a]/10 border border-[#2bb32a]/30">
-            <Sparkles className="w-4 h-4 text-[#2bb32a]" />
-            <span className="text-[#2bb32a] text-sm font-medium">VIP Premium Signals</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#d4a012]/20 via-[#f5c842]/20 to-[#d4a012]/20 border border-[#d4a012]/40 shadow-lg shadow-[#d4a012]/10">
+            <Sparkles className="w-4 h-4 text-[#f5c842]" />
+            <span className="bg-gradient-to-r from-[#d4a012] via-[#f5c842] to-[#d4a012] bg-clip-text text-transparent text-sm font-semibold tracking-wide">VIP Premium Signals</span>
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight" data-testid="text-hero-title">
