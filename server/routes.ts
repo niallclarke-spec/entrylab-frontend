@@ -1666,7 +1666,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create Stripe checkout session
   app.post('/api/create-checkout-session', async (req, res) => {
     try {
-      const { email, priceId } = req.body;
+      const { email, priceId, utm_source, utm_medium, utm_campaign, utm_content, utm_term } = req.body;
 
       if (!email || !priceId) {
         return res.status(400).json({ error: 'Email and price ID required' });
@@ -1739,6 +1739,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           userId: user.id,
           email,
           planType: isOneTime ? 'lifetime' : 'subscription',
+          ...(utm_source && { utm_source }),
+          ...(utm_medium && { utm_medium }),
+          ...(utm_campaign && { utm_campaign }),
+          ...(utm_content && { utm_content }),
+          ...(utm_term && { utm_term }),
         },
         allow_promotion_codes: true,
         billing_address_collection: 'auto',

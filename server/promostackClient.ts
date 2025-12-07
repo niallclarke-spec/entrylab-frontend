@@ -16,6 +16,11 @@ interface GrantAccessParams {
   amountPaid?: number;
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+  utmTerm?: string;
 }
 
 interface FreeUserParams {
@@ -40,7 +45,7 @@ export class PromostackClient {
   }
 
   async grantAccess(params: GrantAccessParams): Promise<string | null> {
-    const { email, name, planType, amountPaid, stripeCustomerId, stripeSubscriptionId } = params;
+    const { email, name, planType, amountPaid, stripeCustomerId, stripeSubscriptionId, utmSource, utmMedium, utmCampaign, utmContent, utmTerm } = params;
     
     try {
       const response = await fetch(`${this.baseUrl}/api/telegram/grant-access`, {
@@ -55,7 +60,12 @@ export class PromostackClient {
           planType: planType || 'EntryLab VIP Signals',
           amountPaid: amountPaid || 49,
           stripeCustomerId: stripeCustomerId,
-          stripeSubscriptionId: stripeSubscriptionId
+          stripeSubscriptionId: stripeSubscriptionId,
+          utmSource: utmSource || null,
+          utmMedium: utmMedium || null,
+          utmCampaign: utmCampaign || null,
+          utmContent: utmContent || null,
+          utmTerm: utmTerm || null
         })
       });
 

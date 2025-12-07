@@ -3,6 +3,7 @@ import { Check, Sparkles, TrendingUp, Target, Shield, Zap, ExternalLink, Chevron
 import { Helmet } from "react-helmet-async";
 import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { clearUTMParams } from "@/lib/utm";
 
 interface InviteLinkResponse {
   success: boolean;
@@ -20,7 +21,10 @@ export default function Success() {
     const sid = params.get('session_id');
     setSessionId(sid);
 
-    if (!sid) {
+    if (sid) {
+      // Clear UTM params after successful checkout
+      clearUTMParams();
+    } else {
       setTimeout(() => {
         setLocation('/subscribe');
       }, 3000);

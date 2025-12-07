@@ -10,6 +10,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { autoPrefetchRoutes } from "@/lib/prefetch";
 import { CookieConsent } from "@/components/CookieConsent";
+import { captureUTMParams } from "@/lib/utm";
 
 const Home = lazy(() => import("@/pages/Home"));
 const Article = lazy(() => import("@/pages/Article"));
@@ -144,8 +145,9 @@ function Router() {
 }
 
 function App() {
-  // Auto-prefetch high-traffic routes after 2 seconds
+  // Capture UTM params on page load and auto-prefetch routes
   useEffect(() => {
+    captureUTMParams();
     autoPrefetchRoutes(2000);
   }, []);
 

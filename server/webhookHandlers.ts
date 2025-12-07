@@ -141,6 +141,17 @@ export class WebhookHandlers {
 
     console.log(`Checkout completed for ${email}, subscription: ${subscriptionId}`);
     
+    // Extract UTM parameters from session metadata
+    const utmSource = session.metadata?.utm_source || null;
+    const utmMedium = session.metadata?.utm_medium || null;
+    const utmCampaign = session.metadata?.utm_campaign || null;
+    const utmContent = session.metadata?.utm_content || null;
+    const utmTerm = session.metadata?.utm_term || null;
+    
+    if (utmSource || utmCampaign) {
+      console.log(`UTM tracking: source=${utmSource}, medium=${utmMedium}, campaign=${utmCampaign}`);
+    }
+    
     // Extract plan details from Stripe
     let planType = 'Premium Forex Signals';
     // Start with session amount as fallback, will prefer price.unit_amount when available
@@ -197,7 +208,12 @@ export class WebhookHandlers {
           stripeCustomerId: customerId,
           stripeSubscriptionId: subscriptionId,
           planType,
-          amountPaid
+          amountPaid,
+          utmSource: utmSource || undefined,
+          utmMedium: utmMedium || undefined,
+          utmCampaign: utmCampaign || undefined,
+          utmContent: utmContent || undefined,
+          utmTerm: utmTerm || undefined,
         });
         
         if (inviteLink) {
