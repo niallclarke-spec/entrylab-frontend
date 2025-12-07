@@ -75,12 +75,10 @@ export default function Subscribe() {
       savingsNote: "vs 6 months monthly",
       features: [
         "Everything in Monthly, plus:",
-        "Priority signal delivery",
-        "1-on-1 strategy sessions",
-        "Exclusive market reports",
-        "Trading psychology course",
-        "Custom trade plan",
-        "Never pay again guarantee"
+        "Lifetime VIP channel access",
+        "No recurring payments ever",
+        "Lock in current pricing",
+        "Custom trade plan assistance"
       ],
       popular: true
     }
