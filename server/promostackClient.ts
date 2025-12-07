@@ -27,6 +27,11 @@ interface FreeUserParams {
   email: string;
   name?: string;
   source?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+  utmTerm?: string;
 }
 
 export class PromostackClient {
@@ -148,7 +153,7 @@ export class PromostackClient {
   }
 
   async addFreeUser(params: FreeUserParams): Promise<boolean> {
-    const { email, name, source } = params;
+    const { email, name, source, utmSource, utmMedium, utmCampaign, utmContent, utmTerm } = params;
     
     try {
       const response = await fetch(`${this.baseUrl}/api/telegram/grant-access`, {
@@ -161,7 +166,12 @@ export class PromostackClient {
           email,
           name: name || '',
           planType: 'Free Gold Signals',
-          amountPaid: 0
+          amountPaid: 0,
+          utmSource: utmSource || null,
+          utmMedium: utmMedium || null,
+          utmCampaign: utmCampaign || null,
+          utmContent: utmContent || null,
+          utmTerm: utmTerm || null
         })
       });
 

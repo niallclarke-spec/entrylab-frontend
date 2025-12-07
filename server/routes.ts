@@ -1583,9 +1583,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const success = await promostackClient.addFreeUser({
           email,
           name: '',
-          source: source || 'signals_landing'
+          source: source || 'signals_landing',
+          utmSource: utm_source,
+          utmMedium: utm_medium,
+          utmCampaign: utm_campaign,
+          utmContent: utm_content,
+          utmTerm: utm_term,
         });
-        console.log(`PromoStack free lead: ${email} (recorded: ${success})`);
+        console.log(`PromoStack free lead: ${email} (recorded: ${success}, utm_source: ${utm_source}, utm_campaign: ${utm_campaign})`);
       } catch (promostackError) {
         console.error('PromoStack tracking error:', promostackError);
         // Continue - don't block free signup

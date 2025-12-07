@@ -5,6 +5,7 @@ import { Helmet } from "react-helmet-async";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Link, useLocation } from "wouter";
+import { getStoredUTMParams, clearUTMParams } from "@/lib/utm";
 
 const stats = [
   { value: "87%", label: "Win Rate" },
@@ -112,12 +113,24 @@ function EmailCaptureForm({
     }
     setIsSubmitting(true);
     try {
+      // Get UTM params from localStorage (captured on page load)
+      const storedUtm = getStoredUTMParams();
+      // Also check URL params as fallback
+      const urlParams = new URLSearchParams(window.location.search);
+      
       await apiRequest('POST', '/api/capture-email', {
         email,
         source: 'signals_landing',
-        utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign'),
-        utm_source: new URLSearchParams(window.location.search).get('utm_source'),
+        utm_source: storedUtm.utm_source || urlParams.get('utm_source'),
+        utm_medium: storedUtm.utm_medium || urlParams.get('utm_medium'),
+        utm_campaign: storedUtm.utm_campaign || urlParams.get('utm_campaign'),
+        utm_content: storedUtm.utm_content || urlParams.get('utm_content'),
+        utm_term: storedUtm.utm_term || urlParams.get('utm_term'),
       });
+      
+      // Clear UTM params after successful signup
+      clearUTMParams();
+      
       // Redirect to confirmation page on success
       setLocation('/free-access');
     } catch {
