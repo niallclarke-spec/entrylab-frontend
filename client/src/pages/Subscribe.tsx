@@ -122,12 +122,8 @@ export default function Subscribe() {
       answer: "We accept all major credit and debit cards through Stripe, our secure payment processor. Your payment information is encrypted and never stored on our servers."
     },
     {
-      question: "Is there a refund policy?",
-      answer: "Yes! We offer a 7-day money-back guarantee. If you're not satisfied with our signals within the first 7 days, contact support for a full refund, no questions asked."
-    },
-    {
       question: "What's the difference between the plans?",
-      answer: "The 7 Day plan ($39/week) is perfect for trying our signals. The Monthly plan ($59/month) offers flexibility with full features. The Lifetime plan ($339 one-time) is the best value - pay once and get access forever with premium perks like priority delivery and 1-on-1 sessions."
+      answer: "The 7 Day plan ($39) is perfect for trying our signals. The Monthly plan ($59/month) offers flexibility with full features. The Lifetime plan ($339 one-time) is the best value - pay once and get access forever."
     }
   ];
 
@@ -651,8 +647,8 @@ export default function Subscribe() {
         
         <div className="relative text-center mb-14">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2bb32a]/10 border border-[#2bb32a]/30 mb-6">
-            <Shield className="w-4 h-4 text-[#2bb32a]" />
-            <span className="text-[#2bb32a] text-sm font-medium">7-Day Money-Back Guarantee</span>
+            <TrendingUp className="w-4 h-4 text-[#2bb32a]" />
+            <span className="text-[#2bb32a] text-sm font-medium">87.5% Win Rate</span>
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight" data-testid="text-pricing-title">
             Start Winning Trades <span className="signals-gradient-text">Today</span>
@@ -783,16 +779,16 @@ export default function Subscribe() {
         {/* Trust badges */}
         <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm text-[#5c6e60]">
           <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-[#2bb32a]" />
-            <span>7-day money-back guarantee</span>
-          </div>
-          <div className="flex items-center gap-2">
             <Lock className="h-5 w-5 text-[#2bb32a]" />
             <span>Secure Stripe checkout</span>
           </div>
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-[#2bb32a]" />
             <span>4,821+ active members</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-[#2bb32a]" />
+            <span>Cancel anytime</span>
           </div>
         </div>
 
