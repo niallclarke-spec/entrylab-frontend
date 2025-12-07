@@ -25,21 +25,21 @@ export default function Subscribe() {
   const pricingTiers = [
     {
       id: 'weekly',
-      name: "7 Day VIP",
+      name: "7 Day Trial",
       price: "$39",
-      period: "per week",
+      period: "one-time",
       priceId: weeklyPriceId || '',
-      description: "Perfect to test our signals",
+      description: "Test our signals risk-free",
+      tagline: "See results before committing",
       billingType: "recurring",
       tryNow: true,
       features: [
-        "3-5 daily premium signals",
-        "Full trade analysis with entry/exit",
-        "Stop loss & take profit levels",
-        "Risk management guidance",
-        "Real-time Telegram notifications",
+        "3-5 XAU/USD signals daily",
+        "Entry, SL & TP levels",
+        "Risk management included",
         "Private VIP channel access",
-        "24/7 analyst support"
+        "Real-time Telegram alerts",
+        "Full analyst support"
       ],
       popular: false
     },
@@ -47,20 +47,18 @@ export default function Subscribe() {
       id: 'monthly',
       name: "Monthly VIP",
       price: "$59",
-      period: "per month",
+      period: "/month",
       priceId: monthlyPriceId || '',
-      description: "Most flexible option",
+      description: "Full access, flexible billing",
+      tagline: "Cancel anytime, no commitment",
       billingType: "recurring",
       features: [
-        "3-5 daily premium signals",
-        "Full trade analysis with entry/exit",
-        "Stop loss & take profit levels",
-        "Risk management guidance",
-        "Position sizing recommendations",
-        "Real-time Telegram notifications",
-        "Private VIP channel access",
-        "24/7 analyst support",
-        "Performance tracking dashboard"
+        "Everything in Trial, plus:",
+        "Position sizing guidance",
+        "Weekly market analysis",
+        "Performance dashboard",
+        "Priority support response",
+        "Risk calculator access"
       ],
       popular: false
     },
@@ -68,22 +66,21 @@ export default function Subscribe() {
       id: 'lifetime',
       name: "Lifetime VIP",
       price: "$339",
-      period: "one-time",
+      period: "once",
       priceId: lifetimePriceId || '',
-      description: "Best value - pay once, access forever!",
+      description: "Pay once, profit forever",
+      tagline: "Join 847+ lifetime members",
       billingType: "one_time",
-      savings: "Save $369+",
-      savingsNote: "vs 6 months of monthly",
+      savings: "SAVE $369+",
+      savingsNote: "vs 6 months monthly",
       features: [
-        "Everything in Monthly plan",
-        "Pay once, access forever",
+        "Everything in Monthly, plus:",
         "Priority signal delivery",
-        "Exclusive market reports",
-        "Advanced technical analysis",
         "1-on-1 strategy sessions",
-        "Never pay again guarantee",
+        "Exclusive market reports",
         "Trading psychology course",
-        "Custom trade plan assistance"
+        "Custom trade plan",
+        "Never pay again guarantee"
       ],
       popular: true
     }
@@ -650,74 +647,142 @@ export default function Subscribe() {
 
       {/* Pricing Cards */}
       <section id="pricing" className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pb-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4" data-testid="text-pricing-title">Choose Your Plan</h2>
-          <p className="text-lg text-[#adb2b1]">Cancel anytime • 7-day money-back guarantee</p>
+        {/* Background glow for pricing section */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#2bb32a]/5 rounded-full blur-[100px] pointer-events-none" />
+        
+        <div className="relative text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2bb32a]/10 border border-[#2bb32a]/30 mb-6">
+            <Shield className="w-4 h-4 text-[#2bb32a]" />
+            <span className="text-[#2bb32a] text-sm font-medium">7-Day Money-Back Guarantee</span>
+          </div>
+          <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight" data-testid="text-pricing-title">
+            Choose Your <span className="signals-gradient-text">Trading Edge</span>
+          </h2>
+          <p className="text-lg text-[#adb2b1] max-w-xl mx-auto">Join thousands of traders receiving institutional-grade XAU/USD signals</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="relative grid md:grid-cols-3 gap-6 lg:gap-8">
           {pricingTiers.map((tier) => (
             <div 
               key={tier.id} 
-              className={`relative signals-glass-card p-6 cursor-pointer transition-all hover:border-[#2bb32a]/50 ${
-                tier.popular ? 'border-[#2bb32a] md:scale-105 shadow-lg shadow-[#2bb32a]/20' : ''
-              } ${tier.tryNow ? 'border-[#2bb32a]/50' : ''} ${
-                selectedPlan === tier.id ? 'ring-2 ring-[#2bb32a]' : ''
+              className={`relative group cursor-pointer transition-all duration-300 ${
+                tier.popular ? 'md:-mt-4 md:mb-4' : ''
               }`}
               onClick={() => setSelectedPlan(tier.id as 'weekly' | 'monthly' | 'lifetime')}
               data-testid={`pricing-${tier.id}`}
             >
+              {/* Card glow effect for popular */}
               {tier.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#2bb32a] text-white text-xs font-medium">
-                    <Sparkles className="h-3 w-3" />
-                    Best Value
-                  </span>
-                </div>
+                <div className="absolute -inset-[1px] bg-gradient-to-b from-[#ffd700] via-[#c9a227] to-[#ffd700] rounded-2xl opacity-100" />
               )}
-              {tier.tryNow && !tier.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#2bb32a]/80 text-white text-xs font-medium">
-                    <Zap className="h-3 w-3" />
-                    Try Now
-                  </span>
-                </div>
-              )}
-
-              <div className="absolute top-4 right-4">
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                  selectedPlan === tier.id ? 'border-[#2bb32a] bg-[#2bb32a]' : 'border-[#3d544d]'
-                }`}>
-                  {selectedPlan === tier.id && <Check className="h-4 w-4 text-white" />}
-                </div>
-              </div>
-
-              <div className="pt-4 mb-4">
-                <h3 className="text-xl font-bold text-white mb-1">{tier.name}</h3>
-                <p className="text-sm text-[#adb2b1]">{tier.description}</p>
-                <div className="mt-4 space-y-2">
-                  <div>
-                    <span className="text-4xl font-bold text-white">{tier.price}</span>
-                    <span className="text-[#adb2b1] ml-2 text-base">{tier.period}</span>
-                  </div>
-                  {tier.savings && (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="inline-flex px-2 py-1 rounded bg-[#2bb32a]/20 text-[#2bb32a] text-xs font-medium border border-[#2bb32a]/30">
-                        {tier.savings}
-                      </span>
+              
+              {/* Card container */}
+              <div className={`relative h-full rounded-2xl overflow-hidden ${
+                tier.popular 
+                  ? 'bg-gradient-to-b from-[#1a2420] to-[#0d0f0e]' 
+                  : 'bg-gradient-to-b from-[#1a2420]/80 to-[#0d0f0e]/80 border border-[#2a3830] hover:border-[#3d544d]'
+              } ${selectedPlan === tier.id && !tier.popular ? 'ring-2 ring-[#2bb32a]' : ''}`}>
+                
+                {/* Top badge */}
+                {tier.popular && (
+                  <div className="absolute -top-px left-0 right-0 flex justify-center">
+                    <div className="px-6 py-2 bg-gradient-to-r from-[#b8860b] via-[#ffd700] to-[#b8860b] rounded-b-xl shadow-lg shadow-[#ffd700]/20">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-[#1a1e1c]" />
+                        <span className="text-[#1a1e1c] text-sm font-bold tracking-wide">MOST POPULAR</span>
+                      </div>
                     </div>
-                  )}
+                  </div>
+                )}
+                {tier.tryNow && !tier.popular && (
+                  <div className="absolute -top-px left-0 right-0 flex justify-center">
+                    <div className="px-4 py-1.5 bg-[#2bb32a] rounded-b-lg">
+                      <div className="flex items-center gap-1.5">
+                        <Zap className="h-3.5 w-3.5 text-white" />
+                        <span className="text-white text-xs font-semibold">START HERE</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Selection indicator */}
+                <div className="absolute top-5 right-5 z-10">
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                    selectedPlan === tier.id 
+                      ? tier.popular 
+                        ? 'border-[#ffd700] bg-[#ffd700]' 
+                        : 'border-[#2bb32a] bg-[#2bb32a]' 
+                      : 'border-[#3d544d] group-hover:border-[#5c6e60]'
+                  }`}>
+                    {selectedPlan === tier.id && <Check className="h-4 w-4 text-[#1a1e1c]" />}
+                  </div>
+                </div>
+
+                <div className="p-6 lg:p-8">
+                  {/* Header */}
+                  <div className={`pt-4 ${tier.popular ? 'pt-8' : ''}`}>
+                    <h3 className={`text-2xl font-bold mb-2 ${tier.popular ? 'text-[#ffd700]' : 'text-white'}`}>
+                      {tier.name}
+                    </h3>
+                    <p className="text-sm text-[#adb2b1] mb-1">{tier.description}</p>
+                    <p className="text-xs text-[#5c6e60] italic">{tier.tagline}</p>
+                  </div>
+
+                  {/* Price */}
+                  <div className="mt-6 mb-6 pb-6 border-b border-[#2a3830]">
+                    <div className="flex items-baseline gap-1">
+                      <span className={`text-5xl font-bold tracking-tight ${tier.popular ? 'text-white' : 'text-white'}`}>
+                        {tier.price}
+                      </span>
+                      <span className="text-[#5c6e60] text-lg">{tier.period}</span>
+                    </div>
+                    {tier.savings && (
+                      <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#ffd700]/20 to-[#c9a227]/20 border border-[#ffd700]/30">
+                        <span className="text-[#ffd700] text-sm font-bold">{tier.savings}</span>
+                        <span className="text-[#5c6e60] text-xs">{tier.savingsNote}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Features */}
+                  <ul className="space-y-3">
+                    {tier.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <div className={`flex-shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center ${
+                          tier.popular 
+                            ? 'bg-[#ffd700]/20' 
+                            : 'bg-[#2bb32a]/20'
+                        }`}>
+                          <Check className={`h-3 w-3 ${tier.popular ? 'text-[#ffd700]' : 'text-[#2bb32a]'}`} />
+                        </div>
+                        <span className={`text-sm ${i === 0 ? 'text-white font-medium' : 'text-[#adb2b1]'}`}>
+                          {feature}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* CTA Button */}
+                  <div className="mt-8">
+                    <button 
+                      className={`w-full py-4 rounded-xl font-semibold text-base transition-all ${
+                        tier.popular
+                          ? 'bg-gradient-to-r from-[#b8860b] via-[#ffd700] to-[#b8860b] text-[#1a1e1c] shadow-lg shadow-[#ffd700]/30 hover:shadow-[#ffd700]/50'
+                          : selectedPlan === tier.id
+                            ? 'bg-[#2bb32a] text-white shadow-lg shadow-[#2bb32a]/30'
+                            : 'bg-[#2a3830] text-white hover:bg-[#3d544d]'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPlan(tier.id as 'weekly' | 'monthly' | 'lifetime');
+                        document.getElementById('checkout-form')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                    >
+                      {tier.popular ? 'Get Lifetime Access' : tier.tryNow ? 'Start 7-Day Trial' : 'Select Plan'}
+                    </button>
+                  </div>
                 </div>
               </div>
-
-              <ul className="space-y-2">
-                {tier.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-[#2bb32a] flex-shrink-0 mt-0.5" />
-                    <span className="text-xs text-[#adb2b1]">{feature}</span>
-                  </li>
-                ))}
-              </ul>
             </div>
           ))}
         </div>
