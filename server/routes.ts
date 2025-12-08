@@ -1985,20 +1985,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Email preview endpoints (for testing)
+  // Use local logo URL for previews so they work in browser
+  const getPreviewLogoUrl = (req: any) => {
+    const protocol = req.headers['x-forwarded-proto'] || 'http';
+    const host = req.headers.host;
+    return `${protocol}://${host}/api/admin/logo-proxy`;
+  };
+
+  // Logo proxy to avoid CORS issues in preview
+  app.get('/api/admin/logo-proxy', async (req, res) => {
+    try {
+      const response = await fetch('https://entrylab.io/assets/entrylab-logo-green.png');
+      const buffer = await response.arrayBuffer();
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      res.send(Buffer.from(buffer));
+    } catch (error) {
+      res.status(500).send('Failed to load logo');
+    }
+  });
+
   app.get('/api/admin/preview-email/welcome', (req, res) => {
-    const html = getWelcomeEmailHtml('https://t.me/+TestInviteLink123');
+    let html = getWelcomeEmailHtml('https://t.me/+TestInviteLink123');
+    html = html.replace('https://entrylab.io/assets/entrylab-logo-green.png', getPreviewLogoUrl(req));
     res.setHeader('Content-Type', 'text/html');
     res.send(html);
   });
 
   app.get('/api/admin/preview-email/cancellation', (req, res) => {
-    const html = getCancellationEmailHtml();
+    let html = getCancellationEmailHtml();
+    html = html.replace('https://entrylab.io/assets/entrylab-logo-green.png', getPreviewLogoUrl(req));
     res.setHeader('Content-Type', 'text/html');
     res.send(html);
   });
 
   app.get('/api/admin/preview-email/free', (req, res) => {
-    const html = getFreeChannelEmailHtml('https://t.me/entrylabs');
+    let html = getFreeChannelEmailHtml('https://t.me/entrylabs');
+    html = html.replace('https://entrylab.io/assets/entrylab-logo-green.png', getPreviewLogoUrl(req));
     res.setHeader('Content-Type', 'text/html');
     res.send(html);
   });
