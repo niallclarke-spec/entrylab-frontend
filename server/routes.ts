@@ -1596,21 +1596,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Continue - don't block free signup
       }
 
-      // Send welcome email with free channel link (non-blocking)
+      // Send welcome email with free channel link (non-blocking, with retry)
       try {
         const { getUncachableResendClient } = await import('./resendClient');
         const { getFreeChannelEmailHtml } = await import('./emailTemplates');
+        const { sendEmailWithRetry } = await import('./emailUtils');
         
-        const { client, fromEmail } = await getUncachableResendClient();
+        const { fromEmail } = await getUncachableResendClient();
         const emailHtml = getFreeChannelEmailHtml(FREE_CHANNEL_LINK);
         
-        await client.emails.send({
+        const result = await sendEmailWithRetry({
           from: `EntryLab Signals <${fromEmail}>`,
           to: email,
           subject: 'Welcome to EntryLab - Join Our Free Channel!',
           html: emailHtml,
         });
-        console.log(`Free channel welcome email sent to: ${email}`);
+        
+        if (result.success) {
+          console.log(`Free channel welcome email sent to: ${email}`);
+        } else {
+          console.error(`Free channel email failed for ${email}:`, result.error);
+        }
       } catch (emailError) {
         console.error('Failed to send welcome email:', emailError);
         // Continue - don't block signup even if email fails
@@ -1884,18 +1890,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const telegramLink = user.telegramInviteLink || 'https://t.me/+TbJsf9xRrNkwN2E0';
 
       // Use static imports (defined at top of file)
-      const { client, fromEmail } = await getUncachableResendClient();
+      const { fromEmail } = await getUncachableResendClient();
+      const { sendEmailWithRetry } = await import('./emailUtils');
       
       const emailHtml = getWelcomeEmailHtml(telegramLink);
       console.log('Email HTML preview (first 500 chars):', emailHtml.substring(0, 500));
       
-      await client.emails.send({
+      // Use retry logic for rate limit resilience
+      const result = await sendEmailWithRetry({
         from: fromEmail,
         to: email,
         subject: 'Welcome to EntryLab Premium Signals!',
         html: emailHtml,
         text: `Welcome to EntryLab Premium Signals!\n\nYour subscription is now active. Join our private Telegram channel: ${telegramLink}\n\nQuestions? Contact us at support@entrylab.io`,
       });
+
+      if (!result.success) {
+        throw new Error(result.error || 'Email send failed');
+      }
 
       // Update the flag
       await db.update(signalUsers)

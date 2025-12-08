@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import { promostackClient } from './promostackClient';
 import { getUncachableResendClient } from './resendClient';
 import { getWelcomeEmailHtml, getCancellationEmailHtml } from './emailTemplates';
+import { sendEmailWithRetry } from './emailUtils';
 
 // Map Stripe interval to PromoStack planType
 function mapStripeToPlanType(interval: string | null, intervalCount?: number): string {
@@ -231,7 +232,7 @@ export class WebhookHandlers {
       
       // Send welcome email regardless of PromoStack status
       try {
-        const { client, fromEmail } = await getUncachableResendClient();
+        const { fromEmail } = await getUncachableResendClient();
         
         // Use PromoStack link if available, otherwise use fallback
         const telegramLink = inviteLink || 'https://t.me/+TbJsf9xRrNkwN2E0';
@@ -243,13 +244,18 @@ export class WebhookHandlers {
             .where(eq(signalUsers.id, user.id));
         }
         
-        await client.emails.send({
+        // Use retry logic for rate limit resilience
+        const emailResult = await sendEmailWithRetry({
           from: fromEmail,
           to: email,
           subject: 'Welcome to EntryLab Premium Signals!',
           html: getWelcomeEmailHtml(telegramLink),
           text: `Welcome to EntryLab Premium Signals!\n\nYour subscription is now active. Join our private Telegram channel: ${telegramLink}\n\nQuestions? Contact us at support@entrylab.io`,
         });
+        
+        if (!emailResult.success) {
+          throw new Error(emailResult.error || 'Email send failed');
+        }
         
         // Mark welcome email as sent
         await db.update(signalUsers)
@@ -397,14 +403,20 @@ export class WebhookHandlers {
       
       // Send cancellation email (this should always happen)
       try {
-        const { client, fromEmail } = await getUncachableResendClient();
-        await client.emails.send({
+        const { fromEmail } = await getUncachableResendClient();
+        
+        // Use retry logic for rate limit resilience
+        const emailResult = await sendEmailWithRetry({
           from: fromEmail,
           to: user.email,
           subject: 'Your EntryLab Subscription Has Been Cancelled',
           html: getCancellationEmailHtml(),
           text: `Your EntryLab Signals subscription has been cancelled.\n\nYou will no longer have access to our private Telegram channel.\n\nResubscribe anytime at: https://entrylab.io/signals\n\nQuestions? Contact us at support@entrylab.io`,
         });
+        
+        if (!emailResult.success) {
+          throw new Error(emailResult.error || 'Cancellation email failed');
+        }
         
         console.log(`Cancellation email sent to ${user.email}`);
       } catch (error: any) {
