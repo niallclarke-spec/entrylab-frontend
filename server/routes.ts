@@ -1984,6 +1984,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Email preview endpoints (for testing)
+  app.get('/api/admin/preview-email/welcome', (req, res) => {
+    const html = getWelcomeEmailHtml('https://t.me/+TestInviteLink123');
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
+  });
+
+  app.get('/api/admin/preview-email/cancellation', (req, res) => {
+    const html = getCancellationEmailHtml();
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
+  });
+
+  app.get('/api/admin/preview-email/free', (req, res) => {
+    const html = getFreeChannelEmailHtml('https://t.me/entrylabs');
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
