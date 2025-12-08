@@ -18,7 +18,7 @@ export function getWelcomeEmailHtml(inviteLink: string): string {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
                   <td align="center" style="padding-bottom: 30px;">
-                    <img src="https://entrylab.io/assets/entrylab-logo-green.png" alt="EntryLab" height="40" style="display: block; height: 40px; width: auto;" />
+                    <img src="https://entrylab.io/assets/entrylab-logo-green.png" alt="EntryLab" width="190" style="display: block; max-width: 190px; height: auto;" />
                   </td>
                 </tr>
                 <tr>
@@ -148,7 +148,7 @@ export function getCancellationEmailHtml(): string {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
                   <td align="center" style="padding-bottom: 30px;">
-                    <img src="https://entrylab.io/assets/entrylab-logo-green.png" alt="EntryLab" height="40" style="display: block; height: 40px; width: auto;" />
+                    <img src="https://entrylab.io/assets/entrylab-logo-green.png" alt="EntryLab" width="190" style="display: block; max-width: 190px; height: auto;" />
                   </td>
                 </tr>
                 <tr>
@@ -280,7 +280,7 @@ export function getFreeChannelEmailHtml(channelLink: string): string {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
                   <td align="center" style="padding-bottom: 30px;">
-                    <img src="https://entrylab.io/assets/entrylab-logo-green.png" alt="EntryLab" height="40" style="display: block; height: 40px; width: auto;" />
+                    <img src="https://entrylab.io/assets/entrylab-logo-green.png" alt="EntryLab" width="190" style="display: block; max-width: 190px; height: auto;" />
                   </td>
                 </tr>
                 <tr>
