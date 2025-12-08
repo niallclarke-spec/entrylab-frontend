@@ -305,8 +305,8 @@ export function getFreeChannelEmailHtml(channelLink: string): string {
               <!-- Content -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
-                  <td style="color: #333333; font-size: 18px; line-height: 1.7;">
-                    <p style="margin: 0 0 24px 0; text-align: center;">Thanks for signing up! Join our free Telegram channel to receive:</p>
+                  <td style="color: #333333; font-size: 16px; line-height: 1.7;">
+                    <p style="margin: 0 0 24px 0; text-align: center;">Thanks for signing up! Join our free Telegram channel to see what EntryLab is all about:</p>
                   </td>
                 </tr>
               </table>
@@ -315,25 +315,23 @@ export function getFreeChannelEmailHtml(channelLink: string): string {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 24px 0;">
                 <tr>
                   <td align="center">
-                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="text-align: left;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="text-align: left; max-width: 400px;">
                       <tr>
-                        <td style="padding: 10px 0; color: #333333; font-size: 18px;">
-                          <span style="color: #2bb32a; font-weight: bold;">&#10003;</span> Market analysis and insights
+                        <td style="padding: 12px 0; color: #333333; font-size: 16px; line-height: 1.5;">
+                          <span style="color: #2bb32a; font-size: 18px; font-weight: bold; margin-right: 8px;">&#10003;</span> <strong>Signal Accuracy Insights</strong><br/>
+                          <span style="color: #666666; font-size: 14px; padding-left: 26px; display: inline-block;">See our verified win rate and track record</span>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 10px 0; color: #333333; font-size: 18px;">
-                          <span style="color: #2bb32a; font-weight: bold;">&#10003;</span> Educational trading content
+                        <td style="padding: 12px 0; color: #333333; font-size: 16px; line-height: 1.5;">
+                          <span style="color: #2bb32a; font-size: 18px; font-weight: bold; margin-right: 8px;">&#10003;</span> <strong>Daily VIP Recaps</strong><br/>
+                          <span style="color: #666666; font-size: 14px; padding-left: 26px; display: inline-block;">Get summaries of our premium channel performance</span>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 10px 0; color: #333333; font-size: 18px;">
-                          <span style="color: #2bb32a; font-weight: bold;">&#10003;</span> Occasional trade ideas
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 10px 0; color: #333333; font-size: 18px;">
-                          <span style="color: #2bb32a; font-weight: bold;">&#10003;</span> Community discussions
+                        <td style="padding: 12px 0; color: #333333; font-size: 16px; line-height: 1.5;">
+                          <span style="color: #2bb32a; font-size: 18px; font-weight: bold; margin-right: 8px;">&#10003;</span> <strong>Free Signals</strong><br/>
+                          <span style="color: #666666; font-size: 14px; padding-left: 26px; display: inline-block;">Occasional trade setups shared with the community</span>
                         </td>
                       </tr>
                     </table>
