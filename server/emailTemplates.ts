@@ -8,25 +8,23 @@ export function getWelcomeEmailHtml(inviteLink: string): string {
   <title>Welcome to EntryLab Signals</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <!-- Full-width Dark Header -->
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #1B261D;">
+    <tr>
+      <td align="center" style="padding: 24px 20px;">
+        <img src="https://entrylab.io/assets/entrylab-logo-green.png?v=4" alt="EntryLab" style="display: block; width: 160px; max-width: 100%; height: auto;" />
+      </td>
+    </tr>
+  </table>
+  
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f4f4;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
         <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 600px;">
           <tr>
             <td style="padding: 40px 30px;">
-              <!-- Header with Logo -->
+              <!-- Title -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-                <tr>
-                  <td align="center" style="padding-bottom: 30px;">
-                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
-                      <tr>
-                        <td style="background-color: #1a1e1c; padding: 16px 24px; border-radius: 8px;">
-                          <img src="https://entrylab.io/assets/entrylab-logo-green.png?v=3" alt="EntryLab" style="display: block; width: 160px; max-width: 100%; height: auto;" />
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
                 <tr>
                   <td align="center" style="padding-bottom: 20px;">
                     <h1 style="color: #1a1a1a; font-size: 32px; margin: 0; font-weight: 600; line-height: 1.3;">Welcome to Premium Signals!</h1>
@@ -144,25 +142,23 @@ export function getCancellationEmailHtml(): string {
   <title>Subscription Cancelled</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <!-- Full-width Dark Header -->
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #1B261D;">
+    <tr>
+      <td align="center" style="padding: 24px 20px;">
+        <img src="https://entrylab.io/assets/entrylab-logo-green.png?v=4" alt="EntryLab" style="display: block; width: 160px; max-width: 100%; height: auto;" />
+      </td>
+    </tr>
+  </table>
+  
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f4f4;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
         <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 600px;">
           <tr>
             <td style="padding: 40px 30px;">
-              <!-- Header with Logo -->
+              <!-- Title -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-                <tr>
-                  <td align="center" style="padding-bottom: 30px;">
-                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
-                      <tr>
-                        <td style="background-color: #1a1e1c; padding: 16px 24px; border-radius: 8px;">
-                          <img src="https://entrylab.io/assets/entrylab-logo-green.png?v=3" alt="EntryLab" style="display: block; width: 160px; max-width: 100%; height: auto;" />
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
                 <tr>
                   <td align="center" style="padding-bottom: 20px;">
                     <h1 style="color: #1a1a1a; font-size: 32px; margin: 0; font-weight: 600; line-height: 1.3;">We're Sorry to See You Go</h1>
@@ -282,25 +278,23 @@ export function getFreeChannelEmailHtml(channelLink: string): string {
   <title>Welcome to EntryLab Free Channel</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <!-- Full-width Dark Header -->
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #1B261D;">
+    <tr>
+      <td align="center" style="padding: 24px 20px;">
+        <img src="https://entrylab.io/assets/entrylab-logo-green.png?v=4" alt="EntryLab" style="display: block; width: 160px; max-width: 100%; height: auto;" />
+      </td>
+    </tr>
+  </table>
+  
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f4f4;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
         <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 600px;">
           <tr>
             <td style="padding: 40px 30px;">
-              <!-- Header with Logo -->
+              <!-- Title -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-                <tr>
-                  <td align="center" style="padding-bottom: 30px;">
-                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
-                      <tr>
-                        <td style="background-color: #1a1e1c; padding: 16px 24px; border-radius: 8px;">
-                          <img src="https://entrylab.io/assets/entrylab-logo-green.png?v=3" alt="EntryLab" style="display: block; width: 160px; max-width: 100%; height: auto;" />
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
                 <tr>
                   <td align="center" style="padding-bottom: 20px;">
                     <h1 style="color: #1a1a1a; font-size: 32px; margin: 0; font-weight: 600; line-height: 1.3;">Welcome to EntryLab!</h1>
