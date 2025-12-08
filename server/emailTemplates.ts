@@ -35,8 +35,8 @@ export function getWelcomeEmailHtml(inviteLink: string): string {
               <!-- Content -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
-                  <td style="color: #333333; font-size: 18px; line-height: 1.7;">
-                    <p style="margin: 0 0 24px 0; text-align: center;">Your subscription is now active! You have exclusive access to our private Telegram channel where we share:</p>
+                  <td style="color: #333333; font-size: 16px; line-height: 1.7;">
+                    <p style="margin: 0 0 24px 0; text-align: center;">Your subscription is now active! You have exclusive access to our private Telegram channel with premium trading signals:</p>
                   </td>
                 </tr>
               </table>
@@ -45,25 +45,29 @@ export function getWelcomeEmailHtml(inviteLink: string): string {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 24px 0;">
                 <tr>
                   <td align="center">
-                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="text-align: left;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="text-align: left; max-width: 440px;">
                       <tr>
-                        <td style="padding: 10px 0; color: #333333; font-size: 18px;">
-                          <span style="color: #2bb32a; font-weight: bold;">&#10003;</span> Real-time forex trading signals
+                        <td style="padding: 12px 0; color: #333333; font-size: 16px; line-height: 1.5;">
+                          <span style="color: #2bb32a; font-size: 18px; font-weight: bold; margin-right: 8px;">&#10003;</span> <strong>Daily Trading Signals</strong><br/>
+                          <span style="color: #666666; font-size: 14px; padding-left: 26px; display: inline-block;">Up to 5 high-quality signals per day</span>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 10px 0; color: #333333; font-size: 18px;">
-                          <span style="color: #2bb32a; font-weight: bold;">&#10003;</span> Market analysis and insights
+                        <td style="padding: 12px 0; color: #333333; font-size: 16px; line-height: 1.5;">
+                          <span style="color: #2bb32a; font-size: 18px; font-weight: bold; margin-right: 8px;">&#10003;</span> <strong>In-House Analysis</strong><br/>
+                          <span style="color: #666666; font-size: 14px; padding-left: 26px; display: inline-block;">Every signal is researched and verified by our team</span>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 10px 0; color: #333333; font-size: 18px;">
-                          <span style="color: #2bb32a; font-weight: bold;">&#10003;</span> Entry and exit strategies
+                        <td style="padding: 12px 0; color: #333333; font-size: 16px; line-height: 1.5;">
+                          <span style="color: #2bb32a; font-size: 18px; font-weight: bold; margin-right: 8px;">&#10003;</span> <strong>Sentiment & Fundamentals</strong><br/>
+                          <span style="color: #666666; font-size: 14px; padding-left: 26px; display: inline-block;">We aggregate data from X and market news</span>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 10px 0; color: #333333; font-size: 18px;">
-                          <span style="color: #2bb32a; font-weight: bold;">&#10003;</span> Risk management guidance
+                        <td style="padding: 12px 0; color: #333333; font-size: 16px; line-height: 1.5;">
+                          <span style="color: #2bb32a; font-size: 18px; font-weight: bold; margin-right: 8px;">&#10003;</span> <strong>Expert Trade Desk</strong><br/>
+                          <span style="color: #666666; font-size: 14px; padding-left: 26px; display: inline-block;">Veteran traders review every signal before it's sent</span>
                         </td>
                       </tr>
                     </table>
@@ -169,7 +173,7 @@ export function getCancellationEmailHtml(): string {
               <!-- Content -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
-                  <td style="color: #333333; font-size: 18px; line-height: 1.7; text-align: center;">
+                  <td style="color: #333333; font-size: 16px; line-height: 1.7; text-align: center;">
                     <p style="margin: 0 0 24px 0;">Your EntryLab Signals subscription has been cancelled, and your access to the private Telegram channel has been revoked.</p>
                   </td>
                 </tr>
@@ -179,7 +183,7 @@ export function getCancellationEmailHtml(): string {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 28px 0;">
                 <tr>
                   <td style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 18px; border-radius: 4px;">
-                    <p style="margin: 0; color: #333333; font-size: 17px; line-height: 1.6;"><strong>Note:</strong> You will no longer receive trading signals or have access to our premium content.</p>
+                    <p style="margin: 0; color: #333333; font-size: 16px; line-height: 1.6;"><strong>Note:</strong> You will no longer receive trading signals or have access to our premium content.</p>
                   </td>
                 </tr>
               </table>
@@ -187,8 +191,8 @@ export function getCancellationEmailHtml(): string {
               <!-- Resubscribe Message -->
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
-                  <td style="color: #333333; font-size: 18px; line-height: 1.7; text-align: center;">
-                    <p style="margin: 0 0 24px 0;">We'd love to have you back! You can resubscribe at any time to regain access to:</p>
+                  <td style="color: #333333; font-size: 16px; line-height: 1.7; text-align: center;">
+                    <p style="margin: 0 0 24px 0;">We'd love to have you back! Resubscribe at any time to regain access to:</p>
                   </td>
                 </tr>
               </table>
@@ -197,25 +201,29 @@ export function getCancellationEmailHtml(): string {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 24px 0;">
                 <tr>
                   <td align="center">
-                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="text-align: left;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="text-align: left; max-width: 440px;">
                       <tr>
-                        <td style="padding: 10px 0; color: #333333; font-size: 18px;">
-                          <span style="color: #2bb32a; font-weight: bold;">&#10003;</span> Real-time forex trading signals
+                        <td style="padding: 12px 0; color: #333333; font-size: 16px; line-height: 1.5;">
+                          <span style="color: #2bb32a; font-size: 18px; font-weight: bold; margin-right: 8px;">&#10003;</span> <strong>Daily Trading Signals</strong><br/>
+                          <span style="color: #666666; font-size: 14px; padding-left: 26px; display: inline-block;">Up to 5 high-quality signals per day</span>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 10px 0; color: #333333; font-size: 18px;">
-                          <span style="color: #2bb32a; font-weight: bold;">&#10003;</span> Expert market analysis
+                        <td style="padding: 12px 0; color: #333333; font-size: 16px; line-height: 1.5;">
+                          <span style="color: #2bb32a; font-size: 18px; font-weight: bold; margin-right: 8px;">&#10003;</span> <strong>In-House Analysis</strong><br/>
+                          <span style="color: #666666; font-size: 14px; padding-left: 26px; display: inline-block;">Every signal is researched and verified by our team</span>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 10px 0; color: #333333; font-size: 18px;">
-                          <span style="color: #2bb32a; font-weight: bold;">&#10003;</span> Exclusive trading strategies
+                        <td style="padding: 12px 0; color: #333333; font-size: 16px; line-height: 1.5;">
+                          <span style="color: #2bb32a; font-size: 18px; font-weight: bold; margin-right: 8px;">&#10003;</span> <strong>Sentiment & Fundamentals</strong><br/>
+                          <span style="color: #666666; font-size: 14px; padding-left: 26px; display: inline-block;">We aggregate data from X and market news</span>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding: 10px 0; color: #333333; font-size: 18px;">
-                          <span style="color: #2bb32a; font-weight: bold;">&#10003;</span> Private community support
+                        <td style="padding: 12px 0; color: #333333; font-size: 16px; line-height: 1.5;">
+                          <span style="color: #2bb32a; font-size: 18px; font-weight: bold; margin-right: 8px;">&#10003;</span> <strong>Expert Trade Desk</strong><br/>
+                          <span style="color: #666666; font-size: 14px; padding-left: 26px; display: inline-block;">Veteran traders review every signal before it's sent</span>
                         </td>
                       </tr>
                     </table>
