@@ -1933,44 +1933,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { client, fromEmail } = await getUncachableResendClient();
       const results: string[] = [];
 
+      // Helper to delay between sends (Resend rate limit is 2/sec)
+      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
       // 1. Welcome Email (Premium)
       try {
         const welcomeHtml = getWelcomeEmailHtml('https://t.me/+TestInviteLink123');
-        await client.emails.send({
+        const welcomeResult = await client.emails.send({
           from: `EntryLab Signals <${fromEmail}>`,
           to: email,
           subject: '[TEST] Welcome to EntryLab Premium Signals!',
           html: welcomeHtml,
         });
-        results.push('Welcome email sent');
+        if (welcomeResult.error) {
+          results.push(`Welcome email failed: ${welcomeResult.error.message}`);
+        } else {
+          results.push('Welcome email sent');
+        }
       } catch (e: any) {
         results.push(`Welcome email failed: ${e.message}`);
       }
 
+      await delay(600); // Wait to avoid rate limit
+
       // 2. Cancellation Email
       try {
         const cancelHtml = getCancellationEmailHtml();
-        await client.emails.send({
+        const cancelResult = await client.emails.send({
           from: `EntryLab Signals <${fromEmail}>`,
           to: email,
           subject: '[TEST] Subscription Cancelled - EntryLab',
           html: cancelHtml,
         });
-        results.push('Cancellation email sent');
+        if (cancelResult.error) {
+          results.push(`Cancellation email failed: ${cancelResult.error.message}`);
+        } else {
+          results.push('Cancellation email sent');
+        }
       } catch (e: any) {
         results.push(`Cancellation email failed: ${e.message}`);
       }
 
+      await delay(600); // Wait to avoid rate limit
+
       // 3. Free Channel Email
       try {
         const freeHtml = getFreeChannelEmailHtml('https://t.me/entrylabs');
-        await client.emails.send({
+        const freeResult = await client.emails.send({
           from: `EntryLab Signals <${fromEmail}>`,
           to: email,
           subject: '[TEST] Welcome to EntryLab Free Channel!',
           html: freeHtml,
         });
-        results.push('Free channel email sent');
+        if (freeResult.error) {
+          results.push(`Free channel email failed: ${freeResult.error.message}`);
+        } else {
+          results.push('Free channel email sent');
+        }
       } catch (e: any) {
         results.push(`Free channel email failed: ${e.message}`);
       }
