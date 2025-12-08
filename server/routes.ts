@@ -9,7 +9,7 @@ import { sendReviewNotification, sendTelegramMessage, getTelegramBot } from "./t
 import { generateStructuredData } from "./structured-data";
 import { getUncachableStripeClient } from "./stripeClient";
 import { eq } from "drizzle-orm";
-import { getWelcomeEmailHtml } from "./emailTemplates";
+import { getWelcomeEmailHtml, getCancellationEmailHtml, getFreeChannelEmailHtml } from "./emailTemplates";
 import { getUncachableResendClient } from "./resendClient";
 
 // Cache key for published reviews - used for cache invalidation after approval/rejection
@@ -1913,6 +1913,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Admin resend email error:', error);
       res.status(500).json({ error: 'Failed to send email: ' + error.message });
+    }
+  });
+
+  // Admin endpoint to send test emails (all 3 types)
+  app.post('/api/admin/send-test-emails', async (req, res) => {
+    try {
+      const { email, adminKey } = req.body;
+      
+      const expectedKey = process.env.ADMIN_API_KEY || 'entrylab-admin-2024';
+      if (adminKey !== expectedKey) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      if (!email) {
+        return res.status(400).json({ error: 'Email required' });
+      }
+
+      const { client, fromEmail } = await getUncachableResendClient();
+      const results: string[] = [];
+
+      // 1. Welcome Email (Premium)
+      try {
+        const welcomeHtml = getWelcomeEmailHtml('https://t.me/+TestInviteLink123');
+        await client.emails.send({
+          from: `EntryLab Signals <${fromEmail}>`,
+          to: email,
+          subject: '[TEST] Welcome to EntryLab Premium Signals!',
+          html: welcomeHtml,
+        });
+        results.push('Welcome email sent');
+      } catch (e: any) {
+        results.push(`Welcome email failed: ${e.message}`);
+      }
+
+      // 2. Cancellation Email
+      try {
+        const cancelHtml = getCancellationEmailHtml();
+        await client.emails.send({
+          from: `EntryLab Signals <${fromEmail}>`,
+          to: email,
+          subject: '[TEST] Subscription Cancelled - EntryLab',
+          html: cancelHtml,
+        });
+        results.push('Cancellation email sent');
+      } catch (e: any) {
+        results.push(`Cancellation email failed: ${e.message}`);
+      }
+
+      // 3. Free Channel Email
+      try {
+        const freeHtml = getFreeChannelEmailHtml('https://t.me/entrylabs');
+        await client.emails.send({
+          from: `EntryLab Signals <${fromEmail}>`,
+          to: email,
+          subject: '[TEST] Welcome to EntryLab Free Channel!',
+          html: freeHtml,
+        });
+        results.push('Free channel email sent');
+      } catch (e: any) {
+        results.push(`Free channel email failed: ${e.message}`);
+      }
+
+      console.log(`Admin: Test emails sent to ${email}:`, results);
+      res.json({ success: true, results });
+
+    } catch (error: any) {
+      console.error('Admin test emails error:', error);
+      res.status(500).json({ error: 'Failed to send test emails: ' + error.message });
     }
   });
 
