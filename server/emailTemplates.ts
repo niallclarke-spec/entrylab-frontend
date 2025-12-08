@@ -18,7 +18,7 @@ export function getWelcomeEmailHtml(inviteLink: string): string {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
                   <td align="center" style="padding-bottom: 30px;">
-                    <img src="https://entrylab.io/assets/entrylab-logo-green.png" alt="EntryLab" style="display: block; width: 190px; max-width: 100%; height: auto;" />
+                    <img src="https://entrylab.io/assets/entrylab-logo-green.png?v=2" alt="EntryLab" style="display: block; width: 190px; max-width: 100%; height: auto;" />
                   </td>
                 </tr>
                 <tr>
@@ -148,7 +148,7 @@ export function getCancellationEmailHtml(): string {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
                   <td align="center" style="padding-bottom: 30px;">
-                    <img src="https://entrylab.io/assets/entrylab-logo-green.png" alt="EntryLab" style="display: block; width: 190px; max-width: 100%; height: auto;" />
+                    <img src="https://entrylab.io/assets/entrylab-logo-green.png?v=2" alt="EntryLab" style="display: block; width: 190px; max-width: 100%; height: auto;" />
                   </td>
                 </tr>
                 <tr>
@@ -280,7 +280,7 @@ export function getFreeChannelEmailHtml(channelLink: string): string {
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                 <tr>
                   <td align="center" style="padding-bottom: 30px;">
-                    <img src="https://entrylab.io/assets/entrylab-logo-green.png" alt="EntryLab" style="display: block; width: 190px; max-width: 100%; height: auto;" />
+                    <img src="https://entrylab.io/assets/entrylab-logo-green.png?v=2" alt="EntryLab" style="display: block; width: 190px; max-width: 100%; height: auto;" />
                   </td>
                 </tr>
                 <tr>
