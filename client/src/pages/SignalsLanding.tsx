@@ -1167,7 +1167,7 @@ export default function SignalsLanding() {
               </div>
               <div>
                 <p className="text-white font-semibold">James Thompson</p>
-                <p className="text-[#adb2b1] text-sm">Premium Member since November 2025</p>
+                <p className="text-[#adb2b1] text-sm">VIP Member since November 2025</p>
               </div>
               <div className="ml-auto hidden sm:flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
