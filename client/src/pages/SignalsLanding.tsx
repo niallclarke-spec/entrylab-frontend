@@ -1057,9 +1057,7 @@ export default function SignalsLanding() {
           <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
             From Struggling to <span className="text-[#2bb32a]">Profitable</span>
           </h2>
-          <p className="text-[#adb2b1] text-lg max-w-2xl mx-auto">
-            Watch how our premium signals transformed this trader's results
-          </p>
+          <p className="text-[#adb2b1] text-lg max-w-2xl mx-auto">Watch how our premium signals transformed this Jamies results</p>
         </div>
 
         {/* Main video container with floating elements */}
