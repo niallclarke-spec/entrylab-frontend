@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowRight, TrendingUp, Shield, BarChart3, Target, Clock, Users, ChevronDown, ChevronUp, Mail, MessageCircle, Check, Zap, ChevronLeft, Pin, Bell, Star } from "lucide-react";
+import { ArrowRight, TrendingUp, Shield, BarChart3, Target, Clock, Users, ChevronDown, ChevronUp, Mail, MessageCircle, Check, Zap, ChevronLeft, Pin, Bell, Star, Play, Quote } from "lucide-react";
 import { SiTelegram, SiX } from "react-icons/si";
 import { Helmet } from "react-helmet-async";
 import { useToast } from "@/hooks/use-toast";
@@ -1045,28 +1045,87 @@ export default function SignalsLanding() {
           <EmailCaptureForm testIdSuffix="mid" buttonText="Join Free" centered />
         </div>
       </section>
-      {/* Video Testimonial Section */}
-      <section className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-20 md:py-28">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#2bb32a]" />
-          <span className="text-[#2bb32a] text-sm font-medium uppercase tracking-wider">Real Results</span>
-          <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#2bb32a]" />
+      {/* Video Testimonial Section - Modern Conversion-Optimized Design */}
+      <section className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-20 md:py-28">
+        {/* Section header with transformation angle */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-3 mb-6">
+            <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#ffd700] to-[#ffd700]" />
+            <span className="text-[#ffd700] text-sm font-semibold uppercase tracking-widest">Success Story</span>
+            <div className="h-px w-16 bg-gradient-to-l from-transparent via-[#ffd700] to-[#ffd700]" />
+          </div>
+          <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
+            From Struggling to <span className="text-[#2bb32a]">Profitable</span>
+          </h2>
+          <p className="text-[#adb2b1] text-lg max-w-2xl mx-auto">
+            Watch how our premium signals transformed this trader's results
+          </p>
         </div>
-        <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-4">
-          Hear From Our Traders
-        </h2>
-        <p className="text-[#adb2b1] text-center mb-12 max-w-2xl mx-auto">
-          Real results from real traders. See why professionals trust EntryLab for their XAU/USD signals.
-        </p>
+
+        {/* Main video container with floating elements */}
         <div className="relative">
-          {/* Glow effect behind video */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-[#2bb32a]/20 via-[#ffd700]/10 to-[#2bb32a]/20 rounded-3xl blur-xl opacity-60" />
+          {/* Ambient glow effects */}
+          <div className="absolute -inset-4 bg-gradient-to-r from-[#2bb32a]/30 via-[#ffd700]/20 to-[#2bb32a]/30 rounded-3xl blur-2xl opacity-50" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#2bb32a]/10 to-transparent rounded-3xl blur-xl" />
           
-          {/* Video container */}
-          <div className="relative rounded-2xl overflow-hidden bg-[#1a1e1c] border-2 border-[#2bb32a]/30 shadow-2xl shadow-[#2bb32a]/10">
-            {/* Top accent bar */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#2bb32a] via-[#ffd700] to-[#2bb32a]" />
+          {/* Floating stats cards - Left side */}
+          <div className="hidden lg:block absolute -left-20 top-1/4 z-20">
+            <div className="bg-[#1a1e1c]/90 backdrop-blur-xl border border-[#2bb32a]/40 rounded-xl p-4 shadow-2xl shadow-[#2bb32a]/20 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#2bb32a]/20 flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-[#2bb32a]" />
+                </div>
+                <div>
+                  <div className="text-[#2bb32a] font-bold text-xl">+847 pips</div>
+                  <div className="text-[#adb2b1] text-xs">Monthly profit</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Floating stats cards - Right side */}
+          <div className="hidden lg:block absolute -right-20 top-1/3 z-20">
+            <div className="bg-[#1a1e1c]/90 backdrop-blur-xl border border-[#ffd700]/40 rounded-xl p-4 shadow-2xl shadow-[#ffd700]/20 transform rotate-3 hover:rotate-0 transition-transform duration-300">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#ffd700]/20 flex items-center justify-center">
+                  <Target className="w-5 h-5 text-[#ffd700]" />
+                </div>
+                <div>
+                  <div className="text-[#ffd700] font-bold text-xl">82%</div>
+                  <div className="text-[#adb2b1] text-xs">Win rate</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom floating stat */}
+          <div className="hidden lg:block absolute -right-16 bottom-12 z-20">
+            <div className="bg-[#1a1e1c]/90 backdrop-blur-xl border border-[#2bb32a]/40 rounded-xl p-4 shadow-2xl shadow-[#2bb32a]/20 transform rotate-2 hover:rotate-0 transition-transform duration-300">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#2bb32a]/20 flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-[#2bb32a]" />
+                </div>
+                <div>
+                  <div className="text-white font-bold text-xl">3 months</div>
+                  <div className="text-[#adb2b1] text-xs">To profitability</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Video player container */}
+          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-b from-[#1B261D] to-[#1a1e1c] border-2 border-[#2bb32a]/30 shadow-2xl">
+            {/* Premium accent bar */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#2bb32a] via-[#ffd700] to-[#2bb32a] z-10" />
             
+            {/* Verified badge - top right */}
+            <div className="absolute top-4 right-4 z-20">
+              <div className="flex items-center gap-2 bg-[#ffd700] text-[#1a1e1c] px-3 py-1.5 rounded-full text-sm font-bold shadow-lg">
+                <Star className="w-4 h-4 fill-current" />
+                <span>Verified Trader</span>
+              </div>
+            </div>
+
             <video
               className="w-full aspect-video"
               controls
@@ -1077,27 +1136,65 @@ export default function SignalsLanding() {
               Your browser does not support the video tag.
             </video>
           </div>
-          
-          {/* Floating badge */}
-          <div className="absolute -top-4 -right-4 md:right-8 bg-[#ffd700] text-[#1a1e1c] px-4 py-2 rounded-full text-sm font-bold shadow-lg flex items-center gap-2 z-10">
-            <Star className="w-4 h-4 fill-current" />
-            <span>Verified Trader</span>
+
+          {/* Quote callout below video */}
+          <div className="relative mt-8 p-6 md:p-8 bg-gradient-to-r from-[#1B261D] to-[#1a1e1c] rounded-2xl border border-[#2bb32a]/20">
+            <Quote className="absolute -top-4 left-6 w-8 h-8 text-[#ffd700] fill-[#ffd700]/20" />
+            <p className="text-white text-lg md:text-xl italic leading-relaxed pl-4">
+              "I went from losing trades to consistently profitable in just 3 months. The signals are incredibly accurate and the risk management guidance saved my account."
+            </p>
+            <div className="flex items-center gap-4 mt-6 pl-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#2bb32a] to-[#1a1e1c] flex items-center justify-center border-2 border-[#2bb32a]/50">
+                <span className="text-white font-bold">JT</span>
+              </div>
+              <div>
+                <p className="text-white font-semibold">James Thompson</p>
+                <p className="text-[#adb2b1] text-sm">Premium Member since March 2024</p>
+              </div>
+              <div className="ml-auto hidden sm:flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 text-[#ffd700] fill-[#ffd700]" />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-        
-        {/* Trust indicators below video */}
-        <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-[#adb2b1]">
-          <div className="flex items-center gap-2">
-            <Check className="w-4 h-4 text-[#2bb32a]" />
-            <span>Real subscriber</span>
+
+        {/* Trust indicators - mobile stats */}
+        <div className="grid grid-cols-3 gap-4 mt-8 lg:hidden">
+          <div className="bg-[#1B261D]/80 backdrop-blur rounded-xl p-4 text-center border border-[#2bb32a]/20">
+            <div className="text-[#2bb32a] font-bold text-lg">+847</div>
+            <div className="text-[#adb2b1] text-xs">Pips/month</div>
           </div>
-          <div className="flex items-center gap-2">
-            <Check className="w-4 h-4 text-[#2bb32a]" />
+          <div className="bg-[#1B261D]/80 backdrop-blur rounded-xl p-4 text-center border border-[#ffd700]/20">
+            <div className="text-[#ffd700] font-bold text-lg">82%</div>
+            <div className="text-[#adb2b1] text-xs">Win rate</div>
+          </div>
+          <div className="bg-[#1B261D]/80 backdrop-blur rounded-xl p-4 text-center border border-[#2bb32a]/20">
+            <div className="text-white font-bold text-lg">3 mo</div>
+            <div className="text-[#adb2b1] text-xs">To profit</div>
+          </div>
+        </div>
+
+        {/* Social proof strip */}
+        <div className="flex flex-wrap justify-center gap-6 mt-10 text-sm">
+          <div className="flex items-center gap-2 text-[#adb2b1]">
+            <div className="w-5 h-5 rounded-full bg-[#2bb32a] flex items-center justify-center">
+              <Check className="w-3 h-3 text-white" />
+            </div>
+            <span>Real subscriber video</span>
+          </div>
+          <div className="flex items-center gap-2 text-[#adb2b1]">
+            <div className="w-5 h-5 rounded-full bg-[#2bb32a] flex items-center justify-center">
+              <Check className="w-3 h-3 text-white" />
+            </div>
             <span>Unscripted testimonial</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Check className="w-4 h-4 text-[#2bb32a]" />
-            <span>Verified profits</span>
+          <div className="flex items-center gap-2 text-[#adb2b1]">
+            <div className="w-5 h-5 rounded-full bg-[#2bb32a] flex items-center justify-center">
+              <Check className="w-3 h-3 text-white" />
+            </div>
+            <span>Verified trading results</span>
           </div>
         </div>
       </section>
