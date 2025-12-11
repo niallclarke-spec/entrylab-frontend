@@ -1221,9 +1221,7 @@ export default function SignalsLanding() {
         {/* Bottom gradient fade into next section */}
         <div className="absolute bottom-0 left-0 right-0 h-16 md:h-32 bg-gradient-to-t from-[#1a1e1c] via-[#1a1e1c]/60 to-transparent pointer-events-none z-20" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-4">
-            Reviews from our Clients
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-4">Reviews From Our VIP Members</h2>
           <p className="text-[#adb2b1] text-center max-w-2xl mx-auto">
             Real traders sharing their experience with EntryLab signals. Verified results, honest feedback.
           </p>
@@ -1309,7 +1307,6 @@ export default function SignalsLanding() {
         <div className="absolute left-0 top-0 bottom-0 w-12 md:w-48 bg-gradient-to-r from-[#1a1e1c] via-[#1a1e1c]/80 to-transparent pointer-events-none z-10" />
         <div className="absolute right-0 top-0 bottom-0 w-12 md:w-48 bg-gradient-to-l from-[#1a1e1c] via-[#1a1e1c]/80 to-transparent pointer-events-none z-10" />
       </section>
-
       {/* Mid-page CTA - Free Channel */}
       <section className="relative z-10 py-20 md:py-28 bg-dot-pattern-black border-y border-[#2bb32a]/30">
         {/* Top gradient stroke */}
@@ -1371,7 +1368,6 @@ export default function SignalsLanding() {
           </div>
         </div>
       </section>
-
       {/* FAQ Section */}
       <section id="faq" className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-20 md:py-28">
         <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
