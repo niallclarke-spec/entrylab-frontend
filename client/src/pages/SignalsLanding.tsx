@@ -1047,22 +1047,58 @@ export default function SignalsLanding() {
       </section>
       {/* Video Testimonial Section */}
       <section className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-20 md:py-28">
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#2bb32a]" />
+          <span className="text-[#2bb32a] text-sm font-medium uppercase tracking-wider">Real Results</span>
+          <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#2bb32a]" />
+        </div>
         <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-4">
           Hear From Our Traders
         </h2>
         <p className="text-[#adb2b1] text-center mb-12 max-w-2xl mx-auto">
           Real results from real traders. See why professionals trust EntryLab for their XAU/USD signals.
         </p>
-        <div className="relative rounded-2xl overflow-hidden bg-[#1a1e1c] border border-[#2a2f2c] shadow-xl">
-          <video
-            className="w-full aspect-video"
-            controls
-            preload="metadata"
-            data-testid="video-testimonial"
-          >
-            <source src="/assets/testimonial-video.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+        <div className="relative">
+          {/* Glow effect behind video */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-[#2bb32a]/20 via-[#ffd700]/10 to-[#2bb32a]/20 rounded-3xl blur-xl opacity-60" />
+          
+          {/* Video container */}
+          <div className="relative rounded-2xl overflow-hidden bg-[#1a1e1c] border-2 border-[#2bb32a]/30 shadow-2xl shadow-[#2bb32a]/10">
+            {/* Top accent bar */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#2bb32a] via-[#ffd700] to-[#2bb32a]" />
+            
+            <video
+              className="w-full aspect-video"
+              controls
+              preload="metadata"
+              data-testid="video-testimonial"
+            >
+              <source src="/assets/testimonial-video.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          
+          {/* Floating badge */}
+          <div className="absolute -top-4 -right-4 md:right-8 bg-[#ffd700] text-[#1a1e1c] px-4 py-2 rounded-full text-sm font-bold shadow-lg flex items-center gap-2 z-10">
+            <Star className="w-4 h-4 fill-current" />
+            <span>Verified Trader</span>
+          </div>
+        </div>
+        
+        {/* Trust indicators below video */}
+        <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-[#adb2b1]">
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-[#2bb32a]" />
+            <span>Real subscriber</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-[#2bb32a]" />
+            <span>Unscripted testimonial</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-[#2bb32a]" />
+            <span>Verified profits</span>
+          </div>
         </div>
       </section>
 
