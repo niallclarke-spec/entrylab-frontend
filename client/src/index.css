@@ -899,9 +899,22 @@
 
   /* FAQ accordion styling */
   .signals-faq-item {
-    border-bottom: 1.5px solid #adb2b1;
-    padding-bottom: 16px;
-    margin-bottom: 24px;
+    border-bottom: 1px solid rgba(173, 178, 177, 0.3);
+    padding: 16px 0 16px 16px;
+    margin-bottom: 8px;
+    border-left: 3px solid transparent;
+    transition: all 0.3s ease;
+  }
+
+  .signals-faq-item:hover {
+    border-left-color: rgba(43, 179, 42, 0.4);
+    background: rgba(43, 179, 42, 0.03);
+  }
+
+  .signals-faq-item-active {
+    border-left: 3px solid;
+    border-image: linear-gradient(to bottom, #2bb32a, #1a8f1a) 1;
+    background: rgba(43, 179, 42, 0.05);
   }
 
   .signals-faq-question {

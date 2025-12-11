@@ -90,14 +90,14 @@ const sampleSignals = [
 
 function FAQItem({ question, answer, isOpen, onClick }: { question: string; answer: string; isOpen: boolean; onClick: () => void }) {
   return (
-    <div className="signals-faq-item">
+    <div className={`signals-faq-item ${isOpen ? 'signals-faq-item-active' : ''}`}>
       <button
         className="signals-faq-question w-full text-left"
         onClick={onClick}
         data-testid={`faq-${question.substring(0, 20).replace(/\s+/g, '-').toLowerCase()}`}
       >
         <span className="flex-1 text-lg md:text-2xl">{question}</span>
-        {isOpen ? <ChevronUp className="w-5 h-5 flex-shrink-0" /> : <ChevronDown className="w-5 h-5 flex-shrink-0" />}
+        {isOpen ? <ChevronUp className="w-5 h-5 flex-shrink-0 text-[#2bb32a]" /> : <ChevronDown className="w-5 h-5 flex-shrink-0" />}
       </button>
       {isOpen && <p className="signals-faq-answer">{answer}</p>}
     </div>
