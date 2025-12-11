@@ -1303,9 +1303,9 @@ export default function SignalsLanding() {
           </div>
         </div>
         
-        {/* Fade edges */}
-        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[#1a1e1c] to-transparent pointer-events-none z-10" />
-        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#1a1e1c] to-transparent pointer-events-none z-10" />
+        {/* Fade edges - wider and more gradual */}
+        <div className="absolute left-0 top-0 bottom-0 w-48 bg-gradient-to-r from-[#1a1e1c] via-[#1a1e1c]/80 to-transparent pointer-events-none z-10" />
+        <div className="absolute right-0 top-0 bottom-0 w-48 bg-gradient-to-l from-[#1a1e1c] via-[#1a1e1c]/80 to-transparent pointer-events-none z-10" />
       </section>
       {/* FAQ Section */}
       <section id="faq" className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-20 md:py-28">
