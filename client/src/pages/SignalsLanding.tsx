@@ -1311,7 +1311,7 @@ export default function SignalsLanding() {
       </section>
 
       {/* Mid-page CTA - Free Channel */}
-      <section className="relative z-10 py-16 md:py-24 bg-dot-pattern-black border-y border-[#2bb32a]/30">
+      <section className="relative z-10 py-20 md:py-28 bg-dot-pattern-black border-y border-[#2bb32a]/30">
         {/* Top gradient stroke */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#2bb32a]/60 to-transparent" />
         {/* Bottom gradient stroke */}
