@@ -699,6 +699,12 @@
     animation-play-state: paused;
   }
 
+  /* Subtle dot pattern background */
+  .bg-dot-pattern {
+    background-image: radial-gradient(circle, rgba(43, 179, 42, 0.15) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
   /* Progress bar glow effect */
   .progress-glow {
     box-shadow: 0 0 10px hsl(var(--primary) / 0.4), 0 0 20px hsl(var(--primary) / 0.2);
