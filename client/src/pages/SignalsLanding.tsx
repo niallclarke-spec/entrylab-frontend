@@ -1228,64 +1228,78 @@ export default function SignalsLanding() {
         </div>
         
         {/* Top row - scrolls right */}
-        <div className="relative mb-6">
-          <div className="flex gap-6 animate-scroll-right">
-            {[...scrollingTestimonials.topRow, ...scrollingTestimonials.topRow].map((testimonial, i) => (
-              <div 
-                key={i} 
-                className="flex-shrink-0 w-[400px] bg-[#1c1c1e] border border-[#2a2a2e] rounded-xl p-6 hover:border-[#3a3a3e] transition-colors"
-                data-testid={`testimonial-top-${i}`}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6b7280] to-[#374151] flex items-center justify-center">
-                    <span className="text-white font-medium text-sm">{testimonial.avatar}</span>
+        <div className="relative mb-6 overflow-hidden">
+          <div className="flex gap-6 animate-scroll-right" style={{ width: 'max-content' }}>
+            {[...scrollingTestimonials.topRow, ...scrollingTestimonials.topRow].map((testimonial, i) => {
+              const avatarColors = ['#2bb32a', '#3b82f6', '#f97316', '#ec4899'];
+              const colorIndex = i % avatarColors.length;
+              return (
+                <div 
+                  key={i} 
+                  className="flex-shrink-0 w-[480px] bg-[#1c1c1e] border border-[#2a2a2e] rounded-xl p-6 hover:border-[#3a3a3e] transition-colors"
+                  data-testid={`testimonial-top-${i}`}
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div 
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: avatarColors[colorIndex] }}
+                    >
+                      <span className="text-white font-medium text-sm">{testimonial.avatar}</span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-white font-medium">{testimonial.author}</p>
+                      <p className="text-[#6b7280] text-sm">{testimonial.role}</p>
+                    </div>
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, starIdx) => (
+                        <Star key={starIdx} className="w-4 h-4 text-[#00b67a] fill-[#00b67a]" />
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-white font-medium">{testimonial.author}</p>
-                    <p className="text-[#6b7280] text-sm">{testimonial.role}</p>
-                  </div>
-                  <div className="flex gap-0.5">
-                    {[...Array(5)].map((_, starIdx) => (
-                      <Star key={starIdx} className="w-4 h-4 text-[#00b67a] fill-[#00b67a]" />
-                    ))}
-                  </div>
+                  <p className="text-[#e5e7eb] leading-relaxed">
+                    I love <span className="text-[#2bb32a]">EntryLab signals</span> {testimonial.quote.toLowerCase()}
+                  </p>
                 </div>
-                <p className="text-[#e5e7eb] leading-relaxed">
-                  I love <span className="text-[#e879f9]">EntryLab signals</span> {testimonial.quote.toLowerCase()}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
         
         {/* Bottom row - scrolls left */}
-        <div className="relative">
-          <div className="flex gap-6 animate-scroll-left">
-            {[...scrollingTestimonials.bottomRow, ...scrollingTestimonials.bottomRow].map((testimonial, i) => (
-              <div 
-                key={i} 
-                className="flex-shrink-0 w-[400px] bg-[#1c1c1e] border border-[#2a2a2e] rounded-xl p-6 hover:border-[#3a3a3e] transition-colors"
-                data-testid={`testimonial-bottom-${i}`}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6b7280] to-[#374151] flex items-center justify-center">
-                    <span className="text-white font-medium text-sm">{testimonial.avatar}</span>
+        <div className="relative overflow-hidden">
+          <div className="flex gap-6 animate-scroll-left" style={{ width: 'max-content' }}>
+            {[...scrollingTestimonials.bottomRow, ...scrollingTestimonials.bottomRow].map((testimonial, i) => {
+              const avatarColors = ['#f97316', '#ec4899', '#2bb32a', '#3b82f6'];
+              const colorIndex = i % avatarColors.length;
+              return (
+                <div 
+                  key={i} 
+                  className="flex-shrink-0 w-[480px] bg-[#1c1c1e] border border-[#2a2a2e] rounded-xl p-6 hover:border-[#3a3a3e] transition-colors"
+                  data-testid={`testimonial-bottom-${i}`}
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div 
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: avatarColors[colorIndex] }}
+                    >
+                      <span className="text-white font-medium text-sm">{testimonial.avatar}</span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-white font-medium">{testimonial.author}</p>
+                      <p className="text-[#6b7280] text-sm">{testimonial.role}</p>
+                    </div>
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, starIdx) => (
+                        <Star key={starIdx} className="w-4 h-4 text-[#00b67a] fill-[#00b67a]" />
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-white font-medium">{testimonial.author}</p>
-                    <p className="text-[#6b7280] text-sm">{testimonial.role}</p>
-                  </div>
-                  <div className="flex gap-0.5">
-                    {[...Array(5)].map((_, starIdx) => (
-                      <Star key={starIdx} className="w-4 h-4 text-[#00b67a] fill-[#00b67a]" />
-                    ))}
-                  </div>
+                  <p className="text-[#e5e7eb] leading-relaxed">
+                    I love <span className="text-[#2bb32a]">EntryLab signals</span> {testimonial.quote.toLowerCase()}
+                  </p>
                 </div>
-                <p className="text-[#e5e7eb] leading-relaxed">
-                  I love <span className="text-[#e879f9]">EntryLab signals</span> {testimonial.quote.toLowerCase()}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
         

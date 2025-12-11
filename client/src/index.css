@@ -667,29 +667,31 @@
 
   /* Infinite horizontal scroll animations for testimonials */
   @keyframes scroll-right {
-    0% {
+    from {
       transform: translateX(0);
     }
-    100% {
-      transform: translateX(-50%);
+    to {
+      transform: translateX(calc(-50% - 12px));
     }
   }
 
   @keyframes scroll-left {
-    0% {
-      transform: translateX(-50%);
+    from {
+      transform: translateX(calc(-50% - 12px));
     }
-    100% {
+    to {
       transform: translateX(0);
     }
   }
 
   .animate-scroll-right {
-    animation: scroll-right 40s linear infinite;
+    animation: scroll-right 50s linear infinite;
+    will-change: transform;
   }
 
   .animate-scroll-left {
-    animation: scroll-left 40s linear infinite;
+    animation: scroll-left 50s linear infinite;
+    will-change: transform;
   }
 
   .animate-scroll-right:hover,
