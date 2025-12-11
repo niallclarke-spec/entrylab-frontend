@@ -825,9 +825,24 @@
     border-radius: 64px;
     padding: 16px 32px;
     font-weight: 500;
+  }
+
+  .signals-btn-primary-sm {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+
+  @media (min-width: 640px) {
+    .sm\:signals-btn-primary-md {
+      padding: 16px 32px;
+      font-size: 16px;
+    }
+  }
+
+  .signals-btn-primary {
     display: inline-flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     transition: all 0.2s ease;
     border: none;
     cursor: pointer;
