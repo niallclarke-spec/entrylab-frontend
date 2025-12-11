@@ -1233,25 +1233,25 @@ export default function SignalsLanding() {
             {[...scrollingTestimonials.topRow, ...scrollingTestimonials.topRow].map((testimonial, i) => (
               <div 
                 key={i} 
-                className="flex-shrink-0 w-[400px] bg-[#1B261D] border border-[#2bb32a]/20 rounded-xl p-6 hover:border-[#2bb32a]/40 transition-colors"
+                className="flex-shrink-0 w-[400px] bg-[#1c1c1e] border border-[#2a2a2e] rounded-xl p-6 hover:border-[#3a3a3e] transition-colors"
                 data-testid={`testimonial-top-${i}`}
               >
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#2bb32a] to-[#1a1e1c] flex items-center justify-center border border-[#2bb32a]/30">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6b7280] to-[#374151] flex items-center justify-center">
                     <span className="text-white font-medium text-sm">{testimonial.avatar}</span>
                   </div>
                   <div className="flex-1">
                     <p className="text-white font-medium">{testimonial.author}</p>
-                    <p className="text-[#2bb32a] text-sm">{testimonial.role}</p>
+                    <p className="text-[#6b7280] text-sm">{testimonial.role}</p>
                   </div>
                   <div className="flex gap-0.5">
                     {[...Array(5)].map((_, starIdx) => (
-                      <Star key={starIdx} className="w-4 h-4 text-[#2bb32a] fill-[#2bb32a]" />
+                      <Star key={starIdx} className="w-4 h-4 text-[#00b67a] fill-[#00b67a]" />
                     ))}
                   </div>
                 </div>
                 <p className="text-[#e5e7eb] leading-relaxed">
-                  I love <span className="text-[#2bb32a]">EntryLab signals</span> {testimonial.quote.toLowerCase()}
+                  I love <span className="text-[#e879f9]">EntryLab signals</span> {testimonial.quote.toLowerCase()}
                 </p>
               </div>
             ))}
@@ -1264,25 +1264,25 @@ export default function SignalsLanding() {
             {[...scrollingTestimonials.bottomRow, ...scrollingTestimonials.bottomRow].map((testimonial, i) => (
               <div 
                 key={i} 
-                className="flex-shrink-0 w-[400px] bg-[#1B261D] border border-[#2bb32a]/20 rounded-xl p-6 hover:border-[#2bb32a]/40 transition-colors"
+                className="flex-shrink-0 w-[400px] bg-[#1c1c1e] border border-[#2a2a2e] rounded-xl p-6 hover:border-[#3a3a3e] transition-colors"
                 data-testid={`testimonial-bottom-${i}`}
               >
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#2bb32a] to-[#1a1e1c] flex items-center justify-center border border-[#2bb32a]/30">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6b7280] to-[#374151] flex items-center justify-center">
                     <span className="text-white font-medium text-sm">{testimonial.avatar}</span>
                   </div>
                   <div className="flex-1">
                     <p className="text-white font-medium">{testimonial.author}</p>
-                    <p className="text-[#2bb32a] text-sm">{testimonial.role}</p>
+                    <p className="text-[#6b7280] text-sm">{testimonial.role}</p>
                   </div>
                   <div className="flex gap-0.5">
                     {[...Array(5)].map((_, starIdx) => (
-                      <Star key={starIdx} className="w-4 h-4 text-[#2bb32a] fill-[#2bb32a]" />
+                      <Star key={starIdx} className="w-4 h-4 text-[#00b67a] fill-[#00b67a]" />
                     ))}
                   </div>
                 </div>
                 <p className="text-[#e5e7eb] leading-relaxed">
-                  I love <span className="text-[#2bb32a]">EntryLab signals</span> {testimonial.quote.toLowerCase()}
+                  I love <span className="text-[#e879f9]">EntryLab signals</span> {testimonial.quote.toLowerCase()}
                 </p>
               </div>
             ))}
