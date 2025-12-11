@@ -1066,7 +1066,7 @@ export default function SignalsLanding() {
         </div>
       </section>
       {/* Video Testimonial Section - Modern Conversion-Optimized Design */}
-      <section className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-20 md:py-28">
+      <section className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-20 md:py-28">
         {/* Section header with transformation angle */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-3 mb-6">
