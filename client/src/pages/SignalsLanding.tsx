@@ -1045,6 +1045,27 @@ export default function SignalsLanding() {
           <EmailCaptureForm testIdSuffix="mid" buttonText="Join Free" centered />
         </div>
       </section>
+      {/* Video Testimonial Section */}
+      <section className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-20 md:py-28">
+        <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-4">
+          Hear From Our Traders
+        </h2>
+        <p className="text-[#adb2b1] text-center mb-12 max-w-2xl mx-auto">
+          Real results from real traders. See why professionals trust EntryLab for their XAU/USD signals.
+        </p>
+        <div className="relative rounded-2xl overflow-hidden bg-[#1a1e1c] border border-[#2a2f2c] shadow-xl">
+          <video
+            className="w-full aspect-video"
+            controls
+            preload="metadata"
+            data-testid="video-testimonial"
+          >
+            <source src="/assets/testimonial-video.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </section>
+
       {/* Testimonials */}
       <section id="testimonials" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-20 md:py-28">
         <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
