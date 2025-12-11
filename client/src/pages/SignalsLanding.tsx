@@ -164,15 +164,15 @@ function EmailCaptureForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className={`flex flex-col sm:flex-row gap-2 sm:gap-3 w-full max-w-xs sm:max-w-xl ${centered ? 'mx-auto' : ''}`}>
+    <form onSubmit={handleSubmit} className={`flex flex-col sm:flex-row gap-3 w-full max-w-xl ${centered ? 'mx-auto' : ''}`}>
       <div className="flex-1 relative">
-        <SiTelegram className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-[#229ED9]" />
+        <SiTelegram className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#229ED9]" />
         <input
           type="email"
           placeholder="Enter your email address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 text-sm sm:text-base bg-[#273028] border border-[#2bb32a]/50 rounded-full text-white placeholder:text-[#adb2b1] focus:outline-none focus:border-[#2bb32a] focus:shadow-[0_0_40px_rgba(43,179,42,0.6),0_0_20px_rgba(43,179,42,0.4)] transition-all shadow-[0_0_35px_rgba(43,179,42,0.4),0_0_15px_rgba(43,179,42,0.3)]"
+          className="w-full pl-12 pr-4 py-4 bg-[#273028] border border-[#2bb32a]/50 rounded-full text-white placeholder:text-[#adb2b1] focus:outline-none focus:border-[#2bb32a] focus:shadow-[0_0_40px_rgba(43,179,42,0.6),0_0_20px_rgba(43,179,42,0.4)] transition-all shadow-[0_0_35px_rgba(43,179,42,0.4),0_0_15px_rgba(43,179,42,0.3)]"
           disabled={isSubmitting}
           required
           data-testid={`input-email${suffix}`}
@@ -181,11 +181,11 @@ function EmailCaptureForm({
       <button
         type="submit"
         disabled={isSubmitting}
-        className="signals-btn-primary signals-btn-primary-sm sm:signals-btn-primary-md whitespace-nowrap"
+        className="signals-btn-primary whitespace-nowrap"
         data-testid={`button-submit${suffix}`}
       >
         {isSubmitting ? "Joining..." : buttonText}
-        {showIcon && <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />}
+        {showIcon && <ArrowRight className="w-5 h-5" />}
       </button>
     </form>
   );
