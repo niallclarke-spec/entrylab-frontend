@@ -665,6 +665,38 @@
     animation: slide-up-fade 0.5s ease-out forwards;
   }
 
+  /* Infinite horizontal scroll animations for testimonials */
+  @keyframes scroll-right {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes scroll-left {
+    0% {
+      transform: translateX(-50%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  .animate-scroll-right {
+    animation: scroll-right 40s linear infinite;
+  }
+
+  .animate-scroll-left {
+    animation: scroll-left 40s linear infinite;
+  }
+
+  .animate-scroll-right:hover,
+  .animate-scroll-left:hover {
+    animation-play-state: paused;
+  }
+
   /* Progress bar glow effect */
   .progress-glow {
     box-shadow: 0 0 10px hsl(var(--primary) / 0.4), 0 0 20px hsl(var(--primary) / 0.2);

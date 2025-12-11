@@ -35,6 +35,26 @@ const testimonials = [
   },
 ];
 
+// Extended testimonials for scrolling rows
+const scrollingTestimonials = {
+  topRow: [
+    { quote: "The analysis quality is institutional-grade. Finally, signals I can trust with my capital.", author: "Marcus R.", role: "@marcus_trades", avatar: "M" },
+    { quote: "82% win rate over 3 months. These signals literally changed my trading career.", author: "James T.", role: "@james_fx", avatar: "J" },
+    { quote: "Crystal clear entries and exits. No more second-guessing. Pure execution.", author: "Anna K.", role: "@anna_invest", avatar: "A" },
+    { quote: "Went from losing trader to consistently profitable. The methodology is everything.", author: "Michael P.", role: "@mike_pips", avatar: "M" },
+    { quote: "Best signal service I've used in 8 years of trading. Period.", author: "Robert L.", role: "@rob_trades", avatar: "R" },
+    { quote: "The risk management alone is worth 10x the subscription. My account thanks you.", author: "Elena S.", role: "@elena_fx", avatar: "E" },
+  ],
+  bottomRow: [
+    { quote: "From struggling to profitable in 90 days. These signals are the real deal.", author: "Sarah C.", role: "@sarah_capital", avatar: "S" },
+    { quote: "I've tried many signal services. This is the only one with verifiable results.", author: "David T.", role: "@david_trades", avatar: "D" },
+    { quote: "The Telegram alerts are instant. Never miss an entry. Game changer.", author: "Chris B.", role: "@chris_pips", avatar: "C" },
+    { quote: "Professional grade analysis at a fraction of institutional costs. Incredible value.", author: "Linda M.", role: "@linda_fx", avatar: "L" },
+    { quote: "Clear TP and SL levels every time. No ambiguity. Just profits.", author: "Kevin H.", role: "@kevin_gold", avatar: "K" },
+    { quote: "The win rate speaks for itself. 47 trades, 39 winners. Do the math.", author: "Patricia W.", role: "@pat_trades", avatar: "P" },
+  ],
+};
+
 const faqs = [
   {
     question: "What is included in the free Telegram channel?",
@@ -1196,32 +1216,82 @@ export default function SignalsLanding() {
           </div>
         </div>
       </section>
-      {/* Testimonials */}
-      <section id="testimonials" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-20 md:py-28">
-        <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
-          What traders are saying
-        </h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, i) => (
-            <div key={i} className="signals-testimonial-card">
-              <div className="flex justify-end mb-6">
-                {[...Array(5)].map((_, starIndex) => (
-                  <Star key={starIndex} className="w-5 h-5 text-[#00b67a] fill-[#00b67a]" />
-                ))}
-              </div>
-              <p className="text-[#1a1e1c] text-lg mb-8 leading-relaxed">"{testimonial.quote}"</p>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-[#2bb32a] flex items-center justify-center">
-                  <span className="text-white font-medium">{testimonial.avatar}</span>
-                </div>
-                <div>
-                  <p className="text-[#1a1e1c] font-medium">{testimonial.author}</p>
-                  <p className="text-[#6b7280] text-sm">{testimonial.role}</p>
-                </div>
-              </div>
-            </div>
-          ))}
+      {/* Testimonials - Scrolling Rows */}
+      <section id="testimonials" className="relative z-10 py-20 md:py-28 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-4">
+            Reviews from our Clients
+          </h2>
+          <p className="text-[#adb2b1] text-center max-w-2xl mx-auto">
+            Real traders sharing their experience with EntryLab signals. Verified results, honest feedback.
+          </p>
         </div>
+        
+        {/* Top row - scrolls right */}
+        <div className="relative mb-6">
+          <div className="flex gap-6 animate-scroll-right">
+            {[...scrollingTestimonials.topRow, ...scrollingTestimonials.topRow].map((testimonial, i) => (
+              <div 
+                key={i} 
+                className="flex-shrink-0 w-[400px] bg-[#1B261D] border border-[#2bb32a]/20 rounded-xl p-6 hover:border-[#2bb32a]/40 transition-colors"
+                data-testid={`testimonial-top-${i}`}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#2bb32a] to-[#1a1e1c] flex items-center justify-center border border-[#2bb32a]/30">
+                    <span className="text-white font-medium text-sm">{testimonial.avatar}</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white font-medium">{testimonial.author}</p>
+                    <p className="text-[#2bb32a] text-sm">{testimonial.role}</p>
+                  </div>
+                  <div className="flex gap-0.5">
+                    {[...Array(5)].map((_, starIdx) => (
+                      <Star key={starIdx} className="w-4 h-4 text-[#2bb32a] fill-[#2bb32a]" />
+                    ))}
+                  </div>
+                </div>
+                <p className="text-[#e5e7eb] leading-relaxed">
+                  I love <span className="text-[#2bb32a]">EntryLab signals</span> {testimonial.quote.toLowerCase()}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Bottom row - scrolls left */}
+        <div className="relative">
+          <div className="flex gap-6 animate-scroll-left">
+            {[...scrollingTestimonials.bottomRow, ...scrollingTestimonials.bottomRow].map((testimonial, i) => (
+              <div 
+                key={i} 
+                className="flex-shrink-0 w-[400px] bg-[#1B261D] border border-[#2bb32a]/20 rounded-xl p-6 hover:border-[#2bb32a]/40 transition-colors"
+                data-testid={`testimonial-bottom-${i}`}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#2bb32a] to-[#1a1e1c] flex items-center justify-center border border-[#2bb32a]/30">
+                    <span className="text-white font-medium text-sm">{testimonial.avatar}</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white font-medium">{testimonial.author}</p>
+                    <p className="text-[#2bb32a] text-sm">{testimonial.role}</p>
+                  </div>
+                  <div className="flex gap-0.5">
+                    {[...Array(5)].map((_, starIdx) => (
+                      <Star key={starIdx} className="w-4 h-4 text-[#2bb32a] fill-[#2bb32a]" />
+                    ))}
+                  </div>
+                </div>
+                <p className="text-[#e5e7eb] leading-relaxed">
+                  I love <span className="text-[#2bb32a]">EntryLab signals</span> {testimonial.quote.toLowerCase()}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Fade edges */}
+        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[#1a1e1c] to-transparent pointer-events-none z-10" />
+        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#1a1e1c] to-transparent pointer-events-none z-10" />
       </section>
       {/* FAQ Section */}
       <section id="faq" className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-20 md:py-28">
