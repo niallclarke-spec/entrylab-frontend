@@ -1218,6 +1218,8 @@ export default function SignalsLanding() {
       </section>
       {/* Testimonials - Scrolling Rows */}
       <section id="testimonials" className="relative z-10 py-20 md:py-28 overflow-hidden">
+        {/* Bottom gradient fade into next section */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#1a1e1c] via-[#1a1e1c]/60 to-transparent pointer-events-none z-20" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-4">
             Reviews from our Clients
