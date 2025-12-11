@@ -164,7 +164,7 @@ function EmailCaptureForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className={`flex flex-col sm:flex-row gap-2 sm:gap-3 w-full max-w-xl ${centered ? 'mx-auto' : ''}`}>
+    <form onSubmit={handleSubmit} className={`flex flex-col sm:flex-row gap-2 sm:gap-3 w-full max-w-xs sm:max-w-xl ${centered ? 'mx-auto' : ''}`}>
       <div className="flex-1 relative">
         <SiTelegram className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-[#229ED9]" />
         <input
