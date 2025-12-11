@@ -1106,7 +1106,7 @@ export default function SignalsLanding() {
                   <Clock className="w-5 h-5 text-[#2bb32a]" />
                 </div>
                 <div>
-                  <div className="text-white font-bold text-xl">3 months</div>
+                  <div className="text-white font-bold text-xl">3 Weeks</div>
                   <div className="text-[#adb2b1] text-xs">To profitability</div>
                 </div>
               </div>
