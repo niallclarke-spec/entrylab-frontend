@@ -726,6 +726,20 @@
     animation: testimonial-cycle 12s ease-in-out infinite;
   }
 
+  /* Telegram icon glow pulse */
+  @keyframes telegram-glow {
+    0%, 100% { 
+      filter: drop-shadow(0 0 2px #229ED9) drop-shadow(0 0 4px #229ED9);
+    }
+    50% { 
+      filter: drop-shadow(0 0 6px #229ED9) drop-shadow(0 0 12px #229ED9);
+    }
+  }
+
+  .animate-telegram-glow {
+    animation: telegram-glow 2s ease-in-out infinite;
+  }
+
   /* Progress bar glow effect */
   .progress-glow {
     box-shadow: 0 0 10px hsl(var(--primary) / 0.4), 0 0 20px hsl(var(--primary) / 0.2);

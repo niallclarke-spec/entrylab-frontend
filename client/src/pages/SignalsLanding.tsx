@@ -1320,10 +1320,7 @@ export default function SignalsLanding() {
         <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
           {/* Animated Telegram Badge */}
           <div className="inline-flex items-center gap-3 mb-6 px-5 py-2.5 rounded-full bg-[#229ED9]/15 border border-[#229ED9]/40 backdrop-blur-sm">
-            <div className="relative flex items-center justify-center">
-              <SiTelegram className="w-5 h-5 text-[#229ED9]" />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#2bb32a] rounded-full animate-pulse" />
-            </div>
+            <SiTelegram className="w-5 h-5 text-[#229ED9] animate-telegram-glow" />
             <span className="text-[#229ED9] text-sm font-medium">Live Alerts Active</span>
           </div>
           
