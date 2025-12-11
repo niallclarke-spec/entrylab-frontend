@@ -1071,7 +1071,7 @@ export default function SignalsLanding() {
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-3 mb-6">
             <div className="h-px w-16 bg-gradient-to-r from-transparent via-[#ffd700] to-[#ffd700]" />
-            <span className="text-[#ffd700] text-sm font-semibold uppercase tracking-widest">Success Story</span>
+            <span className="text-[#ffd700] text-sm font-semibold uppercase tracking-widest">Member Success Story</span>
             <div className="h-px w-16 bg-gradient-to-l from-transparent via-[#ffd700] to-[#ffd700]" />
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
