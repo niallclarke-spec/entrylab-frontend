@@ -1149,7 +1149,7 @@ export default function SignalsLanding() {
               </div>
               <div>
                 <p className="text-white font-semibold">James Thompson</p>
-                <p className="text-[#adb2b1] text-sm">Premium Member since March 2024</p>
+                <p className="text-[#adb2b1] text-sm">Premium Member since November 2025</p>
               </div>
               <div className="ml-auto hidden sm:flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
@@ -1198,7 +1198,6 @@ export default function SignalsLanding() {
           </div>
         </div>
       </section>
-
       {/* Testimonials */}
       <section id="testimonials" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-20 md:py-28">
         <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
