@@ -706,13 +706,20 @@
     background-size: 20px 20px;
   }
 
-  /* Cycling testimonial animation */
+  /* Dot pattern background on pure black */
+  .bg-dot-pattern-black {
+    background-color: #000000;
+    background-image: radial-gradient(circle, rgba(43, 179, 42, 0.3) 1.5px, transparent 1.5px);
+    background-size: 20px 20px;
+  }
+
+  /* Cycling testimonial animation - 24px height items */
   @keyframes testimonial-cycle {
     0%, 20% { transform: translateY(0); }
-    25%, 45% { transform: translateY(-32px); }
-    50%, 70% { transform: translateY(-64px); }
-    75%, 95% { transform: translateY(-96px); }
-    100% { transform: translateY(-128px); }
+    25%, 45% { transform: translateY(-24px); }
+    50%, 70% { transform: translateY(-48px); }
+    75%, 95% { transform: translateY(-72px); }
+    100% { transform: translateY(-96px); }
   }
 
   .animate-testimonial-cycle {

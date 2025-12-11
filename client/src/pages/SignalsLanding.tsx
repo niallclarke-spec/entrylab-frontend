@@ -1311,7 +1311,7 @@ export default function SignalsLanding() {
       </section>
 
       {/* Mid-page CTA - Free Channel */}
-      <section className="relative z-10 py-16 md:py-24 bg-dot-pattern border-y border-[#2bb32a]/30">
+      <section className="relative z-10 py-16 md:py-24 bg-dot-pattern-black border-y border-[#2bb32a]/30">
         {/* Top gradient stroke */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#2bb32a]/60 to-transparent" />
         {/* Bottom gradient stroke */}
@@ -1319,10 +1319,10 @@ export default function SignalsLanding() {
         
         <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
           {/* Animated Telegram Badge */}
-          <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-[#229ED9]/10 border border-[#229ED9]/30">
-            <div className="relative">
+          <div className="inline-flex items-center gap-3 mb-6 px-5 py-2.5 rounded-full bg-[#229ED9]/15 border border-[#229ED9]/40 backdrop-blur-sm">
+            <div className="relative flex items-center justify-center">
               <SiTelegram className="w-5 h-5 text-[#229ED9]" />
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#2bb32a] rounded-full animate-pulse" />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#2bb32a] rounded-full animate-pulse" />
             </div>
             <span className="text-[#229ED9] text-sm font-medium">Live Alerts Active</span>
           </div>
@@ -1339,27 +1339,33 @@ export default function SignalsLanding() {
           </p>
           
           {/* Cycling Testimonial Chips */}
-          <div className="mt-8 h-8 overflow-hidden">
-            <div className="animate-testimonial-cycle">
-              <div className="h-8 flex items-center justify-center gap-2">
-                <span className="text-[#2bb32a]">"Game changer!"</span>
-                <span className="text-[#6b7280]">- @mike_trades</span>
-              </div>
-              <div className="h-8 flex items-center justify-center gap-2">
-                <span className="text-[#2bb32a]">"Finally, signals that work"</span>
-                <span className="text-[#6b7280]">- @forex_elena</span>
-              </div>
-              <div className="h-8 flex items-center justify-center gap-2">
-                <span className="text-[#2bb32a]">"Best decision I made"</span>
-                <span className="text-[#6b7280]">- @trader_james</span>
-              </div>
-              <div className="h-8 flex items-center justify-center gap-2">
-                <span className="text-[#2bb32a]">"10x my account"</span>
-                <span className="text-[#6b7280]">- @gold_chris</span>
-              </div>
-              <div className="h-8 flex items-center justify-center gap-2">
-                <span className="text-[#2bb32a]">"Game changer!"</span>
-                <span className="text-[#6b7280]">- @mike_trades</span>
+          <div className="mt-8">
+            <div className="flex items-center justify-center gap-2 text-[#6b7280] text-sm mb-2">
+              <Quote className="w-4 h-4" />
+              <span>Traders say...</span>
+            </div>
+            <div className="h-6 overflow-hidden">
+              <div className="animate-testimonial-cycle">
+                <div className="h-6 flex items-center justify-center gap-2 text-sm">
+                  <span className="text-[#2bb32a]">"Game changer!"</span>
+                  <span className="text-[#6b7280]">- @mike_trades</span>
+                </div>
+                <div className="h-6 flex items-center justify-center gap-2 text-sm">
+                  <span className="text-[#2bb32a]">"Finally, signals that work"</span>
+                  <span className="text-[#6b7280]">- @forex_elena</span>
+                </div>
+                <div className="h-6 flex items-center justify-center gap-2 text-sm">
+                  <span className="text-[#2bb32a]">"Best decision I made"</span>
+                  <span className="text-[#6b7280]">- @trader_james</span>
+                </div>
+                <div className="h-6 flex items-center justify-center gap-2 text-sm">
+                  <span className="text-[#2bb32a]">"10x my account"</span>
+                  <span className="text-[#6b7280]">- @gold_chris</span>
+                </div>
+                <div className="h-6 flex items-center justify-center gap-2 text-sm">
+                  <span className="text-[#2bb32a]">"Game changer!"</span>
+                  <span className="text-[#6b7280]">- @mike_trades</span>
+                </div>
               </div>
             </div>
           </div>
