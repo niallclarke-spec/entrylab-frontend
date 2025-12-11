@@ -1309,6 +1309,23 @@ export default function SignalsLanding() {
         <div className="absolute left-0 top-0 bottom-0 w-12 md:w-48 bg-gradient-to-r from-[#1a1e1c] via-[#1a1e1c]/80 to-transparent pointer-events-none z-10" />
         <div className="absolute right-0 top-0 bottom-0 w-12 md:w-48 bg-gradient-to-l from-[#1a1e1c] via-[#1a1e1c]/80 to-transparent pointer-events-none z-10" />
       </section>
+
+      {/* Mid-page CTA - Free Channel */}
+      <section className="relative z-10 py-16 md:py-24">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Get a Taste of Our Signals
+          </h2>
+          <p className="text-[#adb2b1] text-lg mb-8 max-w-xl mx-auto">
+            Join our free Telegram channel and see our analysis in action. Get 2-3 signals weekly to experience the quality before upgrading.
+          </p>
+          <EmailCaptureForm testIdSuffix="mid-cta" buttonText="Get Free Access" centered />
+          <p className="text-[#6b7280] text-sm mt-4">
+            No credit card required. Instant Telegram access.
+          </p>
+        </div>
+      </section>
+
       {/* FAQ Section */}
       <section id="faq" className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-20 md:py-28">
         <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
