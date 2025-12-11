@@ -1238,7 +1238,7 @@ export default function SignalsLanding() {
               return (
                 <div 
                   key={i} 
-                  className="flex-shrink-0 w-[480px] bg-[#1c1c1e] border border-[#2a2a2e] rounded-xl p-6 hover:border-[#3a3a3e] transition-colors"
+                  className="flex-shrink-0 w-[300px] md:w-[480px] bg-[#1c1c1e] border border-[#2a2a2e] rounded-xl p-4 md:p-6 hover:border-[#3a3a3e] transition-colors"
                   data-testid={`testimonial-top-${i}`}
                 >
                   <div className="flex items-center gap-3 mb-4">
@@ -1276,7 +1276,7 @@ export default function SignalsLanding() {
               return (
                 <div 
                   key={i} 
-                  className="flex-shrink-0 w-[480px] bg-[#1c1c1e] border border-[#2a2a2e] rounded-xl p-6 hover:border-[#3a3a3e] transition-colors"
+                  className="flex-shrink-0 w-[300px] md:w-[480px] bg-[#1c1c1e] border border-[#2a2a2e] rounded-xl p-4 md:p-6 hover:border-[#3a3a3e] transition-colors"
                   data-testid={`testimonial-bottom-${i}`}
                 >
                   <div className="flex items-center gap-3 mb-4">
