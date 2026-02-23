@@ -1574,13 +1574,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Email captured: ${email} from ${source || 'direct'}`);
 
-      // Static public channel link for free users
-      const FREE_CHANNEL_LINK = 'https://t.me/entrylabs';
+      const FALLBACK_CHANNEL_LINK = 'https://t.me/entrylabs';
+      let channelLink = FALLBACK_CHANNEL_LINK;
 
-      // Record lead in PromoStack for tracking (non-blocking)
+      // Get dynamic invite link from PromoStack
       try {
         const { promostackClient } = await import('./promostackClient');
-        const success = await promostackClient.addFreeUser({
+        const inviteLink = await promostackClient.addFreeUser({
           email,
           name: '',
           source: source || 'signals_landing',
@@ -1590,20 +1590,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           utmContent: utm_content,
           utmTerm: utm_term,
         });
-        console.log(`PromoStack free lead: ${email} (recorded: ${success}, utm_source: ${utm_source}, utm_campaign: ${utm_campaign})`);
+        if (inviteLink) {
+          channelLink = inviteLink;
+        }
+        console.log(`PromoStack free lead: ${email} (link: ${channelLink}, utm_source: ${utm_source}, utm_campaign: ${utm_campaign})`);
       } catch (promostackError) {
         console.error('PromoStack tracking error:', promostackError);
-        // Continue - don't block free signup
       }
 
-      // Send welcome email with free channel link (non-blocking, with retry)
+      // Send welcome email with the invite link (non-blocking, with retry)
       try {
         const { getUncachableResendClient } = await import('./resendClient');
         const { getFreeChannelEmailHtml } = await import('./emailTemplates');
         const { sendEmailWithRetry } = await import('./emailUtils');
         
         const { fromEmail } = await getUncachableResendClient();
-        const emailHtml = getFreeChannelEmailHtml(FREE_CHANNEL_LINK);
+        const emailHtml = getFreeChannelEmailHtml(channelLink);
         
         const result = await sendEmailWithRetry({
           from: `EntryLab Signals <${fromEmail}>`,
@@ -1619,13 +1621,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       } catch (emailError) {
         console.error('Failed to send welcome email:', emailError);
-        // Continue - don't block signup even if email fails
       }
 
-      // Always return static public channel link for free users
       res.json({
         success: true,
-        redirect_url: FREE_CHANNEL_LINK,
+        redirect_url: channelLink,
         message: 'Success! Click the button to join our free Telegram channel.',
       });
 
@@ -1644,28 +1644,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Invalid email address' });
       }
 
-      // Static public channel link for free users
-      const FREE_CHANNEL_LINK = 'https://t.me/entrylabs';
+      const FALLBACK_LINK = 'https://t.me/entrylabs';
+      let channelLink = FALLBACK_LINK;
 
-      // Record lead in PromoStack for tracking (non-blocking)
       try {
         const { promostackClient } = await import('./promostackClient');
-        const success = await promostackClient.addFreeUser({
+        const inviteLink = await promostackClient.addFreeUser({
           email,
           name: name || '',
           source: source || 'Free Gold Signals'
         });
-        console.log(`Free signup registered: ${email} (PromoStack: ${success ? 'recorded' : 'failed'})`);
+        if (inviteLink) {
+          channelLink = inviteLink;
+        }
+        console.log(`Free signup registered: ${email} (link: ${channelLink})`);
       } catch (promostackError) {
         console.error(`PromoStack tracking error for ${email}:`, promostackError);
-        // Continue - don't block free signup
       }
 
-      // Always return static public channel link for free users
       res.json({
         success: true,
         message: 'Free signup registered successfully',
-        inviteLink: FREE_CHANNEL_LINK
+        inviteLink: channelLink
       });
 
     } catch (error: any) {

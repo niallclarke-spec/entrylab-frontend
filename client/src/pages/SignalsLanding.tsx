@@ -138,7 +138,7 @@ function EmailCaptureForm({
       // Also check URL params as fallback
       const urlParams = new URLSearchParams(window.location.search);
       
-      await apiRequest('POST', '/api/capture-email', {
+      const response = await apiRequest('POST', '/api/capture-email', {
         email,
         source: 'signals_landing',
         utm_source: storedUtm.utm_source || urlParams.get('utm_source'),
@@ -148,11 +148,11 @@ function EmailCaptureForm({
         utm_term: storedUtm.utm_term || urlParams.get('utm_term'),
       });
       
-      // Clear UTM params after successful signup
+      const data = await response.json();
       clearUTMParams();
       
-      // Redirect to confirmation page on success
-      setLocation('/free-access');
+      const inviteLink = data.redirect_url || 'https://t.me/entrylabs';
+      setLocation(`/free-access?link=${encodeURIComponent(inviteLink)}`);
     } catch {
       toast({
         title: "Something went wrong",

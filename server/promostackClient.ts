@@ -152,7 +152,7 @@ export class PromostackClient {
     }
   }
 
-  async addFreeUser(params: FreeUserParams): Promise<boolean> {
+  async addFreeUser(params: FreeUserParams): Promise<string | null> {
     const { email, name, source, utmSource, utmMedium, utmCampaign, utmContent, utmTerm } = params;
     
     try {
@@ -165,34 +165,32 @@ export class PromostackClient {
         body: JSON.stringify({
           email,
           name: name || '',
-          planType: 'Free Gold Signals',
+          planType: 'free',
           amountPaid: 0,
-          utmSource: utmSource || null,
-          utmMedium: utmMedium || null,
-          utmCampaign: utmCampaign || null,
-          utmContent: utmContent || null,
-          utmTerm: utmTerm || null
+          utm_source: utmSource || null,
+          utm_medium: utmMedium || null,
+          utm_campaign: utmCampaign || null,
         })
       });
 
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`PromoStack add free user failed: ${response.status} ${errorText}`);
-        return false;
+        return null;
       }
 
       const data: PromostackGrantResponse = await response.json();
       
-      if (data.success) {
-        console.log(`PromoStack: Free lead recorded for ${email}`);
-        return true;
+      if (data.success && data.inviteLink) {
+        console.log(`PromoStack: Free lead recorded for ${email}, invite link: ${data.inviteLink}`);
+        return data.inviteLink;
       }
 
       console.log(`PromoStack: Add free user response for ${email}:`, data);
-      return data.success || false;
+      return null;
     } catch (error: any) {
       console.error('PromoStack add free user error:', error.message);
-      return false;
+      return null;
     }
   }
 }

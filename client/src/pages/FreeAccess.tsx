@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { TrendingUp, ExternalLink, Copy, CheckCircle, Zap, Target, Shield, ArrowRight } from "lucide-react";
 import { SiTelegram } from "react-icons/si";
 import { Helmet } from "react-helmet-async";
 import { Link } from "wouter";
 
-const FREE_CHANNEL_LINK = "https://t.me/entrylabs";
+const FALLBACK_CHANNEL_LINK = "https://t.me/entrylabs";
 
 const premiumBenefits = [
   "87% verified win rate on XAU/USD",
@@ -16,8 +16,14 @@ const premiumBenefits = [
 export default function FreeAccess() {
   const [copied, setCopied] = useState(false);
 
+  const channelLink = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    const link = params.get('link');
+    return link || FALLBACK_CHANNEL_LINK;
+  }, []);
+
   const handleCopy = () => {
-    navigator.clipboard.writeText(FREE_CHANNEL_LINK);
+    navigator.clipboard.writeText(channelLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -64,7 +70,7 @@ export default function FreeAccess() {
           
           <div className="flex items-center gap-2 p-3 bg-[#1a2420] rounded-lg border border-[#3d544d]">
             <code className="flex-1 text-sm md:text-base font-mono text-[#2bb32a] truncate" data-testid="text-channel-link">
-              {FREE_CHANNEL_LINK}
+              {channelLink}
             </code>
             <button 
               onClick={handleCopy}
@@ -80,7 +86,7 @@ export default function FreeAccess() {
           </div>
 
           <a 
-            href={FREE_CHANNEL_LINK} 
+            href={channelLink} 
             target="_blank" 
             rel="noopener noreferrer"
             className="block mt-6"
