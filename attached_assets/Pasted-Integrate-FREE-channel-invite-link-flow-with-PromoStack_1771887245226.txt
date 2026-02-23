@@ -1,0 +1,46 @@
+Integrate FREE channel invite link flow with PromoStack
+
+When a user submits their email on the landing page (the free signup form), after capturing their email, make a server-side API call to PromoStack to get a unique Telegram invite link, then redirect/display it on the thank-you page.
+
+API Call Details:
+
+POST https://dash.promostack.io/api/telegram/grant-access
+Headers:
+  Content-Type: application/json
+  X-API-Key: <your EntryLab API key — same one already used for VIP grant-access>
+Body:
+{
+  "email": "<user's email>",
+  "name": "<user's name if captured, otherwise omit>",
+  "amountPaid": 0,
+  "planType": "free",
+  "utm_source": "<from URL params or null>",
+  "utm_medium": "<from URL params or null>",
+  "utm_campaign": "<from URL params or null>"
+}
+Response format:
+
+{
+  "success": true,
+  "inviteLink": "https://t.me/+abc123xyz",
+  "isFreeUser": true,
+  "message": "Free lead captured successfully"
+}
+If invite link generation fails, the response will include "fallback": true and inviteLink will be a public channel link (https://t.me/entrylab). Handle both cases the same way — just redirect/link the user to whatever inviteLink is returned.
+
+What to do with the response:
+
+On the thank-you / confirmation page after email capture:
+
+Display a button or auto-redirect to inviteLink with text like "Join our FREE Telegram channel"
+If the API call itself fails (network error, timeout), fall back to linking to https://t.me/entrylab directly so the user is never blocked
+UTM capture:
+
+Extract UTM parameters from the current page URL (utm_source, utm_medium, utm_campaign) and pass them in the API body. These are used for attribution tracking on the PromoStack side. If no UTMs are present in the URL, omit them or send null — don't send empty strings.
+
+Important notes:
+
+This call should be made server-side (not client-side) since it requires the API key
+The invite link is single-use and expires after 72 hours
+If the same email is submitted twice, the API will return the existing unused link or the public fallback — no duplicate handling needed on your end
+This is the same endpoint already used for VIP access grants, just with amountPaid: 0 to indicate a free lead
