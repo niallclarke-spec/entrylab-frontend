@@ -10,7 +10,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Link } from "wouter";
 import { SiTelegram } from "react-icons/si";
-import { getStoredUTMParams } from "@/lib/utm";
+import { getStoredUTMParams, getStoredClickIds } from "@/lib/utm";
 
 export default function Subscribe() {
   const [email, setEmail] = useState("");
@@ -174,13 +174,15 @@ export default function Subscribe() {
 
     try {
       const utmParams = getStoredUTMParams();
+      const clickIds = getStoredClickIds();
       const res = await apiRequest(
         'POST',
         '/api/create-checkout-session',
         {
           email,
           priceId: selectedTier.priceId,
-          ...utmParams
+          ...utmParams,
+          ...clickIds
         }
       );
 

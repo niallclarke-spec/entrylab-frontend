@@ -5,7 +5,7 @@ import { Helmet } from "react-helmet-async";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Link, useLocation } from "wouter";
-import { getStoredUTMParams, clearUTMParams } from "@/lib/utm";
+import { getStoredUTMParams, getStoredClickIds, clearUTMParams } from "@/lib/utm";
 
 const stats = [
   { value: "87%", label: "Win Rate" },
@@ -133,9 +133,8 @@ function EmailCaptureForm({
     }
     setIsSubmitting(true);
     try {
-      // Get UTM params from localStorage (captured on page load)
       const storedUtm = getStoredUTMParams();
-      // Also check URL params as fallback
+      const storedClickIds = getStoredClickIds();
       const urlParams = new URLSearchParams(window.location.search);
       
       const response = await apiRequest('POST', '/api/capture-email', {
@@ -146,6 +145,8 @@ function EmailCaptureForm({
         utm_campaign: storedUtm.utm_campaign || urlParams.get('utm_campaign'),
         utm_content: storedUtm.utm_content || urlParams.get('utm_content'),
         utm_term: storedUtm.utm_term || urlParams.get('utm_term'),
+        gclid: storedClickIds.gclid || urlParams.get('gclid') || '',
+        fbclid: storedClickIds.fbclid || urlParams.get('fbclid') || '',
       });
       
       const data = await response.json();

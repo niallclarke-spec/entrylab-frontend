@@ -72,6 +72,8 @@ export const emailCaptures = pgTable("email_captures", {
   utmMedium: varchar("utm_medium", { length: 255 }),
   utmContent: varchar("utm_content", { length: 255 }),
   utmTerm: varchar("utm_term", { length: 255 }),
+  gclid: varchar("gclid", { length: 255 }),
+  fbclid: varchar("fbclid", { length: 255 }),
   ipAddress: varchar("ip_address", { length: 50 }),
   userAgent: text("user_agent"),
   createdAt: timestamp("created_at").notNull().defaultNow(),

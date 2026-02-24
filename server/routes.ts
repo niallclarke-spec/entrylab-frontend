@@ -1534,7 +1534,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         utm_source, 
         utm_medium,
         utm_content,
-        utm_term
+        utm_term,
+        gclid,
+        fbclid
       } = req.body;
 
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -1568,6 +1570,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         utmMedium: utm_medium,
         utmContent: utm_content,
         utmTerm: utm_term,
+        gclid: gclid || null,
+        fbclid: fbclid || null,
         ipAddress,
         userAgent,
       });
@@ -1589,6 +1593,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           utmCampaign: utm_campaign,
           utmContent: utm_content,
           utmTerm: utm_term,
+          gclid: gclid || '',
+          fbclid: fbclid || '',
         });
         if (inviteLink) {
           channelLink = inviteLink;
@@ -1638,7 +1644,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Free signup endpoint - WordPress calls this when users submit the free signals form
   app.post('/api/free-signup', async (req, res) => {
     try {
-      const { email, name, source } = req.body;
+      const { email, name, source, gclid, fbclid } = req.body;
 
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return res.status(400).json({ error: 'Invalid email address' });
@@ -1652,7 +1658,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const inviteLink = await promostackClient.addFreeUser({
           email,
           name: name || '',
-          source: source || 'Free Gold Signals'
+          source: source || 'Free Gold Signals',
+          gclid: gclid || '',
+          fbclid: fbclid || '',
         });
         if (inviteLink) {
           channelLink = inviteLink;
@@ -1677,7 +1685,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create Stripe checkout session
   app.post('/api/create-checkout-session', async (req, res) => {
     try {
-      const { email, priceId, utm_source, utm_medium, utm_campaign, utm_content, utm_term } = req.body;
+      const { email, priceId, utm_source, utm_medium, utm_campaign, utm_content, utm_term, gclid, fbclid } = req.body;
 
       if (!email || !priceId) {
         return res.status(400).json({ error: 'Email and price ID required' });
@@ -1755,6 +1763,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ...(utm_campaign && { utm_campaign }),
           ...(utm_content && { utm_content }),
           ...(utm_term && { utm_term }),
+          ...(gclid && { gclid }),
+          ...(fbclid && { fbclid }),
         },
         allow_promotion_codes: true,
         billing_address_collection: 'auto',

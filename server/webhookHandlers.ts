@@ -142,12 +142,13 @@ export class WebhookHandlers {
 
     console.log(`Checkout completed for ${email}, subscription: ${subscriptionId}`);
     
-    // Extract UTM parameters from session metadata
     const utmSource = session.metadata?.utm_source || null;
     const utmMedium = session.metadata?.utm_medium || null;
     const utmCampaign = session.metadata?.utm_campaign || null;
     const utmContent = session.metadata?.utm_content || null;
     const utmTerm = session.metadata?.utm_term || null;
+    const gclid = session.metadata?.gclid || null;
+    const fbclid = session.metadata?.fbclid || null;
     
     if (utmSource || utmCampaign) {
       console.log(`UTM tracking: source=${utmSource}, medium=${utmMedium}, campaign=${utmCampaign}`);
@@ -215,6 +216,8 @@ export class WebhookHandlers {
           utmCampaign: utmCampaign || undefined,
           utmContent: utmContent || undefined,
           utmTerm: utmTerm || undefined,
+          gclid: gclid || undefined,
+          fbclid: fbclid || undefined,
         });
         
         if (inviteLink) {

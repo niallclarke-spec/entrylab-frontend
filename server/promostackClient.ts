@@ -21,6 +21,8 @@ interface GrantAccessParams {
   utmCampaign?: string;
   utmContent?: string;
   utmTerm?: string;
+  gclid?: string;
+  fbclid?: string;
 }
 
 interface FreeUserParams {
@@ -32,6 +34,8 @@ interface FreeUserParams {
   utmCampaign?: string;
   utmContent?: string;
   utmTerm?: string;
+  gclid?: string;
+  fbclid?: string;
 }
 
 export class PromostackClient {
@@ -50,7 +54,7 @@ export class PromostackClient {
   }
 
   async grantAccess(params: GrantAccessParams): Promise<string | null> {
-    const { email, name, planType, amountPaid, stripeCustomerId, stripeSubscriptionId, utmSource, utmMedium, utmCampaign, utmContent, utmTerm } = params;
+    const { email, name, planType, amountPaid, stripeCustomerId, stripeSubscriptionId, utmSource, utmMedium, utmCampaign, utmContent, utmTerm, gclid, fbclid } = params;
     
     try {
       const response = await fetch(`${this.baseUrl}/api/telegram/grant-access`, {
@@ -70,7 +74,9 @@ export class PromostackClient {
           utmMedium: utmMedium || null,
           utmCampaign: utmCampaign || null,
           utmContent: utmContent || null,
-          utmTerm: utmTerm || null
+          utmTerm: utmTerm || null,
+          gclid: gclid || '',
+          fbclid: fbclid || ''
         })
       });
 
@@ -153,7 +159,7 @@ export class PromostackClient {
   }
 
   async addFreeUser(params: FreeUserParams): Promise<string | null> {
-    const { email, name, source, utmSource, utmMedium, utmCampaign, utmContent, utmTerm } = params;
+    const { email, name, source, utmSource, utmMedium, utmCampaign, utmContent, utmTerm, gclid, fbclid } = params;
     
     try {
       const response = await fetch(`${this.baseUrl}/api/telegram/grant-access`, {
@@ -170,6 +176,8 @@ export class PromostackClient {
           utm_source: utmSource || null,
           utm_medium: utmMedium || null,
           utm_campaign: utmCampaign || null,
+          gclid: gclid || '',
+          fbclid: fbclid || ''
         })
       });
 
