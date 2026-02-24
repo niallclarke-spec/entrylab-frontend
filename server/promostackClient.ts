@@ -173,9 +173,11 @@ export class PromostackClient {
           name: name || '',
           planType: 'free',
           amountPaid: 0,
-          utm_source: utmSource || null,
-          utm_medium: utmMedium || null,
-          utm_campaign: utmCampaign || null,
+          utm_source: utmSource || '',
+          utm_medium: utmMedium || '',
+          utm_campaign: utmCampaign || '',
+          utm_content: utmContent || '',
+          utm_term: utmTerm || '',
           gclid: gclid || '',
           fbclid: fbclid || ''
         })
