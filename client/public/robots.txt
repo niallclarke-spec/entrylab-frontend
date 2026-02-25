@@ -1,8 +1,56 @@
 # EntryLab - Robots.txt
-# Allow all search engines to crawl everything
+# Allow all search engines and AI crawlers to index everything
 
 User-agent: *
 Allow: /
 
-# Sitemap location
+# Google
+User-agent: Googlebot
+Allow: /
+
+# OpenAI / ChatGPT
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+# Anthropic / Claude
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+
+# Meta / Facebook AI
+User-agent: Meta-ExternalAgent
+Allow: /
+
+# Common Crawl (used by many AI training datasets)
+User-agent: CCBot
+Allow: /
+
+# Bytedance / Cohere
+User-agent: Bytespider
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+# AI overview and indexing helpers
+User-agent: Google-Extended
+Allow: /
+
+# Sitemap and LLM index locations
 Sitemap: https://entrylab.io/sitemap.xml
+LLMs: https://entrylab.io/llms.txt

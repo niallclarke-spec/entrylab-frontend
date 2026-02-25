@@ -197,16 +197,114 @@ async function fetchWordPressWithCache(
 export function getOrganizationSchema() {
   return {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": ["Organization", "NewsMediaOrganization"],
     "name": "EntryLab",
     "url": "https://entrylab.io",
-    "logo": "https://entrylab.io/favicon.svg",
-    "description": "Forex broker news, prop firm updates, and trading analysis platform",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://entrylab.io/favicon.svg"
+    },
+    "description": "Forex broker news, prop firm updates, and XAU/USD trading signals platform",
+    "foundingDate": "2024",
+    "areaServed": "Worldwide",
+    "knowsAbout": [
+      "Forex Trading",
+      "Forex Brokers",
+      "Proprietary Trading Firms",
+      "XAU/USD Trading Signals",
+      "Gold Trading",
+      "Forex Market Analysis",
+      "MetaTrader 4",
+      "MetaTrader 5",
+      "CFD Trading",
+      "Prop Firm Challenges",
+      "Funded Trader Accounts"
+    ],
     "sameAs": [
-      "https://twitter.com/entrylab",
-      "https://facebook.com/entrylab"
+      "https://t.me/entrylabs"
     ]
   };
+}
+
+// WebSite schema with SearchAction (helps AI overview eligibility)
+export function getWebSiteSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "EntryLab",
+    "url": "https://entrylab.io",
+    "description": "Forex broker reviews, prop firm evaluations, and XAU/USD trading signals",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://entrylab.io/search?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  };
+}
+
+// ItemList schema for brokers listing page
+export async function getBrokersListSchema() {
+  try {
+    const brokers = await fetchWordPressWithCache(
+      `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=20&acf_format=standard`,
+      { cacheTTL: 900, staleTTL: 3600 }
+    );
+
+    if (!brokers || brokers.length === 0) return null;
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "Forex Broker Reviews",
+      "description": "Comprehensive reviews of top forex brokers including spreads, regulation, and trading conditions",
+      "url": "https://entrylab.io/brokers",
+      "numberOfItems": brokers.length,
+      "itemListElement": brokers.map((broker: any, index: number) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "name": stripHtml(broker.title?.rendered || ''),
+        "url": `https://entrylab.io/broker/${broker.slug}`,
+        "description": stripHtml(broker.excerpt?.rendered || '').substring(0, 155)
+      }))
+    };
+  } catch (error) {
+    console.error('[Structured Data] Error fetching brokers list:', error);
+    return null;
+  }
+}
+
+// ItemList schema for prop firms listing page
+export async function getPropFirmsListSchema() {
+  try {
+    const propFirms = await fetchWordPressWithCache(
+      `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=20&acf_format=standard`,
+      { cacheTTL: 900, staleTTL: 3600 }
+    );
+
+    if (!propFirms || propFirms.length === 0) return null;
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "Proprietary Trading Firm Reviews",
+      "description": "Comprehensive reviews of top prop trading firms including evaluation process, profit splits, and funding options",
+      "url": "https://entrylab.io/prop-firms",
+      "numberOfItems": propFirms.length,
+      "itemListElement": propFirms.map((firm: any, index: number) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "name": stripHtml(firm.title?.rendered || ''),
+        "url": `https://entrylab.io/prop-firm/${firm.slug}`,
+        "description": stripHtml(firm.excerpt?.rendered || '').substring(0, 155)
+      }))
+    };
+  } catch (error) {
+    console.error('[Structured Data] Error fetching prop firms list:', error);
+    return null;
+  }
 }
 
 // Article schema generator
@@ -585,12 +683,18 @@ export async function generateStructuredData(url: string): Promise<string> {
   // Parse URL to determine page type and extract slug
   const urlParts = url.split('?')[0].split('/').filter(Boolean);
   
-  // Determine if this is a broker/prop-firm page (they have their own entity schemas)
+  // Determine if this is a broker/prop-firm detail page (they have their own entity schemas)
   const isBrokerOrPropFirm = (urlParts[0] === 'broker' || urlParts[0] === 'prop-firm') && urlParts[1];
   
-  // Only include organization schema on non-broker/prop-firm pages
+  // Only include organization schema on non-broker/prop-firm detail pages
   if (!isBrokerOrPropFirm) {
     schemas.push(getOrganizationSchema());
+  }
+
+  // Add WebSite schema on homepage only
+  const isHomePage = urlParts.length === 0;
+  if (isHomePage) {
+    schemas.push(getWebSiteSchema());
   }
   
   if (urlParts[0] === 'article' && urlParts[1]) {
@@ -607,6 +711,18 @@ export async function generateStructuredData(url: string): Promise<string> {
     const propFirmSchemas = await getPropFirmSchema(urlParts[1]);
     if (propFirmSchemas) {
       schemas.push(...propFirmSchemas);
+    }
+  } else if (urlParts[0] === 'brokers' && !urlParts[1]) {
+    // Brokers listing page — inject ItemList schema
+    const brokersListSchema = await getBrokersListSchema();
+    if (brokersListSchema) {
+      schemas.push(brokersListSchema);
+    }
+  } else if (urlParts[0] === 'prop-firms' && !urlParts[1]) {
+    // Prop firms listing page — inject ItemList schema
+    const propFirmsListSchema = await getPropFirmsListSchema();
+    if (propFirmsListSchema) {
+      schemas.push(propFirmsListSchema);
     }
   } else if (urlParts.length === 2 && ['news', 'broker-news', 'broker-guides', 'prop-firm-news', 'trading-tools'].includes(urlParts[0])) {
     // Handle /:category/:slug article format (e.g., /broker-news/zarafx-gets-raided)

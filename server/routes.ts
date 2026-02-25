@@ -900,6 +900,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // llms.txt — AI/LLM-readable site index (llmstxt.org standard)
+  app.get('/llms.txt', (_req, res) => {
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(`# EntryLab
+> Forex broker news, prop firm reviews, and XAU/USD trading signals for retail traders worldwide.
+
+EntryLab is an independent trading intelligence platform that publishes unbiased forex broker reviews, proprietary trading firm evaluations, and curated XAU/USD (Gold) trading signals. All editorial content is sourced through a WordPress CMS backend and served via a headless React frontend.
+
+## What EntryLab Covers
+
+- **Forex Broker Reviews**: In-depth analysis of regulated forex brokers including spreads, leverage, regulation, minimum deposits, supported platforms (MetaTrader 4, MetaTrader 5), and trading conditions.
+- **Prop Firm Reviews**: Evaluations of proprietary trading firms (funded account providers) covering evaluation rules, profit splits, maximum drawdown limits, payout policies, and scaling plans.
+- **Broker & Prop Firm News**: Breaking news and regulatory updates affecting forex brokers and prop trading firms globally.
+- **XAU/USD Trading Signals**: Real-time and historical gold trading signals with entry, stop-loss, and take-profit levels delivered via Telegram.
+- **Market Analysis**: Educational content and trading guides for forex and commodity markets.
+
+## Key URLs
+
+- Homepage: https://entrylab.io/
+- Broker Reviews Index: https://entrylab.io/brokers
+- Prop Firm Reviews Index: https://entrylab.io/prop-firms
+- Broker News: https://entrylab.io/broker-news
+- Prop Firm News: https://entrylab.io/prop-firm-news
+- Trading Signals: https://entrylab.io/signals
+- Subscribe to Premium Signals: https://entrylab.io/subscribe
+- Sitemap: https://entrylab.io/sitemap.xml
+
+## Content Format
+
+Individual broker and prop firm reviews are available at:
+- https://entrylab.io/broker/{broker-slug}
+- https://entrylab.io/prop-firm/{firm-slug}
+
+Articles follow the pattern:
+- https://entrylab.io/article/{article-slug}
+- https://entrylab.io/{category}/{article-slug}
+
+## What EntryLab Does NOT Cover
+
+- Cryptocurrency or DeFi trading
+- Stock market or equity investing
+- Specific financial advice or personalised investment recommendations
+- Real-time market data feeds
+
+## About
+
+EntryLab was founded in 2024. All broker and prop firm reviews are independently researched. Ratings are based on objective criteria including regulation, trading costs, platform quality, and user experience. EntryLab is not affiliated with any broker or prop firm it reviews.
+
+## Contact
+
+- Website: https://entrylab.io
+- Telegram Community: https://t.me/entrylabs
+`);
+  });
+
   // Dynamic Sitemap XML - CRITICAL: Set headers FIRST before any async operations
   app.get('/sitemap.xml', async (_req, res) => {
     // Set XML headers IMMEDIATELY - this prevents Express from serving HTML
@@ -1347,11 +1403,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       '/success': 'payment-success'
     };
     
-    const needsSEO = url.startsWith('/article/') || 
+    const cleanUrlForCheck = url.split('?')[0];
+    const needsSEO = cleanUrlForCheck === '/' ||
+                     cleanUrlForCheck === '/brokers' ||
+                     cleanUrlForCheck === '/prop-firms' ||
+                     url.startsWith('/article/') || 
                      url.startsWith('/broker/') ||
                      url.startsWith('/prop-firm/') ||
                      url.match(/^\/(news|broker-news|broker-guides|prop-firm-news|trading-tools)/) ||
-                     wpPageMap[url.split('?')[0]]; // WordPress pages
+                     wpPageMap[cleanUrlForCheck]; // WordPress pages
     
     if (isHtmlRequest && needsSEO) {
       console.log('[SEO MIDDLEWARE] Will inject SEO data for:', url);
