@@ -260,6 +260,29 @@
   background: #f5f7f6;
 }
 
+.content-light .prose,
+.content-light .prose-slate {
+  --tw-prose-body: #1a1e1c;
+  --tw-prose-headings: #111827;
+  --tw-prose-lead: #374151;
+  --tw-prose-bold: #111827;
+  --tw-prose-counters: #4b5563;
+  --tw-prose-bullets: #4b5563;
+  --tw-prose-hr: #e5e7eb;
+  --tw-prose-quotes: #111827;
+  --tw-prose-quote-borders: #d1d5db;
+  --tw-prose-captions: #6b7280;
+  --tw-prose-code: #111827;
+  --tw-prose-th-borders: #d1d5db;
+  --tw-prose-td-borders: #e5e7eb;
+  color: #1a1e1c;
+}
+
+.content-light .prose :where(a):not(:where([class~="not-prose"] *)):hover {
+  color: #16a34a !important;
+  text-decoration-color: #16a34a;
+}
+
 @layer base {
   * {
     @apply border-border;
