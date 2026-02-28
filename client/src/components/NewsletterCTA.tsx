@@ -65,7 +65,7 @@ export function NewsletterCTA() {
   ];
 
   return (
-    <section className="bg-white border-t border-gray-100">
+    <section style={{ background: "#f5f7f6" }}>
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-16 md:py-24">
         <div className="grid md:grid-cols-2 gap-16 items-center">
           {/* Left — copy */}
@@ -116,8 +116,9 @@ export function NewsletterCTA() {
           <div
             className="rounded-2xl p-8 md:p-10"
             style={{
-              background: "#f9fafb",
-              border: "1px solid #e5e7eb",
+              background: "#ffffff",
+              border: "1px solid #e8edea",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.05)",
             }}
           >
             <form onSubmit={handleSubscribe} className="space-y-5">

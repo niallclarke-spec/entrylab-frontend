@@ -183,7 +183,7 @@ export default function Home() {
             </Suspense>
           )}
 
-          <section className="py-16 md:py-24 bg-white">
+          <section className="py-16 md:py-24" style={{ background: "#f5f7f6" }}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
               <div className="flex items-center justify-between mb-10">
                 <div>
