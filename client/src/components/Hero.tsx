@@ -1,6 +1,4 @@
-import { Clock, User, ArrowRight, BookOpen, TrendingUp, BarChart3, Building2, Award, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Clock, User, ArrowRight, TrendingUp, BarChart3, ShieldCheck, Zap } from "lucide-react";
 import { Link } from "wouter";
 import { OptimizedImage } from "@/components/OptimizedImage";
 
@@ -21,54 +19,66 @@ export function Hero({ title, excerpt, author, date, category, link, imageUrl }:
     return div.textContent || div.innerText || "";
   };
 
-  // Calculate reading time (average 200 words per minute)
   const calculateReadingTime = (text: string) => {
     const words = text.trim().split(/\s+/).length;
-    const minutes = Math.max(1, Math.ceil(words / 200));
-    return minutes;
+    return Math.max(1, Math.ceil(words / 200));
   };
 
   const cleanExcerpt = stripHtml(excerpt);
   const cleanTitle = stripHtml(title);
   const readingTime = calculateReadingTime(cleanExcerpt);
-  const truncatedExcerpt = cleanExcerpt.length > 155 ? cleanExcerpt.substring(0, 155) + '...' : cleanExcerpt;
+  const truncatedExcerpt = cleanExcerpt.length > 160 ? cleanExcerpt.substring(0, 160) + "…" : cleanExcerpt;
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-purple-950 via-indigo-950 to-slate-950 border-b">
-      {/* Decorative Background Pattern */}
-      <div className="absolute inset-0 opacity-10" style={{
-        backgroundImage: `linear-gradient(rgba(139, 92, 246, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.2) 1px, transparent 1px)`,
-        backgroundSize: '50px 50px'
-      }} />
-      
-      {/* Forex News Graphics */}
-      <div className="absolute top-8 left-8 text-primary/10 hidden lg:block">
-        <TrendingUp className="h-32 w-32" />
-      </div>
-      <div className="absolute bottom-8 right-8 text-primary/10 hidden lg:block">
-        <BarChart3 className="h-32 w-32" />
-      </div>
-      <div className="absolute top-1/2 left-1/4 text-primary/5 hidden xl:block">
-        <Building2 className="h-24 w-24" />
-      </div>
-      
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-16">
-        <div className="grid lg:grid-cols-[55%_45%] gap-8 items-center">
-          {/* Article Info (55% desktop, full width mobile - shows second on mobile) */}
-          <div className="space-y-6 text-white order-2 lg:order-1">
-            {/* Category Badge */}
-            <Badge className="bg-primary/20 text-purple-300 border-primary/30 hover:bg-primary/30 backdrop-blur-sm" data-testid="badge-category">
-              <BookOpen className="h-3 w-3 mr-1.5" />
-              {category}
-            </Badge>
+    <section className="relative overflow-hidden" style={{ background: "#1a1e1c" }}>
+      <div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `radial-gradient(circle, #2bb32a 1px, transparent 1px)`,
+          backgroundSize: "32px 32px",
+        }}
+      />
 
-            {/* Title */}
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight" data-testid="text-hero-title">
+      <div
+        className="absolute top-0 right-0 pointer-events-none"
+        style={{
+          width: "600px",
+          height: "600px",
+          background: "radial-gradient(circle, rgba(43,179,42,0.18) 0%, transparent 65%)",
+          filter: "blur(80px)",
+          transform: "translate(30%, -30%)",
+        }}
+      />
+      <div
+        className="absolute bottom-0 left-0 pointer-events-none"
+        style={{
+          width: "400px",
+          height: "400px",
+          background: "radial-gradient(circle, rgba(43,179,42,0.12) 0%, transparent 65%)",
+          filter: "blur(80px)",
+          transform: "translate(-30%, 30%)",
+        }}
+      />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-16 lg:py-20">
+        <div className="grid lg:grid-cols-[55%_45%] gap-10 items-center">
+          <div className="space-y-6 order-2 lg:order-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-[#2bb32a]"
+              style={{ background: "rgba(43,179,42,0.12)", border: "1px solid rgba(43,179,42,0.25)" }}
+              data-testid="badge-category"
+            >
+              <Zap className="h-3 w-3" />
+              {category}
+            </div>
+
+            <h1
+              className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight text-white"
+              data-testid="text-hero-title"
+            >
               {cleanTitle}
             </h1>
 
-            {/* Meta Info */}
-            <div className="flex flex-wrap items-center gap-4 text-sm text-white/90">
+            <div className="flex flex-wrap items-center gap-4 text-sm" style={{ color: "#adb2b1" }}>
               <div className="flex items-center gap-2" data-testid="text-author">
                 <User className="h-4 w-4" />
                 <span>{author}</span>
@@ -77,65 +87,62 @@ export function Hero({ title, excerpt, author, date, category, link, imageUrl }:
                 <Clock className="h-4 w-4" />
                 <span>{readingTime} min read</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Badge className="gap-1 bg-emerald-500/20 text-emerald-300 border-emerald-400/30 hover:bg-emerald-500/30" data-testid="badge-premium">
-                  <Award className="h-3 w-3" />
-                  Premium Analysis
-                </Badge>
+              <div
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                style={{ background: "rgba(43,179,42,0.12)", color: "#2bb32a", border: "1px solid rgba(43,179,42,0.2)" }}
+                data-testid="badge-premium"
+              >
+                <ShieldCheck className="h-3 w-3" />
+                Verified Source
               </div>
             </div>
 
-            {/* Article Description */}
-            <p className="text-lg text-white/80 leading-relaxed max-w-2xl" data-testid="text-hero-excerpt">
+            <p className="text-lg leading-relaxed" style={{ color: "#adb2b1" }} data-testid="text-hero-excerpt">
               {truncatedExcerpt}
             </p>
 
-            {/* Forex News Icons Row */}
-            <div className="flex flex-wrap gap-6 pt-4">
-              <div className="flex items-center gap-2">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 backdrop-blur-sm flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-emerald-400" />
+            <div className="flex flex-wrap gap-6 py-2">
+              {[
+                { icon: TrendingUp, label: "Market", sub: "Analysis" },
+                { icon: BarChart3, label: "Expert", sub: "Insights" },
+                { icon: ShieldCheck, label: "Verified", sub: "Data" },
+              ].map(({ icon: Icon, label, sub }) => (
+                <div key={sub} className="flex items-center gap-2.5">
+                  <div
+                    className="h-10 w-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: "rgba(43,179,42,0.12)", border: "1px solid rgba(43,179,42,0.2)" }}
+                  >
+                    <Icon className="h-5 w-5" style={{ color: "#2bb32a" }} />
+                  </div>
+                  <div>
+                    <div className="text-xs" style={{ color: "#6b7280" }}>{label}</div>
+                    <div className="text-sm font-semibold text-white">{sub}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-xs text-white/70">Market</div>
-                  <div className="text-sm font-semibold">Analysis</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 backdrop-blur-sm flex items-center justify-center">
-                  <BarChart3 className="h-5 w-5 text-blue-400" />
-                </div>
-                <div>
-                  <div className="text-xs text-white/70">Expert</div>
-                  <div className="text-sm font-semibold">Insights</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 backdrop-blur-sm flex items-center justify-center">
-                  <ShieldCheck className="h-5 w-5 text-emerald-400" />
-                </div>
-                <div>
-                  <div className="text-xs text-white/70">Verified</div>
-                  <div className="text-sm font-semibold">Source</div>
-                </div>
-              </div>
+              ))}
             </div>
 
-            {/* Read Article Button */}
             <div className="pt-2">
-              <Button asChild size="lg" className="bg-primary hover:bg-primary/90" data-testid="button-read-article">
-                <Link href={link}>
-                  Read Full Article <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
+              <Link
+                href={link}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white text-sm transition-all"
+                style={{ background: "#2bb32a" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#239122")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "#2bb32a")}
+                data-testid="button-read-article"
+              >
+                Read Full Article <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           </div>
 
-          {/* Featured Image (45% desktop - shows first on mobile) */}
           {imageUrl && (
-            <div className="relative lg:ml-auto w-full lg:w-auto order-1 lg:order-2">
-              <div className="relative rounded-xl overflow-hidden shadow-2xl border-4 border-primary/30 bg-card">
-                <div className="relative aspect-[16/9] md:aspect-[16/10] bg-muted">
+            <div className="relative order-1 lg:order-2">
+              <div
+                className="relative rounded-2xl overflow-hidden"
+                style={{ border: "1px solid rgba(43,179,42,0.25)", boxShadow: "0 0 60px rgba(43,179,42,0.1)" }}
+              >
+                <div className="aspect-[16/10]">
                   <OptimizedImage
                     src={imageUrl}
                     alt={cleanTitle}
@@ -146,9 +153,15 @@ export function Hero({ title, excerpt, author, date, category, link, imageUrl }:
                     data-testid="img-hero-featured"
                   />
                 </div>
+                <div
+                  className="absolute inset-0"
+                  style={{ background: "linear-gradient(to top, rgba(26,30,28,0.6) 0%, transparent 50%)" }}
+                />
               </div>
-              {/* Decorative glow */}
-              <div className="absolute -inset-4 bg-primary/20 rounded-xl blur-2xl -z-10" />
+              <div
+                className="absolute -inset-6 -z-10 rounded-2xl"
+                style={{ background: "radial-gradient(circle, rgba(43,179,42,0.15) 0%, transparent 70%)", filter: "blur(20px)" }}
+              />
             </div>
           )}
         </div>

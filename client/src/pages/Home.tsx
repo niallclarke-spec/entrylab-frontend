@@ -183,13 +183,21 @@ export default function Home() {
             </Suspense>
           )}
 
-          <section className="py-16 md:py-24">
-            <div className="max-w-7xl mx-auto px-6">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground" data-testid="text-latest-news">
-                  Latest News
-                </h2>
-                <a href="#" className="text-primary hover:underline font-medium" data-testid="link-view-all">
+          <section className="py-16 md:py-24 bg-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+              <div className="flex items-center justify-between mb-10">
+                <div>
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900" data-testid="text-latest-news">
+                    Latest News
+                  </h2>
+                  <p className="text-gray-500 mt-1 text-sm">Breaking updates from the forex & prop firm world</p>
+                </div>
+                <a
+                  href="/news"
+                  className="hidden sm:flex items-center gap-1.5 text-sm font-medium transition-colors"
+                  style={{ color: "#2bb32a" }}
+                  data-testid="link-view-all"
+                >
                   View All
                 </a>
               </div>
@@ -212,13 +220,29 @@ export default function Home() {
           </section>
 
           {popularBrokers.length > 0 && (
-            <section className="py-16 md:py-24 bg-gradient-to-b from-background via-card/50 to-background">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <section className="py-16 md:py-24 relative overflow-hidden" style={{ background: "#1a1e1c" }}>
+              <div
+                className="absolute top-0 right-0 pointer-events-none"
+                style={{
+                  width: "500px",
+                  height: "500px",
+                  background: "radial-gradient(circle, rgba(43,179,42,0.12) 0%, transparent 65%)",
+                  filter: "blur(80px)",
+                  transform: "translate(30%, -30%)",
+                }}
+              />
+              <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
                 <div className="text-center mb-12">
-                  <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4" data-testid="text-popular-brokers">
+                  <div
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-4"
+                    style={{ background: "rgba(43,179,42,0.12)", color: "#2bb32a", border: "1px solid rgba(43,179,42,0.25)" }}
+                  >
+                    Verified & Rated
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-4" data-testid="text-popular-brokers">
                     Top Rated Brokers
                   </h2>
-                  <p className="text-lg text-muted-foreground max-w-2xl mx-auto px-4">
+                  <p className="text-lg max-w-2xl mx-auto px-4" style={{ color: "#adb2b1" }}>
                     Compare the best forex brokers trusted by thousands of traders worldwide
                   </p>
                 </div>
