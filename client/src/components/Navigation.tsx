@@ -1,7 +1,6 @@
 import { Search, Menu, X, TrendingUp, Newspaper, Shield, Zap } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
-import logoImage from "@assets/logo.png";
 import { prefetchRoute } from "@/lib/prefetch";
 
 const navLinks = [
@@ -29,7 +28,10 @@ export function Navigation() {
           <div className="flex h-18 items-center justify-between gap-4 py-4">
             <div className="flex items-center gap-8">
               <Link href="/" className="flex items-center gap-3" data-testid="link-home">
-                <img src={logoImage} alt="EntryLab" className="h-14 w-auto object-contain" />
+                <div className="w-8 h-8 bg-[#2bb32a] rounded-lg flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xl font-bold text-white tracking-tight">EntryLab</span>
               </Link>
 
               <nav className="hidden md:flex items-center gap-1">

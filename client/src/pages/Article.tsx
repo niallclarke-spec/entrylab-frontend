@@ -473,7 +473,7 @@ export default function Article() {
             <div className="grid lg:grid-cols-[1fr_350px] gap-8 xl:gap-12">
               {/* Main Content */}
               <article className="min-w-0 content-light">
-                <div className="bg-card rounded-xl p-6 md:p-8 mb-8">
+                <div className="rounded-xl p-6 md:p-8 mb-8" style={{ background: "#ffffff", border: "1px solid #e8edea" }}>
                   <Skeleton className="h-8 w-24 mb-4" />
                   <Skeleton className="h-12 w-full mb-4" />
                   <Skeleton className="h-12 w-4/5 mb-8" />
@@ -758,13 +758,15 @@ export default function Article() {
               </div>
 
               {/* Article Content with Broker Insertion */}
-              <div className="bg-card rounded-lg p-6 md:p-8 shadow-lg">
-                {parseContentWithBroker(contentWithHeadingIds, featuredBroker)}
+              <div className="rounded-lg p-6 md:p-8" style={{ background: "#ffffff", border: "1px solid #e8edea" }}>
+                <div style={{ color: "#111827" }}>
+                  {parseContentWithBroker(contentWithHeadingIds, featuredBroker)}
+                </div>
               </div>
 
               {/* Affiliate Disclosure */}
-              <div className="mt-6 p-4 bg-muted/50 rounded-lg border border-border/50">
-                <p className="text-sm text-muted-foreground flex items-start gap-2">
+              <div className="mt-6 p-4 rounded-lg" style={{ background: "#f0f4f2", border: "1px solid #e8edea" }}>
+                <p className="text-sm flex items-start gap-2" style={{ color: "#6b7280" }}>
                   <AlertCircle className="h-4 w-4 mt-0.5 text-emerald-500 flex-shrink-0" />
                   <span>
                     This article may contain affiliate links. We may earn a commission at no extra cost to you when you click these links and make a purchase.

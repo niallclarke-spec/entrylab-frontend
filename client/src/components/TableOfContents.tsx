@@ -79,10 +79,10 @@ export function TableOfContents({ content }: TableOfContentsProps) {
   if (headings.length === 0) return null;
 
   return (
-    <Card className="p-4 bg-card/50 border-border/50">
+    <Card className="p-4" style={{ background: "#ffffff", border: "1px solid #e8edea" }}>
       <div className="flex items-center gap-2 mb-3">
         <List className="h-4 w-4 text-primary" />
-        <h3 className="text-sm font-bold text-foreground">
+        <h3 className="text-sm font-bold" style={{ color: "#111827" }}>
           Table of Contents
         </h3>
       </div>
@@ -94,8 +94,9 @@ export function TableOfContents({ content }: TableOfContentsProps) {
             className={`w-full text-left text-sm py-1.5 px-2 rounded transition-colors ${
               activeId === heading.id
                 ? "text-primary font-semibold bg-primary/10"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                : "hover:bg-black/5"
             }`}
+            style={activeId !== heading.id ? { color: "#6b7280" } : undefined}
             data-testid={`toc-${heading.id}`}
           >
             {heading.text}

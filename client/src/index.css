@@ -295,6 +295,27 @@
   opacity: 1;
 }
 
+.content-light .shadcn-card {
+  background-color: #ffffff;
+  border-color: #e8edea;
+}
+
+.content-light .bg-muted\/50 {
+  background-color: #f0f4f2;
+}
+
+.content-light .text-muted-foreground {
+  color: #6b7280;
+}
+
+.content-light .text-foreground {
+  color: #111827;
+}
+
+.content-light .border-border\/50 {
+  border-color: #e8edea;
+}
+
 @layer base {
   * {
     @apply border-border;
