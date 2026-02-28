@@ -38,12 +38,44 @@ export function wrapTablesForMobile(content: string): string {
 }
 
 /**
+ * Strip inline color and background-color styles from all elements.
+ * WordPress content authored in dark mode often has explicit white colors
+ * on spans/text that become invisible on light backgrounds.
+ */
+export function stripInlineColors(content: string): string {
+  if (!content) return content;
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(content, "text/html");
+
+  doc.querySelectorAll("[style]").forEach((el) => {
+    const style = el.getAttribute("style") || "";
+    const cleaned = style
+      .split(";")
+      .filter((decl) => {
+        const prop = decl.split(":")[0].trim().toLowerCase();
+        return prop !== "color" && prop !== "background-color" && prop !== "background";
+      })
+      .join(";");
+
+    if (cleaned.trim()) {
+      el.setAttribute("style", cleaned);
+    } else {
+      el.removeAttribute("style");
+    }
+  });
+
+  return doc.body.innerHTML;
+}
+
+/**
  * Process WordPress content for display - add heading IDs and wrap tables
  */
 export function processWordPressContent(content: string): string {
   if (!content) return content;
   let processed = addHeadingIds(content);
   processed = wrapTablesForMobile(processed);
+  processed = stripInlineColors(processed);
   return processed;
 }
 
