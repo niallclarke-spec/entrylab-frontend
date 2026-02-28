@@ -618,9 +618,9 @@ export default function PropFirmReview() {
             </div>
 
             {/* Sticky Conversion Sidebar */}
-            <div className="space-y-6">
+            <div className="space-y-6 content-light">
               {/* Primary CTA Card */}
-              <Card className="p-6 sticky top-24 bg-gradient-to-br from-card via-card to-muted/30 border-border/50">
+              <Card className="p-6 sticky top-24">
                 <Button 
                   size="lg" 
                   asChild 
@@ -657,9 +657,9 @@ export default function PropFirmReview() {
                     <div className="mb-4">
                       <TableOfContents content={propFirm.content} />
                     </div>
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 border border-white/20 mb-6">
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 border border-gray-200 mb-6">
                       <Calendar className="h-3.5 w-3.5 text-emerald-500" />
-                      <span className="text-xs font-medium text-white">
+                      <span className="text-xs font-medium text-gray-500">
                         Updated {new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </span>
                     </div>
