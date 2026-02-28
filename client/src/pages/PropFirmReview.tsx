@@ -201,9 +201,9 @@ export default function PropFirmReview() {
       <Navigation />
 
       {/* Hero "Command Center" - Two-Tier Layout */}
-      <div className="relative bg-gradient-to-br from-primary/20 via-slate-950 to-slate-950 border-b border-border/50 overflow-visible">
-        {/* Subtle grid overlay */}
-        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:32px_32px]" />
+      <div className="relative overflow-visible" style={{ background: "#1a1e1c", borderBottom: "1px solid rgba(43,179,42,0.12)" }}>
+        <div className="signals-bg-orb signals-bg-orb-1" />
+        <div className="signals-bg-orb signals-bg-orb-2" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-8">
           {/* Top Meta Bar */}

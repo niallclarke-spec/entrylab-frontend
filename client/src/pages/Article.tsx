@@ -562,35 +562,30 @@ export default function Article() {
       />
       <Navigation />
       
-      {/* Hero Section - Dark Moody Purple Banner */}
+      {/* Hero Section */}
       {featuredImage && (
-        <div className="relative overflow-hidden bg-gradient-to-br from-purple-950 via-indigo-950 to-slate-950 border-b">
-          {/* Decorative Background Pattern */}
-          <div className="absolute inset-0 opacity-10" style={{
-            backgroundImage: `linear-gradient(rgba(139, 92, 246, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.2) 1px, transparent 1px)`,
-            backgroundSize: '50px 50px'
+        <div className="relative overflow-hidden" style={{ background: "#1a1e1c" }}>
+          {/* Signals-style orbs */}
+          <div className="signals-bg-orb signals-bg-orb-1" />
+          <div className="signals-bg-orb signals-bg-orb-2" />
+          {/* Dot pattern */}
+          <div className="absolute inset-0 opacity-[0.025] pointer-events-none" style={{
+            backgroundImage: `radial-gradient(circle, #2bb32a 1px, transparent 1px)`,
+            backgroundSize: '32px 32px'
           }} />
-          
-          {/* Forex News Graphics */}
-          <div className="absolute top-8 left-8 text-primary/10 hidden lg:block">
-            <TrendingUp className="h-32 w-32" />
-          </div>
-          <div className="absolute bottom-8 right-8 text-primary/10 hidden lg:block">
-            <BarChart3 className="h-32 w-32" />
-          </div>
-          <div className="absolute top-1/2 left-1/4 text-primary/5 hidden xl:block">
-            <Building2 className="h-24 w-24" />
-          </div>
           
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12">
             <div className="grid lg:grid-cols-[55%_45%] gap-6 items-center">
               {/* Article Info (60% desktop, full width mobile - shows second on mobile) */}
               <div className="space-y-4 text-white order-2 lg:order-1">
                 {/* Category Badge */}
-                <Badge className="bg-primary/20 text-purple-300 border-primary/30 hover:bg-primary/30 backdrop-blur-sm">
-                  <BookOpen className="h-3 w-3 mr-1.5" />
+                <div
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                  style={{ background: "rgba(43,179,42,0.15)", border: "1px solid rgba(43,179,42,0.3)", color: "#2bb32a" }}
+                >
+                  <BookOpen className="h-3 w-3" />
                   {getCategoryName(post)}
-                </Badge>
+                </div>
 
                 {/* Title */}
                 <h1 
@@ -679,20 +674,24 @@ export default function Article() {
 
       {/* Fallback Title Section (when no featured image) */}
       {!featuredImage && (
-        <div className="relative overflow-hidden bg-gradient-to-br from-purple-950 via-indigo-950 to-slate-950 border-b">
-          {/* Decorative Background Pattern */}
-          <div className="absolute inset-0 opacity-10" style={{
-            backgroundImage: `linear-gradient(rgba(139, 92, 246, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.2) 1px, transparent 1px)`,
-            backgroundSize: '50px 50px'
+        <div className="relative overflow-hidden" style={{ background: "#1a1e1c" }}>
+          <div className="signals-bg-orb signals-bg-orb-1" />
+          <div className="signals-bg-orb signals-bg-orb-2" />
+          <div className="absolute inset-0 opacity-[0.025] pointer-events-none" style={{
+            backgroundImage: `radial-gradient(circle, #2bb32a 1px, transparent 1px)`,
+            backgroundSize: '32px 32px'
           }} />
           
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12">
             <div className="space-y-4 text-white max-w-4xl">
               {/* Category Badge */}
-              <Badge className="bg-primary/20 text-purple-300 border-primary/30 hover:bg-primary/30 backdrop-blur-sm">
-                <BookOpen className="h-3 w-3 mr-1.5" />
+              <div
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                style={{ background: "rgba(43,179,42,0.15)", border: "1px solid rgba(43,179,42,0.3)", color: "#2bb32a" }}
+              >
+                <BookOpen className="h-3 w-3" />
                 {getCategoryName(post)}
-              </Badge>
+              </div>
 
               {/* Title */}
               <h1 
