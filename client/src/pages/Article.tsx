@@ -830,10 +830,6 @@ export default function Article() {
                 </div>
               )}
 
-              {/* Newsletter Subscription */}
-              <div className="mt-8">
-                <NewsletterCTA />
-              </div>
             </article>
 
             {/* Desktop: Sticky Sidebar */}
@@ -928,6 +924,7 @@ export default function Article() {
             </aside>
           </div>
         </div>
+        <NewsletterCTA />
       </main>
 
       <Footer />
