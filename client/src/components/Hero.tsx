@@ -61,7 +61,7 @@ export function Hero({ title, excerpt, author, date, category, link, imageUrl }:
 
             {/* Heading */}
             <h1
-              className="text-3xl md:text-5xl lg:text-[3.25rem] font-bold text-white leading-tight tracking-tight"
+              className="text-3xl md:text-5xl lg:text-[3.25rem] font-bold text-white leading-tight tracking-tight line-clamp-3"
               data-testid="text-hero-title"
             >
               {cleanTitle}

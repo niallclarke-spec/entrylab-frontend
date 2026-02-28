@@ -16,7 +16,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Lazy load non-critical components for better initial load
 const TrendingTopics = lazy(() => import("@/components/TrendingTopics").then(m => ({ default: m.TrendingTopics })));
 const FeaturedBroker = lazy(() => import("@/components/FeaturedBroker").then(m => ({ default: m.FeaturedBroker })));
-const TrustSignals = lazy(() => import("@/components/TrustSignals").then(m => ({ default: m.TrustSignals })));
 const BrokerCardEnhanced = lazy(() => import("@/components/BrokerCardEnhanced").then(m => ({ default: m.BrokerCardEnhanced })));
 const NewsletterCTA = lazy(() => import("@/components/NewsletterCTA").then(m => ({ default: m.NewsletterCTA })));
 
@@ -161,10 +160,6 @@ export default function Home() {
               selectedCategory={selectedCategory} 
               onCategorySelect={setSelectedCategory}
             />
-          </Suspense>
-
-          <Suspense fallback={<Skeleton className="h-32 w-full max-w-7xl mx-auto" />}>
-            <TrustSignals />
           </Suspense>
 
           {featuredBroker && (
