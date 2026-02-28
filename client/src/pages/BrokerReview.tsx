@@ -383,10 +383,10 @@ export default function BrokerReview() {
         </div>
       </div>
 
-      <main className="flex-1 py-12 md:py-16">
+      <main className="flex-1 py-12 md:py-16" style={{ background: "#f5f7f6" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-[1fr_350px] gap-8">
-            <div className="space-y-8">
+            <div className="space-y-8 content-light">
               {/* Pros & Cons - Market Chart Inspired */}
               {(broker.pros.length > 0 || broker.cons && broker.cons.length > 0) && (
                 <Card className="relative overflow-hidden p-6">

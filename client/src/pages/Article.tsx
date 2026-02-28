@@ -468,11 +468,11 @@ export default function Article() {
         {/* Hero Image Skeleton */}
         <Skeleton className="w-full h-[300px] md:h-[400px]" />
         
-        <main className="flex-1 relative z-10">
+        <main className="flex-1 relative z-10" style={{ background: "#f5f7f6" }}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
             <div className="grid lg:grid-cols-[1fr_350px] gap-8 xl:gap-12">
               {/* Main Content */}
-              <article className="min-w-0">
+              <article className="min-w-0 content-light">
                 <div className="bg-card rounded-xl p-6 md:p-8 mb-8">
                   <Skeleton className="h-8 w-24 mb-4" />
                   <Skeleton className="h-12 w-full mb-4" />
@@ -727,11 +727,11 @@ export default function Article() {
         </div>
       )}
 
-      <main className="flex-1 relative z-10">
+      <main className="flex-1 relative z-10" style={{ background: "#f5f7f6" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
           <div className="grid lg:grid-cols-[1fr_350px] gap-8 xl:gap-12">
             {/* Main Content */}
-            <article className="min-w-0">
+            <article className="min-w-0 content-light">
               {/* Trending Topics */}
               <div className="mb-8">
                 <div className="flex items-center gap-3 md:gap-4 overflow-x-auto scrollbar-hide pb-2">
@@ -835,7 +835,7 @@ export default function Article() {
             </article>
 
             {/* Desktop: Sticky Sidebar */}
-            <aside className="hidden lg:block">
+            <aside className="hidden lg:block content-light">
               {/* Match trending topics spacing (mb-8 = 32px) + badges height (~40px) */}
               <div className="sticky top-24 space-y-8" style={{ marginTop: '72px' }}>
                 {/* Table of Contents */}

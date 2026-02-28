@@ -234,6 +234,32 @@
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
+.content-light {
+  --button-outline: rgba(0,0,0, .10);
+  --badge-outline: rgba(0,0,0, .05);
+  --opaque-button-border-intensity: -8;
+  --elevate-1: rgba(0,0,0, .03);
+  --elevate-2: rgba(0,0,0, .08);
+  --background: 0 0% 100%;
+  --foreground: 220 15% 15%;
+  --border: 220 15% 88%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 15% 15%;
+  --card-border: 220 15% 92%;
+  --popover: 220 15% 94%;
+  --popover-foreground: 220 15% 15%;
+  --popover-border: 220 15% 88%;
+  --secondary: 220 15% 90%;
+  --secondary-foreground: 220 15% 15%;
+  --muted: 220 12% 92%;
+  --muted-foreground: 220 10% 45%;
+  --accent: 220 15% 88%;
+  --accent-foreground: 220 15% 15%;
+  --input: 220 15% 75%;
+  color: hsl(220 15% 15%);
+  background: #f5f7f6;
+}
+
 @layer base {
   * {
     @apply border-border;

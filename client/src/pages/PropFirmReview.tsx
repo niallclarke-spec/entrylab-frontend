@@ -486,11 +486,11 @@ export default function PropFirmReview() {
         </div>
       </div>
 
-      <main className="flex-1 py-12">
+      <main className="flex-1 py-12" style={{ background: "#f5f7f6" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-[1fr_380px] gap-8">
             {/* Main Content Column */}
-            <div className="space-y-8">
+            <div className="space-y-8 content-light">
               {/* Pros & Cons - Use new card component */}
               {(propFirm.pros.length > 0 || propFirm.cons && propFirm.cons.length > 0) && (
                 <ProsConsCard 
