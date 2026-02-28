@@ -28,7 +28,7 @@ const iconMap: Record<string, any> = {
 
 export function FeaturedBroker({ name, logo, tagline, rating, features, highlights, bonusOffer, link, reviewLink }: FeaturedBrokerProps) {
   return (
-    <section className="py-12 md:py-16 bg-gradient-to-br from-primary/10 via-background to-chart-2/10 border-y">
+    <section className="py-12 md:py-16" style={{ background: "#1a1e1c", borderTop: "1px solid rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center gap-3 mb-6">
           <Star className="h-6 w-6 text-amber-500 fill-amber-500" />
