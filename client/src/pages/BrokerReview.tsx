@@ -562,7 +562,7 @@ export default function BrokerReview() {
               {broker.content && (
                 <Card className="p-6">
                   <div 
-                    className="prose prose-slate dark:prose-invert max-w-none"
+                    className="prose prose-slate max-w-none"
                     dangerouslySetInnerHTML={{ __html: processedContent }}
                     data-testid="content-review"
                   />

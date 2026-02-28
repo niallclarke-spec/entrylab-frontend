@@ -582,7 +582,7 @@ export default function PropFirmReview() {
               {processedContent && (
                 <Card className="p-8">
                   <div 
-                    className="prose prose-lg dark:prose-invert max-w-none
+                    className="prose prose-lg max-w-none
                     prose-headings:font-bold prose-headings:text-foreground
                     prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4 prose-h2:border-b prose-h2:border-border prose-h2:pb-3 prose-h2:scroll-mt-24
                     prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3

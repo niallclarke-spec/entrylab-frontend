@@ -300,6 +300,20 @@
   border-color: #e8edea;
 }
 
+.content-light h1,
+.content-light h2,
+.content-light h3,
+.content-light h4,
+.content-light h5,
+.content-light h6 {
+  color: #111827;
+}
+
+.content-light strong,
+.content-light b {
+  color: #111827;
+}
+
 .content-light .bg-muted\/50 {
   background-color: #f0f4f2;
 }

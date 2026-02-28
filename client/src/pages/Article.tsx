@@ -341,7 +341,7 @@ export default function Article() {
     const placeholders = Array.from(doc.querySelectorAll('[data-pros-cons-placeholder]'));
     
     if (placeholders.length === 0) {
-      return <div dangerouslySetInnerHTML={{ __html: htmlContent }} className="prose prose-slate dark:prose-invert max-w-none" />;
+      return <div dangerouslySetInnerHTML={{ __html: htmlContent }} className="prose prose-slate max-w-none" />;
     }
     
     // Split content by placeholders and interleave with ProsConsCards
@@ -364,7 +364,7 @@ export default function Article() {
             <div 
               key={`content-${index}`}
               dangerouslySetInnerHTML={{ __html: beforeContent }} 
-              className="prose prose-slate dark:prose-invert max-w-none" 
+              className="prose prose-slate max-w-none" 
             />
           );
         }
@@ -382,7 +382,7 @@ export default function Article() {
         <div 
           key="content-final"
           dangerouslySetInnerHTML={{ __html: remainingContent }} 
-          className="prose prose-slate dark:prose-invert max-w-none" 
+          className="prose prose-slate max-w-none" 
         />
       );
     }
