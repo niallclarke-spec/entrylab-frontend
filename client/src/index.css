@@ -278,9 +278,21 @@
   color: #1a1e1c;
 }
 
-.content-light .prose :where(a):not(:where([class~="not-prose"] *)):hover {
+.content-light a,
+.content-light .prose a,
+.content-light .prose :where(a):not(:where([class~="not-prose"] *)) {
   color: #16a34a !important;
-  text-decoration-color: #16a34a;
+  text-decoration-color: rgba(22, 163, 74, 0.5);
+}
+
+.content-light .prose :where(a):not(:where([class~="not-prose"] *)):hover {
+  color: #15803d !important;
+  text-decoration-color: #15803d;
+}
+
+.content-light .prose :where(hr):not(:where([class~="not-prose"] *)) {
+  border-color: #e8edea !important;
+  opacity: 1;
 }
 
 @layer base {
