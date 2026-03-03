@@ -282,7 +282,7 @@ export default function Home() {
           )}
 
           {propFirms.length > 0 && (
-            <section className="py-16 md:py-24 relative overflow-hidden" style={{ background: "#1a1e1c" }}>
+            <section className="py-16 md:py-24 relative overflow-hidden" style={{ background: "#161a18", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
               <div
                 className="absolute top-0 left-0 pointer-events-none"
                 style={{
