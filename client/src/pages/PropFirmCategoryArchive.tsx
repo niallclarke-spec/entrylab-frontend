@@ -3,9 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
-import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
-import { Loader2, Shield, Star, Award, ArrowRight, Newspaper } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { PropFirmRow } from "@/components/PropFirmRow";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Shield, Star, CheckCircle2, ShieldCheck, ArrowRight, Newspaper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { trackPageView } from "@/lib/gtm";
@@ -15,60 +15,75 @@ import type { Broker } from "@shared/schema";
 export default function PropFirmCategoryArchive() {
   const params = useParams();
   const [, setLocation] = useLocation();
-  
-  // Extract slug from params or from URL
+
   const slug = params.slug || window.location.pathname.slice(1);
 
   useEffect(() => {
     trackPageView(`/${slug}`, `${slug} | EntryLab`);
   }, [slug]);
 
-  // Fetch prop firm categories
+  useEffect(() => {
+    const prevBody = document.body.style.background;
+    const prevHtml = document.documentElement.style.background;
+    document.body.style.setProperty("background", "#f8faf8", "important");
+    document.documentElement.style.setProperty("background", "#f8faf8", "important");
+    return () => {
+      document.body.style.background = prevBody;
+      document.documentElement.style.background = prevHtml;
+    };
+  }, []);
+
   const { data: propFirmCategories } = useQuery<any[]>({
     queryKey: ["/api/wordpress/prop-firm-categories"],
   });
 
-  // Fetch category content (prop firms in this category)
   const { data: categoryContent, isLoading } = useQuery<any>({
     queryKey: [`/api/wordpress/category-content?category=${slug}`],
     enabled: !!slug,
   });
 
   const propFirms = categoryContent?.propFirms?.map(transformPropFirm).filter((p: Broker | null): p is Broker => p !== null) || [];
-  
   const totalVerified = propFirms.filter((p: Broker) => p.verified).length;
-  const avgRating = propFirms.length > 0 
+  const avgRating = propFirms.length > 0
     ? (propFirms.reduce((sum: number, p: Broker) => sum + p.rating, 0) / propFirms.length).toFixed(1)
     : "0.0";
 
-  // Filter categories to show only prop firm related categories
-  const filteredCategories = (propFirmCategories || []);
-
-  // Find current category by slug and use WordPress name instead of generating from slug
+  const filteredCategories = propFirmCategories || [];
   const currentCategory = propFirmCategories?.find((cat: any) => cat.slug === slug);
-  const categoryName = currentCategory?.name || slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  const categoryName = currentCategory?.name || slug.split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+
+  const itemListData = propFirms.slice(0, 20).map((firm: Broker) => ({
+    url: `https://entrylab.io/prop-firms/${firm.slug}`,
+    name: firm.name,
+    image: firm.logo,
+  }));
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}>
         <Navigation />
-        <div className="flex-1 flex items-center justify-center py-32">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div style={{ background: "#1a1e1c" }} className="px-4 sm:px-6 py-14">
+          <div className="max-w-7xl mx-auto">
+            <Skeleton className="h-5 w-36 mb-4 opacity-20" />
+            <Skeleton className="h-12 w-96 mb-3 opacity-20" />
+            <Skeleton className="h-5 w-64 opacity-20" />
+          </div>
+        </div>
+        <div className="flex-1 py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col gap-3">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-2xl" />)}
+          </div>
         </div>
         <Footer />
       </div>
     );
   }
 
-  // Create ItemList schema data from prop firms
-  const itemListData = propFirms.slice(0, 20).map((firm: Broker) => ({
-    url: `https://entrylab.io/prop-firms/${firm.slug}`,
-    name: firm.name,
-    image: firm.logo
-  }));
-
   return (
-    <div className="min-h-screen flex flex-col">
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}
+    >
       <SEO
         title={`${categoryName} | EntryLab`}
         description={`Discover the ${categoryName.toLowerCase()}. Compare verified prop firms with competitive profit splits, fast payouts, and trusted trader reviews.`}
@@ -77,131 +92,173 @@ export default function PropFirmCategoryArchive() {
         breadcrumbs={[
           { name: "Home", url: "https://entrylab.io" },
           { name: "Prop Firms", url: "https://entrylab.io/prop-firms" },
-          { name: categoryName, url: `https://entrylab.io/${slug}` }
+          { name: categoryName, url: `https://entrylab.io/${slug}` },
         ]}
       />
       <Navigation />
-      
-      {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-background border-b">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-16">
-          <div className="text-center">
-            {/* Badge */}
-            <Badge className="mb-4 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
-              <Award className="h-3 w-3 mr-1.5" />
-              Curated Selection
-            </Badge>
-            
-            {/* Headline */}
-            <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-4 leading-tight">
-              {categoryName}
-            </h1>
-            
-            {/* Subheading */}
-            <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto mb-6">
-              Top verified prop firms. Compare trusted funding programs with competitive profit splits, fast evaluations, and verified trader reviews.
-            </p>
 
-            {/* Stats */}
-            {propFirms.length > 0 && (
-              <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8">
-                <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-card/50 backdrop-blur-sm border">
-                  <div className="flex items-center justify-center">
-                    <Shield className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="text-left">
-                    <div className="text-2xl font-bold text-foreground leading-none mb-1">{totalVerified}</div>
-                    <div className="text-xs text-muted-foreground whitespace-nowrap">Verified</div>
+      {/* Dark hero */}
+      <div style={{ background: "#1a1e1c" }} className="relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 md:py-18">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8">
+            <div>
+              <div
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-4"
+                style={{ background: "rgba(43,179,42,0.10)", color: "#6ee870", border: "1px solid rgba(43,179,42,0.22)" }}
+              >
+                <CheckCircle2 className="h-3 w-3" />
+                Funded Trading
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-3 leading-tight" style={{ color: "#f9fafb" }}>
+                {categoryName}
+              </h1>
+              <p className="text-base md:text-lg max-w-xl" style={{ color: "#9ca3af" }}>
+                Compare verified prop firms with competitive profit splits, fast evaluations, and trusted trader reviews.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3 md:flex-shrink-0">
+              {[
+                { icon: Shield, label: "Verified Firms", value: totalVerified },
+                { icon: Star, label: "Avg Rating", value: avgRating },
+              ].map(({ icon: Icon, label, value }) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl"
+                  style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}
+                >
+                  <Icon className="h-4 w-4 flex-shrink-0" style={{ color: "#6ee870" }} />
+                  <div>
+                    <p className="text-lg font-bold leading-none" style={{ color: "#f9fafb" }}>{value}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "#9ca3af" }}>{label}</p>
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-card/50 backdrop-blur-sm border">
-                  <div className="flex items-center justify-center">
-                    <Star className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="text-left">
-                    <div className="text-2xl font-bold text-foreground leading-none mb-1">{avgRating}</div>
-                    <div className="text-xs text-muted-foreground whitespace-nowrap">Avg Rating</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Category Tabs - Only Prop Firm Categories */}
-            {filteredCategories.length > 0 && (
-              <div className="flex flex-wrap gap-2 justify-center mt-6">
-                {filteredCategories.map((cat: any) => (
-                  <Badge
-                    key={cat.slug}
-                    variant={cat.slug === slug ? "default" : "outline"}
-                    className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
-                    onClick={() => setLocation(`/${cat.slug}`)}
-                    data-testid={`badge-category-${cat.slug}`}
-                  >
-                    {cat.name}
-                  </Badge>
-                ))}
-              </div>
-            )}
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      <main className="flex-1 py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          
-          {/* Prop Firms Grid */}
-          {propFirms.length > 0 ? (
-            <>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-12">
-                {propFirms.map((propFirm: Broker, index: number) => (
-                  <BrokerCardEnhanced
-                    key={propFirm.id}
-                    name={propFirm.name}
-                    logo={propFirm.logo}
-                    verified={propFirm.verified}
-                    rating={propFirm.rating}
-                    pros={propFirm.pros}
-                    highlights={propFirm.highlights}
-                    link={propFirm.link}
-                    featured={propFirm.featured}
-                    slug={propFirm.slug}
-                    type="prop-firm"
-                    pageLocation="archive"
-                    placementType="broker_list_card"
-                    position={index + 1}
-                  />
-                ))}
-              </div>
+      {/* Light content surface */}
+      <div className="relative flex-1">
+        <div className="pointer-events-none" aria-hidden="true">
+          <div style={{ position: "absolute", top: "5%", left: "5%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(43,179,42,0.05) 0%, transparent 65%)", filter: "blur(100px)", borderRadius: "50%" }} />
+          <div style={{ position: "absolute", top: "45%", right: "0%", width: "400px", height: "400px", background: "radial-gradient(circle, rgba(16,185,129,0.04) 0%, transparent 65%)", filter: "blur(110px)", borderRadius: "50%" }} />
+        </div>
 
-              {/* CTA to News */}
-              <div className="border-t pt-12">
-                <p className="text-center text-sm text-muted-foreground mb-3">
-                  Looking for latest market insights?
-                </p>
-                <div className="flex flex-wrap gap-3 justify-center">
-                  <Button 
-                    asChild 
-                    variant="ghost" 
-                    className="gap-2"
-                    data-testid="button-see-latest-news"
-                  >
-                    <a href="/news">
-                      <Newspaper className="h-4 w-4" />
-                      See Latest FX News
-                      <ArrowRight className="h-4 w-4" />
-                    </a>
-                  </Button>
-                </div>
+        <div className="relative">
+          {/* Category filter pills */}
+          {filteredCategories.length > 0 && (
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {filteredCategories.map((cat: any) => {
+                  const isSelected = cat.slug === slug;
+                  return (
+                    <button
+                      key={cat.slug}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer"
+                      style={{
+                        background: isSelected ? "rgba(43,179,42,0.08)" : "rgba(255,255,255,0.55)",
+                        border: isSelected ? "1px solid rgba(43,179,42,0.15)" : "1px solid rgba(255,255,255,0.70)",
+                        color: isSelected ? "#14531a" : "#374151",
+                      }}
+                      onClick={() => setLocation(`/${cat.slug}`)}
+                      data-testid={`badge-category-${cat.slug}`}
+                    >
+                      {cat.name}
+                    </button>
+                  );
+                })}
               </div>
-            </>
-          ) : (
-            <div className="text-center py-16">
-              <p className="text-muted-foreground">No prop firms found in this category.</p>
             </div>
           )}
+
+          <main className="py-10 pb-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+              <div className="mb-7">
+                <div
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-3"
+                  style={{ background: "rgba(43,179,42,0.07)", color: "#186818", border: "1px solid rgba(43,179,42,0.14)" }}
+                >
+                  Funded Trading
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold mb-1" style={{ color: "#111827" }}>
+                  Top Rated Prop Firms
+                </h2>
+                <p className="text-base" style={{ color: "#6b7280" }}>
+                  Start your funded trading journey with the best verified prop firms
+                </p>
+              </div>
+
+              {/* EntryLab Verified pill */}
+              <div className="flex mb-6">
+                <div
+                  className="inline-flex items-center gap-3 px-4 py-3 rounded-xl"
+                  style={{
+                    background: "rgba(255,255,255,0.45)",
+                    backdropFilter: "blur(12px)",
+                    WebkitBackdropFilter: "blur(12px)",
+                    border: "1px solid rgba(255,255,255,0.70)",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8)",
+                  }}
+                >
+                  <div
+                    className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg"
+                    style={{ background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.25)" }}
+                  >
+                    <ShieldCheck className="h-4 w-4" style={{ color: "#b45309" }} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium" style={{ color: "#6b7280" }}>EntryLab Verified</p>
+                    <p className="text-sm font-bold" style={{ color: "#111827" }}>All firms checked</p>
+                  </div>
+                </div>
+              </div>
+
+              {propFirms.length > 0 ? (
+                <>
+                  <div className="flex flex-col gap-3 mb-12">
+                    {propFirms.map((firm: any, index: number) => (
+                      <PropFirmRow
+                        key={firm.id}
+                        name={firm.name}
+                        logo={firm.logo}
+                        rating={firm.rating}
+                        pros={firm.pros || []}
+                        tagline={firm.tagline}
+                        highlights={firm.highlights}
+                        link={firm.link}
+                        reviewLink={firm.reviewLink}
+                        position={index + 1}
+                        pageLocation="prop_firms_archive"
+                      />
+                    ))}
+                  </div>
+
+                  <div style={{ borderTop: "1px solid rgba(255,255,255,0.4)" }} className="pt-10">
+                    <p className="text-center text-sm mb-3" style={{ color: "#6b7280" }}>
+                      Looking for the latest market insights?
+                    </p>
+                    <div className="flex flex-wrap gap-3 justify-center">
+                      <Button asChild variant="ghost" className="gap-2" data-testid="button-see-latest-news">
+                        <a href="/news">
+                          <Newspaper className="h-4 w-4" />
+                          See Latest FX News
+                          <ArrowRight className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-16">
+                  <p style={{ color: "#6b7280" }}>No prop firms found in this category.</p>
+                </div>
+              )}
+            </div>
+          </main>
         </div>
-      </main>
+      </div>
 
       <Footer />
     </div>
