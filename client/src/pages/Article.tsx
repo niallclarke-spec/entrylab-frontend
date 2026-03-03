@@ -721,7 +721,7 @@ export default function Article() {
                 <div className="flex items-center gap-2">
                   <Badge className="gap-1 bg-emerald-500/20 text-emerald-300 border-emerald-400/30 hover:bg-emerald-500/30">
                     <Award className="h-3 w-3" />
-                    Premium Analysis
+                    Independant Analysis
                   </Badge>
                 </div>
               </div>
