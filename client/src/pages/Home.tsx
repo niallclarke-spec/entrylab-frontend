@@ -12,6 +12,14 @@ import { trackPageView } from "@/lib/gtm";
 import { ArticleCardSkeletonList } from "@/components/skeletons/ArticleCardSkeleton";
 import { BrokerCardSkeletonList } from "@/components/skeletons/BrokerCardSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DollarSign, TrendingUp, Clock, ShieldCheck } from "lucide-react";
+
+const PROP_FIRM_STATS = [
+  { label: "Max Funding", value: "Up to $200K", Icon: DollarSign },
+  { label: "Profit Split", value: "Up to 90%", Icon: TrendingUp },
+  { label: "Challenge Period", value: "14–30 Days", Icon: Clock },
+  { label: "EntryLab Verified", value: "All firms checked", Icon: ShieldCheck },
+];
 
 const TrendingTopics = lazy(() => import("@/components/TrendingTopics").then(m => ({ default: m.TrendingTopics })));
 const FeaturedBroker = lazy(() => import("@/components/FeaturedBroker").then(m => ({ default: m.FeaturedBroker })));
@@ -112,7 +120,7 @@ export default function Home() {
           <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
             <Skeleton className="absolute inset-0" />
           </section>
-          <div style={{ background: "linear-gradient(160deg, #eaf5ea 0%, #f0f7f0 40%, #e8f4f0 100%)" }}>
+          <div style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}>
             <section className="py-16 md:py-24">
               <div className="max-w-7xl mx-auto px-6">
                 <Skeleton className="h-10 w-48 mb-8" />
@@ -253,7 +261,8 @@ export default function Home() {
               {propFirms.length > 0 && (
                 <section className="py-16 md:py-20" style={{ borderTop: "1px solid rgba(255,255,255,0.4)" }}>
                   <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                    <div className="flex items-end justify-between mb-10 gap-4">
+                    {/* Section header */}
+                    <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
                       <div>
                         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-3" style={{ background: "rgba(43,179,42,0.07)", color: "#186818", border: "1px solid rgba(43,179,42,0.14)", backdropFilter: "blur(8px)" }}>
                           Funded Trading
@@ -262,21 +271,50 @@ export default function Home() {
                           Top Rated Prop Firms
                         </h2>
                         <p className="text-base max-w-xl" style={{ color: "#6b7280" }}>
-                          Start your funded trading journey with the best prop firms
+                          Start your funded trading journey with the best verified prop firms
                         </p>
                       </div>
-                      <a href="/best-verified-propfirms" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold flex-shrink-0 hover:opacity-80 transition-opacity" style={{ color: "#186818" }}>
+                      <a href="/best-verified-propfirms" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold flex-shrink-0 hover:opacity-80 transition-opacity mt-1" style={{ color: "#186818" }}>
                         View All
                       </a>
                     </div>
+
+                    {/* Stats bar */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-7">
+                      {PROP_FIRM_STATS.map((stat, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center gap-3 px-4 py-3 rounded-xl"
+                          style={{
+                            background: "rgba(255,255,255,0.12)",
+                            backdropFilter: "blur(12px)",
+                            WebkitBackdropFilter: "blur(12px)",
+                            border: "1px solid rgba(255,255,255,0.38)",
+                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+                          }}
+                        >
+                          <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: "rgba(43,179,42,0.07)", border: "1px solid rgba(43,179,42,0.13)" }}>
+                            <stat.Icon className="h-4 w-4" style={{ color: "#2bb32a" }} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium truncate" style={{ color: "#9ca3af" }}>{stat.label}</p>
+                            <p className="text-sm font-bold truncate" style={{ color: "#111827" }}>{stat.value}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Firm rows */}
                     <div className="flex flex-col gap-3">
                       {propFirms.map((firm, index) => (
-                        <Suspense key={(firm as any).id} fallback={<Skeleton className="h-20 w-full rounded-2xl" />}>
+                        <Suspense key={(firm as any).id} fallback={<Skeleton className="h-24 w-full rounded-2xl" />}>
                           <PropFirmRow
                             name={(firm as any).name}
                             logo={(firm as any).logo}
                             rating={(firm as any).rating}
                             pros={(firm as any).pros || []}
+                            highlights={(firm as any).highlights}
+                            tagline={(firm as any).tagline}
                             link={(firm as any).link}
                             reviewLink={(firm as any).reviewLink}
                             position={index + 1}
