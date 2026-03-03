@@ -69,12 +69,21 @@ export default function PropFirmReview() {
     return div.textContent || div.innerText || "";
   };
 
+  useEffect(() => {
+    document.body.style.setProperty("background", "#f8faf8", "important");
+    document.documentElement.style.setProperty("background", "#f8faf8", "important");
+    return () => {
+      document.body.style.removeProperty("background");
+      document.documentElement.style.removeProperty("background");
+    };
+  }, []);
+
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}>
         <Navigation />
         <div className="flex-1 flex items-center justify-center py-32">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#2bb32a" }} />
         </div>
         <Footer />
       </div>
@@ -83,12 +92,12 @@ export default function PropFirmReview() {
 
   if (!propFirm) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}>
         <Navigation />
         <div className="flex-1 flex items-center justify-center py-32">
           <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">Prop Firm Not Found</h2>
-            <Link href="/prop-firms">
+            <h2 className="text-2xl font-bold mb-4" style={{ color: "#111827" }}>Prop Firm Not Found</h2>
+            <Link href="/best-verified-propfirms">
               <Button data-testid="button-back-prop-firms">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Prop Firms
               </Button>
@@ -177,7 +186,7 @@ export default function PropFirmReview() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}>
       <SEO
         title={seoTitle}
         description={seoDescription}

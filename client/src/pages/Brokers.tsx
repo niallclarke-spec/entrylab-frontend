@@ -33,13 +33,11 @@ export default function Brokers() {
   }, []);
 
   useEffect(() => {
-    const prevBody = document.body.style.backgroundColor;
-    const prevHtml = document.documentElement.style.backgroundColor;
-    document.body.style.backgroundColor = "#f8faf8";
-    document.documentElement.style.backgroundColor = "#f8faf8";
+    document.body.style.setProperty("background", "#f8faf8", "important");
+    document.documentElement.style.setProperty("background", "#f8faf8", "important");
     return () => {
-      document.body.style.backgroundColor = prevBody;
-      document.documentElement.style.backgroundColor = prevHtml;
+      document.body.style.removeProperty("background");
+      document.documentElement.style.removeProperty("background");
     };
   }, []);
 

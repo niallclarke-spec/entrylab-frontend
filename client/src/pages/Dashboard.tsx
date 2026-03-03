@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,15 @@ export default function Dashboard() {
   const [isChecking, setIsChecking] = useState(false);
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionStatus | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    document.body.style.setProperty("background", "#f8faf8", "important");
+    document.documentElement.style.setProperty("background", "#f8faf8", "important");
+    return () => {
+      document.body.style.removeProperty("background");
+      document.documentElement.style.removeProperty("background");
+    };
+  }, []);
 
   const checkSubscription = async () => {
     if (!email) {
@@ -83,7 +92,7 @@ export default function Dashboard() {
         description="Manage your EntryLab premium signals subscription and Telegram access"
         path="/dashboard"
       />
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}>
         <Navigation />
 
         <main className="flex-1 container mx-auto px-4 py-12">

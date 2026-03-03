@@ -45,6 +45,15 @@ export default function CategoryArchive() {
     }
   }, [category, selectedCategory, isAllPosts]);
 
+  useEffect(() => {
+    document.body.style.setProperty("background", "#f8faf8", "important");
+    document.documentElement.style.setProperty("background", "#f8faf8", "important");
+    return () => {
+      document.body.style.removeProperty("background");
+      document.documentElement.style.removeProperty("background");
+    };
+  }, []);
+
   const getAuthorName = (post: WordPressPost) => 
     post._embedded?.author?.[0]?.name || "EntryLab Team";
   
@@ -106,7 +115,7 @@ export default function CategoryArchive() {
   }));
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}>
       <SEO
         title={seoTitle}
         description={seoDescription}
@@ -120,33 +129,36 @@ export default function CategoryArchive() {
       />
       <Navigation />
       
-      <main className="flex-1 py-12 md:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4" data-testid="text-category-name">
-              {isAllPosts ? "Recent Posts" : (category?.name || 'Category')}
-            </h1>
-            {(isAllPosts || category?.description) && (
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                {isAllPosts 
-                  ? "The latest forex broker news, prop firm updates, and trading analysis"
-                  : stripHtml(category.description)
-                }
-              </p>
-            )}
+      {/* Dark hero */}
+      <div style={{ background: "#1a1e1c" }} className="relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 md:py-18">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-4"
+            style={{ background: "rgba(43,179,42,0.10)", color: "#6ee870", border: "1px solid rgba(43,179,42,0.22)" }}>
+            Latest Coverage
           </div>
+          <h1 className="text-4xl md:text-5xl font-bold mb-3 leading-tight" style={{ color: "#f9fafb" }} data-testid="text-category-name">
+            {isAllPosts ? "Recent Posts" : (category?.name || "Category")}
+          </h1>
+          <p className="text-base md:text-lg max-w-xl" style={{ color: "#9ca3af" }}>
+            {isAllPosts
+              ? "The latest forex broker news, prop firm updates, and trading analysis"
+              : (category?.description ? stripHtml(category.description) : "Expert analysis and insights for forex traders")}
+          </p>
+        </div>
+      </div>
 
+      <main className="flex-1 py-10 pb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto mb-8">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5" style={{ color: "#9ca3af" }} />
               <Input
                 type="text"
-                placeholder={isAllPosts ? "Search articles..." : `Search ${category?.name?.toLowerCase() || 'articles'}...`}
+                placeholder={isAllPosts ? "Search articles..." : `Search ${category?.name?.toLowerCase() || "articles"}...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 focus-visible:ring-primary focus-visible:ring-2 focus-visible:shadow-[0_0_20px_rgba(168,85,246,0.3)]"
+                className="pl-10"
                 data-testid="input-search-articles"
               />
             </div>
@@ -154,63 +166,40 @@ export default function CategoryArchive() {
 
           {/* Category Tabs */}
           <div className="flex flex-wrap gap-2 justify-center mb-8">
-            <Badge
-              variant={isAllPosts ? "default" : "outline"}
-              className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
-              onClick={() => setLocation('/news')}
-              data-testid="badge-category-all"
-            >
-              Recent Posts
-            </Badge>
-            {(allCategories || [])
-              .filter(cat => 
-                !EXCLUDED_CATEGORIES.includes(cat.slug.toLowerCase()) &&
-                cat.count > 0 // Only show categories with posts
-              )
-              .map((cat) => (
-                <Badge
+            {[{ name: "Recent Posts", slug: "all" }, ...(allCategories || []).filter(cat => !EXCLUDED_CATEGORIES.includes(cat.slug.toLowerCase()) && cat.count > 0)].map((cat) => {
+              const isSelected = cat.slug === "all" ? isAllPosts : cat.slug === selectedCategory;
+              return (
+                <button
                   key={cat.slug}
-                  variant={cat.slug === selectedCategory ? "default" : "outline"}
-                  className="cursor-pointer hover-elevate active-elevate-2 transition-all px-4 py-2"
-                  onClick={() => setLocation(`/${cat.slug}`)}
+                  className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer"
+                  style={{
+                    background: isSelected ? "rgba(43,179,42,0.08)" : "rgba(255,255,255,0.55)",
+                    border: isSelected ? "1px solid rgba(43,179,42,0.15)" : "1px solid rgba(255,255,255,0.70)",
+                    color: isSelected ? "#14531a" : "#374151",
+                  }}
+                  onClick={() => setLocation(cat.slug === "all" ? "/news" : `/${cat.slug}`)}
                   data-testid={`badge-category-${cat.slug}`}
                 >
                   {cat.name}
-                </Badge>
-              ))}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Directory Links - Subtle secondary CTA */}
-          <div className="mb-12">
-            <p className="text-center text-sm text-muted-foreground mb-3">
-              Looking for in-depth reviews?
-            </p>
-            <div className="flex flex-wrap gap-3 justify-center">
-              <Link href="/brokers">
-                <Button 
-                  variant="ghost" 
-                  size="default"
-                  className="gap-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
-                  data-testid="button-brokers-directory"
-                >
-                  <Shield className="h-4 w-4" />
-                  Browse Broker Reviews
-                  <span className="text-xs text-muted-foreground ml-1">→</span>
-                </Button>
-              </Link>
-              <Link href="/prop-firms">
-                <Button 
-                  variant="ghost" 
-                  size="default"
-                  className="gap-2 text-primary hover:bg-primary/10"
-                  data-testid="button-prop-firms-directory"
-                >
-                  <TrendingUp className="h-4 w-4" />
-                  Browse Prop Firm Reviews
-                  <span className="text-xs text-muted-foreground ml-1">→</span>
-                </Button>
-              </Link>
-            </div>
+          {/* Directory Links */}
+          <div className="mb-10 flex flex-wrap gap-3 justify-center">
+            <Link href="/top-cfd-brokers">
+              <Button variant="ghost" size="default" className="gap-2" style={{ color: "#186818" }} data-testid="button-brokers-directory">
+                <Shield className="h-4 w-4" />
+                Browse Broker Reviews
+              </Button>
+            </Link>
+            <Link href="/best-verified-propfirms">
+              <Button variant="ghost" size="default" className="gap-2" style={{ color: "#186818" }} data-testid="button-prop-firms-directory">
+                <TrendingUp className="h-4 w-4" />
+                Browse Prop Firm Reviews
+              </Button>
+            </Link>
           </div>
 
           {/* Posts Grid */}

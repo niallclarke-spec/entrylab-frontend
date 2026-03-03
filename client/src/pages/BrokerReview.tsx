@@ -57,12 +57,21 @@ export default function BrokerReview() {
     return div.textContent || div.innerText || "";
   };
 
+  useEffect(() => {
+    document.body.style.setProperty("background", "#f8faf8", "important");
+    document.documentElement.style.setProperty("background", "#f8faf8", "important");
+    return () => {
+      document.body.style.removeProperty("background");
+      document.documentElement.style.removeProperty("background");
+    };
+  }, []);
+
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}>
         <Navigation />
         <div className="flex-1 flex items-center justify-center py-32">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#2bb32a" }} />
         </div>
         <Footer />
       </div>
@@ -71,12 +80,12 @@ export default function BrokerReview() {
 
   if (!broker) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}>
         <Navigation />
         <div className="flex-1 flex items-center justify-center py-32">
           <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">Broker Not Found</h2>
-            <Link href="/brokers">
+            <h2 className="text-2xl font-bold mb-4" style={{ color: "#111827" }}>Broker Not Found</h2>
+            <Link href="/top-cfd-brokers">
               <Button data-testid="button-back-brokers">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Brokers
               </Button>
@@ -165,7 +174,7 @@ export default function BrokerReview() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}>
       <SEO
         title={seoTitle}
         description={seoDescription}
@@ -189,7 +198,7 @@ export default function BrokerReview() {
       <Navigation />
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-primary/10 via-background to-background border-b">
+      <div style={{ background: "#1a1e1c", borderBottom: "1px solid rgba(43,179,42,0.12)" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-16">
           <Link href="/brokers">
             <Button variant="ghost" size="sm" className="mb-6" data-testid="button-back-brokers-top">

@@ -81,6 +81,15 @@ export default function Article() {
   });
 
   useEffect(() => {
+    document.body.style.setProperty("background", "#f8faf8", "important");
+    document.documentElement.style.setProperty("background", "#f8faf8", "important");
+    return () => {
+      document.body.style.removeProperty("background");
+      document.documentElement.style.removeProperty("background");
+    };
+  }, []);
+
+  useEffect(() => {
     if (post) {
       const title = stripHtml(post.title.rendered);
       const categories = post._embedded?.["wp:term"]?.[0]?.map((term: any) => term.name) || [];
