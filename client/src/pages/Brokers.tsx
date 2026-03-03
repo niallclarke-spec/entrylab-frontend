@@ -44,16 +44,16 @@ export default function Brokers() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}>
         <Navigation />
-        <div style={{ background: "#1a1e1c" }} className="px-4 sm:px-6 py-14 md:py-18">
+        <div style={{ background: "#1a1e1c" }} className="px-4 sm:px-6 py-14">
           <div className="max-w-7xl mx-auto">
             <Skeleton className="h-5 w-32 mb-4 opacity-20" />
             <Skeleton className="h-12 w-80 mb-3 opacity-20" />
             <Skeleton className="h-5 w-64 opacity-20" />
           </div>
         </div>
-        <div style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }} className="flex-1 py-16">
+        <div className="flex-1 py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-72 rounded-2xl" />)}
@@ -66,7 +66,10 @@ export default function Brokers() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}
+    >
       <SEO
         title="Broker Reviews | EntryLab"
         description="Compare and review the top forex brokers. Find verified brokers with competitive spreads, fast execution, and trusted regulation."
@@ -82,7 +85,6 @@ export default function Brokers() {
       <div style={{ background: "#1a1e1c" }} className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 md:py-18">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8">
-            {/* Left — identity */}
             <div>
               <div
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-4"
@@ -99,7 +101,6 @@ export default function Brokers() {
               </p>
             </div>
 
-            {/* Right — stat tiles */}
             <div className="flex flex-wrap gap-3 md:flex-shrink-0">
               {[
                 { icon: Shield, label: "Verified", value: totalVerified },
@@ -124,10 +125,7 @@ export default function Brokers() {
       </div>
 
       {/* ── Light content surface ── */}
-      <div
-        className="relative flex-1"
-        style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}
-      >
+      <div className="relative flex-1">
         {/* Decorative orbs */}
         <div className="pointer-events-none" aria-hidden="true">
           <div style={{ position: "absolute", top: "5%", left: "5%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(43,179,42,0.05) 0%, transparent 65%)", filter: "blur(100px)", borderRadius: "50%" }} />
@@ -148,8 +146,8 @@ export default function Brokers() {
                     key={label}
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer"
                     style={{
-                      background: isSelected ? "rgba(43,179,42,0.08)" : "rgba(255,255,255,0.35)",
-                      border: isSelected ? "1px solid rgba(43,179,42,0.15)" : "1px solid rgba(255,255,255,0.55)",
+                      background: isSelected ? "rgba(43,179,42,0.08)" : "rgba(255,255,255,0.55)",
+                      border: isSelected ? "1px solid rgba(43,179,42,0.15)" : "1px solid rgba(255,255,255,0.70)",
                       color: isSelected ? "#14531a" : "#374151",
                     }}
                     onClick={() => {

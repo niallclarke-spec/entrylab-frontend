@@ -79,16 +79,16 @@ export default function PropFirms() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}>
         <Navigation />
-        <div style={{ background: "#1a1e1c" }} className="px-4 sm:px-6 py-14 md:py-18">
+        <div style={{ background: "#1a1e1c" }} className="px-4 sm:px-6 py-14">
           <div className="max-w-7xl mx-auto">
             <Skeleton className="h-5 w-36 mb-4 opacity-20" />
             <Skeleton className="h-12 w-96 mb-3 opacity-20" />
             <Skeleton className="h-5 w-64 opacity-20" />
           </div>
         </div>
-        <div style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }} className="flex-1 py-16">
+        <div className="flex-1 py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col gap-3">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-2xl" />)}
           </div>
@@ -99,7 +99,10 @@ export default function PropFirms() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}
+    >
       <SEO
         title={pageTitle}
         description={pageDescription}
@@ -119,7 +122,6 @@ export default function PropFirms() {
       <div style={{ background: "#1a1e1c" }} className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 md:py-18">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8">
-            {/* Left — identity */}
             <div>
               <div
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-4"
@@ -136,7 +138,6 @@ export default function PropFirms() {
               </p>
             </div>
 
-            {/* Right — stat tiles */}
             <div className="flex flex-wrap gap-3 md:flex-shrink-0">
               {[
                 { icon: Shield, label: "Verified Firms", value: totalVerified },
@@ -160,10 +161,7 @@ export default function PropFirms() {
       </div>
 
       {/* ── Light content surface ── */}
-      <div
-        className="relative flex-1"
-        style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}
-      >
+      <div className="relative flex-1">
         {/* Decorative orbs */}
         <div className="pointer-events-none" aria-hidden="true">
           <div style={{ position: "absolute", top: "5%", left: "5%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(43,179,42,0.05) 0%, transparent 65%)", filter: "blur(100px)", borderRadius: "50%" }} />
@@ -174,12 +172,11 @@ export default function PropFirms() {
           {/* Filter tabs */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-2">
             <div className="flex flex-wrap items-center gap-2">
-              {/* All */}
               <button
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer"
                 style={{
-                  background: filterFeatured === null && selectedCategory === null ? "rgba(43,179,42,0.08)" : "rgba(255,255,255,0.35)",
-                  border: filterFeatured === null && selectedCategory === null ? "1px solid rgba(43,179,42,0.15)" : "1px solid rgba(255,255,255,0.55)",
+                  background: filterFeatured === null && selectedCategory === null ? "rgba(43,179,42,0.08)" : "rgba(255,255,255,0.55)",
+                  border: filterFeatured === null && selectedCategory === null ? "1px solid rgba(43,179,42,0.15)" : "1px solid rgba(255,255,255,0.70)",
                   color: filterFeatured === null && selectedCategory === null ? "#14531a" : "#374151",
                 }}
                 onClick={() => { setFilterFeatured(null); setLocation("/prop-firms"); trackCategoryFilter("prop_firm", "all"); }}
@@ -188,12 +185,11 @@ export default function PropFirms() {
                 All Prop Firms ({propFirms.length})
               </button>
 
-              {/* Featured */}
               <button
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer"
                 style={{
-                  background: filterFeatured === true && selectedCategory === null ? "rgba(43,179,42,0.08)" : "rgba(255,255,255,0.35)",
-                  border: filterFeatured === true && selectedCategory === null ? "1px solid rgba(43,179,42,0.15)" : "1px solid rgba(255,255,255,0.55)",
+                  background: filterFeatured === true && selectedCategory === null ? "rgba(43,179,42,0.08)" : "rgba(255,255,255,0.55)",
+                  border: filterFeatured === true && selectedCategory === null ? "1px solid rgba(43,179,42,0.15)" : "1px solid rgba(255,255,255,0.70)",
                   color: filterFeatured === true && selectedCategory === null ? "#14531a" : "#374151",
                 }}
                 onClick={() => { setFilterFeatured(true); setLocation("/prop-firms"); trackCategoryFilter("prop_firm", "featured"); }}
@@ -203,7 +199,6 @@ export default function PropFirms() {
                 Featured ({featuredCount})
               </button>
 
-              {/* Dynamic category filters */}
               {categories
                 .map(cat => ({ ...cat, count: propFirms.filter(p => p.categoryIds.includes(cat.id)).length }))
                 .filter(cat => cat.count > 0)
@@ -212,8 +207,8 @@ export default function PropFirms() {
                     key={cat.id}
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer"
                     style={{
-                      background: selectedCategory === cat.id ? "rgba(43,179,42,0.08)" : "rgba(255,255,255,0.35)",
-                      border: selectedCategory === cat.id ? "1px solid rgba(43,179,42,0.15)" : "1px solid rgba(255,255,255,0.55)",
+                      background: selectedCategory === cat.id ? "rgba(43,179,42,0.08)" : "rgba(255,255,255,0.55)",
+                      border: selectedCategory === cat.id ? "1px solid rgba(43,179,42,0.15)" : "1px solid rgba(255,255,255,0.70)",
                       color: selectedCategory === cat.id ? "#14531a" : "#374151",
                     }}
                     onClick={() => {
@@ -269,7 +264,6 @@ export default function PropFirms() {
           {/* Prop firms list */}
           <section className="py-4 md:py-8 pb-20" style={{ borderTop: "1px solid rgba(255,255,255,0.4)" }}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
-              {/* Section header */}
               <div className="flex items-start justify-between mb-7 gap-4 flex-wrap">
                 <div>
                   <div
@@ -292,21 +286,21 @@ export default function PropFirms() {
                 <div
                   className="inline-flex items-center gap-3 px-4 py-3 rounded-xl"
                   style={{
-                    background: "rgba(255,255,255,0.12)",
+                    background: "rgba(255,255,255,0.45)",
                     backdropFilter: "blur(12px)",
                     WebkitBackdropFilter: "blur(12px)",
-                    border: "1px solid rgba(255,255,255,0.38)",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+                    border: "1px solid rgba(255,255,255,0.70)",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8)",
                   }}
                 >
                   <div
                     className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg"
-                    style={{ background: "rgba(251,191,36,0.10)", border: "1px solid rgba(251,191,36,0.22)" }}
+                    style={{ background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.25)" }}
                   >
                     <ShieldCheck className="h-4 w-4" style={{ color: "#b45309" }} />
                   </div>
                   <div>
-                    <p className="text-xs font-medium" style={{ color: "#9ca3af" }}>EntryLab Verified</p>
+                    <p className="text-xs font-medium" style={{ color: "#6b7280" }}>EntryLab Verified</p>
                     <p className="text-sm font-bold" style={{ color: "#111827" }}>All firms checked</p>
                   </div>
                 </div>
