@@ -12,14 +12,7 @@ import { trackPageView } from "@/lib/gtm";
 import { ArticleCardSkeletonList } from "@/components/skeletons/ArticleCardSkeleton";
 import { BrokerCardSkeletonList } from "@/components/skeletons/BrokerCardSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DollarSign, TrendingUp, Clock, ShieldCheck } from "lucide-react";
-
-const PROP_FIRM_STATS = [
-  { label: "Max Funding", value: "Up to $200K", Icon: DollarSign },
-  { label: "Profit Split", value: "Up to 90%", Icon: TrendingUp },
-  { label: "Challenge Period", value: "14–30 Days", Icon: Clock },
-  { label: "EntryLab Verified", value: "All firms checked", Icon: ShieldCheck },
-];
+import { ShieldCheck } from "lucide-react";
 
 const TrendingTopics = lazy(() => import("@/components/TrendingTopics").then(m => ({ default: m.TrendingTopics })));
 const FeaturedBroker = lazy(() => import("@/components/FeaturedBroker").then(m => ({ default: m.FeaturedBroker })));
@@ -280,28 +273,25 @@ export default function Home() {
                     </div>
 
                     {/* Stats bar */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-7">
-                      {PROP_FIRM_STATS.map((stat, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center gap-3 px-4 py-3 rounded-xl"
-                          style={{
-                            background: "rgba(255,255,255,0.12)",
-                            backdropFilter: "blur(12px)",
-                            WebkitBackdropFilter: "blur(12px)",
-                            border: "1px solid rgba(255,255,255,0.38)",
-                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
-                          }}
-                        >
-                          <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: "rgba(43,179,42,0.07)", border: "1px solid rgba(43,179,42,0.13)" }}>
-                            <stat.Icon className="h-4 w-4" style={{ color: "#2bb32a" }} />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-xs font-medium truncate" style={{ color: "#9ca3af" }}>{stat.label}</p>
-                            <p className="text-sm font-bold truncate" style={{ color: "#111827" }}>{stat.value}</p>
-                          </div>
+                    <div className="flex mb-7">
+                      <div
+                        className="inline-flex items-center gap-3 px-4 py-3 rounded-xl"
+                        style={{
+                          background: "rgba(255,255,255,0.12)",
+                          backdropFilter: "blur(12px)",
+                          WebkitBackdropFilter: "blur(12px)",
+                          border: "1px solid rgba(255,255,255,0.38)",
+                          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+                        }}
+                      >
+                        <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: "rgba(251,191,36,0.10)", border: "1px solid rgba(251,191,36,0.22)" }}>
+                          <ShieldCheck className="h-4 w-4" style={{ color: "#b45309" }} />
                         </div>
-                      ))}
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium" style={{ color: "#9ca3af" }}>EntryLab Verified</p>
+                          <p className="text-sm font-bold" style={{ color: "#111827" }}>All firms checked</p>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Firm rows */}
