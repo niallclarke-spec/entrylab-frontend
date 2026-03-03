@@ -16,11 +16,11 @@ interface ArticleCardProps {
 const getCategoryStyle = (category: string) => {
   const lower = category.toLowerCase();
   if (lower.includes("trading tool") || lower.includes("tools"))
-    return { icon: Wrench, bg: "rgba(249,115,22,0.15)", color: "#92400e", border: "rgba(249,115,22,0.30)" };
+    return { icon: Wrench, bg: "rgba(249,115,22,0.08)", color: "#92400e", border: "rgba(249,115,22,0.14)" };
   if (lower.includes("news") || lower.includes("broker news") || lower.includes("prop firm news"))
-    return { icon: Newspaper, bg: "rgba(43,179,42,0.15)", color: "#14531a", border: "rgba(43,179,42,0.30)" };
+    return { icon: Newspaper, bg: "rgba(43,179,42,0.08)", color: "#14531a", border: "rgba(43,179,42,0.14)" };
   if (lower.includes("guide") || lower.includes("broker guide"))
-    return { icon: BookMarked, bg: "rgba(59,130,246,0.15)", color: "#1e3a8a", border: "rgba(59,130,246,0.30)" };
+    return { icon: BookMarked, bg: "rgba(59,130,246,0.08)", color: "#1e3a8a", border: "rgba(59,130,246,0.14)" };
   return { icon: Newspaper, bg: "rgba(255,255,255,0.25)", color: "#374151", border: "rgba(255,255,255,0.40)" };
 };
 
@@ -87,7 +87,7 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
             </span>
             <span
               className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
-              style={{ background: "rgba(43,179,42,0.15)", color: "#14531a", border: "1px solid rgba(43,179,42,0.28)" }}
+              style={{ background: "rgba(43,179,42,0.08)", color: "#14531a", border: "1px solid rgba(43,179,42,0.14)" }}
               data-testid="badge-reading-time"
             >
               <BookOpen className="h-3 w-3" />

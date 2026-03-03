@@ -68,7 +68,7 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
             <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#6b7280" }}>Why traders choose {name}</p>
             <div className="flex flex-wrap gap-2">
               {highlights.slice(0, 4).map((h, i) => (
-                <span key={i} className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full" style={{ background: "rgba(43,179,42,0.15)", color: "#14531a", border: "1px solid rgba(43,179,42,0.30)" }} data-testid={`highlight-${i}`}>
+                <span key={i} className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full" style={{ background: "rgba(43,179,42,0.08)", color: "#14531a", border: "1px solid rgba(43,179,42,0.14)" }} data-testid={`highlight-${i}`}>
                   <CheckCircle2 className="h-3 w-3 flex-shrink-0" style={{ color: "#2bb32a" }} />
                   {h}
                 </span>
@@ -82,14 +82,14 @@ export function FeaturedBroker({ name, logo, tagline, rating, features, highligh
           {/* Segment 3 — Bonus + CTAs */}
           <div className="flex flex-col gap-2.5 flex-shrink-0 min-w-[180px]">
             {bonusOffer && bonusOffer.trim() && (
-              <div className="text-center px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: "rgba(43,179,42,0.12)", border: "1px dashed rgba(43,179,42,0.35)", color: "#14531a" }} data-testid="badge-bonus">
+              <div className="text-center px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: "rgba(43,179,42,0.06)", border: "1px dashed rgba(43,179,42,0.14)", color: "#14531a" }} data-testid="badge-bonus">
                 {bonusOffer}
               </div>
             )}
             <Button
               asChild
               className="w-full"
-              style={{ background: "#2bb32a", color: "#fff", border: "none", boxShadow: "0 2px 12px rgba(43,179,42,0.35)" }}
+              style={{ background: "#2bb32a", color: "#fff", border: "none", boxShadow: "0 2px 12px rgba(43,179,42,0.15)" }}
               data-testid="button-featured-cta"
               onClick={() => trackAffiliateClick({ broker_name: name, broker_type: 'broker', page_location: 'home', placement_type: 'featured_widget', rating, affiliate_link: link })}
             >

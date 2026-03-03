@@ -51,7 +51,7 @@ export function BrokerCardEnhanced({
       className="transition-all duration-200 h-full flex flex-col"
       style={{
         ...GLASS,
-        ...(featured ? { border: "1px solid rgba(43,179,42,0.45)", boxShadow: "0 8px 32px rgba(43,179,42,0.15), inset 0 1px 0 rgba(255,255,255,0.65)" } : {}),
+        ...(featured ? { border: "1px solid rgba(43,179,42,0.20)", boxShadow: "0 8px 32px rgba(43,179,42,0.06), inset 0 1px 0 rgba(255,255,255,0.65)" } : {}),
       }}
       onMouseEnter={e => {
         (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.18)";
@@ -93,7 +93,7 @@ export function BrokerCardEnhanced({
             {verified && (
               <div
                 className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold mt-2"
-                style={{ background: "rgba(43,179,42,0.18)", color: "#14531a", border: "1px solid rgba(43,179,42,0.35)" }}
+                style={{ background: "rgba(43,179,42,0.09)", color: "#14531a", border: "1px solid rgba(43,179,42,0.16)" }}
                 data-testid="badge-verified"
               >
                 <CheckCircle2 className="h-3 w-3" />
@@ -113,7 +113,7 @@ export function BrokerCardEnhanced({
               const Icon = icons[index % icons.length];
               return (
                 <div key={index} className="flex items-center gap-3" data-testid={`pro-${index}`}>
-                  <div className="flex-shrink-0 flex items-center justify-center" style={{ width: "32px", height: "32px", background: "rgba(43,179,42,0.15)", borderRadius: "10px", border: "1px solid rgba(43,179,42,0.25)" }}>
+                  <div className="flex-shrink-0 flex items-center justify-center" style={{ width: "32px", height: "32px", background: "rgba(43,179,42,0.08)", borderRadius: "10px", border: "1px solid rgba(43,179,42,0.12)" }}>
                     <Icon className="h-3.5 w-3.5" style={{ color: "#186818" }} />
                   </div>
                   <p className="text-sm flex-1" style={{ color: "#374151" }}>{pro}</p>
@@ -149,7 +149,7 @@ export function BrokerCardEnhanced({
           asChild
           className="w-full"
           size="lg"
-          style={{ background: "#2bb32a", color: "#fff", border: "none", boxShadow: "0 2px 12px rgba(43,179,42,0.35)" }}
+          style={{ background: "#2bb32a", color: "#fff", border: "none", boxShadow: "0 2px 12px rgba(43,179,42,0.15)" }}
           data-testid="button-visit-broker"
           onClick={() => trackAffiliateClick({
             broker_name: name,

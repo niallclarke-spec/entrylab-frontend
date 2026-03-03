@@ -60,7 +60,7 @@ export function TrendingTopics({ selectedCategory, onCategorySelect }: TrendingT
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           <div className="flex items-center gap-2.5 md:min-w-[180px] flex-shrink-0">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: "rgba(43,179,42,0.18)", border: "1px solid rgba(43,179,42,0.30)" }}>
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: "rgba(43,179,42,0.08)", border: "1px solid rgba(43,179,42,0.14)" }}>
               <Flame className="h-4 w-4" style={{ color: "#186818" }} />
             </div>
             <div>
@@ -75,9 +75,9 @@ export function TrendingTopics({ selectedCategory, onCategorySelect }: TrendingT
             <Link href={fixedTopic.link}>
               <button
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer"
-                style={{ background: "rgba(43,179,42,0.18)", border: "1px solid rgba(43,179,42,0.35)", color: "#14531a" }}
-                onMouseEnter={e => (e.currentTarget.style.background = "rgba(43,179,42,0.25)")}
-                onMouseLeave={e => (e.currentTarget.style.background = "rgba(43,179,42,0.18)")}
+                style={{ background: "rgba(43,179,42,0.08)", border: "1px solid rgba(43,179,42,0.15)", color: "#14531a" }}
+                onMouseEnter={e => (e.currentTarget.style.background = "rgba(43,179,42,0.14)")}
+                onMouseLeave={e => (e.currentTarget.style.background = "rgba(43,179,42,0.08)")}
                 data-testid="badge-trending-prop-firm-reviews"
               >
                 <ShieldCheck className="h-3.5 w-3.5" />
@@ -93,8 +93,8 @@ export function TrendingTopics({ selectedCategory, onCategorySelect }: TrendingT
                   <button
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer"
                     style={{
-                      background: isSelected ? "rgba(43,179,42,0.18)" : "rgba(255,255,255,0.25)",
-                      border: isSelected ? "1px solid rgba(43,179,42,0.35)" : "1px solid rgba(255,255,255,0.50)",
+                      background: isSelected ? "rgba(43,179,42,0.08)" : "rgba(255,255,255,0.25)",
+                      border: isSelected ? "1px solid rgba(43,179,42,0.15)" : "1px solid rgba(255,255,255,0.50)",
                       color: isSelected ? "#14531a" : "#374151",
                     }}
                     onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.background = "rgba(255,255,255,0.38)"; e.currentTarget.style.color = "#111827"; } }}

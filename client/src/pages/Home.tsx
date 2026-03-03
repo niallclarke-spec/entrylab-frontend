@@ -139,16 +139,14 @@ export default function Home() {
           <div
             className="relative"
             style={{
-              background: "linear-gradient(160deg, #d4edda 0%, #e8f5e9 25%, #f0faf0 50%, #e3f2e3 75%, #d8eedb 100%)",
+              background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)",
             }}
           >
             {/* Global decorative orbs — always present, bleed through all glass cards */}
             <div className="pointer-events-none" aria-hidden="true">
-              <div style={{ position: "absolute", top: "5%", left: "5%", width: "600px", height: "600px", background: "radial-gradient(circle, rgba(43,179,42,0.22) 0%, transparent 65%)", filter: "blur(80px)", borderRadius: "50%" }} />
-              <div style={{ position: "absolute", top: "20%", right: "0%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(16,185,129,0.18) 0%, transparent 65%)", filter: "blur(90px)", borderRadius: "50%" }} />
-              <div style={{ position: "absolute", top: "45%", left: "30%", width: "700px", height: "400px", background: "radial-gradient(circle, rgba(43,179,42,0.12) 0%, transparent 65%)", filter: "blur(100px)", borderRadius: "50%" }} />
-              <div style={{ position: "absolute", top: "65%", right: "10%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(52,211,153,0.15) 0%, transparent 65%)", filter: "blur(80px)", borderRadius: "50%" }} />
-              <div style={{ position: "absolute", top: "80%", left: "5%", width: "600px", height: "400px", background: "radial-gradient(circle, rgba(43,179,42,0.18) 0%, transparent 65%)", filter: "blur(90px)", borderRadius: "50%" }} />
+              <div style={{ position: "absolute", top: "5%", left: "5%", width: "600px", height: "600px", background: "radial-gradient(circle, rgba(43,179,42,0.06) 0%, transparent 65%)", filter: "blur(100px)", borderRadius: "50%" }} />
+              <div style={{ position: "absolute", top: "20%", right: "0%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(16,185,129,0.04) 0%, transparent 65%)", filter: "blur(110px)", borderRadius: "50%" }} />
+              <div style={{ position: "absolute", top: "55%", left: "30%", width: "700px", height: "400px", background: "radial-gradient(circle, rgba(43,179,42,0.04) 0%, transparent 65%)", filter: "blur(120px)", borderRadius: "50%" }} />
             </div>
 
             <div className="relative">
@@ -213,7 +211,7 @@ export default function Home() {
                   <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <div className="flex items-end justify-between mb-10 gap-4">
                       <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-3" style={{ background: "rgba(43,179,42,0.15)", color: "#186818", border: "1px solid rgba(43,179,42,0.30)", backdropFilter: "blur(8px)" }}>
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-3" style={{ background: "rgba(43,179,42,0.07)", color: "#186818", border: "1px solid rgba(43,179,42,0.14)", backdropFilter: "blur(8px)" }}>
                           Verified & Rated
                         </div>
                         <h2 className="text-3xl md:text-4xl font-bold mb-1" style={{ color: "#111827" }} data-testid="text-popular-brokers">
@@ -257,7 +255,7 @@ export default function Home() {
                   <div className="max-w-7xl mx-auto px-4 sm:px-6">
                     <div className="flex items-end justify-between mb-10 gap-4">
                       <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-3" style={{ background: "rgba(43,179,42,0.15)", color: "#186818", border: "1px solid rgba(43,179,42,0.30)", backdropFilter: "blur(8px)" }}>
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-3" style={{ background: "rgba(43,179,42,0.07)", color: "#186818", border: "1px solid rgba(43,179,42,0.14)", backdropFilter: "blur(8px)" }}>
                           Funded Trading
                         </div>
                         <h2 className="text-3xl md:text-4xl font-bold mb-1" style={{ color: "#111827" }} data-testid="text-popular-prop-firms">

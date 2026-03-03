@@ -39,7 +39,7 @@ export function PropFirmRow({ name, logo, rating, pros, link, reviewLink, positi
       data-testid={`row-prop-firm-${position}`}
     >
       {/* Rank */}
-      <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "rgba(43,179,42,0.18)", color: "#14531a", border: "1px solid rgba(43,179,42,0.35)" }} data-testid={`text-rank-${position}`}>
+      <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "rgba(43,179,42,0.08)", color: "#14531a", border: "1px solid rgba(43,179,42,0.15)" }} data-testid={`text-rank-${position}`}>
         {position}
       </div>
 
@@ -82,7 +82,7 @@ export function PropFirmRow({ name, logo, rating, pros, link, reviewLink, positi
           asChild
           size="sm"
           className="text-xs font-semibold"
-          style={{ background: "#2bb32a", color: "#fff", border: "none", boxShadow: "0 2px 10px rgba(43,179,42,0.35)" }}
+          style={{ background: "#2bb32a", color: "#fff", border: "none", boxShadow: "0 2px 10px rgba(43,179,42,0.15)" }}
           data-testid="button-visit-prop-firm"
           onClick={() => trackAffiliateClick({ broker_name: name, broker_type: "prop_firm", page_location: pageLocation as any, placement_type: "top_rated_card", rating, affiliate_link: link, position })}
         >
