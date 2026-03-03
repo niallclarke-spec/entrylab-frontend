@@ -103,9 +103,7 @@ export default function Home() {
         url="https://entrylab.io"
         type="website"
         preloadImage={featuredImage}
-        breadcrumbs={[
-          { name: "Home", url: "https://entrylab.io" }
-        ]}
+        breadcrumbs={[{ name: "Home", url: "https://entrylab.io" }]}
       />
       <Navigation />
 
@@ -113,33 +111,13 @@ export default function Home() {
         <>
           <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
             <Skeleton className="absolute inset-0" />
-            <div className="relative z-10 max-w-4xl mx-auto px-6 text-center space-y-4">
-              <Skeleton className="h-8 w-32 mx-auto" />
-              <Skeleton className="h-12 w-full max-w-3xl mx-auto" />
-              <Skeleton className="h-12 w-4/5 mx-auto" />
-              <Skeleton className="h-6 w-full max-w-2xl mx-auto" />
-              <Skeleton className="h-6 w-3/4 mx-auto" />
-            </div>
           </section>
-
-          <div style={{ background: "linear-gradient(180deg, #f8faf8 0%, #eef2ef 100%)" }}>
+          <div style={{ background: "linear-gradient(160deg, #eaf5ea 0%, #f0f7f0 40%, #e8f4f0 100%)" }}>
             <section className="py-16 md:py-24">
               <div className="max-w-7xl mx-auto px-6">
                 <Skeleton className="h-10 w-48 mb-8" />
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <ArticleCardSkeletonList count={6} />
-                </div>
-              </div>
-            </section>
-
-            <section className="py-16 md:py-24">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                <div className="mb-12">
-                  <Skeleton className="h-10 w-64 mb-4" />
-                  <Skeleton className="h-6 w-96" />
-                </div>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  <BrokerCardSkeletonList count={3} />
                 </div>
               </div>
             </section>
@@ -157,173 +135,171 @@ export default function Home() {
             imageUrl={getFeaturedImage(featuredPost)}
           />
 
-          <div style={{ background: "linear-gradient(180deg, #f8faf8 0%, #eef2ef 100%)" }}>
-            <Suspense fallback={<Skeleton className="h-16 w-full" />}>
-              <TrendingTopics
-                selectedCategory={selectedCategory}
-                onCategorySelect={setSelectedCategory}
-              />
-            </Suspense>
+          {/* ── Main content: single unified glass-ready surface ── */}
+          <div
+            className="relative"
+            style={{
+              background: "linear-gradient(160deg, #d4edda 0%, #e8f5e9 25%, #f0faf0 50%, #e3f2e3 75%, #d8eedb 100%)",
+            }}
+          >
+            {/* Global decorative orbs — always present, bleed through all glass cards */}
+            <div className="pointer-events-none" aria-hidden="true">
+              <div style={{ position: "absolute", top: "5%", left: "5%", width: "600px", height: "600px", background: "radial-gradient(circle, rgba(43,179,42,0.22) 0%, transparent 65%)", filter: "blur(80px)", borderRadius: "50%" }} />
+              <div style={{ position: "absolute", top: "20%", right: "0%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(16,185,129,0.18) 0%, transparent 65%)", filter: "blur(90px)", borderRadius: "50%" }} />
+              <div style={{ position: "absolute", top: "45%", left: "30%", width: "700px", height: "400px", background: "radial-gradient(circle, rgba(43,179,42,0.12) 0%, transparent 65%)", filter: "blur(100px)", borderRadius: "50%" }} />
+              <div style={{ position: "absolute", top: "65%", right: "10%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(52,211,153,0.15) 0%, transparent 65%)", filter: "blur(80px)", borderRadius: "50%" }} />
+              <div style={{ position: "absolute", top: "80%", left: "5%", width: "600px", height: "400px", background: "radial-gradient(circle, rgba(43,179,42,0.18) 0%, transparent 65%)", filter: "blur(90px)", borderRadius: "50%" }} />
+            </div>
 
-            {featuredBroker && (
-              <Suspense fallback={<Skeleton className="h-96 w-full max-w-7xl mx-auto" />}>
-                <FeaturedBroker
-                  name={featuredBroker.name}
-                  logo={featuredBroker.logo}
-                  tagline={featuredBroker.tagline || ""}
-                  rating={featuredBroker.rating}
-                  features={featuredBroker.features || []}
-                  highlights={featuredBroker.highlights || []}
-                  bonusOffer={featuredBroker.bonusOffer}
-                  link={featuredBroker.link}
-                  reviewLink={featuredBroker.reviewLink}
+            <div className="relative">
+              <Suspense fallback={<div className="h-16 w-full" />}>
+                <TrendingTopics
+                  selectedCategory={selectedCategory}
+                  onCategorySelect={setSelectedCategory}
                 />
               </Suspense>
-            )}
 
-            {/* Latest News */}
-            <section className="py-16 md:py-24" style={{ borderTop: "1px solid #e8edea" }}>
-              <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                <div className="flex items-center justify-between mb-10">
-                  <div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900" data-testid="text-latest-news">
-                      Latest News
-                    </h2>
-                    <p className="text-gray-500 mt-1 text-sm">Breaking updates from the forex & prop firm world</p>
-                  </div>
-                  <a
-                    href="/news"
-                    className="hidden sm:flex items-center gap-1.5 text-sm font-medium transition-colors hover:opacity-80"
-                    style={{ color: "#2bb32a" }}
-                    data-testid="link-view-all"
-                  >
-                    View All
-                  </a>
-                </div>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {latestPosts.map((post) => (
-                    <ArticleCard
-                      key={post.id}
-                      title={post.title.rendered}
-                      excerpt={stripHtml((post as any).acf?.article_description || post.excerpt.rendered)}
-                      author={getAuthorName(post)}
-                      date={post.date}
-                      category={getCategoryName(post)}
-                      link={getArticleUrl(post)}
-                      imageUrl={getFeaturedImage(post)}
-                      slug={post.slug}
-                    />
-                  ))}
-                </div>
-              </div>
-            </section>
+              {featuredBroker && (
+                <Suspense fallback={<Skeleton className="h-48 w-full max-w-7xl mx-auto" />}>
+                  <FeaturedBroker
+                    name={featuredBroker.name}
+                    logo={featuredBroker.logo}
+                    tagline={featuredBroker.tagline || ""}
+                    rating={featuredBroker.rating}
+                    features={featuredBroker.features || []}
+                    highlights={featuredBroker.highlights || []}
+                    bonusOffer={featuredBroker.bonusOffer}
+                    link={featuredBroker.link}
+                    reviewLink={featuredBroker.reviewLink}
+                  />
+                </Suspense>
+              )}
 
-            {/* Top Rated Brokers */}
-            {popularBrokers.length > 0 && (
-              <section className="py-16 md:py-24" style={{ borderTop: "1px solid #e8edea" }}>
+              {/* Latest News */}
+              <section className="py-16 md:py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                  <div className="flex items-end justify-between mb-12 gap-4">
+                  <div className="flex items-center justify-between mb-10">
                     <div>
-                      <div
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-4"
-                        style={{ background: "rgba(43,179,42,0.10)", color: "#186818", border: "1px solid rgba(43,179,42,0.22)" }}
-                      >
-                        Verified & Rated
-                      </div>
-                      <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2" data-testid="text-popular-brokers">
-                        Top Rated Brokers
+                      <h2 className="text-3xl md:text-4xl font-bold mb-1" style={{ color: "#111827" }} data-testid="text-latest-news">
+                        Latest News
                       </h2>
-                      <p className="text-base max-w-xl text-gray-500">
-                        Compare the best forex brokers trusted by thousands of traders worldwide
-                      </p>
+                      <p className="text-sm" style={{ color: "#6b7280" }}>Breaking updates from the forex & prop firm world</p>
                     </div>
-                    <a
-                      href="/top-cfd-brokers"
-                      className="hidden sm:flex items-center gap-1.5 text-sm font-medium flex-shrink-0 transition-colors hover:opacity-80"
-                      style={{ color: "#2bb32a" }}
-                    >
+                    <a href="/news" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold hover:opacity-80 transition-opacity" style={{ color: "#186818" }} data-testid="link-view-all">
                       View All
                     </a>
                   </div>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    {popularBrokers.map((broker, index) => (
-                      <Suspense key={broker.id} fallback={<Skeleton className="h-72 w-full" />}>
-                        <BrokerCardEnhanced
-                          name={broker.name}
-                          logo={broker.logo}
-                          verified={broker.verified}
-                          rating={broker.rating}
-                          pros={broker.pros}
-                          highlights={broker.highlights}
-                          link={broker.link}
-                          slug={broker.slug}
-                          type="broker"
-                          pageLocation="home"
-                          placementType="top_rated_card"
-                          position={index + 1}
-                        />
-                      </Suspense>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {latestPosts.map((post) => (
+                      <ArticleCard
+                        key={post.id}
+                        title={post.title.rendered}
+                        excerpt={stripHtml((post as any).acf?.article_description || post.excerpt.rendered)}
+                        author={getAuthorName(post)}
+                        date={post.date}
+                        category={getCategoryName(post)}
+                        link={getArticleUrl(post)}
+                        imageUrl={getFeaturedImage(post)}
+                        slug={post.slug}
+                      />
                     ))}
                   </div>
                 </div>
               </section>
-            )}
 
-            {/* Top Rated Prop Firms */}
-            {propFirms.length > 0 && (
-              <section className="py-16 md:py-24" style={{ borderTop: "1px solid #e8edea" }}>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                  <div className="flex items-end justify-between mb-10 gap-4">
-                    <div>
-                      <div
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-4"
-                        style={{ background: "rgba(43,179,42,0.10)", color: "#186818", border: "1px solid rgba(43,179,42,0.22)" }}
-                      >
-                        Funded Trading
+              {/* Top Rated Brokers */}
+              {popularBrokers.length > 0 && (
+                <section className="py-16 md:py-20" style={{ borderTop: "1px solid rgba(255,255,255,0.4)" }}>
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                    <div className="flex items-end justify-between mb-10 gap-4">
+                      <div>
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-3" style={{ background: "rgba(43,179,42,0.15)", color: "#186818", border: "1px solid rgba(43,179,42,0.30)", backdropFilter: "blur(8px)" }}>
+                          Verified & Rated
+                        </div>
+                        <h2 className="text-3xl md:text-4xl font-bold mb-1" style={{ color: "#111827" }} data-testid="text-popular-brokers">
+                          Top Rated Brokers
+                        </h2>
+                        <p className="text-base max-w-xl" style={{ color: "#6b7280" }}>
+                          Compare the best forex brokers trusted by thousands of traders worldwide
+                        </p>
                       </div>
-                      <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2" data-testid="text-popular-prop-firms">
-                        Top Rated Prop Firms
-                      </h2>
-                      <p className="text-base max-w-xl text-gray-500">
-                        Start your funded trading journey with the best prop firms
-                      </p>
+                      <a href="/top-cfd-brokers" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold flex-shrink-0 hover:opacity-80 transition-opacity" style={{ color: "#186818" }}>
+                        View All
+                      </a>
                     </div>
-                    <a
-                      href="/best-verified-propfirms"
-                      className="hidden sm:flex items-center gap-1.5 text-sm font-medium flex-shrink-0 transition-colors hover:opacity-80"
-                      style={{ color: "#2bb32a" }}
-                    >
-                      View All
-                    </a>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {popularBrokers.map((broker, index) => (
+                        <Suspense key={broker.id} fallback={<Skeleton className="h-72 w-full rounded-2xl" />}>
+                          <BrokerCardEnhanced
+                            name={broker.name}
+                            logo={broker.logo}
+                            verified={broker.verified}
+                            rating={broker.rating}
+                            pros={broker.pros}
+                            highlights={broker.highlights}
+                            link={broker.link}
+                            slug={broker.slug}
+                            type="broker"
+                            pageLocation="home"
+                            placementType="top_rated_card"
+                            position={index + 1}
+                          />
+                        </Suspense>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-3">
-                    {propFirms.map((firm, index) => (
-                      <Suspense key={(firm as any).id} fallback={<Skeleton className="h-20 w-full" />}>
-                        <PropFirmRow
-                          name={(firm as any).name}
-                          logo={(firm as any).logo}
-                          rating={(firm as any).rating}
-                          pros={(firm as any).pros || []}
-                          link={(firm as any).link}
-                          reviewLink={(firm as any).reviewLink}
-                          position={index + 1}
-                          pageLocation="home"
-                        />
-                      </Suspense>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            )}
+                </section>
+              )}
 
-            <Suspense fallback={<Skeleton className="h-96 w-full max-w-7xl mx-auto" />}>
-              <NewsletterCTA />
-            </Suspense>
+              {/* Top Rated Prop Firms */}
+              {propFirms.length > 0 && (
+                <section className="py-16 md:py-20" style={{ borderTop: "1px solid rgba(255,255,255,0.4)" }}>
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                    <div className="flex items-end justify-between mb-10 gap-4">
+                      <div>
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-3" style={{ background: "rgba(43,179,42,0.15)", color: "#186818", border: "1px solid rgba(43,179,42,0.30)", backdropFilter: "blur(8px)" }}>
+                          Funded Trading
+                        </div>
+                        <h2 className="text-3xl md:text-4xl font-bold mb-1" style={{ color: "#111827" }} data-testid="text-popular-prop-firms">
+                          Top Rated Prop Firms
+                        </h2>
+                        <p className="text-base max-w-xl" style={{ color: "#6b7280" }}>
+                          Start your funded trading journey with the best prop firms
+                        </p>
+                      </div>
+                      <a href="/best-verified-propfirms" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold flex-shrink-0 hover:opacity-80 transition-opacity" style={{ color: "#186818" }}>
+                        View All
+                      </a>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      {propFirms.map((firm, index) => (
+                        <Suspense key={(firm as any).id} fallback={<Skeleton className="h-20 w-full rounded-2xl" />}>
+                          <PropFirmRow
+                            name={(firm as any).name}
+                            logo={(firm as any).logo}
+                            rating={(firm as any).rating}
+                            pros={(firm as any).pros || []}
+                            link={(firm as any).link}
+                            reviewLink={(firm as any).reviewLink}
+                            position={index + 1}
+                            pageLocation="home"
+                          />
+                        </Suspense>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              <Suspense fallback={<Skeleton className="h-96 w-full max-w-7xl mx-auto" />}>
+                <NewsletterCTA />
+              </Suspense>
+            </div>
           </div>
         </>
       ) : (
         <div className="flex-1 flex items-center justify-center py-32">
-          <p className="text-muted-foreground">No articles found</p>
+          <p style={{ color: "#6b7280" }}>No articles found</p>
         </div>
       )}
 

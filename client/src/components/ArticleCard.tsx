@@ -15,17 +15,13 @@ interface ArticleCardProps {
 
 const getCategoryStyle = (category: string) => {
   const lower = category.toLowerCase();
-
   if (lower.includes("trading tool") || lower.includes("tools"))
-    return { icon: Wrench, bg: "rgba(249,115,22,0.08)", color: "#c2410c", border: "rgba(249,115,22,0.18)" };
-
+    return { icon: Wrench, bg: "rgba(249,115,22,0.15)", color: "#92400e", border: "rgba(249,115,22,0.30)" };
   if (lower.includes("news") || lower.includes("broker news") || lower.includes("prop firm news"))
-    return { icon: Newspaper, bg: "rgba(43,179,42,0.08)", color: "#186818", border: "rgba(43,179,42,0.18)" };
-
+    return { icon: Newspaper, bg: "rgba(43,179,42,0.15)", color: "#14531a", border: "rgba(43,179,42,0.30)" };
   if (lower.includes("guide") || lower.includes("broker guide"))
-    return { icon: BookMarked, bg: "rgba(59,130,246,0.08)", color: "#1d4ed8", border: "rgba(59,130,246,0.18)" };
-
-  return { icon: Newspaper, bg: "rgba(107,114,128,0.07)", color: "#374151", border: "rgba(107,114,128,0.15)" };
+    return { icon: BookMarked, bg: "rgba(59,130,246,0.15)", color: "#1e3a8a", border: "rgba(59,130,246,0.30)" };
+  return { icon: Newspaper, bg: "rgba(255,255,255,0.25)", color: "#374151", border: "rgba(255,255,255,0.40)" };
 };
 
 export function ArticleCard({ title, excerpt, author, date, category, link, imageUrl, slug }: ArticleCardProps) {
@@ -43,24 +39,29 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
   return (
     <Link href={link} data-testid={`card-article-${title.substring(0, 20)}`}>
       <article
-        className="h-full flex flex-col rounded-2xl overflow-hidden transition-all duration-200 cursor-pointer group"
+        className="h-full flex flex-col cursor-pointer group transition-all duration-200"
         style={{
-          background: "#ffffff",
-          border: "1px solid rgba(0,0,0,0.07)",
-          boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+          background: "rgba(255,255,255,0.12)",
+          backdropFilter: "blur(16px) saturate(200%)",
+          WebkitBackdropFilter: "blur(16px) saturate(200%)",
+          border: "1px solid rgba(255,255,255,0.38)",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.65)",
+          borderRadius: "20px",
+          overflow: "hidden",
         }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 32px rgba(0,0,0,0.10)";
-          (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.20)";
+          (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(0,0,0,0.13), inset 0 1px 0 rgba(255,255,255,0.7)";
+          (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)";
         }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 12px rgba(0,0,0,0.04)";
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.12)";
+          (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 32px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.65)";
           (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
         }}
       >
-        {/* Thumbnail */}
         {imageUrl && (
-          <div className="relative w-full h-44 overflow-hidden bg-gray-100 flex-shrink-0">
+          <div className="relative w-full h-44 flex-shrink-0" style={{ overflow: "hidden" }}>
             <OptimizedImage
               src={imageUrl}
               alt={title}
@@ -69,15 +70,15 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               data-testid="img-article-thumbnail"
             />
+            {/* glass tint over image */}
+            <div className="absolute inset-0" style={{ background: "rgba(255,255,255,0.04)" }} />
           </div>
         )}
 
-        {/* Body */}
         <div className="flex flex-col flex-1 p-5">
-          {/* Badges */}
           <div className="flex items-center gap-2 flex-wrap mb-3">
             <span
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
               style={{ background: bg, color, border: `1px solid ${border}` }}
               data-testid="badge-category"
             >
@@ -85,8 +86,8 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
               {category}
             </span>
             <span
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
-              style={{ background: "rgba(43,179,42,0.07)", color: "#186818", border: "1px solid rgba(43,179,42,0.15)" }}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
+              style={{ background: "rgba(43,179,42,0.15)", color: "#14531a", border: "1px solid rgba(43,179,42,0.28)" }}
               data-testid="badge-reading-time"
             >
               <BookOpen className="h-3 w-3" />
@@ -94,25 +95,15 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
             </span>
           </div>
 
-          {/* Title */}
-          <h3
-            className="text-base font-bold leading-snug line-clamp-2 mb-2 transition-colors"
-            style={{ color: "#111827" }}
-            data-testid="text-article-title"
-          >
+          <h3 className="text-base font-bold leading-snug line-clamp-2 mb-2" style={{ color: "#111827" }} data-testid="text-article-title">
             {stripHtml(title)}
           </h3>
 
-          {/* Excerpt */}
-          <p className="text-sm line-clamp-2 flex-1 leading-relaxed text-gray-500" data-testid="text-article-excerpt">
+          <p className="text-sm line-clamp-2 flex-1 leading-relaxed" style={{ color: "#4b5563" }} data-testid="text-article-excerpt">
             {truncatedExcerpt}
           </p>
 
-          {/* Footer */}
-          <div
-            className="flex items-center gap-3 text-xs mt-4 pt-4"
-            style={{ color: "#9ca3af", borderTop: "1px solid rgba(0,0,0,0.06)" }}
-          >
+          <div className="flex items-center gap-3 text-xs mt-4 pt-4" style={{ color: "#6b7280", borderTop: "1px solid rgba(255,255,255,0.4)" }}>
             <div className="flex items-center gap-1.5" data-testid="text-author">
               <User className="h-3.5 w-3.5" />
               <span className="truncate">{author}</span>

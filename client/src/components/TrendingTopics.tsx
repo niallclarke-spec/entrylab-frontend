@@ -22,76 +22,62 @@ export function TrendingTopics({ selectedCategory, onCategorySelect }: TrendingT
 
   const getIconAndColor = (slug: string, index: number) => {
     if (slug.toLowerCase().includes("news") || slug.toLowerCase().includes("article") || slug.toLowerCase().includes("update"))
-      return { icon: Newspaper, color: "#60a5fa" };
+      return { icon: Newspaper, color: "#1d4ed8" };
     if (slug.toLowerCase().includes("broker"))
-      return { icon: TrendingUp, color: "#2bb32a" };
+      return { icon: TrendingUp, color: "#186818" };
     if (slug.toLowerCase().includes("market") || slug.toLowerCase().includes("analysis"))
-      return { icon: BarChart3, color: "#a78bfa" };
+      return { icon: BarChart3, color: "#6d28d9" };
     if (slug.toLowerCase().includes("trading") || slug.toLowerCase().includes("alert"))
-      return { icon: AlertCircle, color: "#f59e0b" };
+      return { icon: AlertCircle, color: "#92400e" };
     if (slug.toLowerCase().includes("prop"))
-      return { icon: Building2, color: "#2bb32a" };
+      return { icon: Building2, color: "#186818" };
     const defaults = [
-      { icon: TrendingUp, color: "#2bb32a" },
-      { icon: Building2, color: "#2bb32a" },
+      { icon: TrendingUp, color: "#186818" },
+      { icon: Building2, color: "#186818" },
       { icon: BarChart3, color: "#6b7280" },
-      { icon: Newspaper, color: "#60a5fa" },
+      { icon: Newspaper, color: "#1d4ed8" },
     ];
     return defaults[index % defaults.length];
   };
 
   const topCategories = categories
-    ?.filter((cat) => cat.count > 0)
-    ?.filter((cat) => !EXCLUDED_CATEGORIES.includes(cat.slug.toLowerCase()))
+    ?.filter(c => c.count > 0)
+    ?.filter(c => !EXCLUDED_CATEGORIES.includes(c.slug.toLowerCase()))
     ?.sort((a, b) => b.count - a.count)
     ?.slice(0, 4) || [];
 
-  const fixedTopic = {
-    id: "prop-firm-reviews",
-    label: "Verified Prop Firm Reviews",
-    slug: "prop-firm-reviews",
-    link: "/prop-firms",
-  };
+  const fixedTopic = { id: "prop-firm-reviews", label: "Verified Prop Firm Reviews", link: "/prop-firms" };
 
   return (
     <section
       style={{
-        background: "#ffffff",
-        borderBottom: "1px solid #e8edea",
+        background: "rgba(255,255,255,0.12)",
+        backdropFilter: "blur(16px) saturate(200%)",
+        WebkitBackdropFilter: "blur(16px) saturate(200%)",
+        borderBottom: "1px solid rgba(255,255,255,0.38)",
       }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
         <div className="flex flex-col md:flex-row md:items-center gap-4">
-          {/* Label */}
           <div className="flex items-center gap-2.5 md:min-w-[180px] flex-shrink-0">
-            <div
-              className="flex items-center justify-center w-8 h-8 rounded-lg"
-              style={{ background: "rgba(43,179,42,0.10)" }}
-            >
-              <Flame className="h-4 w-4" style={{ color: "#2bb32a" }} />
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: "rgba(43,179,42,0.18)", border: "1px solid rgba(43,179,42,0.30)" }}>
+              <Flame className="h-4 w-4" style={{ color: "#186818" }} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900 leading-none mb-0.5">Trending Now</p>
-              <p className="text-xs text-gray-400">Hot topics in forex</p>
+              <p className="text-sm font-bold leading-none mb-0.5" style={{ color: "#111827" }}>Trending Now</p>
+              <p className="text-xs" style={{ color: "#6b7280" }}>Hot topics in forex</p>
             </div>
           </div>
 
-          {/* Divider */}
-          <div className="hidden md:block w-px h-8 self-center" style={{ background: "rgba(0,0,0,0.08)" }} />
+          <div className="hidden md:block w-px h-8 self-center" style={{ background: "rgba(255,255,255,0.5)" }} />
 
-          {/* Topics */}
           <div className="flex flex-wrap items-center gap-2">
-            {/* Fixed first item — always green */}
             <Link href={fixedTopic.link}>
               <button
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer"
-                style={{
-                  background: "rgba(43,179,42,0.10)",
-                  border: "1px solid rgba(43,179,42,0.25)",
-                  color: "#186818",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(43,179,42,0.16)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(43,179,42,0.10)")}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer"
+                style={{ background: "rgba(43,179,42,0.18)", border: "1px solid rgba(43,179,42,0.35)", color: "#14531a" }}
+                onMouseEnter={e => (e.currentTarget.style.background = "rgba(43,179,42,0.25)")}
+                onMouseLeave={e => (e.currentTarget.style.background = "rgba(43,179,42,0.18)")}
                 data-testid="badge-trending-prop-firm-reviews"
               >
                 <ShieldCheck className="h-3.5 w-3.5" />
@@ -99,31 +85,20 @@ export function TrendingTopics({ selectedCategory, onCategorySelect }: TrendingT
               </button>
             </Link>
 
-            {/* WordPress categories */}
             {topCategories.map((category, index) => {
               const { icon: Icon, color } = getIconAndColor(category.slug, index);
               const isSelected = selectedCategory === category.slug;
               return (
                 <Link key={category.id} href={`/${category.slug}`}>
                   <button
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer"
                     style={{
-                      background: isSelected ? "rgba(43,179,42,0.10)" : "rgba(0,0,0,0.05)",
-                      border: isSelected ? "1px solid rgba(43,179,42,0.25)" : "1px solid rgba(0,0,0,0.08)",
-                      color: isSelected ? "#186818" : "#374151",
+                      background: isSelected ? "rgba(43,179,42,0.18)" : "rgba(255,255,255,0.25)",
+                      border: isSelected ? "1px solid rgba(43,179,42,0.35)" : "1px solid rgba(255,255,255,0.50)",
+                      color: isSelected ? "#14531a" : "#374151",
                     }}
-                    onMouseEnter={(e) => {
-                      if (!isSelected) {
-                        e.currentTarget.style.background = "rgba(0,0,0,0.08)";
-                        e.currentTarget.style.color = "#111827";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isSelected) {
-                        e.currentTarget.style.background = "rgba(0,0,0,0.05)";
-                        e.currentTarget.style.color = "#374151";
-                      }
-                    }}
+                    onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.background = "rgba(255,255,255,0.38)"; e.currentTarget.style.color = "#111827"; } }}
+                    onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.background = "rgba(255,255,255,0.25)"; e.currentTarget.style.color = "#374151"; } }}
                     data-testid={`badge-trending-${category.slug}`}
                   >
                     <Icon className="h-3.5 w-3.5" style={{ color: isSelected ? "#2bb32a" : color }} />
