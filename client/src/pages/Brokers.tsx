@@ -32,6 +32,17 @@ export default function Brokers() {
     trackPageView("/brokers", "Broker Reviews | EntryLab");
   }, []);
 
+  useEffect(() => {
+    const prevBody = document.body.style.backgroundColor;
+    const prevHtml = document.documentElement.style.backgroundColor;
+    document.body.style.backgroundColor = "#f8faf8";
+    document.documentElement.style.backgroundColor = "#f8faf8";
+    return () => {
+      document.body.style.backgroundColor = prevBody;
+      document.documentElement.style.backgroundColor = prevHtml;
+    };
+  }, []);
+
   const { data: wordpressBrokers, isLoading } = useQuery<any[]>({
     queryKey: ["/api/wordpress/brokers"],
   });

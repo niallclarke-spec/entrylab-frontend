@@ -66,6 +66,17 @@ export default function PropFirms() {
     : "0.0";
   const totalVerified = propFirms.filter(p => p.verified).length;
 
+  useEffect(() => {
+    const prevBody = document.body.style.backgroundColor;
+    const prevHtml = document.documentElement.style.backgroundColor;
+    document.body.style.backgroundColor = "#f8faf8";
+    document.documentElement.style.backgroundColor = "#f8faf8";
+    return () => {
+      document.body.style.backgroundColor = prevBody;
+      document.documentElement.style.backgroundColor = prevHtml;
+    };
+  }, []);
+
   const pageTitle = urlCategory ? `${urlCategory.name} Prop Firms | EntryLab` : "Prop Firm Reviews | EntryLab";
   const pageDescription = urlCategory
     ? `Compare top prop trading firms with ${urlCategory.name.toLowerCase()}. Find the best funded trading opportunities with competitive profit splits and evaluation processes.`
