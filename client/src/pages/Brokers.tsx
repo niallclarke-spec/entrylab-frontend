@@ -3,18 +3,33 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
-import { Loader2, Shield, Star, TrendingUp, Zap, CheckCircle2, Award, Users, Key, DollarSign, Headphones, FileText } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Shield, Star, TrendingUp, Zap, DollarSign, Headphones, FileText, CheckCircle2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Badge } from "@/components/ui/badge";
 import { trackPageView, trackCategoryFilter } from "@/lib/gtm";
 import { transformBroker } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
+
+const GLASS = {
+  background: "rgba(255,255,255,0.12)",
+  backdropFilter: "blur(16px) saturate(200%)",
+  WebkitBackdropFilter: "blur(16px) saturate(200%)",
+  border: "1px solid rgba(255,255,255,0.38)",
+  boxShadow: "0 4px 20px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.65)",
+} as const;
+
+const DECISION_FACTORS = [
+  { icon: Shield, title: "Check Regulation", desc: "Verify broker licensing & regulatory compliance to ensure your funds are protected" },
+  { icon: DollarSign, title: "Compare Spreads", desc: "Find competitive trading costs and transparent pricing for better profitability" },
+  { icon: Headphones, title: "Test Support", desc: "Ensure reliable customer service with 24/7 availability and quick response times" },
+  { icon: FileText, title: "Read Reviews", desc: "Check real trader experiences and independent reviews before making your choice" },
+];
 
 export default function Brokers() {
   const [filterFeatured, setFilterFeatured] = useState<boolean | null>(null);
 
   useEffect(() => {
-    trackPageView('/brokers', 'Broker Reviews | EntryLab');
+    trackPageView("/brokers", "Broker Reviews | EntryLab");
   }, []);
 
   const { data: wordpressBrokers, isLoading } = useQuery<any[]>({
@@ -22,23 +37,28 @@ export default function Brokers() {
   });
 
   const brokers = wordpressBrokers?.map(transformBroker).filter((b): b is Broker => b !== null) || [];
-  
-  const filteredBrokers = filterFeatured === null 
-    ? brokers 
-    : brokers.filter(b => b.featured === filterFeatured);
-
+  const filteredBrokers = filterFeatured === null ? brokers : brokers.filter(b => b.featured === filterFeatured);
   const featuredCount = brokers.filter(b => b.featured).length;
-  const avgRating = brokers.length > 0 
-    ? (brokers.reduce((sum, b) => sum + b.rating, 0) / brokers.length).toFixed(1)
-    : "0.0";
+  const avgRating = brokers.length > 0 ? (brokers.reduce((sum, b) => sum + b.rating, 0) / brokers.length).toFixed(1) : "0.0";
   const totalVerified = brokers.filter(b => b.verified).length;
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navigation />
-        <div className="flex-1 flex items-center justify-center py-32">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div style={{ background: "#1a1e1c" }} className="px-4 sm:px-6 py-14 md:py-18">
+          <div className="max-w-7xl mx-auto">
+            <Skeleton className="h-5 w-32 mb-4 opacity-20" />
+            <Skeleton className="h-12 w-80 mb-3 opacity-20" />
+            <Skeleton className="h-5 w-64 opacity-20" />
+          </div>
+        </div>
+        <div style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }} className="flex-1 py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-72 rounded-2xl" />)}
+            </div>
+          </div>
         </div>
         <Footer />
       </div>
@@ -53,226 +73,186 @@ export default function Brokers() {
         url="https://entrylab.io/brokers"
         breadcrumbs={[
           { name: "Home", url: "https://entrylab.io" },
-          { name: "Brokers", url: "https://entrylab.io/brokers" }
+          { name: "Brokers", url: "https://entrylab.io/brokers" },
         ]}
       />
       <Navigation />
-      
-      {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-background border-b">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-20">
-          <div className="text-center mb-12">
-            {/* Badge */}
-            <Badge className="mb-6 bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20">
-              <Award className="h-3 w-3 mr-1.5" />
-              Trusted Broker Reviews Since 2020
-            </Badge>
-            
-            {/* Headline */}
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
-              Find Your Perfect
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60">
-                Forex Broker
-              </span>
-            </h1>
-            
-            {/* Subheading */}
-            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              Compare {brokers.length} verified brokers with unbiased reviews based on real trading conditions
-            </p>
 
-            {/* Stats */}
-            <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 mb-10">
-              <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-card/50 backdrop-blur-sm border">
-                <div className="flex items-center justify-center">
-                  <Shield className="h-5 w-5 text-emerald-500" />
-                </div>
-                <div className="text-left">
-                  <div className="text-2xl font-bold text-foreground leading-none mb-1">{totalVerified}</div>
-                  <div className="text-xs text-muted-foreground whitespace-nowrap">Verified Brokers</div>
-                </div>
+      {/* ── Dark page hero ── */}
+      <div style={{ background: "#1a1e1c" }} className="relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 md:py-18">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8">
+            {/* Left — identity */}
+            <div>
+              <div
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-4"
+                style={{ background: "rgba(43,179,42,0.10)", color: "#6ee870", border: "1px solid rgba(43,179,42,0.22)" }}
+              >
+                <CheckCircle2 className="h-3 w-3" />
+                Broker Reviews
               </div>
-              
-              <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-card/50 backdrop-blur-sm border">
-                <div className="flex items-center justify-center">
-                  <Star className="h-5 w-5 text-emerald-500" />
-                </div>
-                <div className="text-left">
-                  <div className="text-2xl font-bold text-foreground leading-none mb-1">{avgRating}</div>
-                  <div className="text-xs text-muted-foreground whitespace-nowrap">Avg Rating</div>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-card/50 backdrop-blur-sm border">
-                <div className="flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-emerald-500" />
-                </div>
-                <div className="text-left">
-                  <div className="text-2xl font-bold text-foreground leading-none mb-1">{featuredCount}</div>
-                  <div className="text-xs text-muted-foreground whitespace-nowrap">Top Rated</div>
-                </div>
-              </div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-3 leading-tight" style={{ color: "#f9fafb" }}>
+                Top CFD Brokers
+              </h1>
+              <p className="text-base md:text-lg max-w-xl" style={{ color: "#9ca3af" }}>
+                Compare {brokers.length} verified brokers with unbiased reviews based on real trading conditions
+              </p>
             </div>
 
-            {/* Trust Badges */}
-            <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm text-muted-foreground mb-10">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                <span>100% Unbiased Reviews</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-primary" />
-                <span>Real Trading Conditions</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-chart-2" />
-                <span>Community Verified</span>
-              </div>
-            </div>
-
-            {/* Filter Tabs */}
-            <div className="inline-flex items-center gap-2 p-1 rounded-lg bg-muted/50 backdrop-blur-sm">
-              <Badge 
-                variant={filterFeatured === null ? "default" : "secondary"}
-                className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
-                onClick={() => {
-                  setFilterFeatured(null);
-                  trackCategoryFilter('broker', 'all');
-                }}
-                data-testid="badge-filter-all"
-              >
-                All Brokers ({brokers.length})
-              </Badge>
-              <Badge 
-                variant={filterFeatured === true ? "default" : "secondary"}
-                className="cursor-pointer px-6 py-2 hover-elevate active-elevate-2"
-                onClick={() => {
-                  setFilterFeatured(true);
-                  trackCategoryFilter('broker', 'featured');
-                }}
-                data-testid="badge-filter-featured"
-              >
-                <Star className="h-3.5 w-3.5 mr-1.5" />
-                Featured ({featuredCount})
-              </Badge>
+            {/* Right — stat tiles */}
+            <div className="flex flex-wrap gap-3 md:flex-shrink-0">
+              {[
+                { icon: Shield, label: "Verified", value: totalVerified },
+                { icon: Star, label: "Avg Rating", value: avgRating },
+                { icon: TrendingUp, label: "Top Rated", value: featuredCount },
+              ].map(({ icon: Icon, label, value }) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl"
+                  style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}
+                >
+                  <Icon className="h-4 w-4 flex-shrink-0" style={{ color: "#6ee870" }} />
+                  <div>
+                    <p className="text-lg font-bold leading-none" style={{ color: "#f9fafb" }}>{value}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "#9ca3af" }}>{label}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Key Decision Factors */}
-      <section className="py-12 md:py-16 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 mb-3">
-              <Key className="h-5 w-5 text-emerald-500" />
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                What to Look for in a Forex Broker
-              </h2>
-            </div>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Make an informed decision with these key factors to consider
-            </p>
-          </div>
-
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Check Regulation */}
-            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all" data-testid="card-decision-regulation">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mb-4">
-                <Shield className="h-6 w-6 text-emerald-500" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                Check Regulation
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Verify broker licensing & regulatory compliance to ensure your funds are protected
-              </p>
-            </div>
-
-            {/* Compare Spreads */}
-            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all" data-testid="card-decision-spreads">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mb-4">
-                <DollarSign className="h-6 w-6 text-emerald-500" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                Compare Spreads
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Find competitive trading costs and transparent pricing for better profitability
-              </p>
-            </div>
-
-            {/* Test Support */}
-            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all" data-testid="card-decision-support">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mb-4">
-                <Headphones className="h-6 w-6 text-emerald-500" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                Test Support
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Ensure reliable customer service with 24/7 availability and quick response times
-              </p>
-            </div>
-
-            {/* Read Reviews */}
-            <div className="bg-card rounded-xl p-6 border hover-elevate transition-all" data-testid="card-decision-reviews">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mb-4">
-                <FileText className="h-6 w-6 text-emerald-500" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                Read Reviews
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Check real trader experiences and independent reviews before making your choice
-              </p>
-            </div>
-          </div>
+      {/* ── Light content surface ── */}
+      <div
+        className="relative flex-1"
+        style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}
+      >
+        {/* Decorative orbs */}
+        <div className="pointer-events-none" aria-hidden="true">
+          <div style={{ position: "absolute", top: "5%", left: "5%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(43,179,42,0.05) 0%, transparent 65%)", filter: "blur(100px)", borderRadius: "50%" }} />
+          <div style={{ position: "absolute", top: "40%", right: "0%", width: "400px", height: "400px", background: "radial-gradient(circle, rgba(16,185,129,0.04) 0%, transparent 65%)", filter: "blur(110px)", borderRadius: "50%" }} />
         </div>
-      </section>
 
-      <main className="flex-1 py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          
-          {/* Section Heading */}
-          <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
-              Top Forex Brokers
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Compare and choose from our curated selection of trusted brokers
-            </p>
+        <div className="relative">
+          {/* Filter tabs */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {[
+                { label: `All Brokers (${brokers.length})`, value: null },
+                { label: `Featured (${featuredCount})`, value: true, icon: Star },
+              ].map(({ label, value, icon: Icon }) => {
+                const isSelected = filterFeatured === value;
+                return (
+                  <button
+                    key={label}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer"
+                    style={{
+                      background: isSelected ? "rgba(43,179,42,0.08)" : "rgba(255,255,255,0.35)",
+                      border: isSelected ? "1px solid rgba(43,179,42,0.15)" : "1px solid rgba(255,255,255,0.55)",
+                      color: isSelected ? "#14531a" : "#374151",
+                    }}
+                    onClick={() => {
+                      setFilterFeatured(value);
+                      trackCategoryFilter("broker", value === null ? "all" : "featured");
+                    }}
+                    data-testid={`badge-filter-${value === null ? "all" : "featured"}`}
+                  >
+                    {Icon && <Icon className="h-3.5 w-3.5" />}
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Brokers Grid */}
-          {filteredBrokers.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filteredBrokers.map((broker, index) => (
-                <BrokerCardEnhanced
-                  key={broker.id}
-                  name={broker.name}
-                  logo={broker.logo}
-                  verified={broker.verified}
-                  rating={broker.rating}
-                  pros={broker.pros}
-                  highlights={broker.highlights}
-                  link={broker.link}
-                  featured={broker.featured}
-                  slug={broker.slug}
-                  type="broker"
-                  pageLocation="brokers"
-                  placementType={filterFeatured === true ? 'top_rated_card' : 'broker_list_card'}
-                  position={index + 1}
-                />
-              ))}
+          {/* Key Decision Factors */}
+          <section className="py-12 md:py-14">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+              <div className="mb-8">
+                <div
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-3"
+                  style={{ background: "rgba(43,179,42,0.07)", color: "#186818", border: "1px solid rgba(43,179,42,0.14)" }}
+                >
+                  Broker Guide
+                </div>
+                <h2 className="text-2xl md:text-3xl font-bold" style={{ color: "#111827" }}>
+                  What to Look for in a Forex Broker
+                </h2>
+                <p className="text-sm mt-1" style={{ color: "#6b7280" }}>Make an informed decision with these key factors</p>
+              </div>
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                {DECISION_FACTORS.map(({ icon: Icon, title, desc }) => (
+                  <div
+                    key={title}
+                    className="flex flex-col p-5 rounded-2xl transition-all duration-200"
+                    style={GLASS}
+                    data-testid={`card-decision-${title.toLowerCase().replace(/\s+/g, "-")}`}
+                  >
+                    <div
+                      className="flex items-center justify-center w-10 h-10 rounded-xl mb-4 flex-shrink-0"
+                      style={{ background: "rgba(43,179,42,0.07)", border: "1px solid rgba(43,179,42,0.13)" }}
+                    >
+                      <Icon className="h-5 w-5" style={{ color: "#186818" }} />
+                    </div>
+                    <h3 className="text-sm font-bold mb-1.5" style={{ color: "#111827" }}>{title}</h3>
+                    <p className="text-xs leading-relaxed" style={{ color: "#6b7280" }}>{desc}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          ) : (
-            <div className="text-center py-16">
-              <p className="text-muted-foreground">No brokers found with the selected filter.</p>
+          </section>
+
+          {/* Brokers grid */}
+          <section className="py-4 md:py-8 pb-20" style={{ borderTop: "1px solid rgba(255,255,255,0.4)" }}>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+              <div className="flex items-end justify-between mb-8 gap-4 flex-wrap">
+                <div>
+                  <div
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-3"
+                    style={{ background: "rgba(43,179,42,0.07)", color: "#186818", border: "1px solid rgba(43,179,42,0.14)" }}
+                  >
+                    Verified &amp; Rated
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-bold mb-1" style={{ color: "#111827" }}>
+                    Top Forex Brokers
+                  </h2>
+                  <p className="text-base" style={{ color: "#6b7280" }}>
+                    Compare and choose from our curated selection of trusted brokers
+                  </p>
+                </div>
+              </div>
+
+              {filteredBrokers.length > 0 ? (
+                <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                  {filteredBrokers.map((broker, index) => (
+                    <BrokerCardEnhanced
+                      key={broker.id}
+                      name={broker.name}
+                      logo={broker.logo}
+                      verified={broker.verified}
+                      rating={broker.rating}
+                      pros={broker.pros}
+                      highlights={broker.highlights}
+                      link={broker.link}
+                      featured={broker.featured}
+                      slug={broker.slug}
+                      type="broker"
+                      pageLocation="brokers"
+                      placementType={filterFeatured === true ? "top_rated_card" : "broker_list_card"}
+                      position={index + 1}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16">
+                  <p style={{ color: "#6b7280" }}>No brokers found with the selected filter.</p>
+                </div>
+              )}
             </div>
-          )}
+          </section>
         </div>
-      </main>
+      </div>
 
       <Footer />
     </div>
