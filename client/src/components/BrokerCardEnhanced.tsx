@@ -42,30 +42,28 @@ export function BrokerCardEnhanced({
   return (
     <Card className={`hover-elevate transition-all h-full flex flex-col ${featured ? "border-primary shadow-lg" : ""}`} data-testid={`card-broker-${name}`}>
       <CardHeader className="space-y-4 pb-4">
-        <div className="flex items-start justify-between gap-2 sm:gap-3">
-          <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-            <div className="w-20 sm:w-28 h-20 sm:h-28 rounded-xl bg-white dark:bg-card flex items-center justify-center shadow-sm p-3 sm:p-4 flex-shrink-0" style={{ border: '0.5px solid rgba(128, 128, 128, 0.15)' }}>
-              <img src={logo} alt={name} loading="lazy" width="112" height="112" className="w-full h-full object-contain rounded-md" data-testid="img-broker-logo" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="text-base md:text-lg font-bold text-foreground break-words leading-tight" data-testid="text-broker-name">{name}</h3>
-              <div className="flex items-center gap-1 mt-2">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-5 w-5 flex-shrink-0 ${i < Math.floor(rating) ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40 fill-muted-foreground/20"}`}
-                  />
-                ))}
-                <span className="text-sm font-semibold text-foreground ml-1 whitespace-nowrap">{rating}/5</span>
-              </div>
-            </div>
+        <div className="flex items-start gap-3 sm:gap-4">
+          <div className="w-20 sm:w-28 h-20 sm:h-28 rounded-xl bg-white dark:bg-card flex items-center justify-center shadow-sm p-3 sm:p-4 flex-shrink-0" style={{ border: '0.5px solid rgba(128, 128, 128, 0.15)' }}>
+            <img src={logo} alt={name} loading="lazy" width="112" height="112" className="w-full h-full object-contain rounded-md" data-testid="img-broker-logo" />
           </div>
-          {verified && (
-            <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white border-0 flex-shrink-0" data-testid="badge-verified">
-              <CheckCircle2 className="h-3 w-3 mr-1" />
-              Verified
-            </Badge>
-          )}
+          <div className="min-w-0 flex-1">
+            <h3 className="text-base md:text-lg font-bold text-foreground leading-tight" data-testid="text-broker-name">{name}</h3>
+            <div className="flex items-center gap-1 mt-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  className={`h-5 w-5 flex-shrink-0 ${i < Math.floor(rating) ? "text-amber-500 fill-amber-500" : "text-muted-foreground/40 fill-muted-foreground/20"}`}
+                />
+              ))}
+              <span className="text-sm font-semibold text-foreground ml-1 whitespace-nowrap">{rating}/5</span>
+            </div>
+            {verified && (
+              <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white border-0 mt-2 w-fit" data-testid="badge-verified">
+                <CheckCircle2 className="h-3 w-3 mr-1" />
+                Verified
+              </Badge>
+            )}
+          </div>
         </div>
 
         {featured && (
