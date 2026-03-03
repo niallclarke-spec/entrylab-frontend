@@ -1,5 +1,4 @@
 import { Star, ExternalLink, BookOpen } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { trackAffiliateClick } from "@/lib/gtm";
@@ -27,17 +26,18 @@ export function PropFirmRow({
 }: PropFirmRowProps) {
   return (
     <div
-      className="flex items-center gap-4 px-5 py-4 rounded-xl"
+      className="flex items-center gap-4 px-5 py-4 rounded-2xl"
       style={{
-        background: "rgba(255,255,255,0.04)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "#ffffff",
+        border: "1px solid rgba(0,0,0,0.07)",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
       }}
       data-testid={`row-prop-firm-${position}`}
     >
       {/* Rank badge */}
       <div
         className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-        style={{ background: "rgba(43,179,42,0.15)", color: "#2bb32a", border: "1px solid rgba(43,179,42,0.3)" }}
+        style={{ background: "rgba(43,179,42,0.12)", color: "#186818", border: "1px solid rgba(43,179,42,0.25)" }}
         data-testid={`text-rank-${position}`}
       >
         {position}
@@ -45,35 +45,35 @@ export function PropFirmRow({
 
       {/* Logo */}
       <div
-        className="flex-shrink-0 w-12 h-12 rounded-lg bg-white flex items-center justify-center p-1.5"
-        style={{ border: "1px solid rgba(255,255,255,0.12)" }}
+        className="flex-shrink-0 w-12 h-12 rounded-xl bg-white flex items-center justify-center p-1.5"
+        style={{ border: "1px solid rgba(0,0,0,0.07)", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}
       >
         <img
           src={logo}
           alt={name}
           loading="lazy"
-          className="w-full h-full object-contain rounded"
+          className="w-full h-full object-contain rounded-lg"
           data-testid="img-prop-firm-logo"
         />
       </div>
 
       {/* Name + stars */}
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-white leading-tight truncate text-sm md:text-base" data-testid="text-prop-firm-name">
+        <p className="font-semibold text-gray-900 leading-tight truncate text-sm md:text-base" data-testid="text-prop-firm-name">
           {name}
         </p>
-        <div className="flex items-center gap-1 mt-1">
+        <div className="flex items-center gap-0.5 mt-1">
           {Array.from({ length: 5 }).map((_, i) => (
             <Star
               key={i}
               className={`h-3.5 w-3.5 flex-shrink-0 ${
                 i < Math.floor(rating)
                   ? "text-amber-500 fill-amber-500"
-                  : "text-white/20 fill-white/10"
+                  : "text-gray-200 fill-gray-100"
               }`}
             />
           ))}
-          <span className="text-xs font-semibold ml-1" style={{ color: "#adb2b1" }}>
+          <span className="text-xs font-semibold ml-1.5 text-gray-500">
             {rating}/5
           </span>
         </div>
@@ -82,14 +82,14 @@ export function PropFirmRow({
       {/* Key pros — hidden on mobile */}
       <div className="hidden md:flex items-center gap-2 flex-shrink-0">
         {pros.slice(0, 2).map((pro, i) => (
-          <Badge
+          <span
             key={i}
-            className="text-xs font-medium border-0 whitespace-nowrap"
-            style={{ background: "rgba(255,255,255,0.07)", color: "#adb2b1" }}
+            className="inline-flex text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap"
+            style={{ background: "rgba(0,0,0,0.05)", color: "#6b7280" }}
             data-testid={`badge-pro-${i}`}
           >
             {pro.length > 28 ? pro.slice(0, 28) + "…" : pro}
-          </Badge>
+          </span>
         ))}
       </div>
 
@@ -100,8 +100,8 @@ export function PropFirmRow({
             asChild
             variant="ghost"
             size="sm"
-            className="hidden sm:flex text-xs h-8 px-3"
-            style={{ color: "#adb2b1" }}
+            className="hidden sm:flex text-xs"
+            style={{ color: "#374151" }}
             data-testid="button-read-review"
           >
             <Link href={reviewLink}>
@@ -113,7 +113,7 @@ export function PropFirmRow({
         <Button
           asChild
           size="sm"
-          className="text-xs h-8 px-4 font-semibold text-white border-0"
+          className="text-xs font-semibold text-white border-0"
           style={{ background: "#2bb32a" }}
           data-testid="button-visit-prop-firm"
           onClick={() =>

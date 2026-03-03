@@ -13,7 +13,6 @@ import { ArticleCardSkeletonList } from "@/components/skeletons/ArticleCardSkele
 import { BrokerCardSkeletonList } from "@/components/skeletons/BrokerCardSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Lazy load non-critical components for better initial load
 const TrendingTopics = lazy(() => import("@/components/TrendingTopics").then(m => ({ default: m.TrendingTopics })));
 const FeaturedBroker = lazy(() => import("@/components/FeaturedBroker").then(m => ({ default: m.FeaturedBroker })));
 const BrokerCardEnhanced = lazy(() => import("@/components/BrokerCardEnhanced").then(m => ({ default: m.BrokerCardEnhanced })));
@@ -43,7 +42,7 @@ export default function Home() {
   const { data: posts, isLoading } = useQuery<WordPressPost[]>({
     queryKey: ["/api/wordpress/posts", activeCategoryId],
     queryFn: async () => {
-      const url = activeCategoryId 
+      const url = activeCategoryId
         ? `/api/wordpress/posts?category=${activeCategoryId}`
         : "/api/wordpress/posts";
       const response = await fetch(url);
@@ -66,13 +65,11 @@ export default function Home() {
 
   const wpBrokers = wordpressBrokers?.map(transformBroker).filter((b): b is Broker => b !== null) || [];
   const brokers = wpBrokers.length > 0 ? wpBrokers : (fallbackBrokers || []);
-
   const propFirms = (wordpressPropFirms?.map(transformPropFirm).filter(Boolean) || []).slice(0, 3);
 
   const featuredPost = posts?.[0];
   const latestPosts = posts?.slice(1, 7) || [];
-  
-  // Featured broker shows in featured section, top 3 brokers show in popular section
+
   const featuredBroker = brokers.find(b => b.featured);
   const popularBrokers = brokers.slice(0, 3);
 
@@ -90,13 +87,9 @@ export default function Home() {
     const media = post._embedded?.["wp:featuredmedia"]?.[0];
     if (!media) return undefined;
     const sizes = (media as any).media_details?.sizes;
-    
-    // Use medium_large as baseline - WordPress standard for article featured images
-    // OptimizedImage component handles responsive srcset for different viewports
     if (sizes?.medium_large?.source_url) return sizes.medium_large.source_url;
     if (sizes?.large?.source_url) return sizes.large.source_url;
     if (sizes?.medium?.source_url) return sizes.medium.source_url;
-    
     return media.source_url;
   };
 
@@ -129,26 +122,28 @@ export default function Home() {
             </div>
           </section>
 
-          <section className="py-16 md:py-24">
-            <div className="max-w-7xl mx-auto px-6">
-              <Skeleton className="h-10 w-48 mb-8" />
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <ArticleCardSkeletonList count={6} />
+          <div style={{ background: "linear-gradient(180deg, #f8faf8 0%, #eef2ef 100%)" }}>
+            <section className="py-16 md:py-24">
+              <div className="max-w-7xl mx-auto px-6">
+                <Skeleton className="h-10 w-48 mb-8" />
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <ArticleCardSkeletonList count={6} />
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
 
-          <section className="py-16 md:py-24 bg-gradient-to-b from-background via-card/50 to-background">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6">
-              <div className="text-center mb-12">
-                <Skeleton className="h-10 w-64 mx-auto mb-4" />
-                <Skeleton className="h-6 w-96 mx-auto" />
+            <section className="py-16 md:py-24">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                <div className="mb-12">
+                  <Skeleton className="h-10 w-64 mb-4" />
+                  <Skeleton className="h-6 w-96" />
+                </div>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  <BrokerCardSkeletonList count={3} />
+                </div>
               </div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                <BrokerCardSkeletonList count={6} />
-              </div>
-            </div>
-          </section>
+            </section>
+          </div>
         </>
       ) : featuredPost ? (
         <>
@@ -162,184 +157,169 @@ export default function Home() {
             imageUrl={getFeaturedImage(featuredPost)}
           />
 
-          <Suspense fallback={<Skeleton className="h-20 w-full max-w-7xl mx-auto" />}>
-            <TrendingTopics 
-              selectedCategory={selectedCategory} 
-              onCategorySelect={setSelectedCategory}
-            />
-          </Suspense>
-
-          {featuredBroker && (
-            <Suspense fallback={<Skeleton className="h-96 w-full max-w-7xl mx-auto" />}>
-              <FeaturedBroker
-                name={featuredBroker.name}
-                logo={featuredBroker.logo}
-                tagline={featuredBroker.tagline || ""}
-                rating={featuredBroker.rating}
-                features={featuredBroker.features || []}
-                highlights={featuredBroker.highlights || []}
-                bonusOffer={featuredBroker.bonusOffer}
-                link={featuredBroker.link}
-                reviewLink={featuredBroker.reviewLink}
+          <div style={{ background: "linear-gradient(180deg, #f8faf8 0%, #eef2ef 100%)" }}>
+            <Suspense fallback={<Skeleton className="h-16 w-full" />}>
+              <TrendingTopics
+                selectedCategory={selectedCategory}
+                onCategorySelect={setSelectedCategory}
               />
             </Suspense>
-          )}
 
-          <section className="py-16 md:py-24" style={{ background: "#f5f7f6" }}>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6">
-              <div className="flex items-center justify-between mb-10">
-                <div>
-                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900" data-testid="text-latest-news">
-                    Latest News
-                  </h2>
-                  <p className="text-gray-500 mt-1 text-sm">Breaking updates from the forex & prop firm world</p>
-                </div>
-                <a
-                  href="/news"
-                  className="hidden sm:flex items-center gap-1.5 text-sm font-medium transition-colors"
-                  style={{ color: "#2bb32a" }}
-                  data-testid="link-view-all"
-                >
-                  View All
-                </a>
-              </div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {latestPosts.map((post) => (
-                  <ArticleCard
-                    key={post.id}
-                    title={post.title.rendered}
-                    excerpt={stripHtml((post as any).acf?.article_description || post.excerpt.rendered)}
-                    author={getAuthorName(post)}
-                    date={post.date}
-                    category={getCategoryName(post)}
-                    link={getArticleUrl(post)}
-                    imageUrl={getFeaturedImage(post)}
-                    slug={post.slug}
-                  />
-                ))}
-              </div>
-            </div>
-          </section>
+            {featuredBroker && (
+              <Suspense fallback={<Skeleton className="h-96 w-full max-w-7xl mx-auto" />}>
+                <FeaturedBroker
+                  name={featuredBroker.name}
+                  logo={featuredBroker.logo}
+                  tagline={featuredBroker.tagline || ""}
+                  rating={featuredBroker.rating}
+                  features={featuredBroker.features || []}
+                  highlights={featuredBroker.highlights || []}
+                  bonusOffer={featuredBroker.bonusOffer}
+                  link={featuredBroker.link}
+                  reviewLink={featuredBroker.reviewLink}
+                />
+              </Suspense>
+            )}
 
-          {popularBrokers.length > 0 && (
-            <section className="py-16 md:py-24 relative overflow-hidden" style={{ background: "#1a1e1c" }}>
-              <div
-                className="absolute top-0 right-0 pointer-events-none"
-                style={{
-                  width: "500px",
-                  height: "500px",
-                  background: "radial-gradient(circle, rgba(43,179,42,0.12) 0%, transparent 65%)",
-                  filter: "blur(80px)",
-                  transform: "translate(30%, -30%)",
-                }}
-              />
-              <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
-                <div className="flex items-end justify-between mb-12 gap-4">
+            {/* Latest News */}
+            <section className="py-16 md:py-24" style={{ borderTop: "1px solid #e8edea" }}>
+              <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                <div className="flex items-center justify-between mb-10">
                   <div>
-                    <div
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-4"
-                      style={{ background: "rgba(43,179,42,0.12)", color: "#2bb32a", border: "1px solid rgba(43,179,42,0.25)" }}
-                    >
-                      Verified & Rated
-                    </div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-2" data-testid="text-popular-brokers">
-                      Top Rated Brokers
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900" data-testid="text-latest-news">
+                      Latest News
                     </h2>
-                    <p className="text-base max-w-xl" style={{ color: "#adb2b1" }}>
-                      Compare the best forex brokers trusted by thousands of traders worldwide
-                    </p>
+                    <p className="text-gray-500 mt-1 text-sm">Breaking updates from the forex & prop firm world</p>
                   </div>
                   <a
-                    href="/top-cfd-brokers"
-                    className="hidden sm:flex items-center gap-1.5 text-sm font-medium flex-shrink-0 transition-colors hover:opacity-80"
+                    href="/news"
+                    className="hidden sm:flex items-center gap-1.5 text-sm font-medium transition-colors hover:opacity-80"
                     style={{ color: "#2bb32a" }}
+                    data-testid="link-view-all"
                   >
                     View All
                   </a>
                 </div>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  {popularBrokers.map((broker, index) => (
-                    <Suspense key={broker.id} fallback={<Skeleton className="h-72 w-full" />}>
-                      <BrokerCardEnhanced
-                        name={broker.name}
-                        logo={broker.logo}
-                        verified={broker.verified}
-                        rating={broker.rating}
-                        pros={broker.pros}
-                        highlights={broker.highlights}
-                        link={broker.link}
-                        slug={broker.slug}
-                        type="broker"
-                        pageLocation="home"
-                        placementType="top_rated_card"
-                        position={index + 1}
-                      />
-                    </Suspense>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {latestPosts.map((post) => (
+                    <ArticleCard
+                      key={post.id}
+                      title={post.title.rendered}
+                      excerpt={stripHtml((post as any).acf?.article_description || post.excerpt.rendered)}
+                      author={getAuthorName(post)}
+                      date={post.date}
+                      category={getCategoryName(post)}
+                      link={getArticleUrl(post)}
+                      imageUrl={getFeaturedImage(post)}
+                      slug={post.slug}
+                    />
                   ))}
                 </div>
               </div>
             </section>
-          )}
 
-          {propFirms.length > 0 && (
-            <section className="py-16 md:py-24 relative overflow-hidden" style={{ background: "#161a18", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-              <div
-                className="absolute top-0 left-0 pointer-events-none"
-                style={{
-                  width: "500px",
-                  height: "500px",
-                  background: "radial-gradient(circle, rgba(43,179,42,0.12) 0%, transparent 65%)",
-                  filter: "blur(80px)",
-                  transform: "translate(-30%, -30%)",
-                }}
-              />
-              <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
-                <div className="flex items-end justify-between mb-10 gap-4">
-                  <div>
-                    <div
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-4"
-                      style={{ background: "rgba(43,179,42,0.12)", color: "#2bb32a", border: "1px solid rgba(43,179,42,0.25)" }}
-                    >
-                      Funded Trading
+            {/* Top Rated Brokers */}
+            {popularBrokers.length > 0 && (
+              <section className="py-16 md:py-24" style={{ borderTop: "1px solid #e8edea" }}>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                  <div className="flex items-end justify-between mb-12 gap-4">
+                    <div>
+                      <div
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-4"
+                        style={{ background: "rgba(43,179,42,0.10)", color: "#186818", border: "1px solid rgba(43,179,42,0.22)" }}
+                      >
+                        Verified & Rated
+                      </div>
+                      <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2" data-testid="text-popular-brokers">
+                        Top Rated Brokers
+                      </h2>
+                      <p className="text-base max-w-xl text-gray-500">
+                        Compare the best forex brokers trusted by thousands of traders worldwide
+                      </p>
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-2" data-testid="text-popular-prop-firms">
-                      Top Rated Prop Firms
-                    </h2>
-                    <p className="text-base max-w-xl" style={{ color: "#adb2b1" }}>
-                      Start your funded trading journey with the best prop firms
-                    </p>
+                    <a
+                      href="/top-cfd-brokers"
+                      className="hidden sm:flex items-center gap-1.5 text-sm font-medium flex-shrink-0 transition-colors hover:opacity-80"
+                      style={{ color: "#2bb32a" }}
+                    >
+                      View All
+                    </a>
                   </div>
-                  <a
-                    href="/best-verified-propfirms"
-                    className="hidden sm:flex items-center gap-1.5 text-sm font-medium flex-shrink-0 transition-colors hover:opacity-80"
-                    style={{ color: "#2bb32a" }}
-                  >
-                    View All
-                  </a>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                    {popularBrokers.map((broker, index) => (
+                      <Suspense key={broker.id} fallback={<Skeleton className="h-72 w-full" />}>
+                        <BrokerCardEnhanced
+                          name={broker.name}
+                          logo={broker.logo}
+                          verified={broker.verified}
+                          rating={broker.rating}
+                          pros={broker.pros}
+                          highlights={broker.highlights}
+                          link={broker.link}
+                          slug={broker.slug}
+                          type="broker"
+                          pageLocation="home"
+                          placementType="top_rated_card"
+                          position={index + 1}
+                        />
+                      </Suspense>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-col gap-3">
-                  {propFirms.map((firm, index) => (
-                    <Suspense key={(firm as any).id} fallback={<Skeleton className="h-20 w-full" />}>
-                      <PropFirmRow
-                        name={(firm as any).name}
-                        logo={(firm as any).logo}
-                        rating={(firm as any).rating}
-                        pros={(firm as any).pros || []}
-                        link={(firm as any).link}
-                        reviewLink={(firm as any).reviewLink}
-                        position={index + 1}
-                        pageLocation="home"
-                      />
-                    </Suspense>
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
+              </section>
+            )}
 
-          <Suspense fallback={<Skeleton className="h-96 w-full max-w-7xl mx-auto" />}>
-            <NewsletterCTA />
-          </Suspense>
+            {/* Top Rated Prop Firms */}
+            {propFirms.length > 0 && (
+              <section className="py-16 md:py-24" style={{ borderTop: "1px solid #e8edea" }}>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                  <div className="flex items-end justify-between mb-10 gap-4">
+                    <div>
+                      <div
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-4"
+                        style={{ background: "rgba(43,179,42,0.10)", color: "#186818", border: "1px solid rgba(43,179,42,0.22)" }}
+                      >
+                        Funded Trading
+                      </div>
+                      <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2" data-testid="text-popular-prop-firms">
+                        Top Rated Prop Firms
+                      </h2>
+                      <p className="text-base max-w-xl text-gray-500">
+                        Start your funded trading journey with the best prop firms
+                      </p>
+                    </div>
+                    <a
+                      href="/best-verified-propfirms"
+                      className="hidden sm:flex items-center gap-1.5 text-sm font-medium flex-shrink-0 transition-colors hover:opacity-80"
+                      style={{ color: "#2bb32a" }}
+                    >
+                      View All
+                    </a>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    {propFirms.map((firm, index) => (
+                      <Suspense key={(firm as any).id} fallback={<Skeleton className="h-20 w-full" />}>
+                        <PropFirmRow
+                          name={(firm as any).name}
+                          logo={(firm as any).logo}
+                          rating={(firm as any).rating}
+                          pros={(firm as any).pros || []}
+                          link={(firm as any).link}
+                          reviewLink={(firm as any).reviewLink}
+                          position={index + 1}
+                          pageLocation="home"
+                        />
+                      </Suspense>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            <Suspense fallback={<Skeleton className="h-96 w-full max-w-7xl mx-auto" />}>
+              <NewsletterCTA />
+            </Suspense>
+          </div>
         </>
       ) : (
         <div className="flex-1 flex items-center justify-center py-32">

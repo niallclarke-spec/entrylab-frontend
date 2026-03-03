@@ -34,7 +34,7 @@ export function TrendingTopics({ selectedCategory, onCategorySelect }: TrendingT
     const defaults = [
       { icon: TrendingUp, color: "#2bb32a" },
       { icon: Building2, color: "#2bb32a" },
-      { icon: BarChart3, color: "#adb2b1" },
+      { icon: BarChart3, color: "#6b7280" },
       { icon: Newspaper, color: "#60a5fa" },
     ];
     return defaults[index % defaults.length];
@@ -56,8 +56,8 @@ export function TrendingTopics({ selectedCategory, onCategorySelect }: TrendingT
   return (
     <section
       style={{
-        background: "#1a1e1c",
-        borderBottom: "1px solid rgba(43,179,42,0.12)",
+        background: "#ffffff",
+        borderBottom: "1px solid #e8edea",
       }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
@@ -66,32 +66,32 @@ export function TrendingTopics({ selectedCategory, onCategorySelect }: TrendingT
           <div className="flex items-center gap-2.5 md:min-w-[180px] flex-shrink-0">
             <div
               className="flex items-center justify-center w-8 h-8 rounded-lg"
-              style={{ background: "rgba(43,179,42,0.12)" }}
+              style={{ background: "rgba(43,179,42,0.10)" }}
             >
               <Flame className="h-4 w-4" style={{ color: "#2bb32a" }} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-white leading-none mb-0.5">Trending Now</p>
-              <p className="text-xs" style={{ color: "#6b7a74" }}>Hot topics in forex</p>
+              <p className="text-sm font-semibold text-gray-900 leading-none mb-0.5">Trending Now</p>
+              <p className="text-xs text-gray-400">Hot topics in forex</p>
             </div>
           </div>
 
           {/* Divider */}
-          <div className="hidden md:block w-px h-8 self-center" style={{ background: "rgba(255,255,255,0.08)" }} />
+          <div className="hidden md:block w-px h-8 self-center" style={{ background: "rgba(0,0,0,0.08)" }} />
 
           {/* Topics */}
           <div className="flex flex-wrap items-center gap-2">
-            {/* Fixed first item */}
+            {/* Fixed first item — always green */}
             <Link href={fixedTopic.link}>
               <button
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer"
                 style={{
-                  background: "rgba(43,179,42,0.12)",
+                  background: "rgba(43,179,42,0.10)",
                   border: "1px solid rgba(43,179,42,0.25)",
-                  color: "#2bb32a",
+                  color: "#186818",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(43,179,42,0.2)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(43,179,42,0.12)")}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(43,179,42,0.16)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(43,179,42,0.10)")}
                 data-testid="badge-trending-prop-firm-reviews"
               >
                 <ShieldCheck className="h-3.5 w-3.5" />
@@ -108,20 +108,20 @@ export function TrendingTopics({ selectedCategory, onCategorySelect }: TrendingT
                   <button
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer"
                     style={{
-                      background: isSelected ? "rgba(43,179,42,0.15)" : "rgba(255,255,255,0.05)",
-                      border: isSelected ? "1px solid rgba(43,179,42,0.35)" : "1px solid rgba(255,255,255,0.08)",
-                      color: isSelected ? "#2bb32a" : "#adb2b1",
+                      background: isSelected ? "rgba(43,179,42,0.10)" : "rgba(0,0,0,0.05)",
+                      border: isSelected ? "1px solid rgba(43,179,42,0.25)" : "1px solid rgba(0,0,0,0.08)",
+                      color: isSelected ? "#186818" : "#374151",
                     }}
                     onMouseEnter={(e) => {
                       if (!isSelected) {
-                        e.currentTarget.style.background = "rgba(255,255,255,0.09)";
-                        e.currentTarget.style.color = "#ffffff";
+                        e.currentTarget.style.background = "rgba(0,0,0,0.08)";
+                        e.currentTarget.style.color = "#111827";
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!isSelected) {
-                        e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                        e.currentTarget.style.color = "#adb2b1";
+                        e.currentTarget.style.background = "rgba(0,0,0,0.05)";
+                        e.currentTarget.style.color = "#374151";
                       }
                     }}
                     data-testid={`badge-trending-${category.slug}`}
