@@ -655,7 +655,7 @@ export default function BrokerReview() {
                   rating: broker.rating,
                   affiliate_link: broker.link
                 })}>
-                  <a href={broker.link} target="_blank" rel="noopener noreferrer">
+                  <a href={broker.link} target="_blank" rel="noopener noreferrer" style={{ color: "white" }}>
                     Visit Broker <ExternalLink className="ml-2 h-4 w-4" />
                   </a>
                 </Button>

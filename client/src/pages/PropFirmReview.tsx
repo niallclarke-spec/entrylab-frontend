@@ -633,7 +633,7 @@ export default function PropFirmReview() {
                 <Button 
                   size="lg" 
                   asChild 
-                  className="w-full mb-4 text-white" 
+                  className="w-full mb-4" 
                   data-testid="button-visit-sidebar" 
                   onClick={() => trackAffiliateClick({
                     broker_name: propFirm.name,
@@ -644,7 +644,7 @@ export default function PropFirmReview() {
                     affiliate_link: propFirm.link
                   })}
                 >
-                  <a href={propFirm.link} target="_blank" rel="noopener noreferrer">
+                  <a href={propFirm.link} target="_blank" rel="noopener noreferrer" style={{ color: "white" }}>
                     Visit {stripHtml(propFirm.name)} <ExternalLink className="ml-2 h-4 w-4" />
                   </a>
                 </Button>
