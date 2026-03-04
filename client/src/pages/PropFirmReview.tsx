@@ -633,7 +633,7 @@ export default function PropFirmReview() {
                 <Button 
                   size="lg" 
                   asChild 
-                  className="w-full mb-4" 
+                  className="w-full mb-4 text-white" 
                   data-testid="button-visit-sidebar" 
                   onClick={() => trackAffiliateClick({
                     broker_name: propFirm.name,
