@@ -681,20 +681,20 @@ export default function PropFirmReview() {
       </main>
 
       {/* User Reviews Section */}
-      <section className="py-16 bg-card border-y">
+      <section className="py-16" style={{ background: "#ffffff", borderTop: "1px solid #e8edea", borderBottom: "1px solid #e8edea" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2" data-testid="text-reviews-title">
+              <h2 className="text-2xl md:text-3xl font-bold mb-2" style={{ color: "#111827" }} data-testid="text-reviews-title">
                 {stripHtml(propFirm.name)} Reviews
               </h2>
-              <p className="text-muted-foreground">
+              <p style={{ color: "#6b7280" }}>
                 Read what funded traders say about {stripHtml(propFirm.name)}
               </p>
             </div>
             <Button 
               onClick={() => setIsReviewModalOpen(true)}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white"
+              style={{ background: "#2bb32a", color: "#fff" }}
               data-testid="button-write-review-section"
             >
               <MessageSquare className="mr-2 h-4 w-4" />
@@ -718,10 +718,11 @@ export default function PropFirmReview() {
                   <Card key={review.id} className="p-6 flex flex-col" data-testid={`review-${review.id}`}>
                     <div className="flex items-start gap-3 mb-4">
                       <div 
-                        className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0"
+                        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{ background: "#2bb32a" }}
                         data-testid={`review-avatar-${review.id}`}
                       >
-                        <span className="text-white font-semibold text-base">
+                        <span className="font-semibold text-base" style={{ color: "#fff" }}>
                           {initials}
                         </span>
                       </div>
@@ -759,15 +760,15 @@ export default function PropFirmReview() {
               })}
             </div>
           ) : (
-            <div className="text-center py-12 bg-muted/30 rounded-lg border border-dashed">
-              <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">No reviews yet</h3>
-              <p className="text-muted-foreground mb-6">
+            <div className="text-center py-12 rounded-lg" style={{ background: "#f6f9f6", border: "1px dashed #d1d5db" }}>
+              <MessageSquare className="h-12 w-12 mx-auto mb-4" style={{ color: "#9ca3af" }} />
+              <h3 className="text-lg font-semibold mb-2" style={{ color: "#111827" }}>No reviews yet</h3>
+              <p className="mb-6" style={{ color: "#6b7280" }}>
                 Be the first to share your experience with {stripHtml(propFirm.name)}
               </p>
               <Button 
-                onClick={() => setIsReviewModalOpen(true)} 
-                className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                onClick={() => setIsReviewModalOpen(true)}
+                style={{ background: "#2bb32a", color: "#fff" }}
                 data-testid="button-first-review"
               >
                 <MessageSquare className="mr-2 h-4 w-4" />
