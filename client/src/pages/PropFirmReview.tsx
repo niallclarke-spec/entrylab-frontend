@@ -619,7 +619,7 @@ export default function PropFirmReview() {
                   rating: propFirm.rating,
                   affiliate_link: propFirm.link
                 })}>
-                  <a href={propFirm.link} target="_blank" rel="noopener noreferrer">
+                  <a href={propFirm.link} target="_blank" rel="noopener noreferrer" className="btn-white-link">
                     Visit {stripHtml(propFirm.name)} <ChevronRight className="ml-2 h-4 w-4" />
                   </a>
                 </Button>
@@ -644,7 +644,7 @@ export default function PropFirmReview() {
                     affiliate_link: propFirm.link
                   })}
                 >
-                  <a href={propFirm.link} target="_blank" rel="noopener noreferrer" style={{ color: "white" }}>
+                  <a href={propFirm.link} target="_blank" rel="noopener noreferrer" className="btn-white-link">
                     Visit {stripHtml(propFirm.name)} <ExternalLink className="ml-2 h-4 w-4" />
                   </a>
                 </Button>

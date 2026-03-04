@@ -586,7 +586,7 @@ export default function BrokerReview() {
                   rating: broker.rating,
                   affiliate_link: broker.link
                 })}>
-                  <a href={broker.link} target="_blank" rel="noopener noreferrer">
+                  <a href={broker.link} target="_blank" rel="noopener noreferrer" className="btn-white-link">
                     Visit {stripHtml(broker.name)} <ChevronRight className="ml-2 h-4 w-4" />
                   </a>
                 </Button>
@@ -655,7 +655,7 @@ export default function BrokerReview() {
                   rating: broker.rating,
                   affiliate_link: broker.link
                 })}>
-                  <a href={broker.link} target="_blank" rel="noopener noreferrer" style={{ color: "white" }}>
+                  <a href={broker.link} target="_blank" rel="noopener noreferrer" className="btn-white-link">
                     Visit Broker <ExternalLink className="ml-2 h-4 w-4" />
                   </a>
                 </Button>
@@ -850,7 +850,7 @@ export default function BrokerReview() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
             <Button size="lg" asChild className="min-w-[200px]" data-testid="button-final-cta">
-              <a href={broker.link} target="_blank" rel="noopener noreferrer">
+              <a href={broker.link} target="_blank" rel="noopener noreferrer" className="btn-white-link">
                 Open Account Now <ArrowRight className="ml-2 h-4 w-4" />
               </a>
             </Button>

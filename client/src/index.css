@@ -310,6 +310,12 @@
   text-decoration-color: rgba(22, 163, 74, 0.5);
 }
 
+.content-light a.btn-white-link,
+.content-light a.btn-white-link:hover {
+  color: white !important;
+  text-decoration: none;
+}
+
 .content-light .prose :where(a):not(:where([class~="not-prose"] *)):hover {
   color: #15803d !important;
   text-decoration-color: #15803d;
