@@ -324,69 +324,63 @@ export default function BrokerReview() {
       </div>
 
       {/* Quick Stats Bar */}
-      <div className="border-b bg-muted/30">
+      <div style={{ background: "#ffffff", borderBottom: "1px solid #e8edea" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {/* Always show Regulation - with fallback */}
             <div className="text-center" data-testid="stat-regulation">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-500/10 mx-auto mb-2">
-                <Shield className="h-6 w-6 text-emerald-500" />
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg mx-auto mb-2" style={{ background: "rgba(43,179,42,0.08)" }}>
+                <Shield className="h-6 w-6" style={{ color: "#186818" }} />
               </div>
-              <div className="font-bold text-foreground truncate px-2">
+              <div className="font-bold truncate px-2" style={{ color: "#111827" }}>
                 {broker.regulation && broker.regulation.trim() && broker.regulation.toLowerCase() !== 'none' && broker.regulation.toLowerCase() !== 'no regulation' && broker.regulation.toLowerCase() !== 'unregulated'
-                  ? broker.regulation.split(',')[0] 
+                  ? broker.regulation.split(',')[0]
                   : 'No Regulation'}
               </div>
-              <div className="text-xs text-muted-foreground">Regulation</div>
+              <div className="text-xs" style={{ color: "#6b7280" }}>Regulation</div>
             </div>
-            
-            {/* Always show Min Deposit */}
+
             <div className="text-center" data-testid="stat-min-deposit">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
-                <DollarSign className="h-6 w-6 text-primary" />
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg mx-auto mb-2" style={{ background: "rgba(43,179,42,0.08)" }}>
+                <DollarSign className="h-6 w-6" style={{ color: "#186818" }} />
               </div>
-              <div className="font-bold text-foreground">{broker.minDeposit || 'N/A'}</div>
-              <div className="text-xs text-muted-foreground">Min Deposit</div>
+              <div className="font-bold" style={{ color: "#111827" }}>{broker.minDeposit || 'N/A'}</div>
+              <div className="text-xs" style={{ color: "#6b7280" }}>Min Deposit</div>
             </div>
-            
-            {/* Always show Minimum Withdrawal */}
+
             <div className="text-center" data-testid="stat-min-withdrawal">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-500/10 mx-auto mb-2">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg mx-auto mb-2" style={{ background: "rgba(59,130,246,0.08)" }}>
                 <ArrowDownToLine className="h-6 w-6 text-blue-500" />
               </div>
-              <div className="font-bold text-foreground">{broker.minWithdrawal || 'N/A'}</div>
-              <div className="text-xs text-muted-foreground">Min Withdrawal</div>
+              <div className="font-bold" style={{ color: "#111827" }}>{broker.minWithdrawal || 'N/A'}</div>
+              <div className="text-xs" style={{ color: "#6b7280" }}>Min Withdrawal</div>
             </div>
-            
-            {/* Always show Trading Platforms */}
+
             <div className="text-center" data-testid="stat-platforms">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-purple-500/10 mx-auto mb-2">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg mx-auto mb-2" style={{ background: "rgba(168,85,247,0.08)" }}>
                 <Monitor className="h-6 w-6 text-purple-500" />
               </div>
-              <div className="font-bold text-foreground truncate px-2">
+              <div className="font-bold truncate px-2" style={{ color: "#111827" }}>
                 {broker.platforms ? (broker.platforms.split(',')[0] + (broker.platforms.includes(',') ? '+' : '')) : 'N/A'}
               </div>
-              <div className="text-xs text-muted-foreground">Trading Platforms</div>
+              <div className="text-xs" style={{ color: "#6b7280" }}>Trading Platforms</div>
             </div>
-            
-            {/* Always show Max Leverage */}
+
             <div className="text-center" data-testid="stat-max-leverage">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-amber-500/10 mx-auto mb-2">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg mx-auto mb-2" style={{ background: "rgba(245,158,11,0.08)" }}>
                 <Zap className="h-6 w-6 text-amber-500" />
               </div>
-              <div className="font-bold text-foreground">{broker.maxLeverage || 'N/A'}</div>
-              <div className="text-xs text-muted-foreground">Max Leverage</div>
+              <div className="font-bold" style={{ color: "#111827" }}>{broker.maxLeverage || 'N/A'}</div>
+              <div className="text-xs" style={{ color: "#6b7280" }}>Max Leverage</div>
             </div>
-            
-            {/* Always show Deposit Methods */}
+
             <div className="text-center" data-testid="stat-payment">
-              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mx-auto mb-2">
-                <CreditCard className="h-6 w-6 text-primary" />
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg mx-auto mb-2" style={{ background: "rgba(43,179,42,0.08)" }}>
+                <CreditCard className="h-6 w-6" style={{ color: "#186818" }} />
               </div>
-              <div className="font-bold text-foreground truncate px-2">
+              <div className="font-bold truncate px-2" style={{ color: "#111827" }}>
                 {broker.paymentMethods ? (broker.paymentMethods.split(',')[0] + (broker.paymentMethods.includes(',') ? '+' : '')) : 'N/A'}
               </div>
-              <div className="text-xs text-muted-foreground">Deposit Methods</div>
+              <div className="text-xs" style={{ color: "#6b7280" }}>Deposit Methods</div>
             </div>
           </div>
         </div>
