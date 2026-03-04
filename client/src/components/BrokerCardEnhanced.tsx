@@ -123,17 +123,6 @@ export function BrokerCardEnhanced({
           </div>
         </div>
 
-        {highlights && highlights.length > 0 && (
-          <div className="pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.4)" }}>
-            <div className="flex flex-wrap gap-1.5">
-              {highlights.map((h, i) => (
-                <span key={i} className="inline-flex text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: "rgba(255,255,255,0.35)", color: "#374151", border: "1px solid rgba(255,255,255,0.5)" }} data-testid={`highlight-${i}`}>
-                  {h}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Footer */}
