@@ -13,6 +13,7 @@ import { ArticleCardSkeletonList } from "@/components/skeletons/ArticleCardSkele
 import { BrokerCardSkeletonList } from "@/components/skeletons/BrokerCardSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShieldCheck } from "lucide-react";
+import { SignalsBento } from "@/components/SignalsBento";
 
 const TrendingTopics = lazy(() => import("@/components/TrendingTopics").then(m => ({ default: m.TrendingTopics })));
 const FeaturedBroker = lazy(() => import("@/components/FeaturedBroker").then(m => ({ default: m.FeaturedBroker })));
@@ -316,6 +317,8 @@ export default function Home() {
                   </div>
                 </section>
               )}
+
+              <SignalsBento />
 
               <Suspense fallback={<Skeleton className="h-96 w-full max-w-7xl mx-auto" />}>
                 <NewsletterCTA />

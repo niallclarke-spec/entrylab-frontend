@@ -14,7 +14,6 @@ import { getArticleUrl, getCategoryName, getCategorySlug } from "@/lib/articleUt
 import { trackPageView, trackSearch, trackCategoryFilter } from "@/lib/gtm";
 import { EXCLUDED_CATEGORIES } from "@/lib/constants";
 import { ArticleCardSkeletonList } from "@/components/skeletons/ArticleCardSkeleton";
-import { SignalsBento } from "@/components/SignalsBento";
 
 export default function Archive() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -172,9 +171,6 @@ export default function Archive() {
               </Button>
             </Link>
           </div>
-
-          {/* Signals Bento CTA */}
-          <SignalsBento />
 
           {/* Posts Grid */}
           {isLoading ? (
