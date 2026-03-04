@@ -8,7 +8,7 @@ interface ProsConsCardProps {
 
 export function ProsConsCard({ pros, cons }: ProsConsCardProps) {
   return (
-    <div className="grid md:grid-cols-2 gap-4 my-8" data-testid="card-pros-cons">
+    <div className="grid md:grid-cols-2 gap-4 mb-8" data-testid="card-pros-cons">
       {/* Pros Card */}
       <Card className="p-6 border-emerald-500/20 bg-emerald-500/5">
         <div className="flex items-center gap-2 mb-4">
