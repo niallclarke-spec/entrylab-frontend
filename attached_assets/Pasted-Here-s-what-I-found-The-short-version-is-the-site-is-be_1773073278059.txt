@@ -1,0 +1,27 @@
+Here's what I found. The short version is: the site is being indexed by Google but there's a significant content rendering problem.
+What's discoverable via Google:
+A site:entrylab.io search shows several pages are indexed, including:
+
+/broker-guides/hero10x-review ✅
+/broker/gatesfx-review ✅
+/broker-news/ospreyfx-closes-its-doors... ✅
+/kot4x-shuts-down-what-you-should-know/ ✅ (also at /article/kot4x-...)
+/contact/, /what-we-do/, homepage ✅
+
+So Google is finding and indexing the URLs — that part is working.
+The problem — content isn't rendering for crawlers or AI:
+When I fetched the homepage, the Hero10X page, and other pages, they all returned almost nothing — just the page <title> tag. No body content, no article text, no headings, no structured data. This tells me the site is almost certainly built as a client-side JavaScript app (React/Next.js/similar), and:
+
+Crawlers and AI search tools are getting back a near-empty HTML shell
+The actual content only loads after JS executes in a browser
+Google can sometimes render JS (via headless Chrome), which is why URLs are indexed — but snippets in search results are thin (you can see from the search results: the Hero10X page snippet is just one line)
+AI tools (like me, Perplexity, ChatGPT) that fetch pages to answer questions would get essentially nothing from your content pages
+
+What to check/fix:
+
+Server-Side Rendering (SSR) or Static Generation — if you're on Next.js, ensure pages are using getStaticProps or getServerSideProps, not purely client-side rendering. If it's a headless WordPress or similar, check the front-end framework config.
+robots.txt — I couldn't directly fetch it due to tool restrictions, but you should verify it's not accidentally blocking crawlers. Check entrylab.io/robots.txt in your browser.
+Meta tags / AI crawlers — some sites now block AI scrapers (GPTBot, ClaudeBot, PerplexityBot) via robots.txt. Worth checking if that's the case.
+Structured data — no schema markup appeared in the fetched content (e.g. Article, Review, BreadcrumbList). Adding JSON-LD would significantly help both Google rich results and AI discoverability.
+
+The core issue is the JS rendering gap. Your content exists, Google knows the URLs exist, but neither Google nor AI tools are reading the actual article body — which is a meaningful SEO and AI visibility problem for a content-heavy site like Entrylab.
