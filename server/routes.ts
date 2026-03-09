@@ -1554,7 +1554,7 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
         const cleanUrl = pageUrl.split('?')[0];
         const acf = pageData.acf || {};
         const title = (pageData.title?.rendered || pageData.name || '').replace(/<[^>]+>/g, '');
-        const excerpt = (pageData.excerpt?.rendered || '').replace(/<[^>]+>/g, '').substring(0, 300);
+        const excerpt = (pageData.excerpt?.rendered || '').replace(/<[^>]+>/g, '').trim();
 
         let html = `<style>#ssr-content{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:24px 16px;color:#1a1a1a}#ssr-content h1{font-size:2rem;font-weight:700;margin-bottom:16px}#ssr-content h2{font-size:1.4rem;font-weight:600;margin:24px 0 12px}#ssr-content p{margin-bottom:12px;line-height:1.7}#ssr-content dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}#ssr-content dt{font-weight:600;color:#555}#ssr-content dd{color:#222}#ssr-content ul{padding-left:20px;margin-bottom:12px}#ssr-content li{margin-bottom:4px}#ssr-nav{padding:16px;border-top:1px solid #eee;margin-top:24px}#ssr-nav ul{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:8px}#ssr-nav a{color:#2bb32a;text-decoration:none;font-size:0.9rem}</style>`;
         html += `<div id="ssr-content">`;
@@ -1626,7 +1626,7 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
 
           // Fall back to WordPress post content if available
           if (pageData.content?.rendered) {
-            const bodyHtml = sanitizeForSSR(pageData.content.rendered).substring(0, 4000);
+            const bodyHtml = sanitizeForSSR(pageData.content.rendered).substring(0, 10000);
             html += bodyHtml;
           }
         }
@@ -1681,7 +1681,7 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
           }
 
           if (pageData.content?.rendered) {
-            const bodyHtml = sanitizeForSSR(pageData.content.rendered).substring(0, 4000);
+            const bodyHtml = sanitizeForSSR(pageData.content.rendered).substring(0, 10000);
             html += bodyHtml;
           }
         }
@@ -1696,7 +1696,7 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
           }
 
           if (pageData.content?.rendered) {
-            const bodyHtml = sanitizeForSSR(pageData.content.rendered).substring(0, 8000);
+            const bodyHtml = sanitizeForSSR(pageData.content.rendered).substring(0, 30000);
             html += bodyHtml;
           }
         }
