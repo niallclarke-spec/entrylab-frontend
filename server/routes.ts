@@ -1661,12 +1661,37 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
           const seoTitle = yoast.title || 
                           `${pageData.title?.rendered || pageData.name || ''} | EntryLab`;
           
-          // Get SEO description (Yoast > excerpt > content)
+          // Get SEO description (Yoast > excerpt > content > generated from ACF fields)
+          const acfForDesc = pageData.acf || {};
+          const rawName = (pageData.title?.rendered || pageData.name || '').replace(/<[^>]+>/g, '');
+          
+          // Build a rich fallback description from structured ACF data when Yoast provides none
+          let generatedDescription = '';
+          if (cleanUrl.startsWith('/broker/')) {
+            const parts = [
+              rawName ? `Read our expert ${rawName} review.` : '',
+              acfForDesc.overall_score || acfForDesc.rating ? `Rating: ${acfForDesc.overall_score || acfForDesc.rating}/5.` : '',
+              acfForDesc.regulation || acfForDesc.regulated_by ? `Regulated by ${acfForDesc.regulation || acfForDesc.regulated_by}.` : '',
+              acfForDesc.min_deposit ? `Min deposit: ${acfForDesc.min_deposit}.` : '',
+              acfForDesc.max_leverage || acfForDesc.leverage ? `Leverage up to ${acfForDesc.max_leverage || acfForDesc.leverage}.` : '',
+            ].filter(Boolean).join(' ');
+            generatedDescription = parts || `${rawName} broker review — ratings, fees, regulation, and trading conditions on EntryLab.`;
+          } else if (cleanUrl.startsWith('/prop-firm/')) {
+            const parts = [
+              rawName ? `Read our ${rawName} review.` : '',
+              acfForDesc.overall_score || acfForDesc.rating ? `Rating: ${acfForDesc.overall_score || acfForDesc.rating}/5.` : '',
+              acfForDesc.profit_split ? `Profit split: ${acfForDesc.profit_split}.` : '',
+              acfForDesc.account_sizes ? `Account sizes: ${acfForDesc.account_sizes}.` : '',
+              acfForDesc.max_drawdown ? `Max drawdown: ${acfForDesc.max_drawdown}.` : '',
+            ].filter(Boolean).join(' ');
+            generatedDescription = parts || `${rawName} prop firm review — payouts, rules, evaluation process on EntryLab.`;
+          }
+
           const seoDescription = yoast.og_description || 
                                 yoast.description || 
                                 pageData.excerpt?.rendered?.replace(/<[^>]*>/g, '').substring(0, 160) ||
                                 pageData.content?.rendered?.replace(/<[^>]*>/g, '').substring(0, 160) ||
-                                '';
+                                generatedDescription;
           
           // Inject title tag
           if (seoTitle) {
