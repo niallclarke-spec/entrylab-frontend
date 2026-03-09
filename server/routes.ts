@@ -1812,6 +1812,65 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
             console.error('[SEO] SSR content injection error:', err);
           }
 
+          // FAQ JSON-LD for broker review pages — used by AI tools (Perplexity, ChatGPT) for cited Q&A
+          if (cleanUrl.startsWith('/broker/') && pageData.acf) {
+            try {
+              const acf = pageData.acf;
+              const brokerName = (pageData.title?.rendered || pageData.name || '').replace(/<[^>]+>/g, '');
+              const faqItems: Array<{ q: string; a: string }> = [];
+
+              const reg = acf.regulation || acf.regulated_by;
+              if (reg) faqItems.push({
+                q: `Is ${brokerName} regulated?`,
+                a: (reg === 'No Regulation' || reg === 'Unregulated')
+                  ? `${brokerName} is not regulated by a major financial authority and operates as an offshore broker.`
+                  : `${brokerName} is regulated by ${reg}.`
+              });
+              if (acf.min_deposit) faqItems.push({
+                q: `What is the minimum deposit for ${brokerName}?`,
+                a: `The minimum deposit for ${brokerName} is ${acf.min_deposit}.`
+              });
+              if (acf.max_leverage || acf.leverage) faqItems.push({
+                q: `What leverage does ${brokerName} offer?`,
+                a: `${brokerName} offers leverage up to ${acf.max_leverage || acf.leverage}.`
+              });
+              if (acf.trading_platforms) faqItems.push({
+                q: `What trading platforms does ${brokerName} support?`,
+                a: `${brokerName} supports: ${acf.trading_platforms}.`
+              });
+              if (acf.overall_score || acf.rating) faqItems.push({
+                q: `What is ${brokerName}'s rating on EntryLab?`,
+                a: `${brokerName} has an overall rating of ${acf.overall_score || acf.rating} out of 5 on EntryLab.`
+              });
+              if (acf.spread_from || acf.spreads_from || acf.spread) faqItems.push({
+                q: `What are ${brokerName}'s spreads?`,
+                a: `${brokerName} offers spreads from ${acf.spread_from || acf.spreads_from || acf.spread}.`
+              });
+              if (acf.deposit_methods) faqItems.push({
+                q: `What deposit methods does ${brokerName} accept?`,
+                a: `${brokerName} accepts the following deposit methods: ${acf.deposit_methods}.`
+              });
+
+              if (faqItems.length >= 2) {
+                const faqSchema = {
+                  "@context": "https://schema.org",
+                  "@type": "FAQPage",
+                  "mainEntity": faqItems.map(item => ({
+                    "@type": "Question",
+                    "name": item.q,
+                    "acceptedAnswer": { "@type": "Answer", "text": item.a }
+                  }))
+                };
+                modifiedHtml = modifiedHtml.replace(
+                  '</head>',
+                  `  <script type="application/ld+json">${JSON.stringify(faqSchema)}</script>\n  </head>`
+                );
+              }
+            } catch (err) {
+              console.error('[SEO] FAQ schema injection error:', err);
+            }
+          }
+
         } else {
           // T002: For pages without pageData (homepage, /brokers, /prop-firms, category archives)
           // inject canonical + robots so Google doesn't treat query variants as duplicates
@@ -1829,46 +1888,144 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
             );
           }
 
-          // T004: On homepage only, inject internal links so Googlebot discovers all pages
+          // Homepage, /brokers, /prop-firms: inject SSR content + internal links for crawlers
           if (cleanUrl === '/') {
             try {
+              const homepageDesc = 'EntryLab provides expert forex broker reviews, prop firm analysis, and trading news. Compare brokers by regulation, spreads, leverage, and platforms.';
+              // Inject og:description for homepage
+              if (!modifiedHtml.includes('og:description')) {
+                modifiedHtml = modifiedHtml.replace(
+                  '</head>',
+                  `  <meta property="og:description" content="${homepageDesc}">\n  <meta name="description" content="${homepageDesc}">\n  </head>`
+                );
+              }
+
               const [allBrokers, allPropFirms, recentPosts] = await Promise.all([
                 fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard').catch(() => []),
                 fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard').catch(() => []),
                 fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&per_page=50&orderby=date&order=desc').catch(() => []),
               ]);
 
-              let navHtml = `<nav id="ssr-nav" aria-label="Site navigation"><h2>Broker Reviews</h2><ul>`;
-              for (const b of (allBrokers || [])) {
+              // SSR content block with broker ratings (readable by AI crawlers)
+              const ssrStyle = `<style>#ssr-content{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:24px 16px;color:#1a1a1a}#ssr-content h1{font-size:2rem;font-weight:700;margin-bottom:16px}#ssr-content h2{font-size:1.4rem;font-weight:600;margin:24px 0 12px}#ssr-content p{margin-bottom:12px;line-height:1.7}#ssr-content ul{padding-left:20px;margin-bottom:12px}#ssr-content li{margin-bottom:4px}#ssr-nav{padding:16px;border-top:1px solid #eee;margin-top:24px}#ssr-nav ul{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:8px}#ssr-nav a{color:#2bb32a;text-decoration:none;font-size:0.9rem}</style>`;
+              let ssrHtml = `${ssrStyle}<div id="ssr-content">`;
+              ssrHtml += `<h1>EntryLab — Forex Broker Reviews &amp; Trading News</h1>`;
+              ssrHtml += `<p>${homepageDesc}</p>`;
+
+              ssrHtml += `<h2>Top Forex Broker Reviews</h2><ul>`;
+              for (const b of (allBrokers || []).slice(0, 20)) {
                 const name = (b.title?.rendered || b.name || '').replace(/<[^>]+>/g, '');
+                const rating = b.acf?.overall_score || b.acf?.rating || '';
+                const reg = b.acf?.regulation || b.acf?.regulated_by || '';
                 if (b.slug && name) {
-                  navHtml += `<li><a href="/broker/${b.slug}">${name}</a></li>`;
+                  ssrHtml += `<li><a href="/broker/${b.slug}">${name}</a>${rating ? ` — Rating: ${rating}/5` : ''}${reg ? ` — ${reg}` : ''}</li>`;
                 }
               }
-              navHtml += `</ul><h2>Prop Firm Reviews</h2><ul>`;
-              for (const f of (allPropFirms || [])) {
+              ssrHtml += `</ul>`;
+
+              ssrHtml += `<h2>Top Prop Firm Reviews</h2><ul>`;
+              for (const f of (allPropFirms || []).slice(0, 10)) {
                 const name = (f.title?.rendered || f.name || '').replace(/<[^>]+>/g, '');
+                const rating = f.acf?.overall_score || f.acf?.rating || '';
                 if (f.slug && name) {
-                  navHtml += `<li><a href="/prop-firm/${f.slug}">${name}</a></li>`;
+                  ssrHtml += `<li><a href="/prop-firm/${f.slug}">${name}</a>${rating ? ` — Rating: ${rating}/5` : ''}</li>`;
                 }
               }
-              navHtml += `</ul><h2>Latest Articles</h2><ul>`;
-              for (const p of (recentPosts || [])) {
+              ssrHtml += `</ul>`;
+
+              ssrHtml += `<h2>Latest Broker News</h2><ul>`;
+              for (const p of (recentPosts || []).slice(0, 15)) {
                 const title = (p.title?.rendered || '').replace(/<[^>]+>/g, '');
                 const catSlug = p._embedded?.['wp:term']?.[0]?.[0]?.slug || 'news';
                 if (p.slug && title) {
-                  navHtml += `<li><a href="/${catSlug}/${p.slug}">${title}</a></li>`;
+                  ssrHtml += `<li><a href="/${catSlug}/${p.slug}">${title}</a></li>`;
                 }
+              }
+              ssrHtml += `</ul></div>`;
+
+              // Full nav for link discovery
+              let navHtml = `<nav id="ssr-nav" aria-label="Site navigation"><ul>`;
+              for (const b of (allBrokers || [])) {
+                const name = (b.title?.rendered || b.name || '').replace(/<[^>]+>/g, '');
+                if (b.slug && name) navHtml += `<li><a href="/broker/${b.slug}">${name}</a></li>`;
+              }
+              for (const f of (allPropFirms || [])) {
+                const name = (f.title?.rendered || f.name || '').replace(/<[^>]+>/g, '');
+                if (f.slug && name) navHtml += `<li><a href="/prop-firm/${f.slug}">${name}</a></li>`;
+              }
+              for (const p of (recentPosts || [])) {
+                const title = (p.title?.rendered || '').replace(/<[^>]+>/g, '');
+                const catSlug = p._embedded?.['wp:term']?.[0]?.[0]?.slug || 'news';
+                if (p.slug && title) navHtml += `<li><a href="/${catSlug}/${p.slug}">${title}</a></li>`;
               }
               navHtml += `</ul></nav>`;
 
               modifiedHtml = modifiedHtml.replace(
                 '<div id="root"></div>',
-                `<div id="root">${navHtml}</div>`
+                `<div id="root">${ssrHtml}${navHtml}</div>`
               );
-              console.log('[SEO] Injected internal link nav on homepage');
+              console.log('[SEO] Injected homepage SSR content + nav');
             } catch (err) {
-              console.error('[SEO] Homepage nav injection error:', err);
+              console.error('[SEO] Homepage SSR injection error:', err);
+            }
+
+          } else if (cleanUrl === '/brokers') {
+            try {
+              const brokers = await fetchWordPressWithCache(
+                'https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard'
+              ).catch(() => []);
+
+              const ssrStyle = `<style>#ssr-content{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:24px 16px;color:#1a1a1a}#ssr-content h1{font-size:2rem;font-weight:700;margin-bottom:16px}#ssr-content h2{font-size:1.4rem;font-weight:600;margin:24px 0 12px}#ssr-content p{margin-bottom:12px;line-height:1.7}#ssr-content ul{padding-left:20px;margin-bottom:12px}#ssr-content li{margin-bottom:4px}</style>`;
+              let ssrHtml = `${ssrStyle}<div id="ssr-content">`;
+              ssrHtml += `<h1>Forex Broker Reviews</h1>`;
+              ssrHtml += `<p>EntryLab reviews forex brokers across regulation, spreads, leverage, platforms, and deposit methods. Compare top regulated and offshore brokers side by side.</p>`;
+              ssrHtml += `<ul>`;
+              for (const b of (brokers || [])) {
+                const name = (b.title?.rendered || b.name || '').replace(/<[^>]+>/g, '');
+                const rating = b.acf?.overall_score || b.acf?.rating || '';
+                const reg = b.acf?.regulation || b.acf?.regulated_by || '';
+                const minDep = b.acf?.min_deposit || '';
+                const leverage = b.acf?.max_leverage || b.acf?.leverage || '';
+                if (b.slug && name) {
+                  const details = [rating ? `Rating: ${rating}/5` : '', reg, minDep ? `Min deposit: ${minDep}` : '', leverage ? `Leverage: ${leverage}` : ''].filter(Boolean).join(' · ');
+                  ssrHtml += `<li><a href="/broker/${b.slug}">${name}</a>${details ? ` — ${details}` : ''}</li>`;
+                }
+              }
+              ssrHtml += `</ul></div>`;
+
+              modifiedHtml = modifiedHtml.replace('<div id="root"></div>', `<div id="root">${ssrHtml}</div>`);
+              console.log('[SEO] Injected /brokers SSR content');
+            } catch (err) {
+              console.error('[SEO] /brokers SSR injection error:', err);
+            }
+
+          } else if (cleanUrl === '/prop-firms') {
+            try {
+              const firms = await fetchWordPressWithCache(
+                'https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard'
+              ).catch(() => []);
+
+              const ssrStyle = `<style>#ssr-content{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:24px 16px;color:#1a1a1a}#ssr-content h1{font-size:2rem;font-weight:700;margin-bottom:16px}#ssr-content h2{font-size:1.4rem;font-weight:600;margin:24px 0 12px}#ssr-content p{margin-bottom:12px;line-height:1.7}#ssr-content ul{padding-left:20px;margin-bottom:12px}#ssr-content li{margin-bottom:4px}</style>`;
+              let ssrHtml = `${ssrStyle}<div id="ssr-content">`;
+              ssrHtml += `<h1>Prop Firm Reviews</h1>`;
+              ssrHtml += `<p>Compare the best proprietary trading firms. EntryLab reviews evaluation processes, profit splits, drawdown rules, payout speeds, and account sizes for every major prop firm.</p>`;
+              ssrHtml += `<ul>`;
+              for (const f of (firms || [])) {
+                const name = (f.title?.rendered || f.name || '').replace(/<[^>]+>/g, '');
+                const rating = f.acf?.overall_score || f.acf?.rating || '';
+                const split = f.acf?.profit_split || '';
+                const sizes = f.acf?.account_sizes || '';
+                if (f.slug && name) {
+                  const details = [rating ? `Rating: ${rating}/5` : '', split ? `Profit split: ${split}` : '', sizes ? `Accounts: ${sizes}` : ''].filter(Boolean).join(' · ');
+                  ssrHtml += `<li><a href="/prop-firm/${f.slug}">${name}</a>${details ? ` — ${details}` : ''}</li>`;
+                }
+              }
+              ssrHtml += `</ul></div>`;
+
+              modifiedHtml = modifiedHtml.replace('<div id="root"></div>', `<div id="root">${ssrHtml}</div>`);
+              console.log('[SEO] Injected /prop-firms SSR content');
+            } catch (err) {
+              console.error('[SEO] /prop-firms SSR injection error:', err);
             }
           }
         }
