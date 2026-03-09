@@ -956,6 +956,60 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
 `);
   });
 
+  // Helper: fetch ALL pages from a WordPress REST endpoint (handles pagination)
+  async function fetchAllWPPages(baseUrl: string): Promise<any[]> {
+    // Fetch first page and check X-WP-TotalPages header
+    const firstPageUrl = baseUrl.includes('?')
+      ? `${baseUrl}&per_page=100&page=1`
+      : `${baseUrl}?per_page=100&page=1`;
+
+    const urlObj = new URL(firstPageUrl);
+    const options = {
+      hostname: urlObj.hostname,
+      path: urlObj.pathname + urlObj.search,
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/json',
+      },
+      rejectUnauthorized: true,
+    };
+
+    const { data: firstData, totalPages } = await new Promise<{ data: any[]; totalPages: number }>((resolve, reject) => {
+      const req = https.request(options, (res) => {
+        let raw = '';
+        res.on('data', (c) => raw += c);
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(raw);
+            const pages = parseInt(res.headers['x-wp-totalpages'] as string || '1', 10);
+            resolve({ data: Array.isArray(parsed) ? parsed : [], totalPages: isNaN(pages) ? 1 : pages });
+          } catch {
+            resolve({ data: [], totalPages: 1 });
+          }
+        });
+      });
+      req.on('error', reject);
+      req.setTimeout(12000, () => { req.destroy(); reject(new Error('Timeout')); });
+      req.end();
+    });
+
+    if (totalPages <= 1) return firstData;
+
+    // Fetch remaining pages in parallel
+    const remainingPages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+    const rest = await Promise.all(
+      remainingPages.map((page) => {
+        const pageUrl = baseUrl.includes('?')
+          ? `${baseUrl}&per_page=100&page=${page}`
+          : `${baseUrl}?per_page=100&page=${page}`;
+        return fetchWordPressWithCache(pageUrl).catch(() => []);
+      })
+    );
+
+    return [firstData, ...rest].flat();
+  }
+
   // Dynamic Sitemap XML - CRITICAL: Set headers FIRST before any async operations
   app.get('/sitemap.xml', async (_req, res) => {
     // Set XML headers IMMEDIATELY - this prevents Express from serving HTML
@@ -964,11 +1018,11 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
     res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
     
     try {
-      // Fetch all posts, brokers, prop firms, and categories
+      // Fetch ALL posts, brokers, prop firms across all pages (not capped at 100)
       const [posts, brokers, propFirms, categories] = await Promise.all([
-        fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&per_page=100'),
-        fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100'),
-        fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100'),
+        fetchAllWPPages('https://admin.entrylab.io/wp-json/wp/v2/posts?_embed'),
+        fetchAllWPPages('https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed'),
+        fetchAllWPPages('https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed'),
         fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/categories?per_page=100')
       ]);
 
@@ -1022,6 +1076,14 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
       sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
       sitemap += `    <changefreq>weekly</changefreq>\n`;
       sitemap += `    <priority>0.9</priority>\n`;
+      sitemap += `  </url>\n`;
+
+      // Signals page
+      sitemap += `  <url>\n`;
+      sitemap += `    <loc>${baseUrl}/signals</loc>\n`;
+      sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
+      sitemap += `    <changefreq>weekly</changefreq>\n`;
+      sitemap += `    <priority>0.8</priority>\n`;
       sitemap += `  </url>\n`;
 
       // Articles - Use correct /:category/:slug format
@@ -1460,8 +1522,128 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
       const originalEnd = res.end;
       const originalSend = res.send;
       
+      // Sanitize WordPress HTML for SSR injection — strips dangerous tags but keeps semantic structure
+      function sanitizeForSSR(rawHtml: string): string {
+        return rawHtml
+          // Remove script, style, iframe, noscript blocks entirely (including content)
+          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+          .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+          .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+          .replace(/<noscript\b[^<]*(?:(?!<\/noscript>)<[^<]*)*<\/noscript>/gi, '')
+          // Strip all inline style attributes
+          .replace(/\s+style="[^"]*"/gi, '')
+          .replace(/\s+style='[^']*'/gi, '')
+          // Strip class attributes (will conflict with site CSS)
+          .replace(/\s+class="[^"]*"/gi, '')
+          .replace(/\s+class='[^']*'/gi, '')
+          // Strip data-* attributes
+          .replace(/\s+data-[a-z-]+="[^"]*"/gi, '')
+          // Strip onclick and other event handlers
+          .replace(/\s+on\w+="[^"]*"/gi, '')
+          // Keep only safe tags — strip everything else not in whitelist
+          .replace(/<(?!\/?(?:h[1-6]|p|ul|ol|li|strong|em|b|i|a|br|table|thead|tbody|tr|th|td|blockquote|figure|figcaption|dl|dt|dd)\b)[^>]+>/gi, '')
+          // Clean up multiple blank lines
+          .replace(/\n{3,}/g, '\n\n')
+          .trim();
+      }
+
+      // Build SSR body content from WordPress data
+      function buildSSRContent(pageData: any, pageUrl: string): string {
+        if (!pageData) return '';
+
+        const cleanUrl = pageUrl.split('?')[0];
+        const acf = pageData.acf || {};
+        const title = (pageData.title?.rendered || pageData.name || '').replace(/<[^>]+>/g, '');
+        const excerpt = (pageData.excerpt?.rendered || '').replace(/<[^>]+>/g, '').substring(0, 300);
+
+        let html = `<style>#ssr-content{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:24px 16px;color:#1a1a1a}#ssr-content h1{font-size:2rem;font-weight:700;margin-bottom:16px}#ssr-content h2{font-size:1.4rem;font-weight:600;margin:24px 0 12px}#ssr-content p{margin-bottom:12px;line-height:1.7}#ssr-content dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}#ssr-content dt{font-weight:600;color:#555}#ssr-content dd{color:#222}#ssr-content ul{padding-left:20px;margin-bottom:12px}#ssr-content li{margin-bottom:4px}#ssr-nav{padding:16px;border-top:1px solid #eee;margin-top:24px}#ssr-nav ul{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:8px}#ssr-nav a{color:#2bb32a;text-decoration:none;font-size:0.9rem}</style>`;
+        html += `<div id="ssr-content">`;
+
+        // H1 title
+        if (title) {
+          html += `<h1>${title}</h1>`;
+        }
+
+        // Excerpt / description
+        if (excerpt) {
+          html += `<p>${excerpt}</p>`;
+        }
+
+        // Broker-specific fields
+        if (cleanUrl.startsWith('/broker/')) {
+          const fields: [string, any][] = [
+            ['Rating', acf.overall_score || acf.rating],
+            ['Regulation', acf.regulation || acf.regulated_by],
+            ['Minimum Deposit', acf.min_deposit],
+            ['Maximum Leverage', acf.max_leverage || acf.leverage],
+            ['Spreads From', acf.spreads_from || acf.spread],
+            ['Founded', acf.founded || acf.year_founded],
+            ['Headquarters', acf.headquarters || acf.hq],
+          ].filter(([, v]) => v);
+
+          if (fields.length > 0) {
+            html += `<dl>`;
+            for (const [label, value] of fields) {
+              html += `<dt>${label}</dt><dd>${String(value)}</dd>`;
+            }
+            html += `</dl>`;
+          }
+
+          // Main content (sanitized)
+          if (pageData.content?.rendered) {
+            const bodyHtml = sanitizeForSSR(pageData.content.rendered).substring(0, 4000);
+            html += bodyHtml;
+          }
+        }
+
+        // Prop firm-specific fields
+        else if (cleanUrl.startsWith('/prop-firm/')) {
+          const fields: [string, any][] = [
+            ['Rating', acf.overall_score || acf.rating],
+            ['Account Sizes', acf.account_sizes],
+            ['Profit Split', acf.profit_split],
+            ['Maximum Drawdown', acf.max_drawdown],
+            ['Evaluation Fee', acf.evaluation_fee || acf.challenge_fee],
+            ['Founded', acf.founded || acf.year_founded],
+            ['Headquarters', acf.headquarters || acf.hq],
+          ].filter(([, v]) => v);
+
+          if (fields.length > 0) {
+            html += `<dl>`;
+            for (const [label, value] of fields) {
+              html += `<dt>${label}</dt><dd>${String(value)}</dd>`;
+            }
+            html += `</dl>`;
+          }
+
+          if (pageData.content?.rendered) {
+            const bodyHtml = sanitizeForSSR(pageData.content.rendered).substring(0, 4000);
+            html += bodyHtml;
+          }
+        }
+
+        // Article pages
+        else {
+          const author = pageData._embedded?.['author']?.[0]?.name;
+          const date = pageData.date ? new Date(pageData.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+
+          if (author || date) {
+            html += `<p><small>${[author, date].filter(Boolean).join(' · ')}</small></p>`;
+          }
+
+          if (pageData.content?.rendered) {
+            const bodyHtml = sanitizeForSSR(pageData.content.rendered).substring(0, 8000);
+            html += bodyHtml;
+          }
+        }
+
+        html += `</div>`;
+        return html;
+      }
+
       const injectSEO = async (html: string): Promise<string> => {
         let modifiedHtml = html;
+        const cleanUrl = url.split('?')[0];
         
         // Inject structured data
         try {
@@ -1474,7 +1656,6 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
         // Inject title and meta tags if we have page data
         if (pageData) {
           const yoast = pageData.yoast_head_json || {};
-          const acf = pageData.acf || {};
           
           // Get SEO title (Yoast > fallback)
           const seoTitle = yoast.title || 
@@ -1511,11 +1692,11 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
             }
           }
           
-          // Inject Open Graph tags for better social sharing and Google understanding
+          // Inject Open Graph tags + canonical
           const ogTitle = seoTitle.replace(/"/g, '&quot;');
           const ogDesc = seoDescription.replace(/"/g, '&quot;');
           const ogImage = yoast.og_image?.[0]?.url || pageData._embedded?.['wp:featuredmedia']?.[0]?.source_url || 'https://entrylab.io/og-image.jpg';
-          const ogUrl = `https://entrylab.io${url}`;
+          const ogUrl = `https://entrylab.io${cleanUrl}`;
           
           const ogTags = `
     <!-- Open Graph / SEO -->
@@ -1528,13 +1709,78 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
     <link rel="canonical" href="${ogUrl}">`;
           
           modifiedHtml = modifiedHtml.replace('</head>', `${ogTags}\n  </head>`);
+
+          // T001: Inject real body content so Googlebot sees text on first-pass crawl
+          try {
+            const ssrContent = buildSSRContent(pageData, url);
+            if (ssrContent) {
+              modifiedHtml = modifiedHtml.replace(
+                '<div id="root"></div>',
+                `<div id="root">${ssrContent}</div>`
+              );
+            }
+          } catch (err) {
+            console.error('[SEO] SSR content injection error:', err);
+          }
+
         } else {
-          // For pages without pageData (e.g., category archives), still inject robots meta tag
+          // T002: For pages without pageData (homepage, /brokers, /prop-firms, category archives)
+          // inject canonical + robots so Google doesn't treat query variants as duplicates
+          const canonicalUrl = `https://entrylab.io${cleanUrl}`;
+          const headTags = `
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="${canonicalUrl}">`;
+
           if (!modifiedHtml.includes('<meta name="robots"')) {
+            modifiedHtml = modifiedHtml.replace('</head>', `${headTags}\n  </head>`);
+          } else if (!modifiedHtml.includes('rel="canonical"')) {
             modifiedHtml = modifiedHtml.replace(
               '</head>',
-              '  <meta name="robots" content="index, follow">\n  </head>'
+              `  <link rel="canonical" href="${canonicalUrl}">\n  </head>`
             );
+          }
+
+          // T004: On homepage only, inject internal links so Googlebot discovers all pages
+          if (cleanUrl === '/') {
+            try {
+              const [allBrokers, allPropFirms, recentPosts] = await Promise.all([
+                fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard').catch(() => []),
+                fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard').catch(() => []),
+                fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&per_page=50&orderby=date&order=desc').catch(() => []),
+              ]);
+
+              let navHtml = `<nav id="ssr-nav" aria-label="Site navigation"><h2>Broker Reviews</h2><ul>`;
+              for (const b of (allBrokers || [])) {
+                const name = (b.title?.rendered || b.name || '').replace(/<[^>]+>/g, '');
+                if (b.slug && name) {
+                  navHtml += `<li><a href="/broker/${b.slug}">${name}</a></li>`;
+                }
+              }
+              navHtml += `</ul><h2>Prop Firm Reviews</h2><ul>`;
+              for (const f of (allPropFirms || [])) {
+                const name = (f.title?.rendered || f.name || '').replace(/<[^>]+>/g, '');
+                if (f.slug && name) {
+                  navHtml += `<li><a href="/prop-firm/${f.slug}">${name}</a></li>`;
+                }
+              }
+              navHtml += `</ul><h2>Latest Articles</h2><ul>`;
+              for (const p of (recentPosts || [])) {
+                const title = (p.title?.rendered || '').replace(/<[^>]+>/g, '');
+                const catSlug = p._embedded?.['wp:term']?.[0]?.[0]?.slug || 'news';
+                if (p.slug && title) {
+                  navHtml += `<li><a href="/${catSlug}/${p.slug}">${title}</a></li>`;
+                }
+              }
+              navHtml += `</ul></nav>`;
+
+              modifiedHtml = modifiedHtml.replace(
+                '<div id="root"></div>',
+                `<div id="root">${navHtml}</div>`
+              );
+              console.log('[SEO] Injected internal link nav on homepage');
+            } catch (err) {
+              console.error('[SEO] Homepage nav injection error:', err);
+            }
           }
         }
         
