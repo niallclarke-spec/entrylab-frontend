@@ -1,0 +1,21 @@
+The good news — your robots.txt and llms.txt are excellent ✅
+Your robots.txt explicitly allows every major AI bot: ClaudeBot, GPTBot, ChatGPT-User, OAI-SearchBot, PerplexityBot, Google-Extended, CCBot, Meta-ExternalAgent, and more. Nothing is being blocked. You've also done something most sites haven't — you have a proper llms.txt file that describes EntryLab's content structure, key URLs, and content categories in plain language. That's genuinely ahead of the curve for AI discoverability.
+
+The mixed news — content IS being served to bots, but partially ⚠️
+When I simulated fetches as ClaudeBot, GPTBot, and PerplexityBot, they all get the same response — the JavaScript shell plus a small SSR (Server-Side Rendered) content block injected into the HTML. The good news is that SSR block does exist and includes:
+
+The article <h1> title
+A short intro paragraph
+Section headings (h2s)
+The comparison table (fully rendered HTML)
+Author and date
+
+But the body content of each section is missing — the paragraphs under each h2 are empty. Bots can see the structure and the intro, but not the full article text. So they know the article exists and what it covers, but can't read the detail.
+
+The core issue — SSR is incomplete
+The site uses a #ssr-content div injected server-side for bots, but it's only outputting headings and a truncated excerpt rather than full content. The actual body text only renders when the React JS bundle executes in a real browser. AI crawlers that don't run JavaScript — which is most of them — miss the meat of every article.
+What to fix: The SSR layer needs to render full article body text, not just headings. Since it's a headless WordPress + React setup (your admin.entrylab.io is the WP backend), the fix is to have the server fetch the full post content from the WP REST API and inject it completely into the #ssr-content div before serving the HTML. Right now it looks like only a summary/excerpt is being passed through.
+
+Priority fix summary:
+ItemStatusrobots.txt — AI bots allowed✅ Perfectllms.txt — exists and well-written✅ GreatSchema markup (Article, Breadcrumb)✅ PresentSSR content served to bots⚠️ Partial (headings only, no body text)Full article text readable by AI❌ Missing
+The robots.txt and llms.txt work is genuinely solid — it just won't matter much until the full content is being rendered server-side. That's the one thing blocking you from proper AI discoverability right now. Sonnet 4.6
