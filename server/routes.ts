@@ -1569,6 +1569,10 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
           html += `<p>${excerpt}</p>`;
         }
 
+        // Helper to clean ACF text/HTML field
+        const cleanAcf = (val: any): string =>
+          val ? String(val).replace(/<[^>]+>/g, '').trim() : '';
+
         // Broker-specific fields
         if (cleanUrl.startsWith('/broker/')) {
           const fields: [string, any][] = [
@@ -1576,7 +1580,9 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
             ['Regulation', acf.regulation || acf.regulated_by],
             ['Minimum Deposit', acf.min_deposit],
             ['Maximum Leverage', acf.max_leverage || acf.leverage],
-            ['Spreads From', acf.spreads_from || acf.spread],
+            ['Spreads From', acf.spread_from || acf.spreads_from || acf.spread],
+            ['Trading Platforms', acf.trading_platforms],
+            ['Deposit Methods', acf.deposit_methods],
             ['Founded', acf.founded || acf.year_founded],
             ['Headquarters', acf.headquarters || acf.hq],
           ].filter(([, v]) => v);
@@ -1589,7 +1595,36 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
             html += `</dl>`;
           }
 
-          // Main content (sanitized)
+          // ACF rich text fields — intro, USP, why choose, summary
+          const intro = cleanAcf(acf.broker_intro || acf.intro);
+          const usp = cleanAcf(acf.broker_usp || acf.usp);
+          const whyChoose = cleanAcf(acf.why_choose);
+          const summary = cleanAcf(acf.review_summary || acf.summary);
+          const bonusOffer = cleanAcf(acf.bonus_offer);
+
+          if (intro) html += `<h2>Overview</h2><p>${intro}</p>`;
+          if (usp) html += `<p>${usp}</p>`;
+          if (whyChoose) html += `<h2>Why Choose ${title}?</h2><p>${whyChoose}</p>`;
+          if (bonusOffer) html += `<h2>Bonus &amp; Promotions</h2><p>${bonusOffer}</p>`;
+          if (summary) html += `<h2>Review Summary</h2><p>${summary}</p>`;
+
+          // Pros and cons — can be arrays or comma-separated strings
+          const pros = acf.pros;
+          const cons = acf.cons;
+          if (pros) {
+            html += `<h2>Pros</h2><ul>`;
+            const prosList = Array.isArray(pros) ? pros : String(pros).split(/[,\n]+/);
+            prosList.forEach((p: any) => { const t = cleanAcf(p); if (t) html += `<li>${t}</li>`; });
+            html += `</ul>`;
+          }
+          if (cons) {
+            html += `<h2>Cons</h2><ul>`;
+            const consList = Array.isArray(cons) ? cons : String(cons).split(/[,\n]+/);
+            consList.forEach((c: any) => { const t = cleanAcf(c); if (t) html += `<li>${t}</li>`; });
+            html += `</ul>`;
+          }
+
+          // Fall back to WordPress post content if available
           if (pageData.content?.rendered) {
             const bodyHtml = sanitizeForSSR(pageData.content.rendered).substring(0, 4000);
             html += bodyHtml;
@@ -1603,7 +1638,10 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
             ['Account Sizes', acf.account_sizes],
             ['Profit Split', acf.profit_split],
             ['Maximum Drawdown', acf.max_drawdown],
+            ['Daily Drawdown', acf.daily_drawdown],
             ['Evaluation Fee', acf.evaluation_fee || acf.challenge_fee],
+            ['Minimum Trading Days', acf.min_trading_days],
+            ['Profit Target', acf.profit_target],
             ['Founded', acf.founded || acf.year_founded],
             ['Headquarters', acf.headquarters || acf.hq],
           ].filter(([, v]) => v);
@@ -1614,6 +1652,32 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
               html += `<dt>${label}</dt><dd>${String(value)}</dd>`;
             }
             html += `</dl>`;
+          }
+
+          // ACF rich text fields for prop firms
+          const intro = cleanAcf(acf.firm_intro || acf.broker_intro || acf.intro);
+          const overview = cleanAcf(acf.overview);
+          const whyChoose = cleanAcf(acf.why_choose);
+          const summary = cleanAcf(acf.review_summary || acf.summary);
+
+          if (intro) html += `<h2>Overview</h2><p>${intro}</p>`;
+          if (overview && overview !== intro) html += `<p>${overview}</p>`;
+          if (whyChoose) html += `<h2>Why Choose ${title}?</h2><p>${whyChoose}</p>`;
+          if (summary) html += `<h2>Review Summary</h2><p>${summary}</p>`;
+
+          const pros = acf.pros;
+          const cons = acf.cons;
+          if (pros) {
+            html += `<h2>Pros</h2><ul>`;
+            const prosList = Array.isArray(pros) ? pros : String(pros).split(/[,\n]+/);
+            prosList.forEach((p: any) => { const t = cleanAcf(p); if (t) html += `<li>${t}</li>`; });
+            html += `</ul>`;
+          }
+          if (cons) {
+            html += `<h2>Cons</h2><ul>`;
+            const consList = Array.isArray(cons) ? cons : String(cons).split(/[,\n]+/);
+            consList.forEach((c: any) => { const t = cleanAcf(c); if (t) html += `<li>${t}</li>`; });
+            html += `</ul>`;
           }
 
           if (pageData.content?.rendered) {
