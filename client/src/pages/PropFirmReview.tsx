@@ -36,17 +36,20 @@ export default function PropFirmReview() {
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
-  const { data: wpPropFirm, isLoading } = useQuery<any>({
-    queryKey: ["/api/wordpress/prop-firm", slug],
+  const { data: rawPropFirm, isLoading } = useQuery<any>({
+    queryKey: ["/api/prop-firms", slug],
     enabled: !!slug,
   });
 
+  const reviewItemId = rawPropFirm?.wpPostId || (rawPropFirm?.acf !== undefined ? rawPropFirm?.id : null);
   const { data: reviews = [] } = useQuery<any[]>({
-    queryKey: ["/api/wordpress/reviews", wpPropFirm?.id],
-    enabled: !!wpPropFirm?.id,
+    queryKey: ["/api/wordpress/reviews", reviewItemId],
+    enabled: !!reviewItemId,
   });
 
-  const propFirm = wpPropFirm ? transformPropFirmDetailed(wpPropFirm) : null;
+  const propFirm: ReturnType<typeof transformPropFirmDetailed> | null = rawPropFirm
+    ? (rawPropFirm.acf !== undefined ? transformPropFirmDetailed(rawPropFirm) : rawPropFirm as any)
+    : null;
 
   const processedContent = propFirm?.content ? processWordPressContent(propFirm.content) : "";
 

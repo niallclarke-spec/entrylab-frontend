@@ -32,8 +32,13 @@ Preferred communication style: Simple, everyday language.
 - **Webhook Resilience**: All Stripe webhook handlers include defensive timestamp parsing, graceful error handling, and non-blocking external API calls to ensure payment processing continues even if secondary services fail.
 
 ### Data Layer
-- **Database**: PostgreSQL, managed with Drizzle ORM.
-- **Data Sources**: Primarily the WordPress REST API for all content types (articles, categories, brokers, prop firms) and ACF Options.
+- **Database**: PostgreSQL (Neon serverless), managed with Drizzle ORM.
+- **Tables**: `signal_users`, `subscriptions`, `email_captures`, `webhook_events`, `broker_alerts`, `article_views`, `brokers_data`, `prop_firms_data`.
+- **Broker & Prop Firm Data**: Migrated from WordPress into `brokers_data` and `prop_firms_data` tables. New DB-backed endpoints (`GET/PUT /api/brokers`, `/api/brokers/:slug`, `/api/prop-firms`, `/api/prop-firms/:slug`) serve data directly from PostgreSQL with WordPress fallback if DB is empty.
+- **Migration**: `POST /api/admin/migrate-from-wordpress` (header `x-admin-secret: entrylab-migrate-2025`) pulls all broker/prop firm data from WordPress ACF into the DB. Safe to re-run (upserts by slug).
+- **Comparison Feature**: `/compare` page allows side-by-side comparison of up to 4 brokers using DB data.
+- **Remaining WordPress dependency**: Articles, categories, trust signals, reviews still come from WordPress REST API. Phase 2 will migrate these to DB with a custom admin panel.
+- **Data Sources**: WordPress REST API for articles/categories/reviews. PostgreSQL for brokers, prop firms, subscriptions, and analytics.
 
 ### Design System
 - **Theming**: Supports dark/light mode with localStorage persistence, defaulting to dark mode.

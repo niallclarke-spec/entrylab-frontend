@@ -41,11 +41,14 @@ export default function Brokers() {
     };
   }, []);
 
-  const { data: wordpressBrokers, isLoading } = useQuery<any[]>({
-    queryKey: ["/api/wordpress/brokers"],
+  const { data: rawBrokers, isLoading } = useQuery<any[]>({
+    queryKey: ["/api/brokers"],
   });
 
-  const brokers = wordpressBrokers?.map(transformBroker).filter((b): b is Broker => b !== null) || [];
+  const brokers: Broker[] = (rawBrokers || []).map((b: any) => {
+    if (b.acf !== undefined) return transformBroker(b);
+    return b as Broker;
+  }).filter(Boolean) as Broker[];
   const filteredBrokers = filterFeatured === null ? brokers : brokers.filter(b => b.featured === filterFeatured);
   const featuredCount = brokers.filter(b => b.featured).length;
   const avgRating = brokers.length > 0 ? (brokers.reduce((sum, b) => sum + b.rating, 0) / brokers.length).toFixed(1) : "0.0";

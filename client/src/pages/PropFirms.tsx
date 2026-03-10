@@ -38,8 +38,8 @@ export default function PropFirms() {
   const [, setLocation] = useLocation();
   const [filterFeatured, setFilterFeatured] = useState<boolean | null>(null);
 
-  const { data: wordpressPropFirms, isLoading } = useQuery<any[]>({
-    queryKey: ["/api/wordpress/prop-firms"],
+  const { data: rawPropFirms, isLoading } = useQuery<any[]>({
+    queryKey: ["/api/prop-firms"],
   });
 
   const { data: categories = [] } = useQuery<PropFirmCategory[]>({
@@ -52,9 +52,10 @@ export default function PropFirms() {
 
   const selectedCategory = urlCategory?.id || null;
 
-  const propFirms = wordpressPropFirms
-    ?.map(transformPropFirm)
-    .filter((p): p is Broker & { categoryIds: number[] } => p !== null) || [];
+  const propFirms: (Broker & { categoryIds: number[] })[] = (rawPropFirms || []).map((p: any) => {
+    if (p.acf !== undefined) return transformPropFirm(p);
+    return { ...p, categoryIds: [] } as Broker & { categoryIds: number[] };
+  }).filter(Boolean) as (Broker & { categoryIds: number[] })[];
 
   let filteredPropFirms = propFirms;
   if (filterFeatured !== null) filteredPropFirms = filteredPropFirms.filter(p => p.featured === filterFeatured);

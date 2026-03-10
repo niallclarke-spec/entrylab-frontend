@@ -24,17 +24,20 @@ export default function BrokerReview() {
   const slug = params.slug;
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
-  const { data: wpBroker, isLoading } = useQuery<any>({
-    queryKey: ["/api/wordpress/broker", slug],
+  const { data: rawBroker, isLoading } = useQuery<any>({
+    queryKey: ["/api/brokers", slug],
     enabled: !!slug,
   });
 
+  const reviewItemId = rawBroker?.wpPostId || (rawBroker?.acf !== undefined ? rawBroker?.id : null);
   const { data: reviews = [] } = useQuery<any[]>({
-    queryKey: ["/api/wordpress/reviews", wpBroker?.id],
-    enabled: !!wpBroker?.id,
+    queryKey: ["/api/wordpress/reviews", reviewItemId],
+    enabled: !!reviewItemId,
   });
 
-  const broker = wpBroker ? transformBrokerDetailed(wpBroker) : null;
+  const broker: ReturnType<typeof transformBrokerDetailed> | null = rawBroker
+    ? (rawBroker.acf !== undefined ? transformBrokerDetailed(rawBroker) : rawBroker as any)
+    : null;
 
   const processedContent = broker?.content ? processWordPressContent(broker.content) : "";
 

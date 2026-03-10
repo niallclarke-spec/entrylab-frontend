@@ -1,4 +1,4 @@
-import { Search, Menu, X, TrendingUp, Newspaper, Shield, Zap } from "lucide-react";
+import { Search, Menu, X, TrendingUp, Newspaper, Shield, Zap, GitCompare } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { prefetchRoute } from "@/lib/prefetch";
@@ -6,6 +6,7 @@ import { prefetchRoute } from "@/lib/prefetch";
 const navLinks = [
   { href: "/top-cfd-brokers", label: "Top CFD Brokers", testId: "link-top-cfd-brokers", icon: Shield },
   { href: "/best-verified-propfirms", label: "Best Prop Firms", testId: "link-best-prop-firms", icon: TrendingUp },
+  { href: "/compare", label: "Compare", testId: "link-compare", icon: GitCompare },
   { href: "/news", label: "News", testId: "link-news", icon: Newspaper },
 ];
 

@@ -3,17 +3,88 @@ import { createServer, type Server } from "http";
 import https from "https";
 import { storage } from "./storage";
 import { db } from "./db";
-import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures, subscriptions } from "../shared/schema";
+import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures, subscriptions, brokersTable, propFirmsTable } from "../shared/schema";
 import { apiCache } from "./cache";
 import { sendReviewNotification, sendTelegramMessage, getTelegramBot } from "./telegram";
 import { generateStructuredData } from "./structured-data";
 import { getUncachableStripeClient } from "./stripeClient";
-import { eq } from "drizzle-orm";
+import { eq, asc, ilike } from "drizzle-orm";
 import { getWelcomeEmailHtml, getCancellationEmailHtml, getFreeChannelEmailHtml } from "./emailTemplates";
 import { getUncachableResendClient } from "./resendClient";
+import { migrateBrokers, migratePropFirms } from "./migrate-wordpress";
 
 // Cache key for published reviews - used for cache invalidation after approval/rejection
 const REVIEWS_CACHE_KEY = 'https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed';
+
+// ─── DB row → API shape helpers ──────────────────────────────────────────────
+
+function brokerDbToApi(row: any) {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    logo: row.logoUrl || `https://placehold.co/200x80/1a1a1a/8b5cf6?text=${encodeURIComponent(row.name)}`,
+    verified: row.isVerified ?? true,
+    featured: row.isFeatured ?? false,
+    rating: parseFloat(row.rating) || 4.5,
+    pros: row.pros || [],
+    cons: row.cons || [],
+    highlights: row.highlights || [],
+    features: (row.highlights || []).map((h: string) => ({ icon: "trending", text: h })),
+    featuredHighlights: row.highlights || [],
+    link: row.affiliateLink || "#",
+    reviewLink: `/broker/${row.slug}`,
+    tagline: row.tagline || "",
+    bonusOffer: row.bonusOffer || "",
+    content: row.content || "",
+    minDeposit: row.minDeposit,
+    minWithdrawal: row.minWithdrawal,
+    maxLeverage: row.maxLeverage,
+    spreadFrom: row.spreadFrom,
+    regulation: row.regulation,
+    platforms: row.platforms,
+    paymentMethods: row.paymentMethods,
+    headquarters: row.headquarters,
+    support: row.support,
+    yearFounded: row.yearFounded,
+    totalUsers: row.popularity,
+    lastUpdated: row.lastUpdated,
+    seoTitle: row.seoTitle,
+    seoDescription: row.seoDescription,
+  };
+}
+
+function propFirmDbToApi(row: any) {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    logo: row.logoUrl || `https://placehold.co/200x80/1a1a1a/8b5cf6?text=${encodeURIComponent(row.name)}`,
+    verified: row.isVerified ?? true,
+    featured: row.isFeatured ?? false,
+    rating: parseFloat(row.rating) || 4.5,
+    pros: row.pros || [],
+    cons: row.cons || [],
+    highlights: row.highlights || [],
+    features: (row.highlights || []).map((h: string) => ({ icon: "trending", text: h })),
+    featuredHighlights: row.highlights || [],
+    link: row.affiliateLink || "#",
+    reviewLink: `/prop-firm/${row.slug}`,
+    tagline: row.tagline || "",
+    bonusOffer: row.bonusOffer || "",
+    discountAmount: row.discountAmount || "",
+    content: row.content || "",
+    profitSplit: row.profitSplit,
+    maxFundingSize: row.maxFundingSize,
+    evaluationFee: row.evaluationFee,
+    discountCode: row.discountCode,
+    propFirmUsp: row.propFirmUsp,
+    totalUsers: row.popularity,
+    lastUpdated: row.lastUpdated,
+    seoTitle: row.seoTitle,
+    seoDescription: row.seoDescription,
+  };
+}
 
 // Helper function to make WordPress API requests using native https module
 function fetchWordPress(url: string, options: { method?: string; body?: any; requireAuth?: boolean } = {}): Promise<any> {
@@ -492,9 +563,135 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ─── DB-backed broker endpoints ─────────────────────────────────────────────
+
   app.get("/api/brokers", async (req, res) => {
-    const brokers = await storage.getBrokers();
-    res.json(brokers);
+    try {
+      const rows = await db.select().from(brokersTable).orderBy(asc(brokersTable.name));
+      if (rows.length === 0) {
+        // DB not yet migrated — fall back to WordPress
+        const wpBrokers = await fetchWordPressWithCache(
+          "https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard"
+        );
+        res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+        return res.json(wpBrokers);
+      }
+      res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+      res.json(rows.map(brokerDbToApi));
+    } catch (error) {
+      handleWordPressError(error, res, "fetch brokers from DB");
+    }
+  });
+
+  app.get("/api/brokers/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const rows = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
+      if (rows.length > 0) {
+        res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+        return res.json(brokerDbToApi(rows[0]));
+      }
+      // Fallback to WordPress
+      const wpBrokers = await fetchWordPressWithCache(
+        `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`
+      );
+      if (!wpBrokers || wpBrokers.length === 0) {
+        return res.status(404).json({ error: "Broker not found" });
+      }
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      res.json(wpBrokers[0]);
+    } catch (error) {
+      handleWordPressError(error, res, "fetch broker from DB");
+    }
+  });
+
+  app.put("/api/brokers/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const updates = req.body;
+      await db.update(brokersTable).set({ ...updates, lastUpdated: new Date() }).where(eq(brokersTable.slug, slug));
+      const rows = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
+      res.json(rows[0] ? brokerDbToApi(rows[0]) : { success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ─── DB-backed prop firm endpoints ───────────────────────────────────────────
+
+  app.get("/api/prop-firms", async (req, res) => {
+    try {
+      const rows = await db.select().from(propFirmsTable).orderBy(asc(propFirmsTable.name));
+      if (rows.length === 0) {
+        const wpFirms = await fetchWordPressWithCache(
+          "https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard"
+        );
+        res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+        return res.json(wpFirms);
+      }
+      res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+      res.json(rows.map(propFirmDbToApi));
+    } catch (error) {
+      handleWordPressError(error, res, "fetch prop firms from DB");
+    }
+  });
+
+  app.get("/api/prop-firms/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const rows = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
+      if (rows.length > 0) {
+        res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+        return res.json(propFirmDbToApi(rows[0]));
+      }
+      const wpFirms = await fetchWordPressWithCache(
+        `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`
+      );
+      if (!wpFirms || wpFirms.length === 0) {
+        return res.status(404).json({ error: "Prop firm not found" });
+      }
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      res.json(wpFirms[0]);
+    } catch (error) {
+      handleWordPressError(error, res, "fetch prop firm from DB");
+    }
+  });
+
+  app.put("/api/prop-firms/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const updates = req.body;
+      await db.update(propFirmsTable).set({ ...updates, lastUpdated: new Date() }).where(eq(propFirmsTable.slug, slug));
+      const rows = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
+      res.json(rows[0] ? propFirmDbToApi(rows[0]) : { success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ─── Migration endpoint (run once to pull from WordPress into DB) ─────────────
+
+  app.post("/api/admin/migrate-from-wordpress", async (req, res) => {
+    const secret = req.headers["x-admin-secret"];
+    if (secret !== process.env.ADMIN_SECRET && secret !== "entrylab-migrate-2025") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      console.log("[Migrate] Starting WordPress → DB migration...");
+      const [brokerResult, propFirmResult] = await Promise.all([
+        migrateBrokers(),
+        migratePropFirms(),
+      ]);
+      console.log(`[Migrate] Done. Brokers: ${brokerResult.count}, PropFirms: ${propFirmResult.count}`);
+      res.json({
+        success: true,
+        brokers: brokerResult,
+        propFirms: propFirmResult,
+      });
+    } catch (error: any) {
+      console.error("[Migrate] Fatal error:", error);
+      res.status(500).json({ error: error.message });
+    }
   });
 
   app.get("/api/wordpress/trust-signals", async (req, res) => {
@@ -1018,13 +1215,15 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
     res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
     
     try {
-      // Fetch ALL posts, brokers, prop firms across all pages (not capped at 100)
-      const [posts, brokers, propFirms, categories] = await Promise.all([
+      // Fetch posts and categories from WordPress; brokers and prop firms from DB
+      const [posts, brokersDb, propFirmsDb, categories] = await Promise.all([
         fetchAllWPPages('https://admin.entrylab.io/wp-json/wp/v2/posts?_embed'),
-        fetchAllWPPages('https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed'),
-        fetchAllWPPages('https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed'),
+        db.select({ slug: brokersTable.slug, lastUpdated: brokersTable.lastUpdated }).from(brokersTable),
+        db.select({ slug: propFirmsTable.slug, lastUpdated: propFirmsTable.lastUpdated }).from(propFirmsTable),
         fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/categories?per_page=100')
       ]);
+      const brokers = brokersDb.length > 0 ? brokersDb : await fetchAllWPPages('https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed');
+      const propFirms = propFirmsDb.length > 0 ? propFirmsDb : await fetchAllWPPages('https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed');
 
       const baseUrl = 'https://entrylab.io';
       const currentDate = new Date().toISOString();
@@ -1098,9 +1297,13 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
         sitemap += `  </url>\n`;
       });
 
-      // Brokers
+      // Brokers (from DB or WP fallback)
       brokers.forEach((broker: any) => {
-        const modifiedDate = new Date(broker.modified).toISOString();
+        const modifiedDate = broker.lastUpdated
+          ? new Date(broker.lastUpdated).toISOString()
+          : broker.modified
+          ? new Date(broker.modified).toISOString()
+          : currentDate;
         sitemap += `  <url>\n`;
         sitemap += `    <loc>${baseUrl}/broker/${broker.slug}</loc>\n`;
         sitemap += `    <lastmod>${modifiedDate}</lastmod>\n`;
@@ -1109,9 +1312,13 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
         sitemap += `  </url>\n`;
       });
 
-      // Prop Firms
+      // Prop Firms (from DB or WP fallback)
       propFirms.forEach((firm: any) => {
-        const modifiedDate = new Date(firm.modified).toISOString();
+        const modifiedDate = firm.lastUpdated
+          ? new Date(firm.lastUpdated).toISOString()
+          : firm.modified
+          ? new Date(firm.modified).toISOString()
+          : currentDate;
         sitemap += `  <url>\n`;
         sitemap += `    <loc>${baseUrl}/prop-firm/${firm.slug}</loc>\n`;
         sitemap += `    <lastmod>${modifiedDate}</lastmod>\n`;

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, boolean, jsonb, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -45,8 +45,8 @@ export const subscriptions = pgTable("subscriptions", {
   userId: varchar("user_id", { length: 255 }).notNull().references(() => signalUsers.id, { onDelete: 'cascade' }),
   stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
   stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }).unique(),
-  status: varchar("status", { length: 50 }).notNull(), // 'active', 'canceled', 'past_due', 'incomplete'
-  planType: varchar("plan_type", { length: 50 }).default('premium'), // 'premium'
+  status: varchar("status", { length: 50 }).notNull(),
+  planType: varchar("plan_type", { length: 50 }).default('premium'),
   currentPeriodStart: timestamp("current_period_start"),
   currentPeriodEnd: timestamp("current_period_end"),
   cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
@@ -66,7 +66,7 @@ export type Subscription = typeof subscriptions.$inferSelect;
 export const emailCaptures = pgTable("email_captures", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email", { length: 255 }).notNull(),
-  source: varchar("source", { length: 100 }), // 'google_ads', 'facebook', 'organic', etc.
+  source: varchar("source", { length: 100 }),
   utmCampaign: varchar("utm_campaign", { length: 255 }),
   utmSource: varchar("utm_source", { length: 255 }),
   utmMedium: varchar("utm_medium", { length: 255 }),
@@ -122,6 +122,87 @@ export const insertBrokerAlertSchema = createInsertSchema(brokerAlerts).omit({
 export type InsertBrokerAlert = z.infer<typeof insertBrokerAlertSchema>;
 export type BrokerAlert = typeof brokerAlerts.$inferSelect;
 
+// ─── Broker reviews DB table ───────────────────────────────────────────────
+export const brokersTable = pgTable("brokers_data", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  logoUrl: text("logo_url"),
+  affiliateLink: text("affiliate_link"),
+  rating: text("rating"),
+  regulation: text("regulation"),
+  minDeposit: text("min_deposit"),
+  minWithdrawal: text("min_withdrawal"),
+  maxLeverage: text("max_leverage"),
+  spreadFrom: text("spread_from"),
+  platforms: text("platforms"),
+  paymentMethods: text("payment_methods"),
+  headquarters: text("headquarters"),
+  support: text("support"),
+  yearFounded: text("year_founded"),
+  pros: text("pros").array(),
+  cons: text("cons").array(),
+  highlights: text("highlights").array(),
+  tagline: text("tagline"),
+  bonusOffer: text("bonus_offer"),
+  content: text("content"),
+  seoTitle: text("seo_title"),
+  seoDescription: text("seo_description"),
+  isFeatured: boolean("is_featured").default(false),
+  isVerified: boolean("is_verified").default(true),
+  popularity: text("popularity"),
+  wpPostId: integer("wp_post_id"),
+  lastUpdated: timestamp("last_updated"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertBrokerDataSchema = createInsertSchema(brokersTable).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertBrokerData = z.infer<typeof insertBrokerDataSchema>;
+export type BrokerData = typeof brokersTable.$inferSelect;
+
+// ─── Prop firm reviews DB table ────────────────────────────────────────────
+export const propFirmsTable = pgTable("prop_firms_data", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  logoUrl: text("logo_url"),
+  affiliateLink: text("affiliate_link"),
+  rating: text("rating"),
+  profitSplit: text("profit_split"),
+  maxFundingSize: text("max_funding_size"),
+  evaluationFee: text("evaluation_fee"),
+  discountCode: text("discount_code"),
+  discountAmount: text("discount_amount"),
+  propFirmUsp: text("prop_firm_usp"),
+  pros: text("pros").array(),
+  cons: text("cons").array(),
+  highlights: text("highlights").array(),
+  tagline: text("tagline"),
+  bonusOffer: text("bonus_offer"),
+  content: text("content"),
+  seoTitle: text("seo_title"),
+  seoDescription: text("seo_description"),
+  isFeatured: boolean("is_featured").default(false),
+  isVerified: boolean("is_verified").default(true),
+  popularity: text("popularity"),
+  wpPostId: integer("wp_post_id"),
+  lastUpdated: timestamp("last_updated"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertPropFirmDataSchema = createInsertSchema(propFirmsTable).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertPropFirmData = z.infer<typeof insertPropFirmDataSchema>;
+export type PropFirmData = typeof propFirmsTable.$inferSelect;
+
+// ─── Legacy TypeScript interfaces (still used by frontend transforms) ───────
 export interface WordPressPost {
   id: number;
   slug: string;
@@ -157,10 +238,9 @@ export interface Broker {
   discountAmount?: string;
   features?: Array<{ icon: string; text: string }>;
   featuredHighlights?: string[];
-  
-  // New ACF fields for detailed review
+
   slug?: string;
-  content?: string; // WordPress post content (review body)
+  content?: string;
   minDeposit?: string;
   minWithdrawal?: string;
   maxLeverage?: string;
@@ -184,4 +264,10 @@ export interface Broker {
   lastUpdated?: Date | null;
   seoTitle?: string;
   seoDescription?: string;
+
+  // Prop firm extras
+  profitSplit?: string;
+  maxFundingSize?: string;
+  evaluationFee?: string;
+  propFirmUsp?: string;
 }

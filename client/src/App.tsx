@@ -28,6 +28,7 @@ const Success = lazy(() => import("@/pages/Success"));
 const FreeAccess = lazy(() => import("@/pages/FreeAccess"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const TermsConditions = lazy(() => import("@/pages/TermsConditions"));
+const Compare = lazy(() => import("@/pages/Compare"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 function PageLoadingFallback() {
@@ -104,6 +105,11 @@ function Router() {
       <Route path="/terms">
         <Suspense fallback={<PageLoadingFallback />}>
           <TermsConditions />
+        </Suspense>
+      </Route>
+      <Route path="/compare">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <Compare />
         </Suspense>
       </Route>
       {/* Article route must come BEFORE category archive to match 2-segment URLs first */}
