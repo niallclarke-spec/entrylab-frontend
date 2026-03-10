@@ -3,12 +3,12 @@ import { createServer, type Server } from "http";
 import https from "https";
 import { storage } from "./storage";
 import { db } from "./db";
-import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures, subscriptions, brokersTable, propFirmsTable, articlesTable, insertArticleSchema } from "../shared/schema";
+import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures, subscriptions, brokersTable, propFirmsTable, articlesTable, insertArticleSchema, pageViewsTable } from "../shared/schema";
 import { apiCache } from "./cache";
 import { sendReviewNotification, sendTelegramMessage, getTelegramBot } from "./telegram";
 import { generateStructuredData } from "./structured-data";
 import { getUncachableStripeClient } from "./stripeClient";
-import { eq, asc, ilike, desc } from "drizzle-orm";
+import { eq, asc, ilike, desc, sql } from "drizzle-orm";
 import { getWelcomeEmailHtml, getCancellationEmailHtml, getFreeChannelEmailHtml } from "./emailTemplates";
 import { getUncachableResendClient } from "./resendClient";
 import { migrateBrokers, migratePropFirms } from "./migrate-wordpress";
@@ -3164,6 +3164,70 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
     html = html.replace('https://entrylab.io/assets/entrylab-logo-green.png', getPreviewLogoUrl(req));
     res.setHeader('Content-Type', 'text/html');
     res.send(html);
+  });
+
+  // ─── Page view tracking ──────────────────────────────────────────────────
+  // Simple in-memory dedup: same IP + slug → only 1 row per 30 min
+  const viewDedup = new Map<string, number>();
+  setInterval(() => {
+    const cutoff = Date.now() - 30 * 60 * 1000;
+    for (const [key, ts] of viewDedup.entries()) {
+      if (ts < cutoff) viewDedup.delete(key);
+    }
+  }, 5 * 60 * 1000);
+
+  app.post("/api/views/track", async (req, res) => {
+    try {
+      const { slug, name, type } = req.body || {};
+      if (!slug || !name || !type) return res.status(400).json({ error: "Missing fields" });
+      const allowedTypes = ["broker", "prop_firm", "article"];
+      if (!allowedTypes.includes(type)) return res.status(400).json({ error: "Invalid type" });
+
+      const ip = (req.headers["x-forwarded-for"] as string || req.socket.remoteAddress || "unknown").split(",")[0].trim();
+      const dedupKey = `${ip}:${slug}`;
+      if (viewDedup.has(dedupKey)) return res.json({ ok: true, deduped: true });
+
+      viewDedup.set(dedupKey, Date.now());
+      await db.insert(pageViewsTable).values({ slug, name, type });
+      return res.json({ ok: true });
+    } catch (err: any) {
+      console.error("[views] Track error:", err.message);
+      return res.status(500).json({ error: "Failed to track view" });
+    }
+  });
+
+  app.get("/api/admin/stats/top-firms", adminAuth, async (req, res) => {
+    try {
+      const { rows } = await db.execute(
+        sql`SELECT slug, name, type, COUNT(*)::int AS views
+            FROM page_views
+            WHERE type IN ('broker', 'prop_firm')
+            GROUP BY slug, name, type
+            ORDER BY views DESC
+            LIMIT 10`
+      );
+      return res.json(rows);
+    } catch (err: any) {
+      console.error("[stats] top-firms error:", err.message);
+      return res.status(500).json({ error: "Failed to fetch stats" });
+    }
+  });
+
+  app.get("/api/admin/stats/top-pages", adminAuth, async (req, res) => {
+    try {
+      const { rows } = await db.execute(
+        sql`SELECT slug, name, type, COUNT(*)::int AS views
+            FROM page_views
+            WHERE type = 'article'
+            GROUP BY slug, name, type
+            ORDER BY views DESC
+            LIMIT 10`
+      );
+      return res.json(rows);
+    } catch (err: any) {
+      console.error("[stats] top-pages error:", err.message);
+      return res.status(500).json({ error: "Failed to fetch stats" });
+    }
   });
 
   const httpServer = createServer(app);

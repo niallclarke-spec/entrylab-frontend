@@ -4,6 +4,13 @@ import { useLocation } from "wouter";
 import { AdminLayout } from "@/components/AdminLayout";
 import { C, font } from "@/lib/adminTheme";
 
+interface StatRow {
+  slug: string;
+  name: string;
+  type: string;
+  views: number;
+}
+
 function Sparkline({ data, color = C.accent, height = 32, width = 90 }: {
   data: number[]; color?: string; height?: number; width?: number;
 }) {
@@ -39,25 +46,6 @@ const SPARK_SESSIONS =  [30,34,29,42,48,44,52,50,58,55,63,67];
 const SPARK_PAGEVIEWS = [80,95,88,110,125,118,140,135,155,148,172,189];
 const SPARK_DURATION =  [180,195,188,200,210,205,215,208,220,218,225,222];
 
-const TOP_PAGES = [
-  { page: "Prop Firms That Accept US Traders", views: 22140 },
-  { page: "Best Prop Firms 2026", views: 14200 },
-  { page: "FTMO vs FundedNext", views: 8740 },
-  { page: "Best Brokers for Scalping", views: 6320 },
-  { page: "How Prop Firm Challenges Work", views: 5310 },
-  { page: "IC Markets Review", views: 4890 },
-  { page: "Cheapest Prop Firms", views: 4210 },
-];
-
-const TOP_FIRMS = [
-  { name: "FTMO", views: 18420, type: "prop" },
-  { name: "IC Markets", views: 12340, type: "broker" },
-  { name: "FundedNext", views: 9870, type: "prop" },
-  { name: "Pepperstone", views: 8210, type: "broker" },
-  { name: "BrightFunded", views: 5640, type: "prop" },
-  { name: "DNA Funded", views: 4980, type: "prop" },
-  { name: "Exness", views: 4350, type: "broker" },
-];
 
 const TOP_COUNTRIES = [
   { country: "United States", flag: "🇺🇸", sessions: 14820, pct: 22.1 },
@@ -93,6 +81,20 @@ export default function AdminDashboard() {
     queryKey: ["/api/admin/me"],
     retry: false,
   });
+
+  const { data: topFirmsRaw, isLoading: firmsLoading } = useQuery<StatRow[]>({
+    queryKey: ["/api/admin/stats/top-firms"],
+    queryFn: () => fetch("/api/admin/stats/top-firms", { credentials: "include" }).then((r) => r.json()),
+    enabled: !!session,
+  });
+  const topFirms: StatRow[] = Array.isArray(topFirmsRaw) ? topFirmsRaw : [];
+
+  const { data: topPagesRaw, isLoading: pagesLoading } = useQuery<StatRow[]>({
+    queryKey: ["/api/admin/stats/top-pages"],
+    queryFn: () => fetch("/api/admin/stats/top-pages", { credentials: "include" }).then((r) => r.json()),
+    enabled: !!session,
+  });
+  const topPages: StatRow[] = Array.isArray(topPagesRaw) ? topPagesRaw : [];
 
   if (!sessionLoading && !session) {
     navigate("/admin/login");
@@ -169,40 +171,64 @@ export default function AdminDashboard() {
           {/* Top Pages */}
           <div style={{ ...card, padding: 20 }}>
             <h3 style={{ fontSize: 12, fontWeight: 700, color: C.textMuted, margin: "0 0 16px", letterSpacing: "0.8px" }}>TOP PAGES</h3>
-            {TOP_PAGES.map((item, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderTop: i > 0 ? `1px solid ${C.border}` : "none" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                  <span style={{ fontSize: 11, color: C.textDim, width: 18, fontWeight: 600, flexShrink: 0 }}>{i + 1}</span>
-                  <span style={{ fontSize: 12, color: C.text, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.page}</span>
+            {pagesLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} style={{ padding: "9px 0", borderTop: i > 0 ? `1px solid ${C.border}` : "none" }}>
+                  <div style={{ height: 12, borderRadius: 4, background: C.border, width: `${60 + Math.random() * 30}%` }} />
                 </div>
-                <span style={{ fontSize: 12, color: C.accent, fontWeight: 600, flexShrink: 0, marginLeft: 8 }}>
-                  {(item.views / 1000).toFixed(1)}k
-                </span>
+              ))
+            ) : topPages.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "24px 0", color: C.textDim, fontSize: 12, lineHeight: 1.6 }}>
+                No article views yet.<br />Data appears once visitors browse articles.
               </div>
-            ))}
+            ) : (
+              topPages.map((item, i) => (
+                <div key={item.slug} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderTop: i > 0 ? `1px solid ${C.border}` : "none" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                    <span style={{ fontSize: 11, color: C.textDim, width: 18, fontWeight: 600, flexShrink: 0 }}>{i + 1}</span>
+                    <span style={{ fontSize: 12, color: C.text, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name}</span>
+                  </div>
+                  <span style={{ fontSize: 12, color: C.accent, fontWeight: 600, flexShrink: 0, marginLeft: 8 }}>
+                    {item.views >= 1000 ? `${(item.views / 1000).toFixed(1)}k` : item.views}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
 
           {/* Top Viewed Firms */}
           <div style={{ ...card, padding: 20 }}>
             <h3 style={{ fontSize: 12, fontWeight: 700, color: C.textMuted, margin: "0 0 16px", letterSpacing: "0.8px" }}>TOP VIEWED FIRMS</h3>
-            {TOP_FIRMS.map((item, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderTop: i > 0 ? `1px solid ${C.border}` : "none" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 11, color: C.textDim, width: 18, fontWeight: 600 }}>{i + 1}</span>
-                  <span style={{ fontSize: 12, color: C.text }}>{item.name}</span>
-                  <span style={{
-                    fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 10,
-                    background: item.type === "prop" ? "rgba(75,156,242,0.1)" : "rgba(242,162,8,0.1)",
-                    color: item.type === "prop" ? C.info : C.warning,
-                  }}>
-                    {item.type === "prop" ? "PROP" : "BRK"}
+            {firmsLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} style={{ padding: "9px 0", borderTop: i > 0 ? `1px solid ${C.border}` : "none" }}>
+                  <div style={{ height: 12, borderRadius: 4, background: C.border, width: `${50 + Math.random() * 40}%` }} />
+                </div>
+              ))
+            ) : topFirms.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "24px 0", color: C.textDim, fontSize: 12, lineHeight: 1.6 }}>
+                No firm views yet.<br />Data appears once visitors browse broker or prop firm pages.
+              </div>
+            ) : (
+              topFirms.map((item, i) => (
+                <div key={item.slug} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderTop: i > 0 ? `1px solid ${C.border}` : "none" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 11, color: C.textDim, width: 18, fontWeight: 600 }}>{i + 1}</span>
+                    <span style={{ fontSize: 12, color: C.text }}>{item.name}</span>
+                    <span style={{
+                      fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 10,
+                      background: item.type === "prop_firm" ? "rgba(75,156,242,0.1)" : "rgba(242,162,8,0.1)",
+                      color: item.type === "prop_firm" ? C.info : C.warning,
+                    }}>
+                      {item.type === "prop_firm" ? "PROP" : "BRK"}
+                    </span>
+                  </div>
+                  <span style={{ fontSize: 12, color: C.accent, fontWeight: 600, flexShrink: 0 }}>
+                    {item.views >= 1000 ? `${(item.views / 1000).toFixed(1)}k` : item.views}
                   </span>
                 </div>
-                <span style={{ fontSize: 12, color: C.accent, fontWeight: 600, flexShrink: 0 }}>
-                  {(item.views / 1000).toFixed(1)}k
-                </span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
           {/* Top Countries */}

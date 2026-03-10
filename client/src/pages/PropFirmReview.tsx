@@ -55,6 +55,13 @@ export default function PropFirmReview() {
 
   useEffect(() => {
     if (propFirm) {
+      // Track page view in our own DB for dashboard analytics
+      fetch("/api/views/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, name: propFirm.name, type: "prop_firm" }),
+        keepalive: true,
+      }).catch(() => {});
       trackPageView(`/prop-firm/${slug}`, `${propFirm.name} Review | EntryLab`);
       trackReviewView({
         broker_name: propFirm.name,

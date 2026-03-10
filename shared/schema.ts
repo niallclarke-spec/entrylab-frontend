@@ -229,6 +229,23 @@ export const insertArticleSchema = createInsertSchema(articlesTable).omit({
 export type InsertArticle = z.infer<typeof insertArticleSchema>;
 export type Article = typeof articlesTable.$inferSelect;
 
+// ─── Page views tracking table ──────────────────────────────────────────────
+export const pageViewsTable = pgTable("page_views", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  slug: text("slug").notNull(),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // "broker" | "prop_firm" | "article"
+  viewedAt: timestamp("viewed_at").notNull().defaultNow(),
+});
+
+export const insertPageViewSchema = createInsertSchema(pageViewsTable).omit({
+  id: true,
+  viewedAt: true,
+});
+
+export type InsertPageView = z.infer<typeof insertPageViewSchema>;
+export type PageView = typeof pageViewsTable.$inferSelect;
+
 // ─── Legacy TypeScript interfaces (still used by frontend transforms) ───────
 export interface WordPressPost {
   id: number;

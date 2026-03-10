@@ -51,6 +51,13 @@ export default function BrokerReview() {
         min_deposit: broker.minDeposit,
         regulation: broker.regulation,
       });
+      // Track page view in our own DB for dashboard analytics
+      fetch("/api/views/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, name: broker.name, type: "broker" }),
+        keepalive: true,
+      }).catch(() => {});
     }
   }, [broker, slug]);
 
