@@ -202,6 +202,33 @@ export const insertPropFirmDataSchema = createInsertSchema(propFirmsTable).omit(
 export type InsertPropFirmData = z.infer<typeof insertPropFirmDataSchema>;
 export type PropFirmData = typeof propFirmsTable.$inferSelect;
 
+// ─── Articles DB table ──────────────────────────────────────────────────────
+export const articlesTable = pgTable("articles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  excerpt: text("excerpt"),
+  content: text("content"),
+  category: text("category"),
+  status: text("status").default("draft").notNull(),
+  featuredImage: text("featured_image"),
+  seoTitle: text("seo_title"),
+  seoDescription: text("seo_description"),
+  author: text("author").default("EntryLab"),
+  publishedAt: timestamp("published_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertArticleSchema = createInsertSchema(articlesTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertArticle = z.infer<typeof insertArticleSchema>;
+export type Article = typeof articlesTable.$inferSelect;
+
 // ─── Legacy TypeScript interfaces (still used by frontend transforms) ───────
 export interface WordPressPost {
   id: number;

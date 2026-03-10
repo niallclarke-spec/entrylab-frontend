@@ -1,17 +1,20 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import https from "https";
 import { storage } from "./storage";
 import { db } from "./db";
-import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures, subscriptions, brokersTable, propFirmsTable } from "../shared/schema";
+import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures, subscriptions, brokersTable, propFirmsTable, articlesTable, insertArticleSchema } from "../shared/schema";
 import { apiCache } from "./cache";
 import { sendReviewNotification, sendTelegramMessage, getTelegramBot } from "./telegram";
 import { generateStructuredData } from "./structured-data";
 import { getUncachableStripeClient } from "./stripeClient";
-import { eq, asc, ilike } from "drizzle-orm";
+import { eq, asc, ilike, desc } from "drizzle-orm";
 import { getWelcomeEmailHtml, getCancellationEmailHtml, getFreeChannelEmailHtml } from "./emailTemplates";
 import { getUncachableResendClient } from "./resendClient";
 import { migrateBrokers, migratePropFirms } from "./migrate-wordpress";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import { rateLimit } from "express-rate-limit";
 
 // Cache key for published reviews - used for cache invalidation after approval/rejection
 const REVIEWS_CACHE_KEY = 'https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed';
@@ -315,7 +318,198 @@ async function verifyRecaptcha(token: string): Promise<boolean> {
   */
 }
 
+// ─── Admin auth helpers ──────────────────────────────────────────────────────
+
+const JWT_SECRET = process.env.JWT_SECRET || "dev-jwt-secret-change-in-production";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
+
+function adminAuth(req: Request, res: Response, next: NextFunction) {
+  const token = req.cookies?.admin_token;
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+  try {
+    jwt.verify(token, JWT_SECRET);
+    next();
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+}
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many login attempts, please try again later" },
+});
+
+function slugify(text: string) {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
+
+  // ─── Admin auth endpoints ──────────────────────────────────────────────────
+
+  app.post("/api/admin/login", loginLimiter, async (req, res) => {
+    const { password } = req.body;
+    if (!password) return res.status(400).json({ error: "Password required" });
+    if (!ADMIN_PASSWORD) {
+      console.error("[Admin] ADMIN_PASSWORD env var not set");
+      return res.status(500).json({ error: "Admin not configured" });
+    }
+    const valid = password === ADMIN_PASSWORD;
+    if (!valid) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+    const token = jwt.sign({ admin: true }, JWT_SECRET, { expiresIn: "8h" });
+    res.cookie("admin_token", token, {
+      httpOnly: true,
+      sameSite: "strict",
+      maxAge: 8 * 60 * 60 * 1000,
+      secure: process.env.NODE_ENV === "production",
+    });
+    return res.json({ ok: true });
+  });
+
+  app.post("/api/admin/logout", (req, res) => {
+    res.clearCookie("admin_token");
+    return res.json({ ok: true });
+  });
+
+  app.get("/api/admin/me", adminAuth, (req, res) => {
+    return res.json({ ok: true });
+  });
+
+  // ─── Admin article CRUD ────────────────────────────────────────────────────
+
+  app.get("/api/admin/articles", adminAuth, async (req, res) => {
+    try {
+      const articles = await db
+        .select({
+          id: articlesTable.id,
+          title: articlesTable.title,
+          slug: articlesTable.slug,
+          category: articlesTable.category,
+          status: articlesTable.status,
+          author: articlesTable.author,
+          publishedAt: articlesTable.publishedAt,
+          createdAt: articlesTable.createdAt,
+          updatedAt: articlesTable.updatedAt,
+        })
+        .from(articlesTable)
+        .orderBy(desc(articlesTable.createdAt));
+      return res.json(articles);
+    } catch (err) {
+      console.error("[Admin] Error fetching articles:", err);
+      return res.status(500).json({ error: "Failed to fetch articles" });
+    }
+  });
+
+  app.get("/api/admin/articles/:id", adminAuth, async (req, res) => {
+    try {
+      const [article] = await db
+        .select()
+        .from(articlesTable)
+        .where(eq(articlesTable.id, req.params.id));
+      if (!article) return res.status(404).json({ error: "Not found" });
+      return res.json(article);
+    } catch (err) {
+      return res.status(500).json({ error: "Failed to fetch article" });
+    }
+  });
+
+  app.post("/api/admin/articles", adminAuth, async (req, res) => {
+    try {
+      const body = req.body;
+      if (!body.title) return res.status(400).json({ error: "Title required" });
+      if (!body.slug) body.slug = slugify(body.title);
+      if (body.status === "published" && !body.publishedAt) {
+        body.publishedAt = new Date();
+      }
+      const [article] = await db
+        .insert(articlesTable)
+        .values({
+          ...body,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning();
+      return res.status(201).json(article);
+    } catch (err: any) {
+      if (err.code === "23505") return res.status(409).json({ error: "Slug already exists" });
+      console.error("[Admin] Error creating article:", err);
+      return res.status(500).json({ error: "Failed to create article" });
+    }
+  });
+
+  app.put("/api/admin/articles/:id", adminAuth, async (req, res) => {
+    try {
+      const body = { ...req.body };
+      delete body.id;
+      delete body.createdAt;
+      if (body.status === "published" && !body.publishedAt) {
+        body.publishedAt = new Date();
+      }
+      body.updatedAt = new Date();
+      const [article] = await db
+        .update(articlesTable)
+        .set(body)
+        .where(eq(articlesTable.id, req.params.id))
+        .returning();
+      if (!article) return res.status(404).json({ error: "Not found" });
+      return res.json(article);
+    } catch (err: any) {
+      if (err.code === "23505") return res.status(409).json({ error: "Slug already exists" });
+      return res.status(500).json({ error: "Failed to update article" });
+    }
+  });
+
+  app.delete("/api/admin/articles/:id", adminAuth, async (req, res) => {
+    try {
+      const [deleted] = await db
+        .delete(articlesTable)
+        .where(eq(articlesTable.id, req.params.id))
+        .returning();
+      if (!deleted) return res.status(404).json({ error: "Not found" });
+      return res.json({ ok: true });
+    } catch (err) {
+      return res.status(500).json({ error: "Failed to delete article" });
+    }
+  });
+
+  // ─── Public article endpoints ──────────────────────────────────────────────
+
+  app.get("/api/articles", async (req, res) => {
+    try {
+      const articles = await db
+        .select()
+        .from(articlesTable)
+        .where(eq(articlesTable.status, "published"))
+        .orderBy(desc(articlesTable.publishedAt));
+      return res.json(articles);
+    } catch (err) {
+      return res.status(500).json({ error: "Failed to fetch articles" });
+    }
+  });
+
+  app.get("/api/articles/:slug", async (req, res) => {
+    try {
+      const [article] = await db
+        .select()
+        .from(articlesTable)
+        .where(eq(articlesTable.slug, req.params.slug));
+      if (!article || article.status !== "published") {
+        return res.status(404).json({ error: "Not found" });
+      }
+      return res.json(article);
+    } catch (err) {
+      return res.status(500).json({ error: "Failed to fetch article" });
+    }
+  });
+
   app.get("/api/wordpress/posts", async (req, res) => {
     try {
       const { category } = req.query;

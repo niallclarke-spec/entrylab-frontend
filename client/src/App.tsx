@@ -30,6 +30,9 @@ const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const TermsConditions = lazy(() => import("@/pages/TermsConditions"));
 const Compare = lazy(() => import("@/pages/Compare"));
 const NotFound = lazy(() => import("@/pages/not-found"));
+const AdminLogin = lazy(() => import("@/pages/admin/AdminLogin"));
+const AdminArticles = lazy(() => import("@/pages/admin/AdminArticles"));
+const AdminArticleEditor = lazy(() => import("@/pages/admin/AdminArticleEditor"));
 
 function PageLoadingFallback() {
   return (
@@ -112,6 +115,33 @@ function Router() {
           <Compare />
         </Suspense>
       </Route>
+      {/* Admin routes — must come before catch-all routes */}
+      <Route path="/admin/login">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <AdminLogin />
+        </Suspense>
+      </Route>
+      <Route path="/admin/articles/new">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <AdminArticleEditor />
+        </Suspense>
+      </Route>
+      <Route path="/admin/articles/:id/edit">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <AdminArticleEditor />
+        </Suspense>
+      </Route>
+      <Route path="/admin/articles">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <AdminArticles />
+        </Suspense>
+      </Route>
+      <Route path="/admin">
+        <Suspense fallback={<PageLoadingFallback />}>
+          <AdminArticles />
+        </Suspense>
+      </Route>
+
       {/* Article route must come BEFORE category archive to match 2-segment URLs first */}
       <Route path="/:category/:slug">
         <Suspense fallback={<PageLoadingFallback />}>

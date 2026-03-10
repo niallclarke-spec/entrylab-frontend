@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import compression from "compression";
+import cookieParser from "cookie-parser";
 import { rateLimit } from "express-rate-limit";
 import { runMigrations } from 'stripe-replit-sync';
 import { registerRoutes } from "./routes";
@@ -52,6 +53,7 @@ app.post(
 // Now apply JSON middleware for all other routes
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
 // Enable gzip/brotli compression for all responses (reduces payload size by 70-80%)
 // TEMPORARILY DISABLED TO TEST IMAGE QUALITY
