@@ -48,12 +48,13 @@ export default function AdminReviews({ type }: AdminReviewsProps) {
     if (!sessionLoading && !session) navigate("/admin/login");
   }, [session, sessionLoading, navigate]);
 
-  const { data: reviews = [], isLoading } = useQuery<Review[]>({
+  const { data: reviewsRaw, isLoading } = useQuery({
     queryKey: ["/api/admin/reviews", type],
     queryFn: () =>
       fetch(`/api/admin/reviews`, { credentials: "include" }).then((r) => r.json()),
     enabled: !!session,
   });
+  const reviews: Review[] = Array.isArray(reviewsRaw) ? reviewsRaw : [];
 
   const updateMutation = useMutation({
     mutationFn: ({ id, status }: { id: number; status: string }) =>

@@ -441,11 +441,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/admin/reviews", adminAuth, async (req, res) => {
     try {
-      const { status = "any", type } = req.query as Record<string, string>;
-      const reviews = await fetchWordPress(
-        `https://admin.entrylab.io/wp-json/wp/v2/review?per_page=100&acf_format=standard&status=${status}`
-      );
-      const shaped = (Array.isArray(reviews) ? reviews : []).map((r: any) => {
+      const { type } = req.query as Record<string, string>;
+      const wpUser = process.env.WORDPRESS_USERNAME;
+      const wpPass = process.env.WORDPRESS_PASSWORD;
+      const authHeader = wpUser && wpPass
+        ? { Authorization: "Basic " + Buffer.from(`${wpUser}:${wpPass}`).toString("base64") }
+        : {};
+
+      // Fetch published + pending + draft separately to avoid "Invalid parameter(s): status"
+      // when the custom post type doesn't register status as a filterable param
+      const fetchWithAuth = async (url: string) => {
+        const r = await fetch(url, { headers: authHeader as Record<string, string> });
+        if (!r.ok) return [];
+        const data = await r.json();
+        return Array.isArray(data) ? data : [];
+      };
+
+      const [published, pending] = await Promise.all([
+        fetchWithAuth("https://admin.entrylab.io/wp-json/wp/v2/review?per_page=100&acf_format=standard&status=publish"),
+        fetchWithAuth("https://admin.entrylab.io/wp-json/wp/v2/review?per_page=100&acf_format=standard&status=pending"),
+      ]);
+      const reviews = [...published, ...pending];
+
+      const shaped = reviews.map((r: any) => {
         const acf = r.acf || {};
         const reviewedItem = acf.reviewed_item;
         const firmName = Array.isArray(reviewedItem)
