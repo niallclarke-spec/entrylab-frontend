@@ -106,28 +106,36 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: collapsed ? "18px 0" : "18px 16px",
+          padding: collapsed ? "14px 0" : "14px 14px",
           borderBottom: `1px solid ${C.border}`,
           minHeight: 64,
         }}>
           {!collapsed && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, overflow: "hidden" }}>
-              <span style={{ color: C.accent, fontSize: 16, flexShrink: 0 }}>◆</span>
-              <div style={{ overflow: "hidden" }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: C.text, letterSpacing: "0.5px", whiteSpace: "nowrap" }}>ADMIN</div>
-                <div style={{ fontSize: 10, color: C.textDim, letterSpacing: "0.8px", whiteSpace: "nowrap" }}>REVIEW AGGREGATOR</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, overflow: "hidden", flex: 1, minWidth: 0 }}>
+              {/* Logo mark */}
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={30} height={30} style={{ flexShrink: 0, borderRadius: 6 }}>
+                <rect width="32" height="32" rx="6" fill={C.accent} />
+                <path d="M9 9h14v3H12v4h9v3h-9v4h11v3H9V9z" fill="#0B0E11" />
+              </svg>
+              {/* Wordmark + subtitle */}
+              <div style={{ overflow: "hidden", minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: C.text, letterSpacing: "0.3px", whiteSpace: "nowrap" }}>EntryLab</div>
+                <div style={{ fontSize: 10, color: C.textDim, letterSpacing: "0.6px", whiteSpace: "nowrap", marginTop: 1 }}>ADMIN PANEL</div>
               </div>
             </div>
           )}
           {collapsed && (
             <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-              <span style={{ color: C.accent, fontSize: 16 }}>◆</span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={28} height={28} style={{ borderRadius: 6 }}>
+                <rect width="32" height="32" rx="6" fill={C.accent} />
+                <path d="M9 9h14v3H12v4h9v3h-9v4h11v3H9V9z" fill="#0B0E11" />
+              </svg>
             </div>
           )}
           {!collapsed && (
             <button
               onClick={() => setCollapsed(true)}
-              style={{ background: "none", border: "none", color: C.textDim, cursor: "pointer", padding: 4, borderRadius: 4, display: "flex", alignItems: "center" }}
+              style={{ background: "none", border: "none", color: C.textDim, cursor: "pointer", padding: 4, borderRadius: 4, display: "flex", alignItems: "center", flexShrink: 0 }}
             >
               <ChevronLeft size={16} />
             </button>

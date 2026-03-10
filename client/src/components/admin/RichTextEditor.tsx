@@ -125,8 +125,9 @@ export default function RichTextEditor({ value, onChange, placeholder = "Write y
       StarterKit.configure({
         heading: { levels: [2, 3] },
         codeBlock: { HTMLAttributes: { class: "code-block" } },
+        // Link is NOT part of StarterKit, adding it separately below
       }),
-      Link.configure({
+      Link.extend({ inclusive: false }).configure({
         openOnClick: false,
         HTMLAttributes: { rel: "noopener noreferrer", target: "_blank" },
       }),
