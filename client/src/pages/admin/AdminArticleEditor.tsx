@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { AdminLayout } from "@/components/AdminLayout";
 import { C, font, ActionBtn } from "@/lib/adminTheme";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 function slugify(text: string) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -231,8 +232,12 @@ export default function AdminArticleEditor() {
               </div>
               {/* Body */}
               <div>
-                <label style={{ fontSize: 12, fontWeight: 600, color: C.textMuted, marginBottom: 6, display: "block", letterSpacing: "0.3px" }}>BODY CONTENT (HTML)</label>
-                <DTextArea placeholder="<p>Write your page content here...</p>" value={form.content} onChange={(v) => setField("content", v)} rows={16} mono />
+                <label style={{ fontSize: 12, fontWeight: 600, color: C.textMuted, marginBottom: 6, display: "block", letterSpacing: "0.3px" }}>BODY CONTENT</label>
+                <RichTextEditor
+                  value={form.content}
+                  onChange={(v) => setField("content", v)}
+                  placeholder="Write your page content here..."
+                />
               </div>
             </div>
 

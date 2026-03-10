@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { AdminLayout } from "@/components/AdminLayout";
 import { C, font, ActionBtn } from "@/lib/adminTheme";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 type FirmType = "prop_firm" | "broker";
 
@@ -460,8 +461,12 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
           {/* EDITORIAL */}
           {activeTab === "editorial" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-              <FormGroup label="FULL REVIEW (HTML / MARKDOWN)">
-                <DTextArea placeholder="Write your in-depth editorial review here..." rows={12} value={form.content} onChange={(v) => setFormField("content", v)} />
+              <FormGroup label="FULL REVIEW">
+                <RichTextEditor
+                  value={form.content}
+                  onChange={(v) => setFormField("content", v)}
+                  placeholder="Write your in-depth editorial review here..."
+                />
               </FormGroup>
               <FormGroup label="PROS">
                 {form.pros.map((pro, i) => (
