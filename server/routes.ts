@@ -383,6 +383,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return res.json({ ok: true });
   });
 
+  // ─── Admin broker CRUD ────────────────────────────────────────────────────
+
+  app.post("/api/admin/brokers", adminAuth, async (req, res) => {
+    try {
+      const body = req.body;
+      if (!body.name) return res.status(400).json({ error: "Name required" });
+      if (!body.slug) body.slug = slugify(body.name);
+      const [broker] = await db
+        .insert(brokersTable)
+        .values({ ...body, lastUpdated: new Date() })
+        .returning();
+      return res.status(201).json(broker);
+    } catch (err: any) {
+      console.error("[Admin] Error creating broker:", err);
+      return res.status(500).json({ error: err.message || "Failed to create broker" });
+    }
+  });
+
+  app.delete("/api/admin/brokers/:slug", adminAuth, async (req, res) => {
+    try {
+      await db.delete(brokersTable).where(eq(brokersTable.slug, req.params.slug));
+      return res.json({ success: true });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || "Failed to delete broker" });
+    }
+  });
+
+  // ─── Admin prop firm CRUD ─────────────────────────────────────────────────
+
+  app.post("/api/admin/prop-firms", adminAuth, async (req, res) => {
+    try {
+      const body = req.body;
+      if (!body.name) return res.status(400).json({ error: "Name required" });
+      if (!body.slug) body.slug = slugify(body.name);
+      const [firm] = await db
+        .insert(propFirmsTable)
+        .values({ ...body, lastUpdated: new Date() })
+        .returning();
+      return res.status(201).json(firm);
+    } catch (err: any) {
+      console.error("[Admin] Error creating prop firm:", err);
+      return res.status(500).json({ error: err.message || "Failed to create prop firm" });
+    }
+  });
+
+  app.delete("/api/admin/prop-firms/:slug", adminAuth, async (req, res) => {
+    try {
+      await db.delete(propFirmsTable).where(eq(propFirmsTable.slug, req.params.slug));
+      return res.json({ success: true });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || "Failed to delete prop firm" });
+    }
+  });
+
+  // ─── Admin reviews (fetched from WordPress) ──────────────────────────────
+
+  app.get("/api/admin/reviews", adminAuth, async (req, res) => {
+    try {
+      const { status = "any", type } = req.query as Record<string, string>;
+      const reviews = await fetchWordPress(
+        `https://admin.entrylab.io/wp-json/wp/v2/review?per_page=100&acf_format=standard&status=${status}`
+      );
+      const shaped = (Array.isArray(reviews) ? reviews : []).map((r: any) => {
+        const acf = r.acf || {};
+        const reviewedItem = acf.reviewed_item;
+        const firmName = Array.isArray(reviewedItem)
+          ? reviewedItem[0]?.post_title
+          : reviewedItem?.post_title || "Unknown";
+        return {
+          id: r.id,
+          firm: firmName,
+          firmType: acf.item_type || "prop_firm",
+          author: acf.reviewer_name || "Anonymous",
+          rating: parseFloat(acf.rating) || 0,
+          status: r.status === "publish" ? "approved" : r.status === "trash" ? "flagged" : r.status || "pending",
+          date: r.date ? new Date(r.date).toLocaleDateString() : "—",
+          excerpt: (acf.review_text || "").substring(0, 180),
+          title: r.title?.rendered || "",
+        };
+      });
+      const filtered = type ? shaped.filter((r: any) => r.firmType === type) : shaped;
+      return res.json(filtered);
+    } catch (err: any) {
+      console.error("[Admin] Error fetching reviews:", err);
+      return res.status(500).json({ error: "Failed to fetch reviews" });
+    }
+  });
+
+  app.put("/api/admin/reviews/:id", adminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      const wpStatus = status === "approved" ? "publish" : status === "flagged" ? "trash" : "pending";
+      const result = await fetchWordPress(
+        `https://admin.entrylab.io/wp-json/wp/v2/review/${id}`,
+        { method: "POST", body: { status: wpStatus } }
+      );
+      if (status === "approved") {
+        apiCache.delete(REVIEWS_CACHE_KEY);
+      }
+      return res.json(result);
+    } catch (err: any) {
+      console.error("[Admin] Error updating review:", err);
+      return res.status(500).json({ error: "Failed to update review" });
+    }
+  });
+
   // ─── Admin article CRUD ────────────────────────────────────────────────────
 
   app.get("/api/admin/articles", adminAuth, async (req, res) => {

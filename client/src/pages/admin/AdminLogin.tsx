@@ -2,10 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { C, font } from "@/lib/adminTheme";
 import { Lock } from "lucide-react";
 
 export default function AdminLogin() {
@@ -16,10 +13,14 @@ export default function AdminLogin() {
   const loginMutation = useMutation({
     mutationFn: () => apiRequest("POST", "/api/admin/login", { password }),
     onSuccess: () => {
-      navigate("/admin/articles");
+      navigate("/admin");
     },
     onError: (err: any) => {
-      setError(err?.message?.includes("429") ? "Too many attempts. Try again in 15 minutes." : "Incorrect password.");
+      setError(
+        err?.message?.includes("429")
+          ? "Too many attempts. Try again in 15 minutes."
+          : "Incorrect password."
+      );
       setPassword("");
     },
   });
@@ -31,43 +32,103 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center space-y-2">
-          <div className="mx-auto w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-            <Lock className="w-5 h-5 text-muted-foreground" />
+    <div style={{
+      minHeight: "100vh",
+      background: C.bg,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 24,
+      fontFamily: font,
+    }}>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+      <div style={{
+        width: "100%",
+        maxWidth: 360,
+        background: C.surface,
+        border: `1px solid ${C.border}`,
+        borderRadius: 12,
+        padding: 36,
+      }}>
+        {/* Logo */}
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <div style={{
+            width: 48,
+            height: 48,
+            borderRadius: 12,
+            background: C.accentDim,
+            border: `1px solid ${C.accentBorder}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto 16px",
+          }}>
+            <Lock size={20} color={C.accent} />
           </div>
-          <CardTitle className="text-xl">Admin Access</CardTitle>
-          <CardDescription>EntryLab content management</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter admin password"
-                autoFocus
-                data-testid="input-password"
-              />
+          <div style={{ fontSize: 20, fontWeight: 700, color: C.text, marginBottom: 4 }}>Admin Access</div>
+          <div style={{ fontSize: 13, color: C.textMuted }}>EntryLab Review Aggregator</div>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.textMuted, marginBottom: 8, letterSpacing: "0.3px" }}>
+              PASSWORD
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter admin password"
+              autoFocus
+              data-testid="input-password"
+              style={{
+                width: "100%",
+                padding: "11px 14px",
+                borderRadius: 8,
+                border: `1px solid ${C.border}`,
+                background: C.bg,
+                color: C.text,
+                fontSize: 14,
+                fontFamily: font,
+                outline: "none",
+                boxSizing: "border-box",
+                transition: "border-color 0.15s",
+              }}
+              onFocus={(e) => { e.target.style.borderColor = C.accent; }}
+              onBlur={(e) => { e.target.style.borderColor = C.border; }}
+            />
+          </div>
+
+          {error && (
+            <div style={{ fontSize: 13, color: C.danger, marginBottom: 14 }} data-testid="text-login-error">
+              {error}
             </div>
-            {error && (
-              <p className="text-sm text-destructive" data-testid="text-login-error">{error}</p>
-            )}
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loginMutation.isPending || !password}
-              data-testid="button-login"
-            >
-              {loginMutation.isPending ? "Signing in..." : "Sign in"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+          )}
+
+          <button
+            type="submit"
+            disabled={loginMutation.isPending || !password}
+            data-testid="button-login"
+            style={{
+              width: "100%",
+              padding: "12px",
+              borderRadius: 8,
+              border: "none",
+              background: C.accent,
+              color: C.bg,
+              fontSize: 14,
+              fontWeight: 700,
+              fontFamily: font,
+              cursor: loginMutation.isPending || !password ? "not-allowed" : "pointer",
+              opacity: loginMutation.isPending || !password ? 0.7 : 1,
+              transition: "opacity 0.15s",
+            }}
+          >
+            {loginMutation.isPending ? "Signing in..." : "Sign In"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

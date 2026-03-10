@@ -30,9 +30,16 @@ const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const TermsConditions = lazy(() => import("@/pages/TermsConditions"));
 const Compare = lazy(() => import("@/pages/Compare"));
 const NotFound = lazy(() => import("@/pages/not-found"));
+
+// Admin pages
 const AdminLogin = lazy(() => import("@/pages/admin/AdminLogin"));
+const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
+const AdminFirmsList = lazy(() => import("@/pages/admin/AdminFirmsList"));
+const AdminFirmEditor = lazy(() => import("@/pages/admin/AdminFirmEditor"));
+const AdminReviews = lazy(() => import("@/pages/admin/AdminReviews"));
 const AdminArticles = lazy(() => import("@/pages/admin/AdminArticles"));
 const AdminArticleEditor = lazy(() => import("@/pages/admin/AdminArticleEditor"));
+const AdminPlaceholder = lazy(() => import("@/pages/admin/AdminPlaceholder"));
 
 function PageLoadingFallback() {
   return (
@@ -47,141 +54,115 @@ function PageLoadingFallback() {
   );
 }
 
+function S({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={<PageLoadingFallback />}>{children}</Suspense>;
+}
+
 function Router() {
   return (
     <Switch>
-      <Route path="/">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <Home />
-        </Suspense>
+      <Route path="/"><S><Home /></S></Route>
+      <Route path="/brokers"><S><Brokers /></S></Route>
+      <Route path="/broker-categories/:slug"><S><BrokerCategoryArchive /></S></Route>
+      <Route path="/broker/:slug"><S><BrokerReview /></S></Route>
+      <Route path="/prop-firms/:category?"><S><PropFirms /></S></Route>
+      <Route path="/prop-firm/:slug"><S><PropFirmReview /></S></Route>
+      <Route path="/signals"><S><SignalsLanding /></S></Route>
+      <Route path="/subscribe"><S><Subscribe /></S></Route>
+      <Route path="/success"><S><Success /></S></Route>
+      <Route path="/free-access"><S><FreeAccess /></S></Route>
+      <Route path="/dashboard"><S><Dashboard /></S></Route>
+      <Route path="/terms"><S><TermsConditions /></S></Route>
+      <Route path="/compare"><S><Compare /></S></Route>
+
+      {/* ── Admin routes ── */}
+      <Route path="/admin/login"><S><AdminLogin /></S></Route>
+
+      {/* Prop Firms */}
+      <Route path="/admin/prop-firms/new">
+        <S><AdminFirmEditor type="prop_firm" /></S>
       </Route>
-      <Route path="/brokers">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <Brokers />
-        </Suspense>
+      <Route path="/admin/prop-firms/:slug">
+        <S><AdminFirmEditor type="prop_firm" /></S>
       </Route>
-      <Route path="/broker-categories/:slug">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <BrokerCategoryArchive />
-        </Suspense>
+      <Route path="/admin/prop-firms">
+        <S><AdminFirmsList type="prop_firm" /></S>
       </Route>
-      <Route path="/broker/:slug">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <BrokerReview />
-        </Suspense>
-      </Route>
-      <Route path="/prop-firms/:category?">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <PropFirms />
-        </Suspense>
-      </Route>
-      <Route path="/prop-firm/:slug">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <PropFirmReview />
-        </Suspense>
-      </Route>
-      <Route path="/signals">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <SignalsLanding />
-        </Suspense>
-      </Route>
-      <Route path="/subscribe">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <Subscribe />
-        </Suspense>
-      </Route>
-      <Route path="/success">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <Success />
-        </Suspense>
-      </Route>
-      <Route path="/free-access">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <FreeAccess />
-        </Suspense>
-      </Route>
-      <Route path="/dashboard">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <Dashboard />
-        </Suspense>
-      </Route>
-      <Route path="/terms">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <TermsConditions />
-        </Suspense>
-      </Route>
-      <Route path="/compare">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <Compare />
-        </Suspense>
-      </Route>
-      {/* Admin routes — must come before catch-all routes */}
-      <Route path="/admin/login">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <AdminLogin />
-        </Suspense>
-      </Route>
-      <Route path="/admin/articles/new">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <AdminArticleEditor />
-        </Suspense>
-      </Route>
-      <Route path="/admin/articles/:id/edit">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <AdminArticleEditor />
-        </Suspense>
-      </Route>
-      <Route path="/admin/articles">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <AdminArticles />
-        </Suspense>
-      </Route>
-      <Route path="/admin">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <AdminArticles />
-        </Suspense>
+      <Route path="/admin/prop-firm-reviews">
+        <S><AdminReviews type="prop-firm-reviews" /></S>
       </Route>
 
-      {/* Article route must come BEFORE category archive to match 2-segment URLs first */}
-      <Route path="/:category/:slug">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <Article />
-        </Suspense>
+      {/* Brokers */}
+      <Route path="/admin/brokers/new">
+        <S><AdminFirmEditor type="broker" /></S>
       </Route>
-      {/* Broker category archives - specific slugs for broker categories */}
-      <Route path="/top-cfd-brokers">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <BrokerCategoryArchive />
-        </Suspense>
+      <Route path="/admin/brokers/:slug">
+        <S><AdminFirmEditor type="broker" /></S>
       </Route>
-      <Route path="/top-3-cfd-brokers">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <BrokerCategoryArchive />
-        </Suspense>
+      <Route path="/admin/brokers">
+        <S><AdminFirmsList type="broker" /></S>
       </Route>
-      {/* Prop firm category archives - specific slugs for prop firm categories */}
-      <Route path="/best-verified-propfirms">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <PropFirmCategoryArchive />
-        </Suspense>
+      <Route path="/admin/broker-reviews">
+        <S><AdminReviews type="broker-reviews" /></S>
       </Route>
-      {/* Combined route for /news and category archives - single Suspense boundary prevents remounting */}
-      <Route path="/:slug">
-        <Suspense fallback={<PageLoadingFallback />}>
-          <CategoryArchive />
-        </Suspense>
+
+      {/* Pages & Posts (articles) */}
+      <Route path="/admin/pages/new"><S><AdminArticleEditor /></S></Route>
+      <Route path="/admin/pages/:id/edit"><S><AdminArticleEditor /></S></Route>
+      <Route path="/admin/pages"><S><AdminArticles /></S></Route>
+      <Route path="/admin/posts/new"><S><AdminArticleEditor /></S></Route>
+      <Route path="/admin/posts/:id/edit"><S><AdminArticleEditor /></S></Route>
+      <Route path="/admin/posts"><S><AdminArticles /></S></Route>
+
+      {/* Legacy articles routes (keep working) */}
+      <Route path="/admin/articles/new"><S><AdminArticleEditor /></S></Route>
+      <Route path="/admin/articles/:id/edit"><S><AdminArticleEditor /></S></Route>
+      <Route path="/admin/articles"><S><AdminArticles /></S></Route>
+
+      {/* Taxonomy & Settings placeholders */}
+      <Route path="/admin/comparisons">
+        <S><AdminPlaceholder title="Comparisons" description="Build head-to-head comparison pages (e.g. FTMO vs FundedNext) with editorial content and side-by-side data tables." /></S>
       </Route>
-      <Route>
-        <Suspense fallback={<PageLoadingFallback />}>
-          <NotFound />
-        </Suspense>
+      <Route path="/admin/tags">
+        <S><AdminPlaceholder title="Tags & Categories" description="Manage firm tags like 'beginner-friendly', 'instant-funding', 'us-traders' and assign them to firms." /></S>
       </Route>
+      <Route path="/admin/countries">
+        <S><AdminPlaceholder title="Countries" description="Manage accepted and restricted country lists for each firm. Drives the country filter on listing pages." /></S>
+      </Route>
+      <Route path="/admin/platforms">
+        <S><AdminPlaceholder title="Platforms" description="Reference data for MT4, MT5, cTrader, TradingView, and proprietary platforms used by brokers and prop firms." /></S>
+      </Route>
+      <Route path="/admin/regulators">
+        <S><AdminPlaceholder title="Regulators" description="Master list of regulatory bodies, their tier classifications, and the countries they operate in." /></S>
+      </Route>
+      <Route path="/admin/payments">
+        <S><AdminPlaceholder title="Payment Methods" description="Master list of deposit and withdrawal methods — cards, e-wallets, crypto, and bank wire transfers." /></S>
+      </Route>
+      <Route path="/admin/affiliates">
+        <S><AdminPlaceholder title="Affiliate Links" description="Manage affiliate URLs, discount codes, and click tracking for all brokers and prop firms." /></S>
+      </Route>
+      <Route path="/admin/seo">
+        <S><AdminPlaceholder title="SEO Settings" description="Global SEO configuration, sitemap settings, and schema markup management for the entire site." /></S>
+      </Route>
+      <Route path="/admin/users">
+        <S><AdminPlaceholder title="Team / Users" description="Manage admin users, roles, and access permissions for the EntryLab content team." /></S>
+      </Route>
+
+      {/* Admin root → Dashboard */}
+      <Route path="/admin"><S><AdminDashboard /></S></Route>
+
+      {/* ── Public routes ── */}
+      <Route path="/:category/:slug"><S><Article /></S></Route>
+      <Route path="/top-cfd-brokers"><S><BrokerCategoryArchive /></S></Route>
+      <Route path="/top-3-cfd-brokers"><S><BrokerCategoryArchive /></S></Route>
+      <Route path="/best-verified-propfirms"><S><PropFirmCategoryArchive /></S></Route>
+      <Route path="/:slug"><S><CategoryArchive /></S></Route>
+      <Route><S><NotFound /></S></Route>
     </Switch>
   );
 }
 
 function App() {
-  // Capture UTM params on page load and auto-prefetch routes
   useEffect(() => {
     captureUTMParams();
     autoPrefetchRoutes(2000);

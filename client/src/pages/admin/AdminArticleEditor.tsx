@@ -3,20 +3,10 @@ import { useLocation, useParams } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { AdminLayout } from "@/components/AdminLayout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Save } from "lucide-react";
-import { Link } from "wouter";
+import { C, font, ActionBtn } from "@/lib/adminTheme";
 
 function slugify(text: string) {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
 
 interface ArticleForm {
@@ -33,17 +23,82 @@ interface ArticleForm {
 }
 
 const empty: ArticleForm = {
-  title: "",
-  slug: "",
-  excerpt: "",
-  content: "",
-  category: "",
-  status: "draft",
-  featuredImage: "",
-  seoTitle: "",
-  seoDescription: "",
-  author: "EntryLab",
+  title: "", slug: "", excerpt: "", content: "", category: "",
+  status: "draft", featuredImage: "", seoTitle: "", seoDescription: "", author: "EntryLab",
 };
+
+function DInput({ placeholder, value, onChange, type = "text", large = false }: {
+  placeholder?: string; value: string; onChange: (v: string) => void; type?: string; large?: boolean;
+}) {
+  return (
+    <input
+      type={type}
+      placeholder={placeholder}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      style={{
+        width: "100%", padding: large ? "12px 14px" : "10px 14px", borderRadius: 7,
+        border: `1px solid ${C.border}`, background: C.bg, color: C.text,
+        fontSize: large ? 16 : 13, fontWeight: large ? 600 : 400,
+        fontFamily: large ? font : font, outline: "none", boxSizing: "border-box", transition: "border-color 0.15s",
+      }}
+      onFocus={(e) => { e.target.style.borderColor = C.accent; }}
+      onBlur={(e) => { e.target.style.borderColor = C.border; }}
+    />
+  );
+}
+
+function DTextArea({ placeholder, value, onChange, rows = 4, mono = false }: {
+  placeholder?: string; value: string; onChange: (v: string) => void; rows?: number; mono?: boolean;
+}) {
+  return (
+    <textarea
+      placeholder={placeholder}
+      value={value}
+      rows={rows}
+      onChange={(e) => onChange(e.target.value)}
+      style={{
+        width: "100%", padding: "12px 14px", borderRadius: 7, border: `1px solid ${C.border}`,
+        background: C.bg, color: C.text, fontSize: 13, fontFamily: mono ? "monospace" : font,
+        outline: "none", boxSizing: "border-box", resize: "vertical", lineHeight: 1.6,
+      }}
+      onFocus={(e) => { e.target.style.borderColor = C.accent; }}
+      onBlur={(e) => { e.target.style.borderColor = C.border; }}
+    />
+  );
+}
+
+function SidePanel({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, padding: 20, marginBottom: 14 }}>
+      {children}
+    </div>
+  );
+}
+
+function PanelLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.textMuted, marginBottom: 8, letterSpacing: "0.3px" }}>
+      {children}
+    </label>
+  );
+}
+
+function DSelect({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      style={{
+        width: "100%", padding: "10px 14px", borderRadius: 7, border: `1px solid ${C.border}`,
+        background: C.bg, color: C.text, fontSize: 13, fontFamily: font,
+        outline: "none", boxSizing: "border-box", appearance: "none",
+      }}
+    >
+      {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+    </select>
+  );
+}
 
 export default function AdminArticleEditor() {
   const params = useParams<{ id?: string }>();
@@ -61,9 +116,7 @@ export default function AdminArticleEditor() {
   });
 
   useEffect(() => {
-    if (!sessionLoading && !session) {
-      navigate("/admin/login");
-    }
+    if (!sessionLoading && !session) navigate("/admin/login");
   }, [session, sessionLoading, navigate]);
 
   const { data: existing, isLoading: articleLoading } = useQuery<any>({
@@ -75,27 +128,19 @@ export default function AdminArticleEditor() {
   useEffect(() => {
     if (existing && !articleLoading) {
       setForm({
-        title: existing.title || "",
-        slug: existing.slug || "",
-        excerpt: existing.excerpt || "",
-        content: existing.content || "",
-        category: existing.category || "",
-        status: existing.status || "draft",
-        featuredImage: existing.featuredImage || "",
-        seoTitle: existing.seoTitle || "",
-        seoDescription: existing.seoDescription || "",
-        author: existing.author || "EntryLab",
+        title: existing.title || "", slug: existing.slug || "", excerpt: existing.excerpt || "",
+        content: existing.content || "", category: existing.category || "", status: existing.status || "draft",
+        featuredImage: existing.featuredImage || "", seoTitle: existing.seoTitle || "",
+        seoDescription: existing.seoDescription || "", author: existing.author || "EntryLab",
       });
       setSlugTouched(true);
     }
   }, [existing, articleLoading]);
 
+  const setField = (key: keyof ArticleForm, val: string) => setForm((f) => ({ ...f, [key]: val }));
+
   const handleTitleChange = (val: string) => {
-    setForm((f) => ({
-      ...f,
-      title: val,
-      slug: slugTouched ? f.slug : slugify(val),
-    }));
+    setForm((f) => ({ ...f, title: val, slug: slugTouched ? f.slug : slugify(val) }));
   };
 
   const saveMutation = useMutation({
@@ -105,199 +150,163 @@ export default function AdminArticleEditor() {
         : apiRequest("PUT", `/api/admin/articles/${articleId}`, form),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/articles"] });
-      navigate("/admin/articles");
+      navigate("/admin/pages");
     },
     onError: (err: any) => {
-      setSaveError(err?.message || "Failed to save article. Slug may already exist.");
+      setSaveError(err?.message || "Failed to save. Slug may already exist.");
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaveError("");
-    saveMutation.mutate();
-  };
-
-  if (sessionLoading || (!isNew && articleLoading)) {
-    return (
-      <AdminLayout>
-        <div className="space-y-4 max-w-3xl">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-48 w-full" />
-        </div>
-      </AdminLayout>
-    );
-  }
+  if (sessionLoading || (!isNew && articleLoading)) return null;
 
   return (
     <AdminLayout>
-      <div className="max-w-3xl space-y-6">
-        <div className="flex items-center gap-3">
-          <Link href="/admin/articles">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </Link>
-          <h1 className="text-2xl font-semibold" data-testid="text-editor-title">
-            {isNew ? "New Article" : "Edit Article"}
-          </h1>
+      <div style={{ fontFamily: font }}>
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button
+              onClick={() => navigate("/admin/pages")}
+              style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 6, color: C.textMuted, padding: "6px 12px", cursor: "pointer", fontSize: 14 }}
+            >
+              ←
+            </button>
+            <div>
+              <h2 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: 0, fontFamily: font }}>
+                {isNew ? "New Page" : "Edit Page"}
+              </h2>
+              <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>
+                Create a ranked list, guide, or editorial page
+              </p>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            {saveError && <span style={{ fontSize: 12, color: C.danger }}>{saveError}</span>}
+            <ActionBtn label="Cancel" onClick={() => navigate("/admin/pages")} />
+            <ActionBtn
+              label={saveMutation.isPending ? "Saving..." : "Save"}
+              primary
+              onClick={() => { setSaveError(""); saveMutation.mutate(); }}
+              disabled={saveMutation.isPending || !form.title}
+            />
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div className="sm:col-span-2 space-y-2">
-              <Label htmlFor="title">Title *</Label>
-              <Input
-                id="title"
-                value={form.title}
-                onChange={(e) => handleTitleChange(e.target.value)}
-                placeholder="Article title"
-                required
-                data-testid="input-title"
-              />
-            </div>
-
-            <div className="sm:col-span-2 space-y-2">
-              <Label htmlFor="slug">Slug</Label>
-              <Input
-                id="slug"
-                value={form.slug}
-                onChange={(e) => { setSlugTouched(true); setForm((f) => ({ ...f, slug: e.target.value })); }}
-                placeholder="url-friendly-slug"
-                data-testid="input-slug"
-              />
-              <p className="text-xs text-muted-foreground">Auto-generated from title. Edit if needed.</p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select
-                value={form.category}
-                onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}
-              >
-                <SelectTrigger id="category" data-testid="select-category">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="brokers">Brokers</SelectItem>
-                  <SelectItem value="prop-firms">Prop Firms</SelectItem>
-                  <SelectItem value="analysis">Analysis</SelectItem>
-                  <SelectItem value="news">News</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={form.status}
-                onValueChange={(v) => setForm((f) => ({ ...f, status: v }))}
-              >
-                <SelectTrigger id="status" data-testid="select-status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="sm:col-span-2 space-y-2">
-              <Label htmlFor="excerpt">Excerpt</Label>
-              <Textarea
-                id="excerpt"
-                value={form.excerpt}
-                onChange={(e) => setForm((f) => ({ ...f, excerpt: e.target.value }))}
-                placeholder="Short summary shown in article listings"
-                rows={2}
-                data-testid="input-excerpt"
-              />
-            </div>
-
-            <div className="sm:col-span-2 space-y-2">
-              <Label htmlFor="content">Content (HTML)</Label>
-              <Textarea
-                id="content"
-                value={form.content}
-                onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-                placeholder="<p>Article body HTML...</p>"
-                rows={16}
-                className="font-mono text-xs"
-                data-testid="input-content"
-              />
-            </div>
-
-            <div className="sm:col-span-2 space-y-2">
-              <Label htmlFor="featuredImage">Featured Image URL</Label>
-              <Input
-                id="featuredImage"
-                value={form.featuredImage}
-                onChange={(e) => setForm((f) => ({ ...f, featuredImage: e.target.value }))}
-                placeholder="https://..."
-                data-testid="input-featured-image"
-              />
-            </div>
-
-            <div className="sm:col-span-2 border-t pt-5">
-              <p className="text-sm font-medium mb-4 text-muted-foreground uppercase tracking-wide text-xs">SEO</p>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="seoTitle">SEO Title</Label>
-                  <Input
-                    id="seoTitle"
-                    value={form.seoTitle}
-                    onChange={(e) => setForm((f) => ({ ...f, seoTitle: e.target.value }))}
-                    placeholder="Search engine title (leave blank to use article title)"
-                    data-testid="input-seo-title"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="seoDescription">SEO Description</Label>
-                  <Textarea
-                    id="seoDescription"
-                    value={form.seoDescription}
-                    onChange={(e) => setForm((f) => ({ ...f, seoDescription: e.target.value }))}
-                    placeholder="Meta description for search engines (150-160 chars)"
-                    rows={2}
-                    data-testid="input-seo-description"
+        {/* 2-col layout */}
+        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16 }}>
+          {/* Left — main content */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, padding: 24 }}>
+              {/* Title */}
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: C.textMuted, marginBottom: 6, display: "block", letterSpacing: "0.3px" }}>PAGE TITLE</label>
+                <DInput
+                  placeholder="e.g. Best Prop Firms for Beginners 2026"
+                  value={form.title}
+                  onChange={handleTitleChange}
+                  large
+                />
+              </div>
+              {/* Slug */}
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: C.textMuted, marginBottom: 6, display: "block", letterSpacing: "0.3px" }}>SLUG</label>
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <span style={{ padding: "10px 12px", background: C.bg, border: `1px solid ${C.border}`, borderRight: "none", borderRadius: "7px 0 0 7px", color: C.textDim, fontSize: 13, whiteSpace: "nowrap" }}>
+                    entrylab.io/
+                  </span>
+                  <input
+                    placeholder="best-prop-firms-2026"
+                    value={form.slug}
+                    onChange={(e) => { setSlugTouched(true); setField("slug", e.target.value); }}
+                    style={{ flex: 1, padding: "10px 14px", border: `1px solid ${C.border}`, borderRadius: "0 7px 7px 0", background: C.bg, color: C.text, fontSize: 13, fontFamily: font, outline: "none", boxSizing: "border-box" }}
+                    onFocus={(e) => { e.target.style.borderColor = C.accent; }}
+                    onBlur={(e) => { e.target.style.borderColor = C.border; }}
                   />
                 </div>
               </div>
+              {/* Excerpt */}
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: C.textMuted, marginBottom: 6, display: "block", letterSpacing: "0.3px" }}>EXCERPT</label>
+                <DTextArea placeholder="Short summary shown in article listings..." value={form.excerpt} onChange={(v) => setField("excerpt", v)} rows={2} />
+              </div>
+              {/* Body */}
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: C.textMuted, marginBottom: 6, display: "block", letterSpacing: "0.3px" }}>BODY CONTENT (HTML)</label>
+                <DTextArea placeholder="<p>Write your page content here...</p>" value={form.content} onChange={(v) => setField("content", v)} rows={16} mono />
+              </div>
             </div>
 
-            <div className="sm:col-span-2 space-y-2">
-              <Label htmlFor="author">Author</Label>
-              <Input
-                id="author"
-                value={form.author}
-                onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
-                placeholder="EntryLab"
-                data-testid="input-author"
+            {/* Author */}
+            <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, padding: 24 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: C.textMuted, marginBottom: 8, display: "block", letterSpacing: "0.3px" }}>AUTHOR</label>
+              <DInput placeholder="EntryLab" value={form.author} onChange={(v) => setField("author", v)} />
+            </div>
+          </div>
+
+          {/* Right — sidebar panels */}
+          <div>
+            <SidePanel>
+              <PanelLabel>PAGE TYPE / CATEGORY</PanelLabel>
+              <DSelect
+                value={form.category}
+                onChange={(v) => setField("category", v)}
+                options={[
+                  { value: "", label: "Select category..." },
+                  { value: "prop-firms", label: "Prop Firms" },
+                  { value: "brokers", label: "Brokers" },
+                  { value: "analysis", label: "Analysis" },
+                  { value: "news", label: "News" },
+                  { value: "guide", label: "Guide" },
+                  { value: "comparison", label: "Comparison" },
+                ]}
               />
-            </div>
-          </div>
+              <div style={{ height: 14 }} />
+              <PanelLabel>STATUS</PanelLabel>
+              <DSelect
+                value={form.status}
+                onChange={(v) => setField("status", v)}
+                options={[
+                  { value: "draft", label: "Draft" },
+                  { value: "published", label: "Published" },
+                  { value: "scheduled", label: "Scheduled" },
+                ]}
+              />
+            </SidePanel>
 
-          {saveError && (
-            <p className="text-sm text-destructive" data-testid="text-save-error">{saveError}</p>
-          )}
+            <SidePanel>
+              <PanelLabel>SEO</PanelLabel>
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ fontSize: 11, color: C.textDim, marginBottom: 4, display: "block" }}>Meta Title</label>
+                <DInput placeholder="Best Prop Firms 2026 | EntryLab" value={form.seoTitle} onChange={(v) => setField("seoTitle", v)} />
+              </div>
+              <div>
+                <label style={{ fontSize: 11, color: C.textDim, marginBottom: 4, display: "block" }}>Meta Description</label>
+                <DTextArea
+                  placeholder="Compelling description for search engines..."
+                  value={form.seoDescription}
+                  onChange={(v) => setField("seoDescription", v)}
+                  rows={3}
+                />
+                <div style={{ fontSize: 11, color: C.textDim, marginTop: 4 }}>
+                  {form.seoDescription.length}/160 characters
+                </div>
+              </div>
+            </SidePanel>
 
-          <div className="flex items-center gap-3 pt-2">
-            <Button
-              type="submit"
-              disabled={saveMutation.isPending || !form.title}
-              className="gap-2"
-              data-testid="button-save"
-            >
-              <Save className="w-4 h-4" />
-              {saveMutation.isPending ? "Saving..." : "Save Article"}
-            </Button>
-            <Link href="/admin/articles">
-              <Button type="button" variant="ghost">Cancel</Button>
-            </Link>
+            <SidePanel>
+              <PanelLabel>FEATURED IMAGE URL</PanelLabel>
+              <DInput placeholder="https://..." value={form.featuredImage} onChange={(v) => setField("featuredImage", v)} />
+              {form.featuredImage && (
+                <img src={form.featuredImage} alt="" style={{ width: "100%", borderRadius: 6, marginTop: 10, objectFit: "cover", maxHeight: 120 }} />
+              )}
+              {!form.featuredImage && (
+                <div style={{ marginTop: 10, border: `2px dashed ${C.border}`, borderRadius: 8, padding: 24, textAlign: "center", color: C.textMuted, fontSize: 12 }}>
+                  Paste image URL above
+                </div>
+              )}
+            </SidePanel>
           </div>
-        </form>
+        </div>
       </div>
     </AdminLayout>
   );
