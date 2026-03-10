@@ -803,10 +803,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.redirect(301, '/');
   });
 
-  // Redirect old Funderpro URL to new review URL (301 permanent redirect)
-  app.get("/prop-firm/funderpro", (req, res) => {
-    console.log('[Redirect] /prop-firm/funderpro → /prop-firm/funderpro-review');
-    res.redirect(301, '/prop-firm/funderpro-review');
+  // 301 redirects for old prop firm slugs → clean slugs
+  const propFirmSlugRedirects: Record<string, string> = {
+    'crypto-fund-trader-review-2026': 'crypto-fund-trader',
+    'e8-markets-review-2026': 'e8-markets',
+    'ftmo-review-2026': 'ftmo',
+    'fintokei-review-2026': 'fintokei',
+    'fundednext-review-2026': 'fundednext',
+    'funderpro-review': 'funderpro',
+    'funderpro': 'funderpro',
+    'funding-pips-review-2026': 'funding-pips',
+    'goat-funded-trader-review-2026': 'goat-funded-trader',
+    'lux-trading-firm-review-2026': 'lux-trading-firm',
+    'rebelsfunding-review-2026': 'rebelsfunding',
+    'the5ers-review-2026': 'the5ers',
+    'wall-street-funded-review-2026': 'wall-street-funded',
+  };
+
+  app.get("/prop-firm/:slug", (req, res, next) => {
+    const { slug } = req.params;
+    const newSlug = propFirmSlugRedirects[slug];
+    if (newSlug && newSlug !== slug) {
+      console.log(`[Redirect] /prop-firm/${slug} → /prop-firm/${newSlug}`);
+      return res.redirect(301, `/prop-firm/${newSlug}`);
+    }
+    next();
   });
 
   // Redirect old /article/:slug URLs to new /:category/:slug URLs (301 permanent redirect)
