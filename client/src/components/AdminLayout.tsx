@@ -43,7 +43,7 @@ const sections: NavSection[] = [
   {
     label: "TAXONOMY",
     items: [
-      { id: "tags",       label: "Tags & Categories", icon: Tag,        href: "/admin/tags" },
+      { id: "categories", label: "Categories",        icon: Tag,        href: "/admin/categories" },
       { id: "countries",  label: "Countries",          icon: Globe,      href: "/admin/countries" },
       { id: "platforms",  label: "Platforms",          icon: Monitor,    href: "/admin/platforms" },
       { id: "regulators", label: "Regulators",         icon: Shield,     href: "/admin/regulators" },

@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import https from "https";
 import { storage } from "./storage";
 import { db } from "./db";
-import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures, subscriptions, brokersTable, propFirmsTable, articlesTable, insertArticleSchema, pageViewsTable } from "../shared/schema";
+import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures, subscriptions, brokersTable, propFirmsTable, articlesTable, insertArticleSchema, pageViewsTable, categoriesTable, brokerCategoriesTable, propFirmCategoriesTable } from "../shared/schema";
 import { apiCache } from "./cache";
 import { sendReviewNotification, sendTelegramMessage, getTelegramBot } from "./telegram";
 import { generateStructuredData } from "./structured-data";
@@ -666,6 +666,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ─── Admin category CRUD endpoints ───────────────────────────────────────────
+
+  app.get("/api/admin/categories", adminAuth, async (req, res) => {
+    try {
+      const { type } = req.query;
+      let query = db.select().from(categoriesTable).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
+      const rows = await query;
+      const filtered = type ? rows.filter((r) => r.type === type) : rows;
+      return res.json(filtered);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post("/api/admin/categories", adminAuth, async (req, res) => {
+    try {
+      const { name, slug, type, description, sortOrder } = req.body;
+      if (!name || !slug || !type) return res.status(400).json({ error: "name, slug, type required" });
+      const [row] = await db.insert(categoriesTable).values({ name, slug, type, description, sortOrder: sortOrder ?? 0 }).returning();
+      return res.json(row);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.put("/api/admin/categories/:id", adminAuth, async (req, res) => {
+    try {
+      const { name, slug, description, sortOrder } = req.body;
+      const updates: any = {};
+      if (name !== undefined) updates.name = name;
+      if (slug !== undefined) updates.slug = slug;
+      if (description !== undefined) updates.description = description;
+      if (sortOrder !== undefined) updates.sortOrder = sortOrder;
+      const [row] = await db.update(categoriesTable).set(updates).where(eq(categoriesTable.id, req.params.id)).returning();
+      if (!row) return res.status(404).json({ error: "Not found" });
+      return res.json(row);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.delete("/api/admin/categories/:id", adminAuth, async (req, res) => {
+    try {
+      const [deleted] = await db.delete(categoriesTable).where(eq(categoriesTable.id, req.params.id)).returning();
+      if (!deleted) return res.status(404).json({ error: "Not found" });
+      return res.json({ ok: true });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ─── Broker category assignments ──────────────────────────────────────────────
+
+  app.get("/api/admin/brokers/:slug/categories", adminAuth, async (req, res) => {
+    try {
+      const [broker] = await db.select().from(brokersTable).where(eq(brokersTable.slug, req.params.slug));
+      if (!broker) return res.status(404).json({ error: "Broker not found" });
+      const assignments = await db
+        .select({ category: categoriesTable })
+        .from(brokerCategoriesTable)
+        .innerJoin(categoriesTable, eq(brokerCategoriesTable.categoryId, categoriesTable.id))
+        .where(eq(brokerCategoriesTable.brokerId, broker.id));
+      return res.json(assignments.map((a) => a.category));
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.put("/api/admin/brokers/:slug/categories", adminAuth, async (req, res) => {
+    try {
+      const { categoryIds } = req.body as { categoryIds: string[] };
+      const [broker] = await db.select().from(brokersTable).where(eq(brokersTable.slug, req.params.slug));
+      if (!broker) return res.status(404).json({ error: "Broker not found" });
+      await db.delete(brokerCategoriesTable).where(eq(brokerCategoriesTable.brokerId, broker.id));
+      if (categoryIds && categoryIds.length > 0) {
+        await db.insert(brokerCategoriesTable).values(categoryIds.map((cid) => ({ brokerId: broker.id, categoryId: cid })));
+      }
+      return res.json({ ok: true });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ─── Prop firm category assignments ──────────────────────────────────────────
+
+  app.get("/api/admin/prop-firms/:slug/categories", adminAuth, async (req, res) => {
+    try {
+      const [firm] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, req.params.slug));
+      if (!firm) return res.status(404).json({ error: "Prop firm not found" });
+      const assignments = await db
+        .select({ category: categoriesTable })
+        .from(propFirmCategoriesTable)
+        .innerJoin(categoriesTable, eq(propFirmCategoriesTable.categoryId, categoriesTable.id))
+        .where(eq(propFirmCategoriesTable.propFirmId, firm.id));
+      return res.json(assignments.map((a) => a.category));
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.put("/api/admin/prop-firms/:slug/categories", adminAuth, async (req, res) => {
+    try {
+      const { categoryIds } = req.body as { categoryIds: string[] };
+      const [firm] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, req.params.slug));
+      if (!firm) return res.status(404).json({ error: "Prop firm not found" });
+      await db.delete(propFirmCategoriesTable).where(eq(propFirmCategoriesTable.propFirmId, firm.id));
+      if (categoryIds && categoryIds.length > 0) {
+        await db.insert(propFirmCategoriesTable).values(categoryIds.map((cid) => ({ propFirmId: firm.id, categoryId: cid })));
+      }
+      return res.json({ ok: true });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ─── Migrate WP categories into local DB ─────────────────────────────────────
+
+  app.post("/api/admin/migrate-categories", adminAuth, async (req, res) => {
+    try {
+      const [articleCats, brokerCats, propFirmCats] = await Promise.all([
+        fetchWordPressWithCache("https://admin.entrylab.io/wp-json/wp/v2/categories?per_page=100", 0),
+        fetchWordPressWithCache("https://admin.entrylab.io/wp-json/wp/v2/broker-category?per_page=100", 0),
+        fetchWordPressWithCache("https://admin.entrylab.io/wp-json/wp/v2/prop-firm-category?per_page=100", 0),
+      ]);
+
+      const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      let inserted = 0;
+
+      const upsertCats = async (cats: any[], type: string) => {
+        for (const cat of cats) {
+          if (!cat.name || !cat.slug) continue;
+          const existing = await db.select().from(categoriesTable).where(eq(categoriesTable.slug, cat.slug));
+          if (existing.length === 0) {
+            await db.insert(categoriesTable).values({ name: cat.name, slug: cat.slug, type, wpId: cat.id, sortOrder: cat.menu_order ?? 0 });
+            inserted++;
+          }
+        }
+      };
+
+      await upsertCats(Array.isArray(articleCats) ? articleCats : [], "article");
+      await upsertCats(Array.isArray(brokerCats) ? brokerCats : [], "broker");
+      await upsertCats(Array.isArray(propFirmCats) ? propFirmCats : [], "prop_firm");
+
+      return res.json({ ok: true, inserted });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
   // ─── Public article endpoints ──────────────────────────────────────────────
 
   app.get("/api/articles", async (req, res) => {
@@ -865,32 +1014,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/wordpress/broker-categories", async (req, res) => {
     try {
-      // Fetch from the new broker-category taxonomy
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      // Serve from DB when populated
+      const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "broker")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
+      if (dbCats.length > 0) {
+        return res.json(dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 0 })));
+      }
+      // Fallback to WordPress
       const categories = await fetchWordPressWithCache(
         "https://admin.entrylab.io/wp-json/wp/v2/broker-category?per_page=100"
-        // Use 15 min default cache
       );
-      
-      // Set browser cache headers (5 min) to reduce repeat requests
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json(categories);
     } catch (error) {
-      console.error("Error fetching WordPress broker categories:", error);
-      // Set browser cache headers even for error responses
+      console.error("Error fetching broker categories:", error);
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      res.json([]); // Return empty array instead of error for graceful degradation
+      res.json([]);
     }
   });
 
   app.get("/api/wordpress/prop-firm-categories", async (req, res) => {
     try {
-      // WordPress uses "prop-firm-category" slug (with dashes)
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      // Serve from DB when populated
+      const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "prop_firm")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
+      if (dbCats.length > 0) {
+        return res.json(dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 0 })));
+      }
+      // Fallback to WordPress
       const categories = await fetchWordPressWithCache(
         "https://admin.entrylab.io/wp-json/wp/v2/prop-firm-category?per_page=100"
-        // Use 15 min default cache
       );
-      
-      // Set browser cache headers (5 min) to reduce repeat requests
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json(categories);
     } catch (error) {

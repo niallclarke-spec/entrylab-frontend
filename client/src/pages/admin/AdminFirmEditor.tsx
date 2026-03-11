@@ -27,6 +27,7 @@ const PROP_TABS = [
   { id: "payments",   label: "Payments" },
   { id: "countries",  label: "Countries" },
   { id: "affiliate",  label: "Affiliate" },
+  { id: "categories", label: "Categories" },
   { id: "seo",        label: "SEO" },
 ];
 
@@ -41,6 +42,7 @@ const BROKER_TABS = [
   { id: "payments",  label: "Payments" },
   { id: "countries", label: "Countries" },
   { id: "affiliate", label: "Affiliate" },
+  { id: "categories",label: "Categories" },
   { id: "seo",       label: "SEO" },
 ];
 
@@ -118,6 +120,13 @@ function PlaceholderTab({ tabLabel }: { tabLabel: string }) {
   );
 }
 
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  type: string;
+}
+
 export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
   const params = useParams<{ slug?: string }>();
   const slug = params.slug;
@@ -128,6 +137,7 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
   const tabs = isProp ? PROP_TABS : BROKER_TABS;
   const [activeTab, setActiveTab] = useState("general");
   const listPath = isProp ? "/admin/prop-firms" : "/admin/brokers";
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
 
   const [form, setForm] = useState({
     name: "", slug: "", website: "", foundedYear: "", hqCity: "", hqCountry: "",
@@ -155,6 +165,33 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
     queryKey: [apiGetPath],
     queryFn: () => fetch(apiGetPath, { credentials: "include" }).then((r) => r.json()),
     enabled: !isNew && !!session,
+  });
+
+  const categoryType = isProp ? "prop_firm" : "broker";
+  const { data: availableCategories = [] } = useQuery<Category[]>({
+    queryKey: ["/api/admin/categories", categoryType],
+    queryFn: () => fetch(`/api/admin/categories?type=${categoryType}`, { credentials: "include" }).then((r) => r.json()),
+    enabled: !!session,
+  });
+
+  const catAssignPath = isProp ? `/api/admin/prop-firms/${slug}/categories` : `/api/admin/brokers/${slug}/categories`;
+  const { data: existingCategoryAssignments = [] } = useQuery<Category[]>({
+    queryKey: [catAssignPath],
+    queryFn: () => fetch(catAssignPath, { credentials: "include" }).then((r) => r.json()),
+    enabled: !isNew && !!session,
+  });
+
+  useEffect(() => {
+    if (!isNew) {
+      setSelectedCategoryIds(existingCategoryAssignments.map((c) => c.id));
+    }
+  }, [existingCategoryAssignments, isNew]);
+
+  const saveCategoriesMutation = useMutation({
+    mutationFn: (firmSlug: string) => {
+      const path = isProp ? `/api/admin/prop-firms/${firmSlug}/categories` : `/api/admin/brokers/${firmSlug}/categories`;
+      return apiRequest("PUT", path, { categoryIds: selectedCategoryIds });
+    },
   });
 
   useEffect(() => {
@@ -193,7 +230,7 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
   };
 
   const saveMutation = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const payload = {
         name: form.name,
         slug: form.slug,
@@ -222,10 +259,14 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
       };
       if (isNew) {
         const createPath = isProp ? "/api/admin/prop-firms" : "/api/admin/brokers";
-        return apiRequest("POST", createPath, payload);
+        const res = await apiRequest("POST", createPath, payload);
+        const created = await res.json();
+        const newSlug = created.slug || form.slug;
+        await saveCategoriesMutation.mutateAsync(newSlug);
       } else {
         const updatePath = isProp ? `/api/prop-firms/${slug}` : `/api/brokers/${slug}`;
-        return apiRequest("PUT", updatePath, payload);
+        await apiRequest("PUT", updatePath, payload);
+        await saveCategoriesMutation.mutateAsync(slug!);
       }
     },
     onSuccess: () => {
@@ -546,8 +587,58 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
             </div>
           )}
 
+          {/* CATEGORIES */}
+          {activeTab === "categories" && (
+            <div>
+              <p style={{ color: C.textMuted, fontSize: 13, margin: "0 0 20px" }}>
+                Assign this {isProp ? "prop firm" : "broker"} to one or more categories. Categories appear as filter options on the public listing pages.
+              </p>
+              {availableCategories.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "32px 24px", color: C.textDim, fontSize: 13 }}>
+                  No {isProp ? "prop firm" : "broker"} categories yet.{" "}
+                  <a href="/admin/categories" style={{ color: C.accent, textDecoration: "none" }}>Create some in Categories</a> first.
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
+                  {availableCategories.map((cat) => {
+                    const checked = selectedCategoryIds.includes(cat.id);
+                    return (
+                      <div
+                        key={cat.id}
+                        onClick={() => setSelectedCategoryIds((prev) =>
+                          checked ? prev.filter((id) => id !== cat.id) : [...prev, cat.id]
+                        )}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 10,
+                          padding: "10px 14px", borderRadius: 8, cursor: "pointer",
+                          border: `1px solid ${checked ? C.accent : C.border}`,
+                          background: checked ? C.accentDim : C.bg,
+                          transition: "all 0.15s",
+                        }}
+                        data-testid={`checkbox-category-${cat.slug}`}
+                      >
+                        <div style={{
+                          width: 16, height: 16, borderRadius: 4,
+                          border: `1.5px solid ${checked ? C.accent : C.borderLight}`,
+                          background: checked ? C.accent : "transparent",
+                          flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                          transition: "all 0.15s",
+                        }}>
+                          {checked && <span style={{ color: C.bg, fontSize: 11, fontWeight: 700, lineHeight: 1 }}>✓</span>}
+                        </div>
+                        <span style={{ fontSize: 13, color: checked ? C.accent : C.text, fontWeight: checked ? 600 : 400 }}>
+                          {cat.name}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Placeholder tabs */}
-          {!["general", "challenges", "rules", "editorial", "regulation", "seo", "affiliate"].includes(activeTab) && (
+          {!["general", "challenges", "rules", "editorial", "regulation", "seo", "affiliate", "categories"].includes(activeTab) && (
             <PlaceholderTab tabLabel={tabs.find((t) => t.id === activeTab)?.label || activeTab} />
           )}
         </div>

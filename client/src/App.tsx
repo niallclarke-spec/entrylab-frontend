@@ -40,6 +40,7 @@ const AdminReviews = lazy(() => import("@/pages/admin/AdminReviews"));
 const AdminArticles = lazy(() => import("@/pages/admin/AdminArticles"));
 const AdminArticleEditor = lazy(() => import("@/pages/admin/AdminArticleEditor"));
 const AdminPlaceholder = lazy(() => import("@/pages/admin/AdminPlaceholder"));
+const AdminCategories = lazy(() => import("@/pages/admin/AdminCategories"));
 
 function PageLoadingFallback() {
   return (
@@ -122,6 +123,9 @@ function Router() {
       {/* Taxonomy & Settings placeholders */}
       <Route path="/admin/comparisons">
         <S><AdminPlaceholder title="Comparisons" description="Build head-to-head comparison pages (e.g. FTMO vs FundedNext) with editorial content and side-by-side data tables." /></S>
+      </Route>
+      <Route path="/admin/categories">
+        <S><AdminCategories /></S>
       </Route>
       <Route path="/admin/tags">
         <S><AdminPlaceholder title="Tags & Categories" description="Manage firm tags like 'beginner-friendly', 'instant-funding', 'us-traders' and assign them to firms." /></S>

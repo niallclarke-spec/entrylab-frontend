@@ -246,6 +246,36 @@ export const insertPageViewSchema = createInsertSchema(pageViewsTable).omit({
 export type InsertPageView = z.infer<typeof insertPageViewSchema>;
 export type PageView = typeof pageViewsTable.$inferSelect;
 
+// ─── Category taxonomy tables ────────────────────────────────────────────────
+export const categoriesTable = pgTable("categories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  type: text("type").notNull(), // "article" | "broker" | "prop_firm"
+  description: text("description"),
+  sortOrder: integer("sort_order").default(0),
+  wpId: integer("wp_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertCategorySchema = createInsertSchema(categoriesTable).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertCategory = z.infer<typeof insertCategorySchema>;
+export type Category = typeof categoriesTable.$inferSelect;
+
+export const brokerCategoriesTable = pgTable("broker_categories", {
+  brokerId: varchar("broker_id").notNull().references(() => brokersTable.id, { onDelete: "cascade" }),
+  categoryId: varchar("category_id").notNull().references(() => categoriesTable.id, { onDelete: "cascade" }),
+});
+
+export const propFirmCategoriesTable = pgTable("prop_firm_categories", {
+  propFirmId: varchar("prop_firm_id").notNull().references(() => propFirmsTable.id, { onDelete: "cascade" }),
+  categoryId: varchar("category_id").notNull().references(() => categoriesTable.id, { onDelete: "cascade" }),
+});
+
 // ─── Legacy TypeScript interfaces (still used by frontend transforms) ───────
 export interface WordPressPost {
   id: number;
