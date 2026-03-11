@@ -445,9 +445,10 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
         evaluationFee: existing.evaluationFee || existing.evaluation_fee || "",
       }));
       setSlugTouched(true);
-      if (existing.logoUrl) {
-        setLogoUrl(existing.logoUrl);
-        setLogoUrlInput(existing.logoUrl);
+      const existingLogo = existing.logoUrl || existing.logo || "";
+      if (existingLogo) {
+        setLogoUrl(existingLogo);
+        setLogoUrlInput(existingLogo);
       }
       const existingCountries: string[] = existing.countries || [];
       setSelectedCountries(existingCountries);
