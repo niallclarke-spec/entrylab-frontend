@@ -1240,8 +1240,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
         return res.json(wpFirms);
       }
+      // Fetch category assignments to populate categoryIds (matching /api/wordpress/prop-firm-categories response)
+      const catRows = await db
+        .select({ propFirmId: propFirmCategoriesTable.propFirmId, catPublicId: sql<number>`COALESCE(${categoriesTable.wpId}, ${categoriesTable.id})` })
+        .from(propFirmCategoriesTable)
+        .innerJoin(categoriesTable, eq(propFirmCategoriesTable.categoryId, categoriesTable.id));
+      const catMap = new Map<number, number[]>();
+      for (const r of catRows) {
+        if (!catMap.has(r.propFirmId)) catMap.set(r.propFirmId, []);
+        catMap.get(r.propFirmId)!.push(r.catPublicId);
+      }
       res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
-      res.json(rows.map(propFirmDbToApi));
+      res.json(rows.map(row => ({ ...propFirmDbToApi(row), categoryIds: catMap.get(row.id) || [] })));
     } catch (error) {
       handleWordPressError(error, res, "fetch prop firms from DB");
     }
