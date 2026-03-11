@@ -55,6 +55,8 @@ function brokerDbToApi(row: any) {
     seoTitle: row.seoTitle,
     seoDescription: row.seoDescription,
     countries: row.countries || [],
+    platformsList: row.platformsList || [],
+    instruments: row.instruments || [],
   };
 }
 
@@ -88,6 +90,8 @@ function propFirmDbToApi(row: any) {
     seoTitle: row.seoTitle,
     seoDescription: row.seoDescription,
     countries: row.countries || [],
+    platformsList: row.platformsList || [],
+    instruments: row.instruments || [],
   };
 }
 
@@ -757,6 +761,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json({ ok: true });
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ─── Used platforms & instruments (aggregate unique values from all firms) ────
+
+  app.get("/api/admin/used-platforms", adminAuth, async (req, res) => {
+    try {
+      const [brokerRows, propRows] = await Promise.all([
+        db.select({ v: brokersTable.platformsList }).from(brokersTable),
+        db.select({ v: propFirmsTable.platformsList }).from(propFirmsTable),
+      ]);
+      const all = new Set<string>();
+      [...brokerRows, ...propRows].forEach(r => (r.v || []).forEach((p: string) => all.add(p)));
+      res.json([...all].sort());
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get("/api/admin/used-instruments", adminAuth, async (req, res) => {
+    try {
+      const [brokerRows, propRows] = await Promise.all([
+        db.select({ v: brokersTable.instruments }).from(brokersTable),
+        db.select({ v: propFirmsTable.instruments }).from(propFirmsTable),
+      ]);
+      const all = new Set<string>();
+      [...brokerRows, ...propRows].forEach(r => (r.v || []).forEach((p: string) => all.add(p)));
+      res.json([...all].sort());
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
     }
   });
 

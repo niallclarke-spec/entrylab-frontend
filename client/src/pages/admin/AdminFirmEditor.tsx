@@ -127,6 +127,19 @@ interface Category {
   type: string;
 }
 
+const DEFAULT_PLATFORMS = [
+  "MetaTrader 4 (MT4)", "MetaTrader 5 (MT5)", "cTrader", "TradingView", "NinjaTrader",
+  "Sierra Chart", "MultiCharts", "TradeStation", "Match-Trader", "TickTrader",
+  "ATAS", "Bookmap", "Quantower", "Jigsaw Trading", "Web Platform", "Mobile App",
+  "TradingView (Web)", "FXTM Trader", "xStation 5", "Plus500 Platform",
+];
+
+const DEFAULT_INSTRUMENTS = [
+  "Forex (FX)", "Commodities", "Indices", "US Stocks", "Global Stocks", "Cryptocurrency",
+  "ETFs", "Bonds", "Futures", "Options", "CFDs", "Metals (Gold, Silver)", "Energy (Oil, Gas)",
+  "Agriculture", "Interest Rates", "Volatility Indices", "Stock Options",
+];
+
 const ALL_COUNTRIES = [
   "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria",
   "Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan",
@@ -323,6 +336,10 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [customCountries, setCustomCountries] = useState<string[]>([]);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+  const [customPlatforms, setCustomPlatforms] = useState<string[]>([]);
+  const [selectedInstruments, setSelectedInstruments] = useState<string[]>([]);
+  const [customInstruments, setCustomInstruments] = useState<string[]>([]);
 
   const [form, setForm] = useState({
     name: "", slug: "", website: "", foundedYear: "", hqCity: "", hqCountry: "",
@@ -372,6 +389,21 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
     }
   }, [catAssignmentFetched, isNew]);
 
+  const { data: usedPlatforms = [] } = useQuery<string[]>({
+    queryKey: ["/api/admin/used-platforms"],
+    queryFn: () => fetch("/api/admin/used-platforms", { credentials: "include" }).then((r) => r.json()),
+    enabled: !!session,
+  });
+
+  const { data: usedInstruments = [] } = useQuery<string[]>({
+    queryKey: ["/api/admin/used-instruments"],
+    queryFn: () => fetch("/api/admin/used-instruments", { credentials: "include" }).then((r) => r.json()),
+    enabled: !!session,
+  });
+
+  const allPlatforms = Array.from(new Set([...DEFAULT_PLATFORMS, ...usedPlatforms, ...customPlatforms])).sort();
+  const allInstruments = Array.from(new Set([...DEFAULT_INSTRUMENTS, ...usedInstruments, ...customInstruments])).sort();
+
   const saveCategoriesMutation = useMutation({
     mutationFn: (firmSlug: string) => {
       const path = isProp ? `/api/admin/prop-firms/${firmSlug}/categories` : `/api/admin/brokers/${firmSlug}/categories`;
@@ -409,8 +441,16 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
       setSlugTouched(true);
       const existingCountries: string[] = existing.countries || [];
       setSelectedCountries(existingCountries);
-      const custom = existingCountries.filter((c: string) => !ALL_COUNTRIES.includes(c));
-      if (custom.length > 0) setCustomCountries(custom);
+      const customC = existingCountries.filter((c: string) => !ALL_COUNTRIES.includes(c));
+      if (customC.length > 0) setCustomCountries(customC);
+      const existingPlatforms: string[] = existing.platformsList || [];
+      setSelectedPlatforms(existingPlatforms);
+      const customP = existingPlatforms.filter((p: string) => !DEFAULT_PLATFORMS.includes(p));
+      if (customP.length > 0) setCustomPlatforms(customP);
+      const existingInstruments: string[] = existing.instruments || [];
+      setSelectedInstruments(existingInstruments);
+      const customI = existingInstruments.filter((i: string) => !DEFAULT_INSTRUMENTS.includes(i));
+      if (customI.length > 0) setCustomInstruments(customI);
     }
   }, [existing, firmLoading]);
 
@@ -434,6 +474,8 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
         seoTitle: form.seoTitle,
         seoDescription: form.seoDescription,
         countries: selectedCountries,
+        platformsList: selectedPlatforms,
+        instruments: selectedInstruments,
         ...(isProp ? {
           profitSplit: form.profitSplit,
           maxFundingSize: form.maxFundingSize,
@@ -819,8 +861,38 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
             />
           )}
 
+          {/* PLATFORMS */}
+          {activeTab === "platforms" && (
+            <ChecklistSelector
+              items={allPlatforms.map((p) => ({ id: p, name: p }))}
+              selectedIds={selectedPlatforms}
+              onChange={setSelectedPlatforms}
+              searchPlaceholder="Search platforms..."
+              noItemsMessage="No platforms available."
+              onCreateNew={async (name) => {
+                setCustomPlatforms((prev) => prev.includes(name) ? prev : [...prev, name]);
+                setSelectedPlatforms((prev) => prev.includes(name) ? prev : [...prev, name]);
+              }}
+            />
+          )}
+
+          {/* INSTRUMENTS */}
+          {activeTab === "instruments" && (
+            <ChecklistSelector
+              items={allInstruments.map((i) => ({ id: i, name: i }))}
+              selectedIds={selectedInstruments}
+              onChange={setSelectedInstruments}
+              searchPlaceholder="Search instruments..."
+              noItemsMessage="No instruments available."
+              onCreateNew={async (name) => {
+                setCustomInstruments((prev) => prev.includes(name) ? prev : [...prev, name]);
+                setSelectedInstruments((prev) => prev.includes(name) ? prev : [...prev, name]);
+              }}
+            />
+          )}
+
           {/* Placeholder tabs */}
-          {!["general", "challenges", "rules", "editorial", "regulation", "seo", "affiliate", "categories", "countries"].includes(activeTab) && (
+          {!["general", "challenges", "rules", "editorial", "regulation", "seo", "affiliate", "categories", "countries", "platforms", "instruments"].includes(activeTab) && (
             <PlaceholderTab tabLabel={tabs.find((t) => t.id === activeTab)?.label || activeTab} />
           )}
         </div>
