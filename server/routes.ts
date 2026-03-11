@@ -878,14 +878,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/categories", async (req, res) => {
     try {
       const { slug } = req.query;
+
+      // Serve from DB when populated
+      const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "article")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
+      if (dbCats.length > 0) {
+        let results = dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 0 }));
+        if (slug && typeof slug === "string") {
+          results = results.filter((c) => c.slug === slug);
+        }
+        res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+        return res.json(results);
+      }
+
+      // Fallback to WordPress
       let url = "https://admin.entrylab.io/wp-json/wp/v2/categories";
-      
       if (slug) {
         url += `?slug=${slug}`;
       }
-      
       const categories = await fetchWordPressWithCache(url); // Use 15 min default cache
-      
+
       // Set browser cache headers (5 min) to reduce repeat requests
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json(categories);
