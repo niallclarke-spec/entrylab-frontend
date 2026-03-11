@@ -109,6 +109,7 @@ export default function AdminFirmsList({ type }: AdminFirmsListProps) {
                 {firms.map((firm: any) => {
                   const slug = firm.slug;
                   const name = firm.name;
+                  const logo = firm.logoUrl || firm.logo;
                   const rating = typeof firm.rating === "number" ? firm.rating : parseFloat(firm.rating) || null;
                   const status = firm.is_featured || firm.isFeatured ? "featured" : "published";
                   const updated = firm.lastUpdated || firm.last_updated || firm.updatedAt;
@@ -120,8 +121,21 @@ export default function AdminFirmsList({ type }: AdminFirmsListProps) {
                       onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                     >
                       <td style={{ padding: "14px 16px" }}>
-                        <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{name}</span>
-                        <span style={{ display: "block", fontSize: 11, color: C.textDim, marginTop: 2 }}>{slug}</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                          <div style={{ width: 36, height: 36, borderRadius: 8, overflow: "hidden", background: "#fff", flexShrink: 0, border: `1px solid ${C.border}` }}>
+                            {logo && !logo.includes("placehold.co") ? (
+                              <img src={logo} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                            ) : (
+                              <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: C.surface, fontSize: 13, fontWeight: 700, color: C.textMuted }}>
+                                {name.charAt(0)}
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{name}</span>
+                            <span style={{ display: "block", fontSize: 11, color: C.textDim, marginTop: 2 }}>{slug}</span>
+                          </div>
+                        </div>
                       </td>
                       <td style={{ padding: "14px 16px" }}>
                         <TypeBadge type={type} />
