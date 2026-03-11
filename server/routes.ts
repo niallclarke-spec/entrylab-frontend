@@ -8,7 +8,7 @@ import { apiCache } from "./cache";
 import { sendReviewNotification, sendTelegramMessage, getTelegramBot } from "./telegram";
 import { generateStructuredData } from "./structured-data";
 import { getUncachableStripeClient } from "./stripeClient";
-import { eq, asc, ilike, desc, sql } from "drizzle-orm";
+import { eq, asc, ilike, desc, sql, and } from "drizzle-orm";
 import { getWelcomeEmailHtml, getCancellationEmailHtml, getFreeChannelEmailHtml } from "./emailTemplates";
 import { getUncachableResendClient } from "./resendClient";
 import { migrateBrokers, migratePropFirms } from "./migrate-wordpress";
@@ -86,6 +86,47 @@ function propFirmDbToApi(row: any) {
     lastUpdated: row.lastUpdated,
     seoTitle: row.seoTitle,
     seoDescription: row.seoDescription,
+  };
+}
+
+// Convert DB broker row to WP-compatible shape so transformBroker() works on it
+function brokerDbToWpFormat(row: any) {
+  return {
+    id: row.id,
+    slug: row.slug,
+    link: `/broker/${row.slug}`,
+    title: { rendered: row.name },
+    acf: {
+      broker_logo: { url: row.logoUrl || "" },
+      rating: row.rating?.toString() || "4.5",
+      broker_intro: row.tagline || "",
+      affiliate_link: row.affiliateLink || "",
+      broker_usp: (row.highlights || []).join(", "),
+      is_featured: row.isFeatured ? "1" : "0",
+    },
+    _embedded: {},
+  };
+}
+
+// Convert DB prop firm row to WP-compatible shape so transformPropFirm() works on it
+function propFirmDbToWpFormat(row: any) {
+  return {
+    id: row.id,
+    slug: row.slug,
+    link: `/prop-firm/${row.slug}`,
+    title: { rendered: row.name },
+    acf: {
+      prop_firm_logo: { url: row.logoUrl || "" },
+      rating: row.rating?.toString() || "4.5",
+      prop_firm_intro: row.tagline || "",
+      affiliate_link: row.affiliateLink || "",
+      prop_firm_usp: (row.highlights || []).join(", "),
+      is_featured: row.isFeatured ? "1" : "0",
+      profit_split: row.profitSplit || "",
+      max_funding_size: row.maxFundingSize || "",
+    },
+    _embedded: {},
+    _dbCategoryIds: [],
   };
 }
 
@@ -882,7 +923,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Serve from DB when populated
       const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "article")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
       if (dbCats.length > 0) {
-        let results = dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 0 }));
+        let results = dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 }));
         if (slug && typeof slug === "string") {
           results = results.filter((c) => c.slug === slug);
         }
@@ -957,8 +998,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('[CATEGORY-CONTENT] Final IDs - Posts:', categoryId, 'Brokers:', brokerCategoryId, 'PropFirms:', propFirmCategoryId);
 
+      // Also look up DB-assigned brokers/prop firms for this category slug
+      let dbBrokers: any[] = [];
+      let dbPropFirms: any[] = [];
+      if (typeof category === 'string') {
+        const [dbBrokerCat, dbPropFirmCat] = await Promise.all([
+          db.select().from(categoriesTable).where(and(eq(categoriesTable.slug, category), eq(categoriesTable.type, "broker"))),
+          db.select().from(categoriesTable).where(and(eq(categoriesTable.slug, category), eq(categoriesTable.type, "prop_firm"))),
+        ]);
+        const [dbBrokerRows, dbPropFirmRows] = await Promise.all([
+          dbBrokerCat.length > 0
+            ? db.select({ broker: brokersTable }).from(brokerCategoriesTable).innerJoin(brokersTable, eq(brokerCategoriesTable.brokerId, brokersTable.id)).where(eq(brokerCategoriesTable.categoryId, dbBrokerCat[0].id))
+            : Promise.resolve([]),
+          dbPropFirmCat.length > 0
+            ? db.select({ firm: propFirmsTable }).from(propFirmCategoriesTable).innerJoin(propFirmsTable, eq(propFirmCategoriesTable.propFirmId, propFirmsTable.id)).where(eq(propFirmCategoriesTable.categoryId, dbPropFirmCat[0].id))
+            : Promise.resolve([]),
+        ]);
+        dbBrokers = dbBrokerRows.map((r: any) => brokerDbToWpFormat(r.broker));
+        dbPropFirms = dbPropFirmRows.map((r: any) => propFirmDbToWpFormat(r.firm));
+      }
+
       // Fetch all content types in parallel
-      const [posts, brokers, propFirms] = await Promise.all([
+      const [posts, wpBrokers, wpPropFirms] = await Promise.all([
         // Posts with regular category
         categoryId 
           ? fetchWordPressWithCache(
@@ -981,12 +1042,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           : Promise.resolve([])
       ]);
 
+      // Merge DB-assigned items with WP items (dedup by slug, DB takes priority)
+      const wpBrokerSlugs = new Set((wpBrokers || []).map((b: any) => b.slug));
+      const wpPropFirmSlugs = new Set((wpPropFirms || []).map((p: any) => p.slug));
+      const mergedBrokers = [...(wpBrokers || []), ...dbBrokers.filter((b: any) => !wpBrokerSlugs.has(b.slug))];
+      const mergedPropFirms = [...(wpPropFirms || []), ...dbPropFirms.filter((p: any) => !wpPropFirmSlugs.has(p.slug))];
+
       // Set browser cache headers (5 min) to reduce repeat requests
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json({
         posts: posts || [],
-        brokers: brokers || [],
-        propFirms: propFirms || []
+        brokers: mergedBrokers,
+        propFirms: mergedPropFirms
       });
     } catch (error) {
       handleWordPressError(error, res, "fetch category content");
@@ -1029,7 +1096,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Serve from DB when populated
       const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "broker")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
       if (dbCats.length > 0) {
-        return res.json(dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 0 })));
+        return res.json(dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 })));
       }
       // Fallback to WordPress
       const categories = await fetchWordPressWithCache(
@@ -1049,7 +1116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Serve from DB when populated
       const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "prop_firm")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
       if (dbCats.length > 0) {
-        return res.json(dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 0 })));
+        return res.json(dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 })));
       }
       // Fallback to WordPress
       const categories = await fetchWordPressWithCache(
