@@ -84,6 +84,7 @@ export async function migrateBrokers(): Promise<{ count: number; errors: string[
       const pros = splitText(acf.pros || acf.broker_usp || acf.why_choose);
       const cons = splitText(acf.cons);
       const highlights = splitText(acf.broker_usp || acf.why_choose);
+      const platformsList = splitText(acf.trading_platforms);
 
       await db
         .insert(brokersTable)
@@ -92,13 +93,14 @@ export async function migrateBrokers(): Promise<{ count: number; errors: string[
           name: wp.title?.rendered || wp.slug,
           logoUrl,
           affiliateLink: acf.affiliate_link || null,
-          rating: acf.rating ? String(acf.rating) : null,
+          rating: acf.rating ? parseFloat(String(acf.rating)) : null,
           regulation: acf.regulation || null,
           minDeposit: acf.min_deposit || null,
           minWithdrawal: acf.minimum_withdrawal || null,
           maxLeverage: acf.max_leverage || null,
           spreadFrom: acf.spread_from || null,
           platforms: acf.trading_platforms || null,
+          platformsList,
           paymentMethods: acf.deposit_methods || null,
           headquarters: acf.headquarters || null,
           support: acf.support || null,
@@ -130,6 +132,7 @@ export async function migrateBrokers(): Promise<{ count: number; errors: string[
             maxLeverage: sql`excluded.max_leverage`,
             spreadFrom: sql`excluded.spread_from`,
             platforms: sql`excluded.platforms`,
+            platformsList: sql`excluded.platforms_arr`,
             paymentMethods: sql`excluded.payment_methods`,
             headquarters: sql`excluded.headquarters`,
             support: sql`excluded.support`,
@@ -188,7 +191,7 @@ export async function migratePropFirms(): Promise<{ count: number; errors: strin
           name: wp.title?.rendered || wp.slug,
           logoUrl,
           affiliateLink: acf.affiliate_link || null,
-          rating: acf.rating ? String(acf.rating) : null,
+          rating: acf.rating ? parseFloat(String(acf.rating)) : null,
           profitSplit: acf.profit_split || null,
           maxFundingSize: acf.max_funding || acf.max_account_size || null,
           evaluationFee: acf.evaluation_fee || null,

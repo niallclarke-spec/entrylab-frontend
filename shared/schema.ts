@@ -77,11 +77,13 @@ export const emailCaptures = pgTable("email_captures", {
   ipAddress: varchar("ip_address", { length: 50 }),
   userAgent: text("user_agent"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const insertEmailCaptureSchema = createInsertSchema(emailCaptures).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
 });
 
 export type InsertEmailCapture = z.infer<typeof insertEmailCaptureSchema>;
@@ -95,11 +97,13 @@ export const webhookEvents = pgTable("webhook_events", {
   processed: boolean("processed").default(false),
   errorMessage: text("error_message"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const insertWebhookEventSchema = createInsertSchema(webhookEvents).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
 });
 
 export type InsertWebhookEvent = z.infer<typeof insertWebhookEventSchema>;
@@ -129,7 +133,7 @@ export const brokersTable = pgTable("brokers_data", {
   name: text("name").notNull(),
   logoUrl: text("logo_url"),
   affiliateLink: text("affiliate_link"),
-  rating: text("rating"),
+  rating: numeric("rating", { precision: 5, scale: 2 }),
   regulation: text("regulation"),
   minDeposit: text("min_deposit"),
   minWithdrawal: text("min_withdrawal"),
@@ -174,7 +178,7 @@ export const propFirmsTable = pgTable("prop_firms_data", {
   name: text("name").notNull(),
   logoUrl: text("logo_url"),
   affiliateLink: text("affiliate_link"),
-  rating: text("rating"),
+  rating: numeric("rating", { precision: 5, scale: 2 }),
   profitSplit: text("profit_split"),
   maxFundingSize: text("max_funding_size"),
   evaluationFee: text("evaluation_fee"),

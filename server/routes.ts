@@ -25,6 +25,9 @@ const REVIEWS_CACHE_KEY = 'https://admin.entrylab.io/wp-json/wp/v2/review?status
 // ─── DB row → API shape helpers ──────────────────────────────────────────────
 
 function brokerDbToApi(row: any) {
+  // Prefer the curated platformsList array; fall back to raw platforms string
+  const platformsList: string[] = row.platformsList?.length ? row.platformsList : (row.platforms ? row.platforms.split(/[,\n]+/).map((s: string) => s.trim()).filter(Boolean) : []);
+  const platforms = platformsList.length ? platformsList.join(", ") : (row.platforms || "");
   return {
     id: row.id,
     slug: row.slug,
@@ -33,7 +36,7 @@ function brokerDbToApi(row: any) {
     logoUrl: row.logoUrl || null,
     verified: row.isVerified ?? true,
     featured: row.isFeatured ?? false,
-    rating: parseFloat(row.rating) || 4.5,
+    rating: parseFloat(String(row.rating ?? "0")) || 4.5,
     pros: row.pros || [],
     cons: row.cons || [],
     highlights: row.highlights || [],
@@ -49,7 +52,7 @@ function brokerDbToApi(row: any) {
     maxLeverage: row.maxLeverage,
     spreadFrom: row.spreadFrom,
     regulation: row.regulation,
-    platforms: row.platforms,
+    platforms,
     paymentMethods: row.paymentMethods,
     headquarters: row.headquarters,
     support: row.support,
@@ -59,8 +62,9 @@ function brokerDbToApi(row: any) {
     seoTitle: row.seoTitle,
     seoDescription: row.seoDescription,
     countries: row.countries || [],
-    platformsList: row.platformsList || [],
+    platformsList,
     instruments: row.instruments || [],
+    wpPostId: row.wpPostId,
   };
 }
 
@@ -73,7 +77,7 @@ function propFirmDbToApi(row: any) {
     logoUrl: row.logoUrl || null,
     verified: row.isVerified ?? true,
     featured: row.isFeatured ?? false,
-    rating: parseFloat(row.rating) || 4.5,
+    rating: parseFloat(String(row.rating ?? "0")) || 4.5,
     pros: row.pros || [],
     cons: row.cons || [],
     highlights: row.highlights || [],
