@@ -1,6 +1,9 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import https from "https";
+import path from "path";
+import fs from "fs";
+import multer from "multer";
 import { storage } from "./storage";
 import { db } from "./db";
 import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures, subscriptions, brokersTable, propFirmsTable, articlesTable, insertArticleSchema, pageViewsTable, categoriesTable, brokerCategoriesTable, propFirmCategoriesTable } from "../shared/schema";
@@ -3470,6 +3473,35 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
     const host = req.headers.host;
     return `${protocol}://${host}/api/admin/logo-proxy`;
   };
+
+  // ─── Logo upload endpoint ─────────────────────────────────────────────────
+
+  const logosDir = path.join(process.cwd(), "uploads", "logos");
+  if (!fs.existsSync(logosDir)) fs.mkdirSync(logosDir, { recursive: true });
+
+  const logoStorage = multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, logosDir),
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase() || ".png";
+      const safe = Date.now() + "-" + Math.round(Math.random() * 1e6) + ext;
+      cb(null, safe);
+    },
+  });
+
+  const logoUpload = multer({
+    storage: logoStorage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+    fileFilter: (_req, file, cb) => {
+      const allowed = ["image/png", "image/jpeg", "image/svg+xml", "image/webp", "image/gif"];
+      cb(null, allowed.includes(file.mimetype));
+    },
+  });
+
+  app.post("/api/admin/upload-logo", adminAuth, logoUpload.single("logo"), (req: any, res) => {
+    if (!req.file) return res.status(400).json({ error: "No file or unsupported type. Use PNG, JPG, SVG or WebP." });
+    const url = `/uploads/logos/${req.file.filename}`;
+    return res.json({ url });
+  });
 
   // Logo proxy to avoid CORS issues in preview
   app.get('/api/admin/logo-proxy', async (req, res) => {

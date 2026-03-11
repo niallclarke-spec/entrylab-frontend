@@ -1,4 +1,5 @@
 import "dotenv/config";
+import path from "path";
 import express, { type Request, Response, NextFunction } from "express";
 import compression from "compression";
 import cookieParser from "cookie-parser";
@@ -69,6 +70,9 @@ app.use(cookieParser());
 //     return compression.filter(req, res);
 //   }
 // }));
+
+// Serve uploaded logos as static files
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Security headers middleware
 app.use((req, res, next) => {

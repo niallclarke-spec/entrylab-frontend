@@ -18,6 +18,7 @@ function slugify(text: string) {
 
 const PROP_TABS = [
   { id: "general",    label: "General Info" },
+  { id: "logo",       label: "Logo" },
   { id: "challenges", label: "Challenge Plans" },
   { id: "rules",      label: "Trading Rules" },
   { id: "editorial",  label: "Editorial" },
@@ -33,6 +34,7 @@ const PROP_TABS = [
 
 const BROKER_TABS = [
   { id: "general",   label: "General Info" },
+  { id: "logo",      label: "Logo" },
   { id: "accounts",  label: "Broker Accounts" },
   { id: "rules",     label: "Trading Rules" },
   { id: "editorial", label: "Editorial" },
@@ -333,6 +335,10 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
   const tabs = isProp ? PROP_TABS : BROKER_TABS;
   const [activeTab, setActiveTab] = useState("general");
   const listPath = isProp ? "/admin/prop-firms" : "/admin/brokers";
+  const [logoUrl, setLogoUrl] = useState<string>("");
+  const [logoUrlInput, setLogoUrlInput] = useState<string>("");
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoUploadError, setLogoUploadError] = useState("");
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [customCountries, setCustomCountries] = useState<string[]>([]);
@@ -439,6 +445,10 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
         evaluationFee: existing.evaluationFee || existing.evaluation_fee || "",
       }));
       setSlugTouched(true);
+      if (existing.logoUrl) {
+        setLogoUrl(existing.logoUrl);
+        setLogoUrlInput(existing.logoUrl);
+      }
       const existingCountries: string[] = existing.countries || [];
       setSelectedCountries(existingCountries);
       const customC = existingCountries.filter((c: string) => !ALL_COUNTRIES.includes(c));
@@ -473,6 +483,7 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
         isVerified: form.isVerified,
         seoTitle: form.seoTitle,
         seoDescription: form.seoDescription,
+        logoUrl: logoUrl || undefined,
         countries: selectedCountries,
         platformsList: selectedPlatforms,
         instruments: selectedInstruments,
@@ -891,8 +902,118 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
             />
           )}
 
+          {/* LOGO */}
+          {activeTab === "logo" && (
+            <div style={{ maxWidth: 600 }}>
+              {/* Current logo preview */}
+              <div style={{ marginBottom: 28 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: C.textMuted, marginBottom: 12, letterSpacing: "0.5px", textTransform: "uppercase" }}>Current Logo</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+                  <div style={{ width: 120, height: 80, borderRadius: 10, border: `1px solid ${C.border}`, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
+                    {logoUrl ? (
+                      <img src={logoUrl} alt="Logo preview" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", padding: 8 }} onError={() => setLogoUrl("")} />
+                    ) : (
+                      <span style={{ color: C.textDim, fontSize: 11 }}>No logo set</span>
+                    )}
+                  </div>
+                  {logoUrl && (
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 11, color: C.textMuted, marginBottom: 4 }}>URL</div>
+                      <div style={{ fontSize: 11, color: C.textDim, wordBreak: "break-all", fontFamily: "monospace", background: C.surface, padding: "6px 10px", borderRadius: 6, border: `1px solid ${C.border}` }}>{logoUrl}</div>
+                      <button onClick={() => { setLogoUrl(""); setLogoUrlInput(""); }} style={{ marginTop: 8, fontSize: 11, color: "#e55", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                        Remove logo
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Upload new logo */}
+              <div style={{ marginBottom: 28 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: C.textMuted, marginBottom: 12, letterSpacing: "0.5px", textTransform: "uppercase" }}>Upload New Logo</div>
+                <label
+                  style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: "32px 24px", border: `2px dashed ${C.border}`, borderRadius: 10, cursor: "pointer", background: C.surface, transition: "border-color 0.15s" }}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={async (e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files[0];
+                    if (!file) return;
+                    setLogoUploading(true);
+                    setLogoUploadError("");
+                    const fd = new FormData();
+                    fd.append("logo", file);
+                    try {
+                      const r = await fetch("/api/admin/upload-logo", { method: "POST", credentials: "include", body: fd });
+                      const j = await r.json();
+                      if (j.url) { setLogoUrl(j.url); setLogoUrlInput(j.url); }
+                      else setLogoUploadError(j.error || "Upload failed");
+                    } catch { setLogoUploadError("Upload failed"); }
+                    setLogoUploading(false);
+                  }}
+                >
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                    style={{ display: "none" }}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setLogoUploading(true);
+                      setLogoUploadError("");
+                      const fd = new FormData();
+                      fd.append("logo", file);
+                      try {
+                        const r = await fetch("/api/admin/upload-logo", { method: "POST", credentials: "include", body: fd });
+                        const j = await r.json();
+                        if (j.url) { setLogoUrl(j.url); setLogoUrlInput(j.url); }
+                        else setLogoUploadError(j.error || "Upload failed");
+                      } catch { setLogoUploadError("Upload failed"); }
+                      setLogoUploading(false);
+                      e.target.value = "";
+                    }}
+                  />
+                  {logoUploading ? (
+                    <span style={{ fontSize: 13, color: C.accent }}>Uploading...</span>
+                  ) : (
+                    <>
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={C.textMuted} strokeWidth="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                      <span style={{ fontSize: 13, color: C.text }}>Click to upload or drag & drop</span>
+                      <span style={{ fontSize: 11, color: C.textDim }}>PNG, JPG, SVG or WebP · max 5 MB</span>
+                    </>
+                  )}
+                </label>
+                {logoUploadError && <div style={{ marginTop: 8, fontSize: 12, color: "#e55" }}>{logoUploadError}</div>}
+              </div>
+
+              {/* Manual URL input */}
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: C.textMuted, marginBottom: 12, letterSpacing: "0.5px", textTransform: "uppercase" }}>Or paste a URL</div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <input
+                    type="text"
+                    placeholder="https://example.com/logo.png"
+                    value={logoUrlInput}
+                    onChange={(e) => setLogoUrlInput(e.target.value)}
+                    style={{ flex: 1, padding: "10px 14px", borderRadius: 7, border: `1px solid ${C.border}`, background: C.bg, color: C.text, fontSize: 13, fontFamily: font, outline: "none", boxSizing: "border-box" }}
+                    onFocus={(e) => { e.target.style.borderColor = C.accent; }}
+                    onBlur={(e) => { e.target.style.borderColor = C.border; }}
+                  />
+                  <button
+                    onClick={() => { if (logoUrlInput.trim()) setLogoUrl(logoUrlInput.trim()); }}
+                    style={{ padding: "10px 18px", borderRadius: 7, background: C.accent, color: "#000", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", whiteSpace: "nowrap" }}
+                  >
+                    Apply URL
+                  </button>
+                </div>
+                <div style={{ marginTop: 8, fontSize: 11, color: C.textDim }}>
+                  You can paste a WordPress image URL or any external logo URL. The logo will be saved when you click Save.
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Placeholder tabs */}
-          {!["general", "challenges", "rules", "editorial", "regulation", "seo", "affiliate", "categories", "countries", "platforms", "instruments"].includes(activeTab) && (
+          {!["general", "challenges", "rules", "editorial", "regulation", "seo", "affiliate", "categories", "countries", "platforms", "instruments", "logo"].includes(activeTab) && (
             <PlaceholderTab tabLabel={tabs.find((t) => t.id === activeTab)?.label || activeTab} />
           )}
         </div>
