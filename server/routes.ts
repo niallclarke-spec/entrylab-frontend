@@ -54,6 +54,7 @@ function brokerDbToApi(row: any) {
     lastUpdated: row.lastUpdated,
     seoTitle: row.seoTitle,
     seoDescription: row.seoDescription,
+    countries: row.countries || [],
   };
 }
 
@@ -86,6 +87,7 @@ function propFirmDbToApi(row: any) {
     lastUpdated: row.lastUpdated,
     seoTitle: row.seoTitle,
     seoDescription: row.seoDescription,
+    countries: row.countries || [],
   };
 }
 

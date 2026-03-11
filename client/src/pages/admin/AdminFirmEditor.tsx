@@ -127,226 +127,184 @@ interface Category {
   type: string;
 }
 
-interface InlineCategorySelectorProps {
-  firmType: string;
-  selectedCategoryIds: string[];
-  setSelectedCategoryIds: Dispatch<SetStateAction<string[]>>;
-  availableCategories: Category[];
-  queryClient: ReturnType<typeof useQueryClient>;
-  categoryType: string;
+const ALL_COUNTRIES = [
+  "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria",
+  "Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan",
+  "Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia",
+  "Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo","Costa Rica",
+  "Croatia","Cuba","Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt",
+  "El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon",
+  "Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana",
+  "Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel",
+  "Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kuwait","Kyrgyzstan","Laos",
+  "Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi",
+  "Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova",
+  "Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands",
+  "New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan","Palau",
+  "Palestine","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania",
+  "Russia","Rwanda","Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe","Saudi Arabia","Senegal",
+  "Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea",
+  "South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan",
+  "Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu",
+  "Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela",
+  "Vietnam","Yemen","Zambia","Zimbabwe",
+];
+
+interface ChecklistSelectorProps {
+  items: { id: string; name: string }[];
+  selectedIds: string[];
+  onChange: (ids: string[]) => void;
+  onCreateNew?: (name: string) => Promise<void>;
+  searchPlaceholder?: string;
+  noItemsMessage?: string;
 }
 
-function InlineCategorySelector({
-  firmType,
-  selectedCategoryIds,
-  setSelectedCategoryIds,
-  availableCategories,
-  queryClient,
-  categoryType,
-}: InlineCategorySelectorProps) {
-  const [inputValue, setInputValue] = useState("");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+function ChecklistSelector({
+  items,
+  selectedIds,
+  onChange,
+  onCreateNew,
+  searchPlaceholder = "Search...",
+  noItemsMessage = "No items available yet.",
+}: ChecklistSelectorProps) {
+  const [search, setSearch] = useState("");
+  const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const selected = availableCategories.filter((c) => selectedCategoryIds.includes(c.id));
+  const filtered = search.trim()
+    ? items.filter((i) => i.name.toLowerCase().includes(search.toLowerCase()))
+    : items;
 
-  const filtered = inputValue.trim()
-    ? availableCategories.filter(
-        (c) =>
-          !selectedCategoryIds.includes(c.id) &&
-          c.name.toLowerCase().includes(inputValue.toLowerCase())
-      )
-    : availableCategories.filter((c) => !selectedCategoryIds.includes(c.id));
-
-  const exactMatch = availableCategories.find(
-    (c) => c.name.toLowerCase() === inputValue.trim().toLowerCase()
-  );
-  const showCreate = inputValue.trim().length > 0 && !exactMatch;
-
-  const removeCategory = (id: string) =>
-    setSelectedCategoryIds((prev) => prev.filter((x) => x !== id));
-
-  const selectCategory = (cat: Category) => {
-    setSelectedCategoryIds((prev) => [...prev, cat.id]);
-    setInputValue("");
-    inputRef.current?.focus();
+  const toggle = (id: string) => {
+    onChange(selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id]);
   };
 
-  const createAndSelect = async () => {
-    if (!inputValue.trim() || creating) return;
+  const handleCreate = async () => {
+    if (!newName.trim() || creating || !onCreateNew) return;
     setCreating(true);
     try {
-      const name = inputValue.trim();
-      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-      const res = await fetch("/api/admin/categories", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, slug, type: firmType }),
-      });
-      if (!res.ok) throw new Error("Failed");
-      const newCat: Category = await res.json();
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/categories", categoryType] });
-      setSelectedCategoryIds((prev) => [...prev, newCat.id]);
-      setInputValue("");
-      inputRef.current?.focus();
-    } catch {
-      // silently ignore
+      await onCreateNew(newName.trim());
+      setNewName("");
     } finally {
       setCreating(false);
     }
   };
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node) &&
-        inputRef.current &&
-        !inputRef.current.contains(e.target as Node)
-      ) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const inputStyle: CSSProperties = {
-    background: "transparent",
-    border: "none",
-    outline: "none",
-    color: C.text,
-    fontSize: 13,
-    minWidth: 180,
-    flex: 1,
-    padding: "4px 0",
-    fontFamily: font,
-  };
-
-  const pillStyle = (accent?: boolean): CSSProperties => ({
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 6,
-    padding: "3px 10px 3px 12px",
-    borderRadius: 20,
-    background: accent ? C.accentDim : "rgba(255,255,255,0.06)",
-    border: `1px solid ${accent ? C.accent : C.border}`,
-    color: accent ? C.accent : C.text,
-    fontSize: 12,
-    fontWeight: 500,
-    whiteSpace: "nowrap" as const,
-  });
-
-  const dropItemStyle = (hover?: boolean): CSSProperties => ({
-    padding: "8px 14px",
-    cursor: "pointer",
-    fontSize: 13,
-    color: hover ? C.accent : C.text,
-    background: hover ? C.accentDim : "transparent",
-    transition: "background 0.1s",
-  });
-
   return (
     <div>
-      <p style={{ color: C.textMuted, fontSize: 13, margin: "0 0 16px" }}>
-        Type to search existing categories or create a new one. Categories appear as filter options on public listing pages.
-      </p>
-
-      {/* Tag input area */}
-      <div
+      {/* Search filter */}
+      <input
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder={searchPlaceholder}
+        data-testid="input-checklist-search"
         style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 8,
-          padding: "8px 12px",
-          border: `1px solid ${dropdownOpen ? C.accent : C.border}`,
-          borderRadius: 8,
-          background: C.surface,
-          cursor: "text",
-          minHeight: 44,
-          alignItems: "center",
-          transition: "border-color 0.15s",
-          position: "relative",
+          width: "100%", boxSizing: "border-box",
+          padding: "9px 14px", marginBottom: 16,
+          background: "rgba(255,255,255,0.04)",
+          border: `1px solid ${C.border}`, borderRadius: 8,
+          color: C.text, fontSize: 13, outline: "none", fontFamily: font,
         }}
-        onClick={() => { inputRef.current?.focus(); setDropdownOpen(true); }}
-      >
-        {selected.map((cat) => (
-          <span key={cat.id} style={pillStyle(true)} data-testid={`tag-category-${cat.slug}`}>
-            {cat.name}
-            <button
-              onClick={(e) => { e.stopPropagation(); removeCategory(cat.id); }}
-              style={{ background: "none", border: "none", color: C.accent, cursor: "pointer", padding: 0, lineHeight: 1, fontSize: 14, display: "flex", alignItems: "center" }}
-              data-testid={`remove-category-${cat.slug}`}
-              title="Remove"
-            >
-              ×
-            </button>
-          </span>
-        ))}
-        <input
-          ref={inputRef}
-          value={inputValue}
-          onChange={(e) => { setInputValue(e.target.value); setDropdownOpen(true); }}
-          onFocus={() => setDropdownOpen(true)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") { e.preventDefault(); if (showCreate) createAndSelect(); else if (filtered[0]) selectCategory(filtered[0]); }
-            if (e.key === "Escape") setDropdownOpen(false);
-            if (e.key === "Backspace" && !inputValue && selected.length > 0) removeCategory(selected[selected.length - 1].id);
-          }}
-          placeholder={selected.length === 0 ? "Search or create a category..." : "Add another..."}
-          style={inputStyle}
-          data-testid="input-category-search"
-          autoComplete="off"
-        />
-      </div>
+        onFocus={(e) => { e.currentTarget.style.borderColor = C.accent; }}
+        onBlur={(e) => { e.currentTarget.style.borderColor = C.border; }}
+      />
 
-      {/* Dropdown */}
-      {dropdownOpen && (filtered.length > 0 || showCreate) && (
-        <div
-          ref={dropdownRef}
-          style={{
-            marginTop: 4,
-            border: `1px solid ${C.border}`,
-            borderRadius: 8,
-            background: C.surface,
-            overflow: "hidden",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
-            zIndex: 50,
-          }}
-        >
-          {filtered.slice(0, 8).map((cat) => (
-            <div
-              key={cat.id}
-              onMouseDown={(e) => { e.preventDefault(); selectCategory(cat); }}
-              style={dropItemStyle()}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = C.accentDim; (e.currentTarget as HTMLElement).style.color = C.accent; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = C.text; }}
-              data-testid={`option-category-${cat.slug}`}
-            >
-              {cat.name}
-            </div>
-          ))}
-          {showCreate && (
-            <div
-              onMouseDown={(e) => { e.preventDefault(); createAndSelect(); }}
-              style={{ ...dropItemStyle(), borderTop: filtered.length > 0 ? `1px solid ${C.border}` : "none", color: C.accent, fontWeight: 500 }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = C.accentDim; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
-              data-testid="button-create-category"
-            >
-              {creating ? "Creating..." : `+ Create "${inputValue.trim()}"`}
-            </div>
-          )}
+      {/* Checkbox grid */}
+      {filtered.length === 0 ? (
+        <div style={{ color: C.textDim, fontSize: 13, textAlign: "center", padding: "24px 0" }}>
+          {search.trim() ? `No results for "${search}"` : noItemsMessage}
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(185px, 1fr))", gap: 8, marginBottom: 20 }}>
+          {filtered.map((item) => {
+            const checked = selectedIds.includes(item.id);
+            return (
+              <div
+                key={item.id}
+                onClick={() => toggle(item.id)}
+                data-testid={`checkbox-item-${item.id}`}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  padding: "9px 12px", borderRadius: 7, cursor: "pointer",
+                  border: `1px solid ${checked ? C.accent : C.border}`,
+                  background: checked ? C.accentDim : "rgba(255,255,255,0.02)",
+                  transition: "all 0.12s",
+                  userSelect: "none",
+                }}
+              >
+                <div style={{
+                  width: 15, height: 15, borderRadius: 4, flexShrink: 0,
+                  border: `1.5px solid ${checked ? C.accent : C.borderLight}`,
+                  background: checked ? C.accent : "transparent",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "all 0.12s",
+                }}>
+                  {checked && (
+                    <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+                      <path d="M1 3L3.5 5.5L8 1" stroke={C.bg} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                </div>
+                <span style={{ fontSize: 12.5, color: checked ? C.accent : C.text, fontWeight: checked ? 500 : 400, lineHeight: 1.3 }}>
+                  {item.name}
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {selected.length === 0 && (
-        <p style={{ color: C.textDim, fontSize: 12, marginTop: 10 }}>
-          No categories assigned yet.
-        </p>
+      {/* Selected count summary */}
+      {selectedIds.length > 0 && (
+        <div style={{ fontSize: 12, color: C.accent, marginBottom: onCreateNew ? 16 : 0 }}>
+          {selectedIds.length} selected
+          {" · "}
+          <span
+            onClick={() => onChange([])}
+            style={{ cursor: "pointer", textDecoration: "underline", color: C.textMuted }}
+          >
+            Clear all
+          </span>
+        </div>
+      )}
+
+      {/* Create new */}
+      {onCreateNew && (
+        <div style={{
+          marginTop: 8, paddingTop: 16,
+          borderTop: `1px solid ${C.border}`,
+          display: "flex", gap: 8, alignItems: "center",
+        }}>
+          <input
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCreate(); } }}
+            placeholder="Create new..."
+            data-testid="input-create-new"
+            style={{
+              flex: 1, padding: "8px 12px",
+              background: "rgba(255,255,255,0.04)",
+              border: `1px solid ${C.border}`, borderRadius: 7,
+              color: C.text, fontSize: 13, outline: "none", fontFamily: font,
+            }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = C.accent; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = C.border; }}
+          />
+          <button
+            onClick={handleCreate}
+            disabled={!newName.trim() || creating}
+            data-testid="button-create-new"
+            style={{
+              padding: "8px 16px", borderRadius: 7, border: "none",
+              background: newName.trim() ? C.accent : C.border,
+              color: newName.trim() ? C.bg : C.textDim,
+              fontSize: 13, fontWeight: 600, cursor: newName.trim() ? "pointer" : "default",
+              fontFamily: font, transition: "all 0.12s",
+            }}
+          >
+            {creating ? "Creating..." : "Create"}
+          </button>
+        </div>
       )}
     </div>
   );
@@ -363,6 +321,8 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
   const [activeTab, setActiveTab] = useState("general");
   const listPath = isProp ? "/admin/prop-firms" : "/admin/brokers";
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+  const [customCountries, setCustomCountries] = useState<string[]>([]);
 
   const [form, setForm] = useState({
     name: "", slug: "", website: "", foundedYear: "", hqCity: "", hqCountry: "",
@@ -447,6 +407,10 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
         evaluationFee: existing.evaluationFee || existing.evaluation_fee || "",
       }));
       setSlugTouched(true);
+      const existingCountries: string[] = existing.countries || [];
+      setSelectedCountries(existingCountries);
+      const custom = existingCountries.filter((c: string) => !ALL_COUNTRIES.includes(c));
+      if (custom.length > 0) setCustomCountries(custom);
     }
   }, [existing, firmLoading]);
 
@@ -469,6 +433,7 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
         isVerified: form.isVerified,
         seoTitle: form.seoTitle,
         seoDescription: form.seoDescription,
+        countries: selectedCountries,
         ...(isProp ? {
           profitSplit: form.profitSplit,
           maxFundingSize: form.maxFundingSize,
@@ -814,18 +779,48 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
 
           {/* CATEGORIES */}
           {activeTab === "categories" && (
-            <InlineCategorySelector
-              firmType={isProp ? "prop_firm" : "broker"}
-              selectedCategoryIds={selectedCategoryIds}
-              setSelectedCategoryIds={setSelectedCategoryIds}
-              availableCategories={availableCategories}
-              queryClient={queryClient}
-              categoryType={categoryType}
+            <ChecklistSelector
+              items={availableCategories.map((c) => ({ id: c.id, name: c.name }))}
+              selectedIds={selectedCategoryIds}
+              onChange={setSelectedCategoryIds}
+              searchPlaceholder="Search categories..."
+              noItemsMessage="No categories created yet."
+              onCreateNew={async (name) => {
+                const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+                const res = await fetch("/api/admin/categories", {
+                  method: "POST",
+                  credentials: "include",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ name, slug, type: categoryType }),
+                });
+                if (!res.ok) return;
+                const newCat: Category = await res.json();
+                queryClient.invalidateQueries({ queryKey: ["/api/admin/categories", categoryType] });
+                setSelectedCategoryIds((prev) => [...prev, newCat.id]);
+              }}
+            />
+          )}
+
+          {/* COUNTRIES */}
+          {activeTab === "countries" && (
+            <ChecklistSelector
+              items={[
+                ...ALL_COUNTRIES.map((c) => ({ id: c, name: c })),
+                ...customCountries.filter((c) => !ALL_COUNTRIES.includes(c)).map((c) => ({ id: c, name: c })),
+              ]}
+              selectedIds={selectedCountries}
+              onChange={setSelectedCountries}
+              searchPlaceholder="Search countries..."
+              noItemsMessage="No countries available."
+              onCreateNew={async (name) => {
+                setCustomCountries((prev) => prev.includes(name) ? prev : [...prev, name]);
+                setSelectedCountries((prev) => prev.includes(name) ? prev : [...prev, name]);
+              }}
             />
           )}
 
           {/* Placeholder tabs */}
-          {!["general", "challenges", "rules", "editorial", "regulation", "seo", "affiliate", "categories"].includes(activeTab) && (
+          {!["general", "challenges", "rules", "editorial", "regulation", "seo", "affiliate", "categories", "countries"].includes(activeTab) && (
             <PlaceholderTab tabLabel={tabs.find((t) => t.id === activeTab)?.label || activeTab} />
           )}
         </div>
