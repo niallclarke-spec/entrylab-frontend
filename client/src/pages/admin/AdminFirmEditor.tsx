@@ -910,11 +910,13 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
               <div style={{ marginBottom: 28 }}>
                 <div style={{ fontSize: 11, fontWeight: 600, color: C.textMuted, marginBottom: 12, letterSpacing: "0.5px", textTransform: "uppercase" }}>Current Logo</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-                  <div style={{ width: 120, height: 80, borderRadius: 10, border: `1px solid ${C.border}`, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
+                  <div style={{ width: 120, height: 80, borderRadius: 12, border: `1px solid ${C.border}`, background: "#fff", overflow: "hidden", flexShrink: 0 }}>
                     {logoUrl ? (
-                      <img src={logoUrl} alt="Logo preview" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", padding: 8 }} onError={() => setLogoUrl("")} />
+                      <img src={logoUrl} alt="Logo preview" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onError={() => setLogoUrl("")} />
                     ) : (
-                      <span style={{ color: C.textDim, fontSize: 11 }}>No logo set</span>
+                      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ color: C.textDim, fontSize: 11 }}>No logo set</span>
+                      </div>
                     )}
                   </div>
                   {logoUrl && (
