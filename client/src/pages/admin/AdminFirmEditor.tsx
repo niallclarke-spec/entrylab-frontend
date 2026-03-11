@@ -354,7 +354,8 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
     promoCode: "", discountAmount: "", content: "", pros: ["", ""], cons: ["", ""],
     affiliateLink: "", seoTitle: "", seoDescription: "", tagline: "",
     profitSplit: "", maxFundingSize: "", evaluationFee: "",
-    minDeposit: "", maxLeverage: "", spreadFrom: "", regulation: "", platforms: "", paymentMethods: "",
+    support: "", headquarters: "", paymentMethods: "", payoutMethods: "",
+    minDeposit: "", maxLeverage: "", spreadFrom: "", regulation: "", platforms: "",
   });
   const [slugTouched, setSlugTouched] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -439,10 +440,13 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
         spreadFrom: existing.spreadFrom || "",
         regulation: existing.regulation || "",
         platforms: existing.platforms || "",
-        paymentMethods: existing.paymentMethods || "",
         profitSplit: existing.profitSplit || existing.profit_split || "",
         maxFundingSize: existing.maxFundingSize || existing.max_funding_size || "",
         evaluationFee: existing.evaluationFee || existing.evaluation_fee || "",
+        support: existing.support || "",
+        headquarters: existing.headquarters || "",
+        paymentMethods: existing.paymentMethods || "",
+        payoutMethods: existing.payoutMethods || "",
       }));
       setSlugTouched(true);
       const existingLogo = existing.logoUrl || existing.logo || "";
@@ -492,6 +496,10 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
           profitSplit: form.profitSplit,
           maxFundingSize: form.maxFundingSize,
           evaluationFee: form.evaluationFee,
+          support: form.support,
+          headquarters: form.headquarters,
+          paymentMethods: form.paymentMethods,
+          payoutMethods: form.payoutMethods,
         } : {
           minDeposit: form.minDeposit,
           maxLeverage: form.maxLeverage,
@@ -623,6 +631,18 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
                   </FormGroup>
                   <FormGroup label="EVALUATION FEE (from)">
                     <DInput placeholder="e.g. $99" value={form.evaluationFee} onChange={(v) => setFormField("evaluationFee", v)} />
+                  </FormGroup>
+                  <FormGroup label="HEADQUARTERS">
+                    <DInput placeholder="e.g. Dubai, UAE" value={form.headquarters} onChange={(v) => setFormField("headquarters", v)} />
+                  </FormGroup>
+                  <FormGroup label="SUPPORT HOURS">
+                    <DInput placeholder="e.g. 24/7 Live Chat" value={form.support} onChange={(v) => setFormField("support", v)} />
+                  </FormGroup>
+                  <FormGroup label="PAYMENT METHODS">
+                    <DInput placeholder="e.g. Card, Bank, Crypto" value={form.paymentMethods} onChange={(v) => setFormField("paymentMethods", v)} />
+                  </FormGroup>
+                  <FormGroup label="PAYOUT METHODS">
+                    <DInput placeholder="e.g. Bank Transfer, PayPal" value={form.payoutMethods} onChange={(v) => setFormField("payoutMethods", v)} />
                   </FormGroup>
                 </>
               )}

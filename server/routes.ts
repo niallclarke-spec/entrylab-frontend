@@ -6,7 +6,7 @@ import fs from "fs";
 import multer from "multer";
 import { storage } from "./storage";
 import { db } from "./db";
-import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures, subscriptions, brokersTable, propFirmsTable, articlesTable, insertArticleSchema, pageViewsTable, categoriesTable, brokerCategoriesTable, propFirmCategoriesTable } from "../shared/schema";
+import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures, subscriptions, brokersTable, propFirmsTable, articlesTable, insertArticleSchema, pageViewsTable, categoriesTable, brokerCategoriesTable, propFirmCategoriesTable, reviewsTable, insertReviewSchema } from "../shared/schema";
 import { apiCache } from "./cache";
 import { sendReviewNotification, sendTelegramMessage, getTelegramBot } from "./telegram";
 import { generateStructuredData } from "./structured-data";
@@ -90,6 +90,10 @@ function propFirmDbToApi(row: any) {
     evaluationFee: row.evaluationFee,
     discountCode: row.discountCode,
     propFirmUsp: row.propFirmUsp,
+    support: row.support,
+    headquarters: row.headquarters,
+    paymentMethods: row.paymentMethods,
+    payoutMethods: row.payoutMethods,
     totalUsers: row.popularity,
     lastUpdated: row.lastUpdated,
     seoTitle: row.seoTitle,
@@ -531,52 +535,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ─── Admin reviews (fetched from WordPress) ──────────────────────────────
+  // ─── Admin reviews (DB-backed) ───────────────────────────────────────────
 
   app.get("/api/admin/reviews", adminAuth, async (req, res) => {
     try {
-      const { type } = req.query as Record<string, string>;
-      const wpUser = process.env.WORDPRESS_USERNAME;
-      const wpPass = process.env.WORDPRESS_PASSWORD;
-      const authHeader = wpUser && wpPass
-        ? { Authorization: "Basic " + Buffer.from(`${wpUser}:${wpPass}`).toString("base64") }
-        : {};
-
-      // Fetch published + pending + draft separately to avoid "Invalid parameter(s): status"
-      // when the custom post type doesn't register status as a filterable param
-      const fetchWithAuth = async (url: string) => {
-        const r = await fetch(url, { headers: authHeader as Record<string, string> });
-        if (!r.ok) return [];
-        const data = await r.json();
-        return Array.isArray(data) ? data : [];
-      };
-
-      const [published, pending] = await Promise.all([
-        fetchWithAuth("https://admin.entrylab.io/wp-json/wp/v2/review?per_page=100&acf_format=standard&status=publish"),
-        fetchWithAuth("https://admin.entrylab.io/wp-json/wp/v2/review?per_page=100&acf_format=standard&status=pending"),
-      ]);
-      const reviews = [...published, ...pending];
-
-      const shaped = reviews.map((r: any) => {
-        const acf = r.acf || {};
-        const reviewedItem = acf.reviewed_item;
-        const firmName = Array.isArray(reviewedItem)
-          ? reviewedItem[0]?.post_title
-          : reviewedItem?.post_title || "Unknown";
-        return {
-          id: r.id,
-          firm: firmName,
-          firmType: acf.item_type || "prop_firm",
-          author: acf.reviewer_name || "Anonymous",
-          rating: parseFloat(acf.rating) || 0,
-          status: r.status === "publish" ? "approved" : r.status === "trash" ? "flagged" : r.status || "pending",
-          date: r.date ? new Date(r.date).toLocaleDateString() : "—",
-          excerpt: (acf.review_text || "").substring(0, 180),
-          title: r.title?.rendered || "",
-        };
+      const { type, status: statusFilter } = req.query as Record<string, string>;
+      let query = db.select().from(reviewsTable).orderBy(desc(reviewsTable.createdAt));
+      const rows = await query;
+      const filtered = rows.filter((r) => {
+        if (type && r.firmType !== type) return false;
+        if (statusFilter && r.status !== statusFilter) return false;
+        return true;
       });
-      const filtered = type ? shaped.filter((r: any) => r.firmType === type) : shaped;
-      return res.json(filtered);
+      return res.json(filtered.map((r) => ({
+        id: r.id,
+        firm: r.firmName || r.firmSlug,
+        firmType: r.firmType,
+        firmSlug: r.firmSlug,
+        author: r.reviewerName,
+        rating: parseFloat(String(r.rating)) || 0,
+        status: r.status,
+        date: r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "—",
+        excerpt: (r.reviewText || "").substring(0, 180),
+        title: r.title || "",
+        email: r.reviewerEmail,
+        wpPostId: r.wpPostId,
+        createdAt: r.createdAt,
+      })));
     } catch (err: any) {
       console.error("[Admin] Error fetching reviews:", err);
       return res.status(500).json({ error: "Failed to fetch reviews" });
@@ -584,6 +569,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.put("/api/admin/reviews/:id", adminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      if (!["approved", "pending", "rejected"].includes(status)) {
+        return res.status(400).json({ error: "Invalid status" });
+      }
+      await db.update(reviewsTable)
+        .set({ status, updatedAt: new Date() })
+        .where(eq(reviewsTable.id, id));
+      const [updated] = await db.select().from(reviewsTable).where(eq(reviewsTable.id, id));
+      // Invalidate public reviews cache
+      apiCache.delete(REVIEWS_CACHE_KEY);
+      return res.json({ ok: true, review: updated });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.delete("/api/admin/reviews/:id", adminAuth, async (req, res) => {
+    try {
+      await db.delete(reviewsTable).where(eq(reviewsTable.id, req.params.id));
+      apiCache.delete(REVIEWS_CACHE_KEY);
+      return res.json({ ok: true });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Migrate existing WordPress reviews into DB (run once)
+  app.post("/api/admin/migrate-reviews", adminAuth, async (req, res) => {
+    try {
+      const wpUser = process.env.WORDPRESS_USERNAME;
+      const wpPass = process.env.WORDPRESS_PASSWORD;
+      const authHeader = wpUser && wpPass
+        ? { Authorization: "Basic " + Buffer.from(`${wpUser}:${wpPass}`).toString("base64") }
+        : {};
+      const fetchWithAuth = async (url: string) => {
+        const r = await fetch(url, { headers: authHeader as Record<string, string> });
+        if (!r.ok) return [];
+        return await r.json();
+      };
+      const [published, pending] = await Promise.all([
+        fetchWithAuth("https://admin.entrylab.io/wp-json/wp/v2/review?per_page=100&acf_format=standard&status=publish"),
+        fetchWithAuth("https://admin.entrylab.io/wp-json/wp/v2/review?per_page=100&acf_format=standard&status=pending"),
+      ]);
+      let imported = 0, skipped = 0;
+      for (const r of [...(Array.isArray(published) ? published : []), ...(Array.isArray(pending) ? pending : [])]) {
+        const acf = r.acf || {};
+        const existing = await db.select().from(reviewsTable).where(eq(reviewsTable.wpPostId, r.id));
+        if (existing.length > 0) { skipped++; continue; }
+        const reviewedItem = acf.reviewed_item;
+        const firmName = Array.isArray(reviewedItem) ? reviewedItem[0]?.post_title : reviewedItem?.post_title || "Unknown";
+        const firmSlug = Array.isArray(reviewedItem) ? reviewedItem[0]?.post_name : reviewedItem?.post_name || "unknown";
+        await db.insert(reviewsTable).values({
+          firmType: acf.item_type || "broker",
+          firmSlug,
+          firmName,
+          reviewerName: acf.reviewer_name || "Anonymous",
+          reviewerEmail: acf.reviewer_email || null,
+          rating: acf.rating ? String(acf.rating) : null,
+          title: r.title?.rendered || acf.review_title || null,
+          reviewText: acf.review_text || null,
+          newsletterOptin: !!acf.newsletter_optin,
+          status: r.status === "publish" ? "approved" : "pending",
+          wpPostId: r.id,
+        });
+        imported++;
+      }
+      return res.json({ ok: true, imported, skipped });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── Temporary compatibility: old WP-based review status update ───────────
+  // (kept for Telegram callback legacy support during transition)
+  app.put("/api/admin/reviews-wp/:id", adminAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const { status } = req.body;
@@ -914,6 +976,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       return res.json({ ok: true, inserted });
     } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ─── Migrate all WordPress posts → articles table ────────────────────────
+  app.post("/api/admin/migrate-articles", adminAuth, async (req, res) => {
+    try {
+      const wpPosts = await fetchAllWPPages(
+        "https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&acf_format=standard&per_page=100"
+      );
+      let imported = 0, updated = 0, skipped = 0;
+      for (const post of wpPosts) {
+        if (!post.slug || !post.title?.rendered) { skipped++; continue; }
+        const full = mapWpPostToFull(post);
+        const catSlug = post._embedded?.['wp:term']?.[0]?.[0]?.slug ?? null;
+        const acf = post.acf || {};
+        const relatedBroker = acf.related_broker
+          ? (Array.isArray(acf.related_broker) ? acf.related_broker[0]?.post_name : acf.related_broker?.post_name ?? null)
+          : null;
+        const values = {
+          title: full.title,
+          slug: full.slug,
+          excerpt: full.excerpt || null,
+          content: full.content || null,
+          category: catSlug,
+          status: full.status,
+          featuredImage: full.featuredImage || null,
+          seoTitle: full.seoTitle || null,
+          seoDescription: full.seoDescription || null,
+          author: "EntryLab",
+          relatedBroker,
+          wpPostId: post.id,
+          publishedAt: post.date ? new Date(post.date) : null,
+          updatedAt: new Date(),
+        };
+        const existing = await db.select({ id: articlesTable.id })
+          .from(articlesTable)
+          .where(eq(articlesTable.wpPostId, post.id));
+        if (existing.length > 0) {
+          await db.update(articlesTable).set(values).where(eq(articlesTable.wpPostId, post.id));
+          updated++;
+        } else {
+          await db.insert(articlesTable).values(values).onConflictDoUpdate({
+            target: articlesTable.slug,
+            set: { ...values },
+          });
+          imported++;
+        }
+      }
+      return res.json({ ok: true, imported, updated, skipped, total: wpPosts.length });
+    } catch (err: any) {
+      console.error("[Migrate] Articles error:", err);
       return res.status(500).json({ error: err.message });
     }
   });
@@ -1627,7 +1741,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/reviews/submit", async (req, res) => {
     try {
       const { rating, title, reviewText, name, email, newsletterOptin, brokerId, brokerName, itemType, recaptchaToken } = req.body;
-      
+
       // Verify reCAPTCHA
       const isValidCaptcha = await verifyRecaptcha(recaptchaToken);
       if (!isValidCaptcha) {
@@ -1638,75 +1752,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!rating || !title || !reviewText || !name || !email || !brokerId || !itemType) {
         return res.status(400).json({ error: "Missing required fields" });
       }
-
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return res.status(400).json({ error: "Invalid email address" });
       }
 
-      // Submit review to WordPress
-      const reviewData = {
-        title,
-        status: 'pending', // Reviews start as pending for moderation
-        acf: {
-          rating,
-          review_title: title,
-          review_text: reviewText,
-          reviewer_name: name,
-          reviewer_email: email,
-          reviewed_item: brokerId,
-          newsletter_optin: newsletterOptin
-        }
-      };
-
-      console.log('[Review Submit] Sending to WordPress:', JSON.stringify(reviewData, null, 2));
-
-      const result = await fetchWordPress(
-        "https://admin.entrylab.io/wp-json/wp/v2/review",
-        {
-          method: 'POST',
-          body: reviewData
-        }
-      );
-
-      console.log('[Review Submit] WordPress response:', JSON.stringify(result, null, 2));
-
-      // Send Telegram notification
+      // Resolve firm name from DB if not provided
+      let resolvedFirmName = brokerName || brokerId;
       try {
-        const acf = result.acf || {};
-        const reviewedItem = acf.reviewed_item ? (Array.isArray(acf.reviewed_item) ? acf.reviewed_item[0] : acf.reviewed_item) : null;
-        const brokerNameForTelegram = reviewedItem?.post_title || brokerName || 'Unknown';
-        
-        await sendReviewNotification({
-          postId: result.id,
-          brokerName: brokerNameForTelegram,
-          rating: parseFloat(acf.rating || rating || '0'),
-          author: acf.reviewer_name || name || 'Anonymous',
-          excerpt: (acf.review_text || reviewText || '').substring(0, 200),
-          reviewLink: `https://admin.entrylab.io/wp-admin/post.php?post=${result.id}&action=edit`
-        });
-        console.log('[Telegram] Review notification sent for post', result.id);
-      } catch (telegramError) {
-        console.error('[Telegram] Failed to send notification:', telegramError);
-        // Don't fail the review submission if Telegram fails
-      }
-
-      // If user opted into newsletter, subscribe them
-      if (newsletterOptin && email) {
-        try {
-          await fetchWordPress(
-            "https://admin.entrylab.io/wp-json/entrylab/v1/newsletter/subscribe",
-            {
-              method: 'POST',
-              body: { email, source: brokerName ? `${brokerName} Review` : 'Review Page' }
-            }
-          );
-        } catch (newsletterError) {
-          console.error("Newsletter subscription failed:", newsletterError);
-          // Don't fail the review submission if newsletter fails
+        if (itemType === "broker") {
+          const [b] = await db.select({ name: brokersTable.name }).from(brokersTable).where(eq(brokersTable.slug, brokerId));
+          if (b) resolvedFirmName = b.name;
+        } else {
+          const [pf] = await db.select({ name: propFirmsTable.name }).from(propFirmsTable).where(eq(propFirmsTable.slug, brokerId));
+          if (pf) resolvedFirmName = pf.name;
         }
+      } catch (_) {}
+
+      // Write review to DB
+      const [savedReview] = await db.insert(reviewsTable).values({
+        firmType: itemType === "broker" ? "broker" : "prop_firm",
+        firmSlug: brokerId,
+        firmName: resolvedFirmName,
+        reviewerName: name,
+        reviewerEmail: email,
+        rating: String(rating),
+        title,
+        reviewText,
+        newsletterOptin: !!newsletterOptin,
+        status: "pending",
+      }).returning();
+
+      // Send Telegram notification (non-blocking)
+      sendReviewNotification({
+        postId: savedReview.id,
+        brokerName: resolvedFirmName,
+        rating: parseFloat(String(rating) || '0'),
+        author: name || 'Anonymous',
+        excerpt: (reviewText || '').substring(0, 200),
+        reviewLink: `https://entrylab.io/admin/reviews`,
+      }).catch((e: any) => console.error('[Telegram] Review notification failed:', e));
+
+      // Newsletter opt-in (non-blocking)
+      if (newsletterOptin && email) {
+        fetchWordPress("https://admin.entrylab.io/wp-json/entrylab/v1/newsletter/subscribe", {
+          method: 'POST',
+          body: { email, source: resolvedFirmName ? `${resolvedFirmName} Review` : 'Review Page' }
+        }).catch((e: any) => console.error('Newsletter subscription failed:', e));
       }
 
-      res.json({ success: true, review: result });
+      res.json({ success: true, review: { id: savedReview.id } });
     } catch (error) {
       console.error("Error submitting review:", error);
       res.status(500).json({ error: "Failed to submit review" });
@@ -1716,32 +1810,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/reviews/:itemId", async (req, res) => {
     try {
       const { itemId } = req.params;
-      
-      // Query WordPress for reviews where the ACF relationship field 'reviewed_item' matches the broker/prop firm ID
-      const reviews = await fetchWordPressWithCache(
-        REVIEWS_CACHE_KEY
-        // Use 15 min default cache
-      );
-      
-      // Filter reviews by the reviewed_item ACF field on the backend
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+
+      // Try to resolve the firm slug from the WP post ID in the DB
+      let firmSlug: string | null = null;
+      const wpId = parseInt(itemId, 10);
+      if (!isNaN(wpId)) {
+        const brokerMatch = await db.select({ slug: brokersTable.slug })
+          .from(brokersTable).where(eq(brokersTable.wpPostId, wpId));
+        if (brokerMatch.length > 0) {
+          firmSlug = brokerMatch[0].slug;
+        } else {
+          const propMatch = await db.select({ slug: propFirmsTable.slug })
+            .from(propFirmsTable).where(eq(propFirmsTable.wpPostId, wpId));
+          if (propMatch.length > 0) firmSlug = propMatch[0].slug;
+        }
+      }
+
+      // Serve approved reviews from DB if we found a slug match
+      if (firmSlug) {
+        const dbReviews = await db.select().from(reviewsTable)
+          .where(and(eq(reviewsTable.firmSlug, firmSlug), eq(reviewsTable.status, "approved")))
+          .orderBy(desc(reviewsTable.createdAt));
+        if (dbReviews.length > 0) {
+          return res.json(dbReviews.map((r) => ({
+            id: r.id,
+            acf: {
+              rating: r.rating,
+              review_title: r.title,
+              review_text: r.reviewText,
+              reviewer_name: r.reviewerName,
+            },
+            date: r.createdAt,
+            status: "publish",
+          })));
+        }
+      }
+
+      // Fallback: serve from WordPress cache (transition period)
+      const reviews = await fetchWordPressWithCache(REVIEWS_CACHE_KEY);
       const filteredReviews = reviews.filter((review: any) => {
         const reviewedItem = review.acf?.reviewed_item;
-        
-        // Handle both single item and array formats
         if (Array.isArray(reviewedItem)) {
           return reviewedItem.some((item: any) => item.ID?.toString() === itemId || item?.toString() === itemId);
         }
         return reviewedItem?.ID?.toString() === itemId || reviewedItem?.toString() === itemId;
       });
-      
-      // Set browser cache headers (5 min) to reduce repeat requests
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json(filteredReviews);
     } catch (error) {
       console.error("Error fetching reviews:", error);
-      // Set browser cache headers even for error responses
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      res.json([]); // Return empty array on error
+      res.json([]);
     }
   });
 

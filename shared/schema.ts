@@ -122,7 +122,7 @@ export const insertBrokerAlertSchema = createInsertSchema(brokerAlerts).omit({
 export type InsertBrokerAlert = z.infer<typeof insertBrokerAlertSchema>;
 export type BrokerAlert = typeof brokerAlerts.$inferSelect;
 
-// ─── Broker reviews DB table ───────────────────────────────────────────────
+// ─── Brokers DB table ───────────────────────────────────────────────────────
 export const brokersTable = pgTable("brokers_data", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   slug: text("slug").notNull().unique(),
@@ -167,7 +167,7 @@ export const insertBrokerDataSchema = createInsertSchema(brokersTable).omit({
 export type InsertBrokerData = z.infer<typeof insertBrokerDataSchema>;
 export type BrokerData = typeof brokersTable.$inferSelect;
 
-// ─── Prop firm reviews DB table ────────────────────────────────────────────
+// ─── Prop firms DB table ─────────────────────────────────────────────────────
 export const propFirmsTable = pgTable("prop_firms_data", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   slug: text("slug").notNull().unique(),
@@ -195,6 +195,10 @@ export const propFirmsTable = pgTable("prop_firms_data", {
   countries: text("countries").array(),
   platformsList: text("platforms_arr").array(),
   instruments: text("instruments").array(),
+  support: text("support"),
+  headquarters: text("headquarters"),
+  paymentMethods: text("payment_methods"),
+  payoutMethods: text("payout_methods"),
   wpPostId: integer("wp_post_id"),
   lastUpdated: timestamp("last_updated"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -221,6 +225,8 @@ export const articlesTable = pgTable("articles", {
   seoTitle: text("seo_title"),
   seoDescription: text("seo_description"),
   author: text("author").default("EntryLab"),
+  relatedBroker: text("related_broker"),   // broker slug this article is about
+  wpPostId: integer("wp_post_id"),         // WP post ID for provenance tracking
   publishedAt: timestamp("published_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -234,6 +240,36 @@ export const insertArticleSchema = createInsertSchema(articlesTable).omit({
 
 export type InsertArticle = z.infer<typeof insertArticleSchema>;
 export type Article = typeof articlesTable.$inferSelect;
+
+// ─── Reviews DB table ────────────────────────────────────────────────────────
+// Single table for both broker and prop firm reviews.
+// firmType distinguishes which kind of firm was reviewed.
+export const reviewsTable = pgTable("reviews", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  firmType: text("firm_type").notNull(),       // "broker" | "prop_firm"
+  firmSlug: text("firm_slug").notNull(),        // slug of the reviewed firm
+  firmName: text("firm_name"),                  // display name for quick reads
+  reviewerName: text("reviewer_name").notNull(),
+  reviewerEmail: text("reviewer_email"),
+  rating: numeric("rating"),                    // overall rating 1–10
+  title: text("title"),
+  reviewText: text("review_text"),
+  newsletterOptin: boolean("newsletter_optin").default(false),
+  status: text("status").default("pending").notNull(), // pending | approved | rejected
+  wpPostId: integer("wp_post_id"),             // set when imported from WordPress
+  telegramMessageId: text("telegram_message_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertReviewSchema = createInsertSchema(reviewsTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertReview = z.infer<typeof insertReviewSchema>;
+export type Review = typeof reviewsTable.$inferSelect;
 
 // ─── Page views tracking table ──────────────────────────────────────────────
 export const pageViewsTable = pgTable("page_views", {

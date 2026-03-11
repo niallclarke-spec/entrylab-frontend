@@ -24,6 +24,25 @@ export default function AdminArticles() {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<string | null>(null);
+
+  const handleSyncFromWP = async () => {
+    if (!window.confirm("Sync all WordPress posts into the database? Existing posts will be updated by WP post ID.")) return;
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const r = await fetch("/api/admin/migrate-articles", { method: "POST", credentials: "include" });
+      const data = await r.json();
+      if (data.error) throw new Error(data.error);
+      setSyncResult(`Done: ${data.imported} new, ${data.updated} updated, ${data.skipped} skipped (${data.total} total).`);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/articles"] });
+    } catch (e: any) {
+      setSyncResult(`Sync failed: ${e.message}`);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const { data: session, isLoading: sessionLoading } = useQuery({
     queryKey: ["/api/admin/me"],
@@ -62,14 +81,14 @@ export default function AdminArticles() {
     <AdminLayout>
       <div style={{ fontFamily: font }}>
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, gap: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16, gap: 16, flexWrap: "wrap" }}>
           <div style={{ flex: "0 0 auto" }}>
             <h2 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: 0, fontFamily: font }}>Blog Posts</h2>
             <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>
               SEO articles, guides, broker comparisons, and editorial content
             </p>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, flex: "1 1 auto", maxWidth: 440 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <input
               type="text"
               placeholder="Search articles..."
@@ -77,17 +96,35 @@ export default function AdminArticles() {
               onChange={(e) => setSearch(e.target.value)}
               data-testid="input-article-search"
               style={{
-                flex: 1, padding: "9px 14px", borderRadius: 7, border: `1px solid ${C.border}`,
-                background: C.bg, color: C.text, fontSize: 13, fontFamily: font, outline: "none",
+                padding: "9px 14px", borderRadius: 7, border: `1px solid ${C.border}`,
+                background: C.bg, color: C.text, fontSize: 13, fontFamily: font, outline: "none", width: 220,
               }}
               onFocus={(e) => { e.target.style.borderColor = C.accent; }}
               onBlur={(e) => { e.target.style.borderColor = C.border; }}
             />
+            <ActionBtn
+              label={syncing ? "Syncing..." : "Sync from WordPress"}
+              onClick={handleSyncFromWP}
+              disabled={syncing}
+              small
+            />
             <Link href="/admin/posts/new">
-              <ActionBtn label="+ New Post" primary />
+              <ActionBtn label="+ New Post" primary small />
             </Link>
           </div>
         </div>
+
+        {syncResult && (
+          <div style={{
+            marginBottom: 16, padding: "10px 14px", borderRadius: 8,
+            background: syncResult.startsWith("Sync failed") ? "rgba(239,68,68,0.08)" : "rgba(8,242,149,0.08)",
+            border: `1px solid ${syncResult.startsWith("Sync failed") ? "rgba(239,68,68,0.25)" : "rgba(8,242,149,0.2)"}`,
+            fontSize: 13,
+            color: syncResult.startsWith("Sync failed") ? C.danger : C.accent,
+          }}>
+            {syncResult}
+          </div>
+        )}
 
         {/* Table */}
         <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
