@@ -1242,13 +1242,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       // Fetch category assignments to populate categoryIds (matching /api/wordpress/prop-firm-categories response)
       const catRows = await db
-        .select({ propFirmId: propFirmCategoriesTable.propFirmId, catPublicId: sql<number>`COALESCE(${categoriesTable.wpId}, ${categoriesTable.id})` })
+        .select({ propFirmId: propFirmCategoriesTable.propFirmId, wpId: categoriesTable.wpId, dbId: categoriesTable.id })
         .from(propFirmCategoriesTable)
         .innerJoin(categoriesTable, eq(propFirmCategoriesTable.categoryId, categoriesTable.id));
-      const catMap = new Map<number, number[]>();
+      const catMap = new Map<number, (number | string)[]>();
       for (const r of catRows) {
+        const publicId = r.wpId ?? r.dbId;
         if (!catMap.has(r.propFirmId)) catMap.set(r.propFirmId, []);
-        catMap.get(r.propFirmId)!.push(r.catPublicId);
+        catMap.get(r.propFirmId)!.push(publicId);
       }
       res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
       res.json(rows.map(row => ({ ...propFirmDbToApi(row), categoryIds: catMap.get(row.id) || [] })));

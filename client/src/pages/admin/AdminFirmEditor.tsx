@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, type CSSProperties, type Dispatch, type SetStateAction, type ReactNode } from "react";
 import { useLocation, useParams } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -46,7 +46,7 @@ const BROKER_TABS = [
   { id: "seo",       label: "SEO" },
 ];
 
-function FormGroup({ label, hint, children, span }: { label: string; hint?: string; children: React.ReactNode; span?: number }) {
+function FormGroup({ label, hint, children, span }: { label: string; hint?: string; children: ReactNode; span?: number }) {
   return (
     <div style={{ gridColumn: span ? `span ${span}` : undefined }}>
       <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.textMuted, marginBottom: 6, letterSpacing: "0.3px" }}>{label}</label>
@@ -127,6 +127,231 @@ interface Category {
   type: string;
 }
 
+interface InlineCategorySelectorProps {
+  firmType: string;
+  selectedCategoryIds: string[];
+  setSelectedCategoryIds: Dispatch<SetStateAction<string[]>>;
+  availableCategories: Category[];
+  queryClient: ReturnType<typeof useQueryClient>;
+  categoryType: string;
+}
+
+function InlineCategorySelector({
+  firmType,
+  selectedCategoryIds,
+  setSelectedCategoryIds,
+  availableCategories,
+  queryClient,
+  categoryType,
+}: InlineCategorySelectorProps) {
+  const [inputValue, setInputValue] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const selected = availableCategories.filter((c) => selectedCategoryIds.includes(c.id));
+
+  const filtered = inputValue.trim()
+    ? availableCategories.filter(
+        (c) =>
+          !selectedCategoryIds.includes(c.id) &&
+          c.name.toLowerCase().includes(inputValue.toLowerCase())
+      )
+    : availableCategories.filter((c) => !selectedCategoryIds.includes(c.id));
+
+  const exactMatch = availableCategories.find(
+    (c) => c.name.toLowerCase() === inputValue.trim().toLowerCase()
+  );
+  const showCreate = inputValue.trim().length > 0 && !exactMatch;
+
+  const removeCategory = (id: string) =>
+    setSelectedCategoryIds((prev) => prev.filter((x) => x !== id));
+
+  const selectCategory = (cat: Category) => {
+    setSelectedCategoryIds((prev) => [...prev, cat.id]);
+    setInputValue("");
+    inputRef.current?.focus();
+  };
+
+  const createAndSelect = async () => {
+    if (!inputValue.trim() || creating) return;
+    setCreating(true);
+    try {
+      const name = inputValue.trim();
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      const res = await fetch("/api/admin/categories", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, slug, type: firmType }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      const newCat: Category = await res.json();
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/categories", categoryType] });
+      setSelectedCategoryIds((prev) => [...prev, newCat.id]);
+      setInputValue("");
+      inputRef.current?.focus();
+    } catch {
+      // silently ignore
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(e.target as Node)
+      ) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const inputStyle: CSSProperties = {
+    background: "transparent",
+    border: "none",
+    outline: "none",
+    color: C.text,
+    fontSize: 13,
+    minWidth: 180,
+    flex: 1,
+    padding: "4px 0",
+    fontFamily: font,
+  };
+
+  const pillStyle = (accent?: boolean): CSSProperties => ({
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+    padding: "3px 10px 3px 12px",
+    borderRadius: 20,
+    background: accent ? C.accentDim : "rgba(255,255,255,0.06)",
+    border: `1px solid ${accent ? C.accent : C.border}`,
+    color: accent ? C.accent : C.text,
+    fontSize: 12,
+    fontWeight: 500,
+    whiteSpace: "nowrap" as const,
+  });
+
+  const dropItemStyle = (hover?: boolean): CSSProperties => ({
+    padding: "8px 14px",
+    cursor: "pointer",
+    fontSize: 13,
+    color: hover ? C.accent : C.text,
+    background: hover ? C.accentDim : "transparent",
+    transition: "background 0.1s",
+  });
+
+  return (
+    <div>
+      <p style={{ color: C.textMuted, fontSize: 13, margin: "0 0 16px" }}>
+        Type to search existing categories or create a new one. Categories appear as filter options on public listing pages.
+      </p>
+
+      {/* Tag input area */}
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 8,
+          padding: "8px 12px",
+          border: `1px solid ${dropdownOpen ? C.accent : C.border}`,
+          borderRadius: 8,
+          background: C.surface,
+          cursor: "text",
+          minHeight: 44,
+          alignItems: "center",
+          transition: "border-color 0.15s",
+          position: "relative",
+        }}
+        onClick={() => { inputRef.current?.focus(); setDropdownOpen(true); }}
+      >
+        {selected.map((cat) => (
+          <span key={cat.id} style={pillStyle(true)} data-testid={`tag-category-${cat.slug}`}>
+            {cat.name}
+            <button
+              onClick={(e) => { e.stopPropagation(); removeCategory(cat.id); }}
+              style={{ background: "none", border: "none", color: C.accent, cursor: "pointer", padding: 0, lineHeight: 1, fontSize: 14, display: "flex", alignItems: "center" }}
+              data-testid={`remove-category-${cat.slug}`}
+              title="Remove"
+            >
+              ×
+            </button>
+          </span>
+        ))}
+        <input
+          ref={inputRef}
+          value={inputValue}
+          onChange={(e) => { setInputValue(e.target.value); setDropdownOpen(true); }}
+          onFocus={() => setDropdownOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") { e.preventDefault(); if (showCreate) createAndSelect(); else if (filtered[0]) selectCategory(filtered[0]); }
+            if (e.key === "Escape") setDropdownOpen(false);
+            if (e.key === "Backspace" && !inputValue && selected.length > 0) removeCategory(selected[selected.length - 1].id);
+          }}
+          placeholder={selected.length === 0 ? "Search or create a category..." : "Add another..."}
+          style={inputStyle}
+          data-testid="input-category-search"
+          autoComplete="off"
+        />
+      </div>
+
+      {/* Dropdown */}
+      {dropdownOpen && (filtered.length > 0 || showCreate) && (
+        <div
+          ref={dropdownRef}
+          style={{
+            marginTop: 4,
+            border: `1px solid ${C.border}`,
+            borderRadius: 8,
+            background: C.surface,
+            overflow: "hidden",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+            zIndex: 50,
+          }}
+        >
+          {filtered.slice(0, 8).map((cat) => (
+            <div
+              key={cat.id}
+              onMouseDown={(e) => { e.preventDefault(); selectCategory(cat); }}
+              style={dropItemStyle()}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = C.accentDim; (e.currentTarget as HTMLElement).style.color = C.accent; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = C.text; }}
+              data-testid={`option-category-${cat.slug}`}
+            >
+              {cat.name}
+            </div>
+          ))}
+          {showCreate && (
+            <div
+              onMouseDown={(e) => { e.preventDefault(); createAndSelect(); }}
+              style={{ ...dropItemStyle(), borderTop: filtered.length > 0 ? `1px solid ${C.border}` : "none", color: C.accent, fontWeight: 500 }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = C.accentDim; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+              data-testid="button-create-category"
+            >
+              {creating ? "Creating..." : `+ Create "${inputValue.trim()}"`}
+            </div>
+          )}
+        </div>
+      )}
+
+      {selected.length === 0 && (
+        <p style={{ color: C.textDim, fontSize: 12, marginTop: 10 }}>
+          No categories assigned yet.
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
   const params = useParams<{ slug?: string }>();
   const slug = params.slug;
@@ -175,17 +400,17 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
   });
 
   const catAssignPath = isProp ? `/api/admin/prop-firms/${slug}/categories` : `/api/admin/brokers/${slug}/categories`;
-  const { data: existingCategoryAssignments = [] } = useQuery<Category[]>({
+  const { data: existingCategoryAssignments, isFetched: catAssignmentFetched } = useQuery<Category[]>({
     queryKey: [catAssignPath],
     queryFn: () => fetch(catAssignPath, { credentials: "include" }).then((r) => r.json()),
     enabled: !isNew && !!session,
   });
 
   useEffect(() => {
-    if (!isNew) {
-      setSelectedCategoryIds(existingCategoryAssignments.map((c) => c.id));
+    if (!isNew && catAssignmentFetched) {
+      setSelectedCategoryIds((existingCategoryAssignments || []).map((c) => c.id));
     }
-  }, [existingCategoryAssignments, isNew]);
+  }, [catAssignmentFetched, isNew]);
 
   const saveCategoriesMutation = useMutation({
     mutationFn: (firmSlug: string) => {
@@ -589,52 +814,14 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
 
           {/* CATEGORIES */}
           {activeTab === "categories" && (
-            <div>
-              <p style={{ color: C.textMuted, fontSize: 13, margin: "0 0 20px" }}>
-                Assign this {isProp ? "prop firm" : "broker"} to one or more categories. Categories appear as filter options on the public listing pages.
-              </p>
-              {availableCategories.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "32px 24px", color: C.textDim, fontSize: 13 }}>
-                  No {isProp ? "prop firm" : "broker"} categories yet.{" "}
-                  <a href="/admin/categories" style={{ color: C.accent, textDecoration: "none" }}>Create some in Categories</a> first.
-                </div>
-              ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
-                  {availableCategories.map((cat) => {
-                    const checked = selectedCategoryIds.includes(cat.id);
-                    return (
-                      <div
-                        key={cat.id}
-                        onClick={() => setSelectedCategoryIds((prev) =>
-                          checked ? prev.filter((id) => id !== cat.id) : [...prev, cat.id]
-                        )}
-                        style={{
-                          display: "flex", alignItems: "center", gap: 10,
-                          padding: "10px 14px", borderRadius: 8, cursor: "pointer",
-                          border: `1px solid ${checked ? C.accent : C.border}`,
-                          background: checked ? C.accentDim : C.bg,
-                          transition: "all 0.15s",
-                        }}
-                        data-testid={`checkbox-category-${cat.slug}`}
-                      >
-                        <div style={{
-                          width: 16, height: 16, borderRadius: 4,
-                          border: `1.5px solid ${checked ? C.accent : C.borderLight}`,
-                          background: checked ? C.accent : "transparent",
-                          flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
-                          transition: "all 0.15s",
-                        }}>
-                          {checked && <span style={{ color: C.bg, fontSize: 11, fontWeight: 700, lineHeight: 1 }}>✓</span>}
-                        </div>
-                        <span style={{ fontSize: 13, color: checked ? C.accent : C.text, fontWeight: checked ? 600 : 400 }}>
-                          {cat.name}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            <InlineCategorySelector
+              firmType={isProp ? "prop_firm" : "broker"}
+              selectedCategoryIds={selectedCategoryIds}
+              setSelectedCategoryIds={setSelectedCategoryIds}
+              availableCategories={availableCategories}
+              queryClient={queryClient}
+              categoryType={categoryType}
+            />
           )}
 
           {/* Placeholder tabs */}
