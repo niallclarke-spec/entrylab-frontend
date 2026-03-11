@@ -349,6 +349,48 @@ function slugify(text: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function decodeHtmlEntities(str: string): string {
+  if (!str) return '';
+  return str
+    // Numeric decimal entities first (covers &#038; &#8211; etc.)
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
+    // Numeric hex entities
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCharCode(parseInt(code, 16)))
+    // Named entities
+    .replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;/g, "'")
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&apos;/g, "'").replace(/&ndash;/g, '–').replace(/&mdash;/g, '—');
+}
+
+function mapWpPostToRow(post: any) {
+  const cat = post._embedded?.['wp:term']?.[0]?.[0]?.name ?? null;
+  return {
+    id: String(post.id),
+    title: decodeHtmlEntities(post.title?.rendered ?? ''),
+    slug: post.slug ?? '',
+    category: cat,
+    status: post.status === 'publish' ? 'published' : (post.status ?? 'draft'),
+    author: 'EntryLab',
+    publishedAt: post.date ?? null,
+    createdAt: post.date ?? new Date().toISOString(),
+    updatedAt: post.modified ?? post.date ?? new Date().toISOString(),
+  };
+}
+
+function mapWpPostToFull(post: any) {
+  const row = mapWpPostToRow(post);
+  const excerptHtml = post.excerpt?.rendered ?? '';
+  const excerpt = excerptHtml.replace(/<[^>]*>/g, '').trim();
+  return {
+    ...row,
+    content: post.content?.rendered ?? '',
+    excerpt,
+    featuredImage: post._embedded?.['wp:featuredmedia']?.[0]?.source_url ?? '',
+    seoTitle: post.yoast_head_json?.title ?? row.title,
+    seoDescription: post.yoast_head_json?.description ?? '',
+  };
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
 
   // ─── Admin auth endpoints ──────────────────────────────────────────────────
@@ -512,7 +554,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/admin/articles", adminAuth, async (req, res) => {
     try {
-      const articles = await db
+      const dbArticles = await db
         .select({
           id: articlesTable.id,
           title: articlesTable.title,
@@ -526,7 +568,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .from(articlesTable)
         .orderBy(desc(articlesTable.createdAt));
-      return res.json(articles);
+
+      if (dbArticles.length > 0) return res.json(dbArticles);
+
+      // Fallback: pull from WordPress when DB has no articles yet
+      const wpPosts = await fetchAllWPPages(
+        'https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&acf_format=standard'
+      );
+      return res.json(wpPosts.map(mapWpPostToRow));
     } catch (err) {
       console.error("[Admin] Error fetching articles:", err);
       return res.status(500).json({ error: "Failed to fetch articles" });
@@ -539,8 +588,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .select()
         .from(articlesTable)
         .where(eq(articlesTable.id, req.params.id));
-      if (!article) return res.status(404).json({ error: "Not found" });
-      return res.json(article);
+      if (article) return res.json(article);
+
+      // Fallback: load from WordPress by numeric post ID
+      const wpId = parseInt(req.params.id, 10);
+      if (isNaN(wpId)) return res.status(404).json({ error: "Not found" });
+
+      const wpPost = await fetchWordPressWithCache(
+        `https://admin.entrylab.io/wp-json/wp/v2/posts/${wpId}?_embed&acf_format=standard`,
+        { cacheTTL: 300 }
+      );
+      if (!wpPost || wpPost.code === 'rest_post_invalid_id') {
+        return res.status(404).json({ error: "Not found" });
+      }
+      return res.json(mapWpPostToFull(wpPost));
     } catch (err) {
       return res.status(500).json({ error: "Failed to fetch article" });
     }

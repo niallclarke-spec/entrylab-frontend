@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -17,9 +17,13 @@ interface ArticleRow {
   createdAt: string;
 }
 
+// WP-sourced articles have numeric-only IDs; DB articles have UUID format (with dashes)
+function isWpArticle(id: string) { return /^\d+$/.test(id); }
+
 export default function AdminArticles() {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
+  const [search, setSearch] = useState("");
 
   const { data: session, isLoading: sessionLoading } = useQuery({
     queryKey: ["/api/admin/me"],
@@ -30,10 +34,14 @@ export default function AdminArticles() {
     if (!sessionLoading && !session) navigate("/admin/login");
   }, [session, sessionLoading, navigate]);
 
-  const { data: articles, isLoading } = useQuery<ArticleRow[]>({
+  const { data: articlesRaw, isLoading } = useQuery<ArticleRow[]>({
     queryKey: ["/api/admin/articles"],
     enabled: !!session,
   });
+
+  const articles = (Array.isArray(articlesRaw) ? articlesRaw : []).filter((a) =>
+    !search.trim() || a.title.toLowerCase().includes(search.toLowerCase())
+  );
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiRequest("DELETE", `/api/admin/articles/${id}`),
@@ -54,16 +62,31 @@ export default function AdminArticles() {
     <AdminLayout>
       <div style={{ fontFamily: font }}>
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-          <div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, gap: 16 }}>
+          <div style={{ flex: "0 0 auto" }}>
             <h2 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: 0, fontFamily: font }}>Pages & Guides</h2>
             <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>
               SEO content pages, ranked lists, and editorial articles
             </p>
           </div>
-          <Link href="/admin/pages/new">
-            <ActionBtn label="+ New Page" primary />
-          </Link>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flex: "1 1 auto", maxWidth: 440 }}>
+            <input
+              type="text"
+              placeholder="Search articles..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              data-testid="input-article-search"
+              style={{
+                flex: 1, padding: "9px 14px", borderRadius: 7, border: `1px solid ${C.border}`,
+                background: C.bg, color: C.text, fontSize: 13, fontFamily: font, outline: "none",
+              }}
+              onFocus={(e) => { e.target.style.borderColor = C.accent; }}
+              onBlur={(e) => { e.target.style.borderColor = C.border; }}
+            />
+            <Link href="/admin/pages/new">
+              <ActionBtn label="+ New Page" primary />
+            </Link>
+          </div>
         </div>
 
         {/* Table */}
@@ -124,13 +147,15 @@ export default function AdminArticles() {
                         <Link href={`/admin/pages/${article.id}/edit`}>
                           <ActionBtn label="Edit" small />
                         </Link>
-                        <ActionBtn
-                          label="Delete"
-                          small
-                          danger
-                          onClick={() => handleDelete(article.id, article.title)}
-                          disabled={deleteMutation.isPending}
-                        />
+                        {!isWpArticle(article.id) && (
+                          <ActionBtn
+                            label="Delete"
+                            small
+                            danger
+                            onClick={() => handleDelete(article.id, article.title)}
+                            disabled={deleteMutation.isPending}
+                          />
+                        )}
                       </div>
                     </td>
                   </tr>
