@@ -36,7 +36,7 @@ const sections: NavSection[] = [
     label: "EDITORIAL",
     items: [
       { id: "comparisons",  label: "Comparisons",   icon: ArrowLeftRight, href: "/admin/comparisons" },
-      { id: "pages",        label: "Pages & Guides", icon: FileText,       href: "/admin/pages" },
+      { id: "pages",        label: "Pages",          icon: FileText,       href: "/admin/pages" },
       { id: "posts",        label: "Blog Posts",     icon: PenLine,        href: "/admin/posts" },
     ],
   },

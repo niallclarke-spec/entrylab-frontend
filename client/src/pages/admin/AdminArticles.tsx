@@ -64,9 +64,9 @@ export default function AdminArticles() {
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, gap: 16 }}>
           <div style={{ flex: "0 0 auto" }}>
-            <h2 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: 0, fontFamily: font }}>Pages & Guides</h2>
+            <h2 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: 0, fontFamily: font }}>Blog Posts</h2>
             <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>
-              SEO content pages, ranked lists, and editorial articles
+              SEO articles, guides, broker comparisons, and editorial content
             </p>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, flex: "1 1 auto", maxWidth: 440 }}>
@@ -83,8 +83,8 @@ export default function AdminArticles() {
               onFocus={(e) => { e.target.style.borderColor = C.accent; }}
               onBlur={(e) => { e.target.style.borderColor = C.border; }}
             />
-            <Link href="/admin/pages/new">
-              <ActionBtn label="+ New Page" primary />
+            <Link href="/admin/posts/new">
+              <ActionBtn label="+ New Post" primary />
             </Link>
           </div>
         </div>
@@ -95,9 +95,9 @@ export default function AdminArticles() {
             <div style={{ padding: 40, textAlign: "center", color: C.textMuted, fontSize: 13 }}>Loading...</div>
           ) : !articles || articles.length === 0 ? (
             <div style={{ padding: 60, textAlign: "center" }}>
-              <p style={{ fontSize: 14, color: C.textMuted, marginBottom: 16 }}>No pages yet. Create your first one.</p>
-              <Link href="/admin/pages/new">
-                <ActionBtn label="+ New Page" primary />
+              <p style={{ fontSize: 14, color: C.textMuted, marginBottom: 16 }}>No posts yet. Create your first one.</p>
+              <Link href="/admin/posts/new">
+                <ActionBtn label="+ New Post" primary />
               </Link>
             </div>
           ) : (
@@ -144,7 +144,7 @@ export default function AdminArticles() {
                     </td>
                     <td style={{ padding: "14px 16px" }}>
                       <div style={{ display: "flex", gap: 8 }}>
-                        <Link href={`/admin/pages/${article.id}/edit`}>
+                        <Link href={`/admin/posts/${article.id}/edit`}>
                           <ActionBtn label="Edit" small />
                         </Link>
                         {!isWpArticle(article.id) && (

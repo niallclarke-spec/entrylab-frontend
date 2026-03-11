@@ -38,6 +38,7 @@ const AdminFirmsList = lazy(() => import("@/pages/admin/AdminFirmsList"));
 const AdminFirmEditor = lazy(() => import("@/pages/admin/AdminFirmEditor"));
 const AdminReviews = lazy(() => import("@/pages/admin/AdminReviews"));
 const AdminArticles = lazy(() => import("@/pages/admin/AdminArticles"));
+const AdminWpPages = lazy(() => import("@/pages/admin/AdminWpPages"));
 const AdminArticleEditor = lazy(() => import("@/pages/admin/AdminArticleEditor"));
 const AdminPlaceholder = lazy(() => import("@/pages/admin/AdminPlaceholder"));
 const AdminCategories = lazy(() => import("@/pages/admin/AdminCategories"));
@@ -108,9 +109,7 @@ function Router() {
       </Route>
 
       {/* Pages & Posts (articles) */}
-      <Route path="/admin/pages/new"><S><AdminArticleEditor /></S></Route>
-      <Route path="/admin/pages/:id/edit"><S><AdminArticleEditor /></S></Route>
-      <Route path="/admin/pages"><S><AdminArticles /></S></Route>
+      <Route path="/admin/pages"><S><AdminWpPages /></S></Route>
       <Route path="/admin/posts/new"><S><AdminArticleEditor /></S></Route>
       <Route path="/admin/posts/:id/edit"><S><AdminArticleEditor /></S></Route>
       <Route path="/admin/posts"><S><AdminArticles /></S></Route>

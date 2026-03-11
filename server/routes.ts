@@ -634,6 +634,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ─── WordPress static pages (not blog posts) ──────────────────────────────
+  app.get("/api/admin/wp-pages", adminAuth, async (req, res) => {
+    try {
+      const pages = await fetchWordPressWithCache(
+        "https://admin.entrylab.io/wp-json/wp/v2/pages?per_page=100&status=publish&_fields=id,slug,title,status,date,modified,link"
+      );
+      const rows = (Array.isArray(pages) ? pages : []).map((p: any) => ({
+        id: String(p.id),
+        title: p.title?.rendered || p.slug,
+        slug: p.slug,
+        status: p.status === "publish" ? "published" : p.status,
+        link: p.link,
+        date: p.date,
+        modified: p.modified,
+      }));
+      return res.json(rows);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
   app.get("/api/admin/articles/:id", adminAuth, async (req, res) => {
     try {
       const [article] = await db
