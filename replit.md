@@ -1,7 +1,7 @@
-# Forex News & Trading Intelligence Hub
+# EntryLab — Forex News & Trading Intelligence Hub
 
 ## Overview
-EntryLab is a full-stack web application designed as a Forex News & Trading Intelligence Hub. It aggregates and displays forex broker news, proprietary firm updates, and trading analysis. The platform provides traders with a professional interface for broker information, articles, and market data, inspired by platforms like Bloomberg and CoinDesk. The backend is fully WordPress-free for all production runtime endpoints — all data (articles, brokers, prop firms, categories, reviews) is served exclusively from PostgreSQL. WordPress is only used by one-time migration endpoints.
+EntryLab is a full-stack web application that aggregates and displays forex broker news, proprietary firm updates, and trading analysis. The platform is 100% WordPress-free — all data (articles, brokers, prop firms, categories, reviews) is stored in and served from PostgreSQL. There are zero runtime calls to any external CMS.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -9,58 +9,54 @@ Preferred communication style: Simple, everyday language.
 ## System Architecture
 
 ### Frontend
-- **Frameworks & Libraries**: React 18 with TypeScript, Vite for tooling, `wouter` for routing, React Query for server state management, and React Context API for theme management.
-- **UI/UX**: Utilizes Shadcn UI (built on Radix UI primitives) with a "new-york" style preset, styled with Tailwind CSS. Features a custom design system with CSS variables for theming (dark mode by default). Typography uses Inter for text and JetBrains Mono for financial data.
-- **Key Features**: Dynamic category archive pages with Yoast SEO integration, SEO-optimized category-based URLs (`/:category/:slug`), a 6-step review submission modal, and broker-contextual article displays.
-- **Performance**: Achieved through WordPress API caching (15-min TTL), client-side CSS deferral, static asset caching, image optimization (WebP, responsive `srcset`), loading skeletons, and `font-display: swap`.
+- **Frameworks & Libraries**: React 18 with TypeScript, Vite for tooling, `wouter` for routing, React Query for server state, React Context for theme.
+- **UI/UX**: Shadcn UI (Radix UI primitives), "new-york" preset, Tailwind CSS. Dark mode by default with light/dark toggle. Inter font for text, JetBrains Mono for financial data.
+- **Key Features**: Category archive pages, SEO-optimised `/:category/:slug` URLs, 6-step review modal, broker comparison page (`/compare`), broker/prop-firm contextual article displays.
+- **Performance**: Client-side CSS deferral, static asset caching, image optimisation (WebP, responsive `srcset`), loading skeletons, `font-display: swap`.
 
 ### Backend
 - **Runtime**: Node.js with Express.js.
-- **API Design**: Functions as a RESTful API proxy, extending WordPress functionality.
-- **Authentication**: Uses WordPress Application Passwords for secure REST API write operations.
-- **Telegram Bot Integration**: A webhook-based bot facilitates review moderation by sending notifications with inline approve/reject buttons to a Telegram channel.
-- **Subscription System**: Integrated Stripe payments via Replit connector with automatic webhook management. Handles monthly ($49) and yearly ($319) premium signal subscriptions.
-- **PromoStack Integration**: Manages Telegram channel access via `POST https://dash.promostack.io/api/telegram/grant-access`. Premium users receive dynamic invite links with plan mapping based on Stripe subscription data:
-  - 7-day/weekly interval → "Premium Forex Signals - 7 Day"
-  - Monthly interval → "Premium Forex Signals - Monthly"  
+- **API Design**: Pure REST API serving data directly from PostgreSQL via Drizzle ORM. No CMS proxy layer.
+- **Authentication**: Admin routes protected by `x-admin-secret` / session-based auth. JWT used for signal user sessions.
+- **Telegram Bot Integration**: Webhook-based bot for review moderation — approve/reject buttons sent to a Telegram channel.
+- **Subscription System**: Stripe payments (Replit connector) for monthly ($49) and yearly ($319) premium signal subscriptions.
+- **PromoStack Integration**: `POST https://dash.promostack.io/api/telegram/grant-access` for dynamic Telegram invite links. Plan mapping:
+  - 7-day/weekly → "Premium Forex Signals - 7 Day"
+  - Monthly → "Premium Forex Signals - Monthly"
   - One-time (lifetime) → "Premium Forex Signals - Lifetime"
-  - Amount: Uses Stripe `price.unit_amount` (base price) to avoid sending discounted totals
-  - Free users: Static public channel link `https://t.me/entrylabs` with lead tracking only
-- **Key Endpoints**: Manages WordPress posts, categories, brokers, prop firms, trust signals, review submissions/fetching, Stripe checkout sessions, and webhook handlers (Stripe, Telegram, WordPress).
-- **SEO Implementation**: Server-side SEO injection middleware pre-fetches data from WordPress to inject title tags, meta descriptions, Open Graph tags, and canonical URLs into the HTML, ensuring content visibility for search engines. Handles 301 redirects for legacy WordPress URLs.
-- **Structured Data**: Generates JSON-LD structured data server-side for various content types (Organization, FinancialService, Article, Review, BreadcrumbList) to enhance search engine rich results, avoiding client-side duplication.
-- **Webhook Resilience**: All Stripe webhook handlers include defensive timestamp parsing, graceful error handling, and non-blocking external API calls to ensure payment processing continues even if secondary services fail.
+  - Free users: static `https://t.me/entrylabs` link
+- **Key Endpoints**: `/api/articles`, `/api/categories`, `/api/category-content`, `/api/brokers`, `/api/prop-firms`, `/api/trust-signals`, `/api/reviews/:id`, `/api/reviews/submit`, Stripe webhook, Telegram webhook.
+- **SEO Middleware**: Server-side injection of title, meta description, Open Graph tags, canonical URLs, and JSON-LD structured data — all sourced from PostgreSQL.
+- **Structured Data**: JSON-LD generated server-side for Organization, FinancialService, Article, Review, BreadcrumbList, and FAQPage schemas.
+- **Webhook Resilience**: All Stripe handlers include defensive error handling and non-blocking external API calls.
 
 ### Data Layer
 - **Database**: PostgreSQL (Neon serverless), managed with Drizzle ORM.
-- **Tables**: `signal_users`, `subscriptions`, `email_captures`, `webhook_events`, `broker_alerts`, `article_views`, `brokers_data`, `prop_firms_data`.
-- **Broker & Prop Firm Data**: Fully migrated into `brokers_data` and `prop_firms_data` tables. All broker/prop-firm endpoints (`/api/brokers`, `/api/wordpress/brokers`, `/api/wordpress/broker-categories`, `/api/wordpress/category-content`, etc.) are now 100% DB-backed with no WordPress fallbacks.
-- **Category Assignments**: `broker_categories` and `prop_firm_categories` junction tables (with composite PKs) store which brokers/firms belong to which categories. Migrated via `POST /api/admin/migrate-broker-categories` (admin auth required).
-- **Migration Endpoints**: `POST /api/admin/migrate-from-wordpress` (x-admin-secret header) for broker/prop firm data. `POST /api/admin/migrate-broker-categories` (admin auth) for junction table assignments. `POST /api/admin/migrate-images` for logo downloads.
-- **Comparison Feature**: `/compare` page allows side-by-side comparison of up to 4 brokers using DB data.
-- **Remaining WordPress dependency**: Articles, trust signals, reviews still come from WordPress REST API. Phase 2 will migrate these to DB with a custom admin panel.
-- **Data Sources**: WordPress REST API for articles/reviews only. PostgreSQL for brokers, prop firms, categories, category assignments, subscriptions, and analytics.
-- **Performance**: `/api/wordpress/category-content` reduced from 1864ms → ~350ms by replacing 3 sequential WP taxonomy lookups with 2 parallel DB query rounds. All broker/prop-firm list endpoints reduced from ~500ms (WP) to ~150ms (DB).
+- **Tables**: `articles`, `brokers_data`, `prop_firms_data`, `categories`, `broker_categories`, `prop_firm_categories`, `reviews`, `signal_users`, `subscriptions`, `email_captures`, `webhook_events`, `broker_alerts`, `article_views`.
+- **Current Data**: 41 published articles, 17 brokers, 14 prop firms, 10 categories — all in PostgreSQL.
+- **Data Sources**: 100% PostgreSQL. No external CMS or API dependency for any runtime data.
+- **Category Assignments**: `broker_categories` and `prop_firm_categories` junction tables with composite PKs.
+- **Comparison Feature**: `/compare` page supports side-by-side comparison of up to 4 brokers.
+- **Admin Panel**: Full CRUD for articles, brokers, prop firms, categories, and reviews via `/admin/*` routes.
 
 ### Design System
-- **Theming**: Supports dark/light mode with localStorage persistence, defaulting to dark mode.
-- **Branding**: Features a custom favicon system and a defined color palette including EntryLab purple, gold, and market indicator greens/reds.
-- **Component Patterns**: Employs compound components, Radix UI Slot pattern, `class-variance-authority` for managing component variants, and responsive design principles.
+- **Theming**: Dark/light mode with `localStorage` persistence, defaulting to dark.
+- **Branding**: Custom favicon, EntryLab purple + gold palette, market indicator greens/reds.
+- **Component Patterns**: Compound components, Radix Slot pattern, `class-variance-authority` for variants, responsive design.
 
 ### Deployment & Analytics
-- **Deployment**: Frontend hosted at `entrylab.io`, Backend (WordPress) at `admin.entrylab.io`, both on Hostinger VPS with PM2 and Nginx.
-- **Analytics**: Google Tag Manager is used for granular tracking, including affiliate clicks and review submissions.
-- **CI/CD**: GitHub Actions automate continuous deployment to the main branch.
+- **Deployment**: Frontend at `entrylab.io`, both served via Hostinger VPS with PM2 and Nginx.
+- **Analytics**: Google Tag Manager for affiliate click and review submission tracking.
+- **CI/CD**: GitHub Actions for continuous deployment to main branch.
 
 ## External Dependencies
 
 ### Third-Party Services
-- **Content Management**: WordPress REST API.
-- **Database**: PostgreSQL (specifically Neon serverless).
-- **Payments**: Stripe (via Replit connector) for subscription management and billing.
-- **Email**: Resend for transactional emails (welcome emails, cancellation notifications).
-- **Telegram Access**: PromoStack API (custom Replit app) for automated Telegram channel invite link generation.
-- **Messaging/Bots**: Telegram Bot API for review moderation and notifications.
+- **Database**: PostgreSQL (Neon serverless).
+- **Payments**: Stripe (Replit connector) for subscription management.
+- **Email**: Resend for transactional emails (welcome, cancellation).
+- **Telegram Access**: PromoStack API for automated Telegram invite links.
+- **Messaging/Bots**: Telegram Bot API for review moderation.
 
 ### Key NPM Packages
 - **UI & Styling**: `@radix-ui/*`, `tailwindcss`, `class-variance-authority`, `lucide-react`, `react-icons`.
