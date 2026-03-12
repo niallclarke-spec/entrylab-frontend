@@ -198,7 +198,7 @@ export default function BrokerReview() {
             worstRating: 1
           },
           author: "EntryLab",
-          datePublished: broker.lastUpdated?.toISOString() || new Date().toISOString()
+          datePublished: broker.lastUpdated ? new Date(broker.lastUpdated).toISOString() : new Date().toISOString()
         }}
         disableStructuredData={true}
       />

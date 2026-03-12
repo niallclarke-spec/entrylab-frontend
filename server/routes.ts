@@ -3009,9 +3009,12 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
               }
 
               const [allBrokers, allPropFirms, recentPosts] = await Promise.all([
-                fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard').catch(() => []),
-                fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard').catch(() => []),
-                fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&per_page=50&orderby=date&order=desc').catch(() => []),
+                db.select().from(brokersTable).orderBy(asc(brokersTable.name)),
+                db.select().from(propFirmsTable).orderBy(asc(propFirmsTable.name)),
+                db.select().from(articlesTable)
+                  .where(eq(articlesTable.status, 'published'))
+                  .orderBy(desc(articlesTable.publishedAt))
+                  .limit(50),
               ]);
 
               // SSR content block with broker ratings (readable by AI crawlers)
@@ -3021,50 +3024,39 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
               ssrHtml += `<p>${homepageDesc}</p>`;
 
               ssrHtml += `<h2>Top Forex Broker Reviews</h2><ul>`;
-              for (const b of (allBrokers || []).slice(0, 20)) {
-                const name = (b.title?.rendered || b.name || '').replace(/<[^>]+>/g, '');
-                const rating = b.acf?.overall_score || b.acf?.rating || '';
-                const reg = b.acf?.regulation || b.acf?.regulated_by || '';
-                if (b.slug && name) {
-                  ssrHtml += `<li><a href="/broker/${b.slug}">${name}</a>${rating ? ` — Rating: ${rating}/5` : ''}${reg ? ` — ${reg}` : ''}</li>`;
+              for (const b of allBrokers.slice(0, 20)) {
+                if (b.slug && b.name) {
+                  ssrHtml += `<li><a href="/broker/${b.slug}">${b.name}</a>${b.rating ? ` — Rating: ${b.rating}/5` : ''}${b.regulation ? ` — ${b.regulation}` : ''}</li>`;
                 }
               }
               ssrHtml += `</ul>`;
 
               ssrHtml += `<h2>Top Prop Firm Reviews</h2><ul>`;
-              for (const f of (allPropFirms || []).slice(0, 10)) {
-                const name = (f.title?.rendered || f.name || '').replace(/<[^>]+>/g, '');
-                const rating = f.acf?.overall_score || f.acf?.rating || '';
-                if (f.slug && name) {
-                  ssrHtml += `<li><a href="/prop-firm/${f.slug}">${name}</a>${rating ? ` — Rating: ${rating}/5` : ''}</li>`;
+              for (const f of allPropFirms.slice(0, 10)) {
+                if (f.slug && f.name) {
+                  ssrHtml += `<li><a href="/prop-firm/${f.slug}">${f.name}</a>${f.rating ? ` — Rating: ${f.rating}/5` : ''}</li>`;
                 }
               }
               ssrHtml += `</ul>`;
 
               ssrHtml += `<h2>Latest Broker News</h2><ul>`;
-              for (const p of (recentPosts || []).slice(0, 15)) {
-                const title = (p.title?.rendered || '').replace(/<[^>]+>/g, '');
-                const catSlug = p._embedded?.['wp:term']?.[0]?.[0]?.slug || 'news';
-                if (p.slug && title) {
-                  ssrHtml += `<li><a href="/${catSlug}/${p.slug}">${title}</a></li>`;
+              for (const p of recentPosts.slice(0, 15)) {
+                if (p.slug && p.title) {
+                  ssrHtml += `<li><a href="/${p.category || 'news'}/${p.slug}">${p.title}</a></li>`;
                 }
               }
               ssrHtml += `</ul></div>`;
 
               // Full nav for link discovery
               let navHtml = `<nav id="ssr-nav" aria-label="Site navigation"><ul>`;
-              for (const b of (allBrokers || [])) {
-                const name = (b.title?.rendered || b.name || '').replace(/<[^>]+>/g, '');
-                if (b.slug && name) navHtml += `<li><a href="/broker/${b.slug}">${name}</a></li>`;
+              for (const b of allBrokers) {
+                if (b.slug && b.name) navHtml += `<li><a href="/broker/${b.slug}">${b.name}</a></li>`;
               }
-              for (const f of (allPropFirms || [])) {
-                const name = (f.title?.rendered || f.name || '').replace(/<[^>]+>/g, '');
-                if (f.slug && name) navHtml += `<li><a href="/prop-firm/${f.slug}">${name}</a></li>`;
+              for (const f of allPropFirms) {
+                if (f.slug && f.name) navHtml += `<li><a href="/prop-firm/${f.slug}">${f.name}</a></li>`;
               }
-              for (const p of (recentPosts || [])) {
-                const title = (p.title?.rendered || '').replace(/<[^>]+>/g, '');
-                const catSlug = p._embedded?.['wp:term']?.[0]?.[0]?.slug || 'news';
-                if (p.slug && title) navHtml += `<li><a href="/${catSlug}/${p.slug}">${title}</a></li>`;
+              for (const p of recentPosts) {
+                if (p.slug && p.title) navHtml += `<li><a href="/${p.category || 'news'}/${p.slug}">${p.title}</a></li>`;
               }
               navHtml += `</ul></nav>`;
 
@@ -3079,24 +3071,17 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
 
           } else if (cleanUrl === '/brokers') {
             try {
-              const brokers = await fetchWordPressWithCache(
-                'https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard'
-              ).catch(() => []);
+              const brokers = await db.select().from(brokersTable).orderBy(asc(brokersTable.name));
 
               const ssrStyle = `<style>#ssr-content{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:24px 16px;color:#1a1a1a}#ssr-content h1{font-size:2rem;font-weight:700;margin-bottom:16px}#ssr-content h2{font-size:1.4rem;font-weight:600;margin:24px 0 12px}#ssr-content p{margin-bottom:12px;line-height:1.7}#ssr-content ul{padding-left:20px;margin-bottom:12px}#ssr-content li{margin-bottom:4px}</style>`;
               let ssrHtml = `${ssrStyle}<div id="ssr-content">`;
               ssrHtml += `<h1>Forex Broker Reviews</h1>`;
               ssrHtml += `<p>EntryLab reviews forex brokers across regulation, spreads, leverage, platforms, and deposit methods. Compare top regulated and offshore brokers side by side.</p>`;
               ssrHtml += `<ul>`;
-              for (const b of (brokers || [])) {
-                const name = (b.title?.rendered || b.name || '').replace(/<[^>]+>/g, '');
-                const rating = b.acf?.overall_score || b.acf?.rating || '';
-                const reg = b.acf?.regulation || b.acf?.regulated_by || '';
-                const minDep = b.acf?.min_deposit || '';
-                const leverage = b.acf?.max_leverage || b.acf?.leverage || '';
-                if (b.slug && name) {
-                  const details = [rating ? `Rating: ${rating}/5` : '', reg, minDep ? `Min deposit: ${minDep}` : '', leverage ? `Leverage: ${leverage}` : ''].filter(Boolean).join(' · ');
-                  ssrHtml += `<li><a href="/broker/${b.slug}">${name}</a>${details ? ` — ${details}` : ''}</li>`;
+              for (const b of brokers) {
+                if (b.slug && b.name) {
+                  const details = [b.rating ? `Rating: ${b.rating}/5` : '', b.regulation || '', b.minDeposit ? `Min deposit: ${b.minDeposit}` : '', b.maxLeverage ? `Leverage: ${b.maxLeverage}` : ''].filter(Boolean).join(' · ');
+                  ssrHtml += `<li><a href="/broker/${b.slug}">${b.name}</a>${details ? ` — ${details}` : ''}</li>`;
                 }
               }
               ssrHtml += `</ul></div>`;
@@ -3109,23 +3094,17 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
 
           } else if (cleanUrl === '/prop-firms') {
             try {
-              const firms = await fetchWordPressWithCache(
-                'https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard'
-              ).catch(() => []);
+              const firms = await db.select().from(propFirmsTable).orderBy(asc(propFirmsTable.name));
 
               const ssrStyle = `<style>#ssr-content{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:24px 16px;color:#1a1a1a}#ssr-content h1{font-size:2rem;font-weight:700;margin-bottom:16px}#ssr-content h2{font-size:1.4rem;font-weight:600;margin:24px 0 12px}#ssr-content p{margin-bottom:12px;line-height:1.7}#ssr-content ul{padding-left:20px;margin-bottom:12px}#ssr-content li{margin-bottom:4px}</style>`;
               let ssrHtml = `${ssrStyle}<div id="ssr-content">`;
               ssrHtml += `<h1>Prop Firm Reviews</h1>`;
               ssrHtml += `<p>Compare the best proprietary trading firms. EntryLab reviews evaluation processes, profit splits, drawdown rules, payout speeds, and account sizes for every major prop firm.</p>`;
               ssrHtml += `<ul>`;
-              for (const f of (firms || [])) {
-                const name = (f.title?.rendered || f.name || '').replace(/<[^>]+>/g, '');
-                const rating = f.acf?.overall_score || f.acf?.rating || '';
-                const split = f.acf?.profit_split || '';
-                const sizes = f.acf?.account_sizes || '';
-                if (f.slug && name) {
-                  const details = [rating ? `Rating: ${rating}/5` : '', split ? `Profit split: ${split}` : '', sizes ? `Accounts: ${sizes}` : ''].filter(Boolean).join(' · ');
-                  ssrHtml += `<li><a href="/prop-firm/${f.slug}">${name}</a>${details ? ` — ${details}` : ''}</li>`;
+              for (const f of firms) {
+                if (f.slug && f.name) {
+                  const details = [f.rating ? `Rating: ${f.rating}/5` : '', f.profitSplit ? `Profit split: ${f.profitSplit}` : '', f.maxFundingSize ? `Accounts: ${f.maxFundingSize}` : ''].filter(Boolean).join(' · ');
+                  ssrHtml += `<li><a href="/prop-firm/${f.slug}">${f.name}</a>${details ? ` — ${details}` : ''}</li>`;
                 }
               }
               ssrHtml += `</ul></div>`;
