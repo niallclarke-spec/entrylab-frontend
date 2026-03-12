@@ -130,6 +130,30 @@ function articleToApi(article: any): any {
   };
 }
 
+// Lightweight version for list/archive views — strips the large content field
+function articleToListApi(article: any): any {
+  const catSlug = article.category || "news";
+  const catName = catSlug
+    .split("-")
+    .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+  return {
+    id: article.id,
+    wpPostId: article.wpPostId || null,
+    slug: article.slug,
+    title: article.title || "",
+    excerpt: article.excerpt || "",
+    author: article.author || "EntryLab Team",
+    category: catSlug,
+    categoryName: catName,
+    featuredImage: article.featuredImage || null,
+    publishedAt: article.publishedAt?.toISOString?.() || article.createdAt?.toISOString?.() || new Date().toISOString(),
+    updatedAt: article.updatedAt?.toISOString?.() || new Date().toISOString(),
+    status: article.status,
+    relatedBroker: null,
+  };
+}
+
 // Generic API error handler
 function handleApiError(error: any, res: any, operation: string) {
   console.error(`Error ${operation}:`, error.message);
@@ -642,14 +666,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { category } = req.query;
       const catSlug = category && typeof category === "string" ? category.trim() : null;
+      const cacheKey = `articles:list:${catSlug || "all"}`;
+      const cached = apiCache.get(cacheKey);
+      if (cached && !apiCache.isStale(cacheKey)) {
+        res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+        res.setHeader('X-Cache', 'HIT');
+        return res.json(cached);
+      }
       const query = db.select().from(articlesTable)
         .where(catSlug
           ? and(eq(articlesTable.status, "published"), eq(articlesTable.category, catSlug))
           : eq(articlesTable.status, "published"))
         .orderBy(desc(articlesTable.publishedAt));
       const results = await query;
+      const payload = results.map(articleToListApi);
+      apiCache.set(cacheKey, payload, 300, 600);
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      return res.json(results.map(articleToApi));
+      res.setHeader('X-Cache', 'MISS');
+      return res.json(payload);
     } catch (err) {
       return res.status(500).json({ error: "Failed to fetch articles" });
     }
@@ -681,12 +715,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/categories", async (req, res) => {
     try {
       const { slug } = req.query;
-      const dbCats = await db.select().from(categoriesTable)
-        .where(eq(categoriesTable.type, "article"))
-        .orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
-      let results = dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 }));
+      const cacheKey = "categories:article";
+      let results = apiCache.get(cacheKey);
+      if (!results || apiCache.isStale(cacheKey)) {
+        const dbCats = await db.select().from(categoriesTable)
+          .where(eq(categoriesTable.type, "article"))
+          .orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
+        results = dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 }));
+        apiCache.set(cacheKey, results, 300, 600);
+      }
       if (slug && typeof slug === "string") {
-        results = results.filter((c) => c.slug === slug);
+        results = results.filter((c: any) => c.slug === slug);
       }
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       return res.json(results);
@@ -697,9 +736,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/broker-categories", async (req, res) => {
     try {
+      const cacheKey = "categories:broker";
+      let cached = apiCache.get(cacheKey);
+      if (!cached || apiCache.isStale(cacheKey)) {
+        const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "broker")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
+        cached = dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 }));
+        apiCache.set(cacheKey, cached, 300, 600);
+      }
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "broker")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
-      return res.json(dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 })));
+      return res.json(cached);
     } catch (error) {
       console.error("Error fetching broker categories:", error);
       res.json([]);
@@ -708,9 +753,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/prop-firm-categories", async (req, res) => {
     try {
+      const cacheKey = "categories:prop_firm";
+      let cached = apiCache.get(cacheKey);
+      if (!cached || apiCache.isStale(cacheKey)) {
+        const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "prop_firm")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
+        cached = dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 }));
+        apiCache.set(cacheKey, cached, 300, 600);
+      }
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "prop_firm")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
-      return res.json(dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 })));
+      return res.json(cached);
     } catch (error) {
       console.error("Error fetching prop firm categories:", error);
       res.json([]);
@@ -748,7 +799,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json({
-        articles: dbArticleRows.map(articleToApi),
+        articles: dbArticleRows.map(articleToListApi),
         brokers: dbBrokerRows.map((r: any) => brokerDbToApi(r.broker)),
         propFirms: dbPropFirmRows.map((r: any) => propFirmDbToApi(r.firm)),
       });
@@ -812,9 +863,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/brokers", async (req, res) => {
     try {
-      const rows = await db.select().from(brokersTable).orderBy(asc(brokersTable.name));
-      res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
-      res.json(rows.map(brokerDbToApi));
+      const cacheKey = "brokers:list";
+      let cached = apiCache.get(cacheKey);
+      if (!cached || apiCache.isStale(cacheKey)) {
+        const rows = await db.select().from(brokersTable).orderBy(asc(brokersTable.name));
+        cached = rows.map(brokerDbToApi);
+        apiCache.set(cacheKey, cached, 300, 600);
+      }
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      res.setHeader('X-Cache', apiCache.isStale(cacheKey) ? 'MISS' : 'HIT');
+      res.json(cached);
     } catch (error) {
       handleApiError(error, res, "fetch brokers from DB");
     }
@@ -848,19 +906,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/prop-firms", async (req, res) => {
     try {
-      const rows = await db.select().from(propFirmsTable).orderBy(asc(propFirmsTable.name));
-      const catRows = await db
-        .select({ propFirmId: propFirmCategoriesTable.propFirmId, wpId: categoriesTable.wpId, dbId: categoriesTable.id })
-        .from(propFirmCategoriesTable)
-        .innerJoin(categoriesTable, eq(propFirmCategoriesTable.categoryId, categoriesTable.id));
-      const catMap = new Map<number, (number | string)[]>();
-      for (const r of catRows) {
-        const publicId = r.wpId ?? r.dbId;
-        if (!catMap.has(r.propFirmId)) catMap.set(r.propFirmId, []);
-        catMap.get(r.propFirmId)!.push(publicId);
+      const cacheKey = "prop-firms:list";
+      let cached = apiCache.get(cacheKey);
+      if (!cached || apiCache.isStale(cacheKey)) {
+        const rows = await db.select().from(propFirmsTable).orderBy(asc(propFirmsTable.name));
+        const catRows = await db
+          .select({ propFirmId: propFirmCategoriesTable.propFirmId, wpId: categoriesTable.wpId, dbId: categoriesTable.id })
+          .from(propFirmCategoriesTable)
+          .innerJoin(categoriesTable, eq(propFirmCategoriesTable.categoryId, categoriesTable.id));
+        const catMap = new Map<number, (number | string)[]>();
+        for (const r of catRows) {
+          const publicId = r.wpId ?? r.dbId;
+          if (!catMap.has(r.propFirmId)) catMap.set(r.propFirmId, []);
+          catMap.get(r.propFirmId)!.push(publicId);
+        }
+        cached = rows.map(row => ({ ...propFirmDbToApi(row), categoryIds: catMap.get(row.id) || [] }));
+        apiCache.set(cacheKey, cached, 300, 600);
       }
-      res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
-      res.json(rows.map(row => ({ ...propFirmDbToApi(row), categoryIds: catMap.get(row.id) || [] })));
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      res.json(cached);
     } catch (error) {
       handleApiError(error, res, "fetch prop firms from DB");
     }
@@ -1636,56 +1700,71 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
           };
         } else if (url.startsWith('/broker/')) {
           const slug = url.replace('/broker/', '').split('?')[0];
-          const [dbBroker] = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
-          if (dbBroker) {
-            pageData = {
-              name: dbBroker.name,
-              tagline: dbBroker.tagline || "",
-              rating: dbBroker.rating?.toString() || "",
-              regulation: dbBroker.regulation || "",
-              minDeposit: (dbBroker as any).minDeposit || "",
-              maxLeverage: (dbBroker as any).maxLeverage || "",
-              spreadFrom: (dbBroker as any).spreadFrom || "",
-              platforms: (dbBroker as any).platforms || "",
-              paymentMethods: (dbBroker as any).paymentMethods || "",
-              headquarters: (dbBroker as any).headquarters || "",
-              yearFounded: (dbBroker as any).yearFounded || "",
-              highlights: ((dbBroker as any).highlights || []).join(", "),
-              pros: (dbBroker as any).pros || [],
-              cons: (dbBroker as any).cons || [],
-              content: (dbBroker as any).content || "",
-              logoUrl: dbBroker.logoUrl || "",
-            };
+          const ssrKey = `ssr:broker:${slug}`;
+          pageData = apiCache.get(ssrKey);
+          if (!pageData || apiCache.isStale(ssrKey)) {
+            const [dbBroker] = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
+            if (dbBroker) {
+              pageData = {
+                name: dbBroker.name,
+                tagline: dbBroker.tagline || "",
+                rating: dbBroker.rating?.toString() || "",
+                regulation: dbBroker.regulation || "",
+                minDeposit: (dbBroker as any).minDeposit || "",
+                maxLeverage: (dbBroker as any).maxLeverage || "",
+                spreadFrom: (dbBroker as any).spreadFrom || "",
+                platforms: (dbBroker as any).platforms || "",
+                paymentMethods: (dbBroker as any).paymentMethods || "",
+                headquarters: (dbBroker as any).headquarters || "",
+                yearFounded: (dbBroker as any).yearFounded || "",
+                highlights: ((dbBroker as any).highlights || []).join(", "),
+                pros: (dbBroker as any).pros || [],
+                cons: (dbBroker as any).cons || [],
+                content: (dbBroker as any).content || "",
+                logoUrl: dbBroker.logoUrl || "",
+              };
+              apiCache.set(ssrKey, pageData, 300, 600);
+            }
           }
         } else if (url.startsWith('/prop-firm/')) {
           const slug = url.replace('/prop-firm/', '').split('?')[0];
-          const [dbFirm] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
-          if (dbFirm) {
-            pageData = {
-              name: dbFirm.name,
-              tagline: dbFirm.tagline || "",
-              rating: dbFirm.rating?.toString() || "",
-              profitSplit: (dbFirm as any).profitSplit || "",
-              maxFundingSize: (dbFirm as any).maxFundingSize || "",
-              evaluationFee: (dbFirm as any).evaluationFee || "",
-              maxDrawdown: (dbFirm as any).maxDrawdown || "",
-              headquarters: (dbFirm as any).headquarters || "",
-              highlights: ((dbFirm as any).highlights || []).join(", "),
-              pros: (dbFirm as any).pros || [],
-              cons: (dbFirm as any).cons || [],
-              content: (dbFirm as any).content || "",
-              logoUrl: dbFirm.logoUrl || "",
-            };
+          const ssrKey = `ssr:prop-firm:${slug}`;
+          pageData = apiCache.get(ssrKey);
+          if (!pageData || apiCache.isStale(ssrKey)) {
+            const [dbFirm] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
+            if (dbFirm) {
+              pageData = {
+                name: dbFirm.name,
+                tagline: dbFirm.tagline || "",
+                rating: dbFirm.rating?.toString() || "",
+                profitSplit: (dbFirm as any).profitSplit || "",
+                maxFundingSize: (dbFirm as any).maxFundingSize || "",
+                evaluationFee: (dbFirm as any).evaluationFee || "",
+                maxDrawdown: (dbFirm as any).maxDrawdown || "",
+                headquarters: (dbFirm as any).headquarters || "",
+                highlights: ((dbFirm as any).highlights || []).join(", "),
+                pros: (dbFirm as any).pros || [],
+                cons: (dbFirm as any).cons || [],
+                content: (dbFirm as any).content || "",
+                logoUrl: dbFirm.logoUrl || "",
+              };
+              apiCache.set(ssrKey, pageData, 300, 600);
+            }
           }
         } else if (url.match(/\/[^/]+\/[^/]+$/)) {
           // Article format: /category/slug
           const parts = url.split('/').filter(Boolean);
           if (parts.length === 2) {
             const slug = parts[1].split('?')[0];
-            const [dbArticle] = await db.select().from(articlesTable)
-              .where(and(eq(articlesTable.slug, slug), eq(articlesTable.status, "published")));
-            if (dbArticle) {
-              pageData = articleToApi(dbArticle);
+            const ssrKey = `ssr:article:${slug}`;
+            pageData = apiCache.get(ssrKey);
+            if (!pageData || apiCache.isStale(ssrKey)) {
+              const [dbArticle] = await db.select().from(articlesTable)
+                .where(and(eq(articlesTable.slug, slug), eq(articlesTable.status, "published")));
+              if (dbArticle) {
+                pageData = articleToApi(dbArticle);
+                apiCache.set(ssrKey, pageData, 300, 600);
+              }
             }
           }
         }
