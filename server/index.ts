@@ -56,20 +56,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-// Enable gzip/brotli compression for all responses (reduces payload size by 70-80%)
-// TEMPORARILY DISABLED TO TEST IMAGE QUALITY
-// app.use(compression({
-//   level: 6, // Balanced compression level (1=fastest, 9=best compression)
-//   threshold: 1024, // Only compress responses larger than 1KB
-//   filter: (req, res) => {
-//     // Don't compress if client doesn't accept encoding
-//     if (req.headers['x-no-compression']) {
-//       return false;
-//     }
-//     // Use compression filter to decide
-//     return compression.filter(req, res);
-//   }
-// }));
+// Enable gzip compression for all text responses (JS, CSS, JSON, HTML)
+// Images are already compressed formats (JPEG/WebP/PNG) — compression skips them automatically
+app.use(compression({
+  level: 6,
+  threshold: 1024,
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) return false;
+    return compression.filter(req, res);
+  }
+}));
 
 // Serve uploaded logos as static files
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
