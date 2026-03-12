@@ -683,6 +683,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ── Migrate broker & prop firm category assignments from WP junction data ──
+  app.post("/api/admin/migrate-broker-categories", adminAuth, async (req, res) => {
+    try {
+      // Fetch all broker and prop firm category taxonomies from WP
+      const [wpBrokerCats, wpPropFirmCats] = await Promise.all([
+        fetchWordPressWithCache("https://admin.entrylab.io/wp-json/wp/v2/broker-category?per_page=100").catch(() => []),
+        fetchWordPressWithCache("https://admin.entrylab.io/wp-json/wp/v2/prop-firm-category?per_page=100").catch(() => []),
+      ]);
+
+      // Fetch all brokers and prop firms from WP with their category assignments
+      const [wpBrokers, wpFirms] = await Promise.all([
+        fetchWordPressWithCache("https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard").catch(() => []),
+        fetchWordPressWithCache("https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard").catch(() => []),
+      ]);
+
+      // Build WP cat ID → DB category ID map
+      const dbBrokerCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "broker"));
+      const dbPropFirmCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "prop_firm"));
+      const brokerCatWpIdToDbId = new Map(dbBrokerCats.filter(c => c.wpId).map(c => [c.wpId!, c.id]));
+      const propFirmCatWpIdToDbId = new Map(dbPropFirmCats.filter(c => c.wpId).map(c => [c.wpId!, c.id]));
+
+      // Get all DB brokers and prop firms by slug for lookup
+      const dbBrokers = await db.select({ id: brokersTable.id, slug: brokersTable.slug }).from(brokersTable);
+      const dbPropFirms = await db.select({ id: propFirmsTable.id, slug: propFirmsTable.slug }).from(propFirmsTable);
+      const brokerSlugToId = new Map(dbBrokers.map(b => [b.slug, b.id]));
+      const propFirmSlugToId = new Map(dbPropFirms.map(f => [f.slug, f.id]));
+
+      let brokerAssignments = 0, propFirmAssignments = 0;
+
+      // Insert broker category assignments
+      for (const wpBroker of (wpBrokers || [])) {
+        const brokerId = brokerSlugToId.get(wpBroker.slug);
+        if (!brokerId) continue;
+        const wpCatIds: number[] = wpBroker['broker-category'] || wpBroker.broker_category || [];
+        for (const wpCatId of wpCatIds) {
+          const dbCatId = brokerCatWpIdToDbId.get(wpCatId);
+          if (!dbCatId) continue;
+          await db.insert(brokerCategoriesTable).values({ brokerId, categoryId: dbCatId }).onConflictDoNothing();
+          brokerAssignments++;
+        }
+      }
+
+      // Insert prop firm category assignments
+      for (const wpFirm of (wpFirms || [])) {
+        const firmId = propFirmSlugToId.get(wpFirm.slug);
+        if (!firmId) continue;
+        const wpCatIds: number[] = wpFirm['prop-firm-category'] || wpFirm.prop_firm_category || [];
+        for (const wpCatId of wpCatIds) {
+          const dbCatId = propFirmCatWpIdToDbId.get(wpCatId);
+          if (!dbCatId) continue;
+          await db.insert(propFirmCategoriesTable).values({ propFirmId: firmId, categoryId: dbCatId }).onConflictDoNothing();
+          propFirmAssignments++;
+        }
+      }
+
+      return res.json({ ok: true, brokerAssignments, propFirmAssignments });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
   // ── Image migration — download WP-hosted logos to local /uploads/logos/ ──
   app.post("/api/admin/migrate-images", adminAuth, async (req, res) => {
     try {
@@ -1233,106 +1294,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Category parameter required" });
       }
 
-      // Try to find the category in multiple taxonomies
-      let categoryId: number | null = null;
-      let brokerCategoryId: number | null = null;
-      let propFirmCategoryId: number | null = null;
-      
-      if (typeof category === 'string' && isNaN(Number(category))) {
-        // Try broker-category taxonomy first
-        const brokerCatData = await fetchWordPressWithCache(
-          `https://admin.entrylab.io/wp-json/wp/v2/broker-category?slug=${category}`
-        ).catch(() => null);
-        
-        if (brokerCatData && brokerCatData.length > 0) {
-          brokerCategoryId = brokerCatData[0].id;
-          console.log('[CATEGORY-CONTENT] Found broker category:', category, '-> ID:', brokerCategoryId);
-        }
-        
-        // Try prop-firm-category taxonomy
-        const propFirmCatData = await fetchWordPressWithCache(
-          `https://admin.entrylab.io/wp-json/wp/v2/prop-firm-category?slug=${category}`
-        ).catch(() => null);
-        
-        if (propFirmCatData && propFirmCatData.length > 0) {
-          propFirmCategoryId = propFirmCatData[0].id;
-          console.log('[CATEGORY-CONTENT] Found prop firm category:', category, '-> ID:', propFirmCategoryId);
-        }
-        
-        // Try regular categories (for posts)
-        const categoryData = await fetchWordPressWithCache(
-          `https://admin.entrylab.io/wp-json/wp/v2/categories?slug=${category}`
-        ).catch(() => null);
-        
-        if (categoryData && categoryData.length > 0) {
-          categoryId = categoryData[0].id;
-          console.log('[CATEGORY-CONTENT] Found post category:', category, '-> ID:', categoryId);
-        }
-      } else {
-        categoryId = Number(category);
-        brokerCategoryId = Number(category);
-        propFirmCategoryId = Number(category);
-      }
-      
-      console.log('[CATEGORY-CONTENT] Final IDs - Posts:', categoryId, 'Brokers:', brokerCategoryId, 'PropFirms:', propFirmCategoryId);
+      const catSlug = typeof category === 'string' ? category : String(category);
 
-      // Also look up DB-assigned brokers/prop firms for this category slug
-      let dbBrokers: any[] = [];
-      let dbPropFirms: any[] = [];
-      if (typeof category === 'string') {
-        const [dbBrokerCat, dbPropFirmCat] = await Promise.all([
-          db.select().from(categoriesTable).where(and(eq(categoriesTable.slug, category), eq(categoriesTable.type, "broker"))),
-          db.select().from(categoriesTable).where(and(eq(categoriesTable.slug, category), eq(categoriesTable.type, "prop_firm"))),
-        ]);
-        const [dbBrokerRows, dbPropFirmRows] = await Promise.all([
-          dbBrokerCat.length > 0
-            ? db.select({ broker: brokersTable }).from(brokerCategoriesTable).innerJoin(brokersTable, eq(brokerCategoriesTable.brokerId, brokersTable.id)).where(eq(brokerCategoriesTable.categoryId, dbBrokerCat[0].id))
-            : Promise.resolve([]),
-          dbPropFirmCat.length > 0
-            ? db.select({ firm: propFirmsTable }).from(propFirmCategoriesTable).innerJoin(propFirmsTable, eq(propFirmCategoriesTable.propFirmId, propFirmsTable.id)).where(eq(propFirmCategoriesTable.categoryId, dbPropFirmCat[0].id))
-            : Promise.resolve([]),
-        ]);
-        dbBrokers = dbBrokerRows.map((r: any) => brokerDbToWpFormat(r.broker));
-        dbPropFirms = dbPropFirmRows.map((r: any) => propFirmDbToWpFormat(r.firm));
-      }
+      // ── Round 1: Resolve all DB category records in parallel ─────────────
+      const [brokerCatRows, propFirmCatRows, articleCatRows] = await Promise.all([
+        db.select().from(categoriesTable).where(and(eq(categoriesTable.slug, catSlug), eq(categoriesTable.type, "broker"))),
+        db.select().from(categoriesTable).where(and(eq(categoriesTable.slug, catSlug), eq(categoriesTable.type, "prop_firm"))),
+        db.select().from(categoriesTable).where(and(eq(categoriesTable.slug, catSlug), eq(categoriesTable.type, "article"))),
+      ]);
+      const brokerCat = brokerCatRows[0] || null;
+      const propFirmCat = propFirmCatRows[0] || null;
+      const articleCat = articleCatRows[0] || null;
+      const articleCatSlug = articleCat?.slug ?? catSlug;
 
-      // Resolve category slug from WP IDs or DB IDs for article filtering
-      let articleCatSlug: string | null = typeof category === 'string' ? category : null;
-      if (categoryId) {
-        const [cat] = await db.select({ slug: categoriesTable.slug })
-          .from(categoriesTable).where(eq(categoriesTable.wpId, categoryId));
-        if (cat) articleCatSlug = cat.slug;
-      }
+      // ── Round 2: Fetch all data in parallel ───────────────────────────────
+      const [dbBrokerRows, dbPropFirmRows, dbArticleRows] = await Promise.all([
+        brokerCat
+          ? db.select({ broker: brokersTable }).from(brokerCategoriesTable)
+              .innerJoin(brokersTable, eq(brokerCategoriesTable.brokerId, brokersTable.id))
+              .where(eq(brokerCategoriesTable.categoryId, brokerCat.id))
+          : Promise.resolve([]),
+        propFirmCat
+          ? db.select({ firm: propFirmsTable }).from(propFirmCategoriesTable)
+              .innerJoin(propFirmsTable, eq(propFirmCategoriesTable.propFirmId, propFirmsTable.id))
+              .where(eq(propFirmCategoriesTable.categoryId, propFirmCat.id))
+          : Promise.resolve([]),
+        db.select().from(articlesTable)
+          .where(and(eq(articlesTable.status, "published"), eq(articlesTable.category, articleCatSlug)))
+          .orderBy(desc(articlesTable.publishedAt)),
+      ]);
 
-      // Fetch DB articles for this category
-      const dbArticleQuery = db.select().from(articlesTable)
-        .where(eq(articlesTable.status, "published"))
-        .orderBy(desc(articlesTable.publishedAt));
-      const allDbArticles = await dbArticleQuery;
-      const posts = (articleCatSlug
-        ? allDbArticles.filter(a => a.category === articleCatSlug)
-        : allDbArticles
-      ).map(articleDbToWpFormat);
+      let mergedBrokers = dbBrokerRows.map((r: any) => brokerDbToWpFormat(r.broker));
+      let mergedPropFirms = dbPropFirmRows.map((r: any) => propFirmDbToWpFormat(r.firm));
+      const posts = dbArticleRows.map(articleDbToWpFormat);
 
-      // DB-first for brokers and prop firms (already in dbBrokers/dbPropFirms from above)
-      // If DB is empty, fall back to WP for brokers/prop firms
-      let mergedBrokers = dbBrokers;
-      let mergedPropFirms = dbPropFirms;
-      if (dbBrokers.length === 0) {
-        const wpBrokers = brokerCategoryId
-          ? await fetchWordPressWithCache(
-              `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard&broker-category=${brokerCategoryId}`
-            ).catch(() => [])
-          : [];
-        mergedBrokers = wpBrokers || [];
+      // ── WP fallback only if junction table is empty AND we have a WP category ID ──
+      if (mergedBrokers.length === 0 && brokerCat?.wpId) {
+        mergedBrokers = await fetchWordPressWithCache(
+          `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard&broker-category=${brokerCat.wpId}`
+        ).catch(() => []) || [];
       }
-      if (dbPropFirms.length === 0) {
-        const wpPropFirms = propFirmCategoryId
-          ? await fetchWordPressWithCache(
-              `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard&prop-firm-category=${propFirmCategoryId}`
-            ).catch(() => [])
-          : [];
-        mergedPropFirms = wpPropFirms || [];
+      if (mergedPropFirms.length === 0 && propFirmCat?.wpId) {
+        mergedPropFirms = await fetchWordPressWithCache(
+          `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard&prop-firm-category=${propFirmCat.wpId}`
+        ).catch(() => []) || [];
       }
 
       // Set browser cache headers (5 min) to reduce repeat requests
@@ -1351,12 +1356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       const rows = await db.select().from(brokersTable).orderBy(asc(brokersTable.name));
-      if (rows.length > 0) return res.json(rows.map(brokerDbToWpFormat));
-      // WP fallback
-      const brokers = await fetchWordPressWithCache(
-        "https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard"
-      );
-      res.json(brokers);
+      return res.json(rows.map(brokerDbToWpFormat));
     } catch (error) {
       handleWordPressError(error, res, "fetch brokers");
     }
@@ -1366,12 +1366,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       const rows = await db.select().from(propFirmsTable).orderBy(asc(propFirmsTable.name));
-      if (rows.length > 0) return res.json(rows.map(propFirmDbToWpFormat));
-      // WP fallback
-      const propFirms = await fetchWordPressWithCache(
-        "https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard"
-      );
-      res.json(propFirms);
+      return res.json(rows.map(propFirmDbToWpFormat));
     } catch (error) {
       handleWordPressError(error, res, "fetch prop firms");
     }
@@ -1380,16 +1375,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/broker-categories", async (req, res) => {
     try {
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      // Serve from DB when populated
       const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "broker")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
-      if (dbCats.length > 0) {
-        return res.json(dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 })));
-      }
-      // Fallback to WordPress
-      const categories = await fetchWordPressWithCache(
-        "https://admin.entrylab.io/wp-json/wp/v2/broker-category?per_page=100"
-      );
-      res.json(categories);
+      return res.json(dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 })));
     } catch (error) {
       console.error("Error fetching broker categories:", error);
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
@@ -1400,22 +1387,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/prop-firm-categories", async (req, res) => {
     try {
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      // Serve from DB when populated
       const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "prop_firm")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
-      if (dbCats.length > 0) {
-        return res.json(dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 })));
-      }
-      // Fallback to WordPress
-      const categories = await fetchWordPressWithCache(
-        "https://admin.entrylab.io/wp-json/wp/v2/prop-firm-category?per_page=100"
-      );
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      res.json(categories);
+      return res.json(dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 })));
     } catch (error) {
-      console.error("Error fetching WordPress prop firm categories:", error);
-      // Set browser cache headers even for error responses
+      console.error("Error fetching prop firm categories:", error);
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      res.json([]); // Return empty array instead of error for graceful degradation
+      res.json([]);
     }
   });
 
@@ -1425,12 +1402,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       const [row] = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
       if (row) return res.json(brokerDbToWpFormat(row));
-      // WP fallback
-      const brokers = await fetchWordPressWithCache(
-        `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`
-      );
-      if (!brokers?.length) return res.status(404).json({ error: "Broker not found" });
-      res.json(brokers[0]);
+      return res.status(404).json({ error: "Broker not found" });
     } catch (error) {
       handleWordPressError(error, res, "fetch broker");
     }
@@ -1442,12 +1414,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       const [row] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
       if (row) return res.json(propFirmDbToWpFormat(row));
-      // WP fallback
-      const propFirms = await fetchWordPressWithCache(
-        `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`
-      );
-      if (!propFirms?.length) return res.status(404).json({ error: "Prop firm not found" });
-      res.json(propFirms[0]);
+      return res.status(404).json({ error: "Prop firm not found" });
     } catch (error) {
       handleWordPressError(error, res, "fetch prop firm");
     }

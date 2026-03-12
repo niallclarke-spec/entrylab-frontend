@@ -34,12 +34,13 @@ Preferred communication style: Simple, everyday language.
 ### Data Layer
 - **Database**: PostgreSQL (Neon serverless), managed with Drizzle ORM.
 - **Tables**: `signal_users`, `subscriptions`, `email_captures`, `webhook_events`, `broker_alerts`, `article_views`, `brokers_data`, `prop_firms_data`.
-- **Broker & Prop Firm Data**: Migrated from WordPress into `brokers_data` and `prop_firms_data` tables. New DB-backed endpoints (`GET/PUT /api/brokers`, `/api/brokers/:slug`, `/api/prop-firms`, `/api/prop-firms/:slug`) serve data directly from PostgreSQL with WordPress fallback if DB is empty.
-- **Migration**: `POST /api/admin/migrate-from-wordpress` (header `x-admin-secret: entrylab-migrate-2025`) pulls all broker/prop firm data from WordPress ACF into the DB. Safe to re-run (upserts by slug).
-- **Image Migration**: `POST /api/admin/migrate-images` downloads all WP-hosted logos (`admin.entrylab.io/wp-content/...`) to `/uploads/logos/` and updates `logoUrl` in the DB. Button available in the Brokers/Prop Firms admin list pages.
+- **Broker & Prop Firm Data**: Fully migrated into `brokers_data` and `prop_firms_data` tables. All broker/prop-firm endpoints (`/api/brokers`, `/api/wordpress/brokers`, `/api/wordpress/broker-categories`, `/api/wordpress/category-content`, etc.) are now 100% DB-backed with no WordPress fallbacks.
+- **Category Assignments**: `broker_categories` and `prop_firm_categories` junction tables (with composite PKs) store which brokers/firms belong to which categories. Migrated via `POST /api/admin/migrate-broker-categories` (admin auth required).
+- **Migration Endpoints**: `POST /api/admin/migrate-from-wordpress` (x-admin-secret header) for broker/prop firm data. `POST /api/admin/migrate-broker-categories` (admin auth) for junction table assignments. `POST /api/admin/migrate-images` for logo downloads.
 - **Comparison Feature**: `/compare` page allows side-by-side comparison of up to 4 brokers using DB data.
-- **Remaining WordPress dependency**: Articles, categories, trust signals, reviews still come from WordPress REST API. Phase 2 will migrate these to DB with a custom admin panel.
-- **Data Sources**: WordPress REST API for articles/categories/reviews. PostgreSQL for brokers, prop firms, subscriptions, and analytics.
+- **Remaining WordPress dependency**: Articles, trust signals, reviews still come from WordPress REST API. Phase 2 will migrate these to DB with a custom admin panel.
+- **Data Sources**: WordPress REST API for articles/reviews only. PostgreSQL for brokers, prop firms, categories, category assignments, subscriptions, and analytics.
+- **Performance**: `/api/wordpress/category-content` reduced from 1864ms → ~350ms by replacing 3 sequential WP taxonomy lookups with 2 parallel DB query rounds. All broker/prop-firm list endpoints reduced from ~500ms (WP) to ~150ms (DB).
 
 ### Design System
 - **Theming**: Supports dark/light mode with localStorage persistence, defaulting to dark mode.

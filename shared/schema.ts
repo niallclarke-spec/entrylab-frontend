@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, boolean, jsonb, numeric } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, boolean, jsonb, numeric, primaryKey } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -315,12 +315,12 @@ export type Category = typeof categoriesTable.$inferSelect;
 export const brokerCategoriesTable = pgTable("broker_categories", {
   brokerId: varchar("broker_id").notNull().references(() => brokersTable.id, { onDelete: "cascade" }),
   categoryId: varchar("category_id").notNull().references(() => categoriesTable.id, { onDelete: "cascade" }),
-});
+}, (t) => [primaryKey({ columns: [t.brokerId, t.categoryId] })]);
 
 export const propFirmCategoriesTable = pgTable("prop_firm_categories", {
   propFirmId: varchar("prop_firm_id").notNull().references(() => propFirmsTable.id, { onDelete: "cascade" }),
   categoryId: varchar("category_id").notNull().references(() => categoriesTable.id, { onDelete: "cascade" }),
-});
+}, (t) => [primaryKey({ columns: [t.propFirmId, t.categoryId] })]);
 
 // ─── Legacy TypeScript interfaces (still used by frontend transforms) ───────
 export interface WordPressPost {
