@@ -36,6 +36,7 @@ Preferred communication style: Simple, everyday language.
 - **Tables**: `signal_users`, `subscriptions`, `email_captures`, `webhook_events`, `broker_alerts`, `article_views`, `brokers_data`, `prop_firms_data`.
 - **Broker & Prop Firm Data**: Migrated from WordPress into `brokers_data` and `prop_firms_data` tables. New DB-backed endpoints (`GET/PUT /api/brokers`, `/api/brokers/:slug`, `/api/prop-firms`, `/api/prop-firms/:slug`) serve data directly from PostgreSQL with WordPress fallback if DB is empty.
 - **Migration**: `POST /api/admin/migrate-from-wordpress` (header `x-admin-secret: entrylab-migrate-2025`) pulls all broker/prop firm data from WordPress ACF into the DB. Safe to re-run (upserts by slug).
+- **Image Migration**: `POST /api/admin/migrate-images` downloads all WP-hosted logos (`admin.entrylab.io/wp-content/...`) to `/uploads/logos/` and updates `logoUrl` in the DB. Button available in the Brokers/Prop Firms admin list pages.
 - **Comparison Feature**: `/compare` page allows side-by-side comparison of up to 4 brokers using DB data.
 - **Remaining WordPress dependency**: Articles, categories, trust signals, reviews still come from WordPress REST API. Phase 2 will migrate these to DB with a custom admin panel.
 - **Data Sources**: WordPress REST API for articles/categories/reviews. PostgreSQL for brokers, prop firms, subscriptions, and analytics.

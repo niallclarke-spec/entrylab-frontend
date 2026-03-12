@@ -22,7 +22,7 @@ export function initTelegramBot() {
 }
 
 export async function sendReviewNotification(reviewData: {
-  postId: number;
+  postId: string;
   brokerName: string;
   rating: number;
   author: string;
@@ -49,11 +49,11 @@ export async function sendReviewNotification(reviewData: {
 📝 *Review:*
 ${escapeMarkdown(reviewContent)}
 
-🔗 [View in WordPress](${reviewData.reviewLink})
+🔗 [View in Admin](${reviewData.reviewLink})
 
 *Commands:*
-\`/approve_${reviewData.postId}\` - Publish this review
-\`/reject_${reviewData.postId}\` - Delete review
+\`/approve_${reviewData.postId}\` - Approve this review
+\`/reject_${reviewData.postId}\` - Reject review
 \`/view_${reviewData.postId}\` - See full review details
   `.trim();
 

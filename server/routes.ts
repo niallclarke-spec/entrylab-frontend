@@ -683,21 +683,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ── Temporary compatibility: old WP-based review status update ───────────
-  // (kept for Telegram callback legacy support during transition)
+  // ── Image migration — download WP-hosted logos to local /uploads/logos/ ──
+  app.post("/api/admin/migrate-images", adminAuth, async (req, res) => {
+    try {
+      const logosDir = path.join(process.cwd(), "uploads", "logos");
+      if (!fs.existsSync(logosDir)) fs.mkdirSync(logosDir, { recursive: true });
+
+      const brokers = await db.select({ id: brokersTable.id, slug: brokersTable.slug, logoUrl: brokersTable.logoUrl }).from(brokersTable);
+      const firms = await db.select({ id: propFirmsTable.id, slug: propFirmsTable.slug, logoUrl: propFirmsTable.logoUrl }).from(propFirmsTable);
+
+      const downloadImage = async (srcUrl: string, filename: string): Promise<string | null> => {
+        try {
+          const destPath = path.join(logosDir, filename);
+          if (fs.existsSync(destPath)) return `/uploads/logos/${filename}`;
+          const resp = await fetch(srcUrl, { signal: AbortSignal.timeout(10000) });
+          if (!resp.ok) return null;
+          const buf = Buffer.from(await resp.arrayBuffer());
+          fs.writeFileSync(destPath, buf);
+          return `/uploads/logos/${filename}`;
+        } catch { return null; }
+      };
+
+      const isWpUrl = (u: string | null) => u && (u.includes('admin.entrylab.io') || u.includes('wp-content'));
+      let updated = 0, skipped = 0, failed = 0;
+
+      for (const row of brokers) {
+        if (!isWpUrl(row.logoUrl)) { skipped++; continue; }
+        const ext = row.logoUrl!.split('.').pop()?.split('?')[0] || 'png';
+        const newUrl = await downloadImage(row.logoUrl!, `broker-${row.slug}.${ext}`);
+        if (newUrl) {
+          await db.update(brokersTable).set({ logoUrl: newUrl, updatedAt: new Date() }).where(eq(brokersTable.id, row.id));
+          updated++;
+        } else { failed++; }
+      }
+
+      for (const row of firms) {
+        if (!isWpUrl(row.logoUrl)) { skipped++; continue; }
+        const ext = row.logoUrl!.split('.').pop()?.split('?')[0] || 'png';
+        const newUrl = await downloadImage(row.logoUrl!, `firm-${row.slug}.${ext}`);
+        if (newUrl) {
+          await db.update(propFirmsTable).set({ logoUrl: newUrl, updatedAt: new Date() }).where(eq(propFirmsTable.id, row.id));
+          updated++;
+        } else { failed++; }
+      }
+
+      return res.json({ ok: true, updated, skipped, failed });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Legacy review status update endpoint — now purely DB-backed
   app.put("/api/admin/reviews-wp/:id", adminAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const { status } = req.body;
-      const wpStatus = status === "approved" ? "publish" : status === "flagged" ? "trash" : "pending";
-      const result = await fetchWordPress(
-        `https://admin.entrylab.io/wp-json/wp/v2/review/${id}`,
-        { method: "POST", body: { status: wpStatus } }
-      );
-      if (status === "approved") {
-        apiCache.delete(REVIEWS_CACHE_KEY);
-      }
-      return res.json(result);
+      const dbStatus = status === "publish" ? "approved" : status === "trash" ? "rejected" : (status || "pending");
+      await db.update(reviewsTable)
+        .set({ status: dbStatus, updatedAt: new Date() })
+        .where(eq(reviewsTable.id, id));
+      return res.json({ ok: true, status: dbStatus });
     } catch (err: any) {
       console.error("[Admin] Error updating review:", err);
       return res.status(500).json({ error: "Failed to update review" });
@@ -736,25 +781,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ─── WordPress static pages (not blog posts) ──────────────────────────────
-  app.get("/api/admin/wp-pages", adminAuth, async (req, res) => {
-    try {
-      const pages = await fetchWordPressWithCache(
-        "https://admin.entrylab.io/wp-json/wp/v2/pages?per_page=100&status=publish&_fields=id,slug,title,status,date,modified,link"
-      );
-      const rows = (Array.isArray(pages) ? pages : []).map((p: any) => ({
-        id: String(p.id),
-        title: p.title?.rendered || p.slug,
-        slug: p.slug,
-        status: p.status === "publish" ? "published" : p.status,
-        link: p.link,
-        date: p.date,
-        modified: p.modified,
-      }));
-      return res.json(rows);
-    } catch (err: any) {
-      return res.status(500).json({ error: err.message });
-    }
+  // ─── Static pages — hardcoded list (WordPress removed) ──────────────────
+  app.get("/api/admin/wp-pages", adminAuth, async (_req, res) => {
+    const staticPages = [
+      { id: "about", slug: "about", title: "About EntryLab", status: "published", link: "https://entrylab.io/about", date: null, modified: null },
+      { id: "terms",  slug: "terms",  title: "Terms & Conditions", status: "published", link: "https://entrylab.io/terms",  date: null, modified: null },
+      { id: "privacy", slug: "privacy", title: "Privacy Policy", status: "published", link: "https://entrylab.io/privacy", date: null, modified: null },
+      { id: "signals", slug: "signals", title: "Premium Signals", status: "published", link: "https://entrylab.io/signals", date: null, modified: null },
+    ];
+    return res.json(staticPages);
   });
 
   app.get("/api/admin/articles/:id", adminAuth, async (req, res) => {
@@ -1895,36 +1930,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Serve approved reviews from DB if we found a slug match
-      if (firmSlug) {
+      // Also try slug directly if itemId doesn't look numeric
+      const slugFromParam = /^\d+$/.test(itemId) ? firmSlug : itemId;
+
+      // Serve approved reviews from DB
+      const lookupSlug = slugFromParam || firmSlug;
+      if (lookupSlug) {
         const dbReviews = await db.select().from(reviewsTable)
-          .where(and(eq(reviewsTable.firmSlug, firmSlug), eq(reviewsTable.status, "approved")))
+          .where(and(eq(reviewsTable.firmSlug, lookupSlug), eq(reviewsTable.status, "approved")))
           .orderBy(desc(reviewsTable.createdAt));
-        if (dbReviews.length > 0) {
-          return res.json(dbReviews.map((r) => ({
-            id: r.id,
-            acf: {
-              rating: r.rating,
-              review_title: r.title,
-              review_text: r.reviewText,
-              reviewer_name: r.reviewerName,
-            },
-            date: r.createdAt,
-            status: "publish",
-          })));
-        }
+        return res.json(dbReviews.map((r) => ({
+          id: r.id,
+          acf: {
+            rating: r.rating,
+            review_title: r.title,
+            review_text: r.reviewText,
+            reviewer_name: r.reviewerName,
+          },
+          date: r.createdAt,
+          status: "publish",
+        })));
       }
 
-      // Fallback: serve from WordPress cache (transition period)
-      const reviews = await fetchWordPressWithCache(REVIEWS_CACHE_KEY);
-      const filteredReviews = reviews.filter((review: any) => {
-        const reviewedItem = review.acf?.reviewed_item;
-        if (Array.isArray(reviewedItem)) {
-          return reviewedItem.some((item: any) => item.ID?.toString() === itemId || item?.toString() === itemId);
-        }
-        return reviewedItem?.ID?.toString() === itemId || reviewedItem?.toString() === itemId;
-      });
-      res.json(filteredReviews);
+      res.json([]);
     } catch (error) {
       console.error("Error fetching reviews:", error);
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
@@ -2262,87 +2290,72 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
           return res.sendStatus(403);
         }
         
-        // Parse callback data (approve_123, reject_123, view_123)
-        const approveMatch = callbackData?.match(/^approve_(\d+)$/);
-        const rejectMatch = callbackData?.match(/^reject_(\d+)$/);
-        const viewMatch = callbackData?.match(/^view_(\d+)$/);
+        // Parse callback data — supports UUID and legacy numeric WP IDs
+        const approveMatch = callbackData?.match(/^approve_([a-zA-Z0-9\-]+)$/);
+        const rejectMatch  = callbackData?.match(/^reject_([a-zA-Z0-9\-]+)$/);
+        const viewMatch    = callbackData?.match(/^view_([a-zA-Z0-9\-]+)$/);
+
+        // Helper: look up review by DB UUID or legacy wpPostId
+        const findReview = async (id: string) => {
+          const isNumeric = /^\d+$/.test(id);
+          if (isNumeric) {
+            const [r] = await db.select().from(reviewsTable).where(eq(reviewsTable.wpPostId, Number(id)));
+            return r || null;
+          }
+          const [r] = await db.select().from(reviewsTable).where(eq(reviewsTable.id, id));
+          return r || null;
+        };
         
         if (approveMatch) {
-          const postId = approveMatch[1];
+          const reviewId = approveMatch[1];
           bot?.answerCallbackQuery(update.callback_query.id, { text: '✅ Approving review...' });
-          
           try {
-            await fetchWordPress(
-              `https://admin.entrylab.io/wp-json/wp/v2/review/${postId}`,
-              {
-                method: 'POST',
-                body: { status: 'publish' },
-                requireAuth: true
-              }
-            );
-            
-            // Clear the reviews cache so the new approved review appears immediately
-            apiCache.delete(REVIEWS_CACHE_KEY);
-            console.log('[Cache] Cleared reviews cache after approval (button)');
-            
+            const review = await findReview(reviewId);
+            if (!review) throw new Error(`Review ${reviewId} not found in DB`);
+            await db.update(reviewsTable)
+              .set({ status: "approved", updatedAt: new Date() })
+              .where(eq(reviewsTable.id, review.id));
+            console.log('[Reviews] Approved review', review.id);
             await sendTelegramMessage(
-              `✅ *Review Approved!*\n\nPost ID: ${postId}\nThe review has been published successfully.\n\n🔗 [View Live Post](https://admin.entrylab.io/wp-admin/post.php?post=${postId}&action=edit)`,
-              'Markdown'
+              `✅ *Review Approved\\!*\n\n*Reviewer:* ${review.reviewerName}\n*Firm:* ${review.firmName || review.firmSlug}\n*Rating:* ${review.rating}/10\n\nThe review is now live on the site\\.`,
+              'MarkdownV2'
             );
           } catch (error: any) {
             console.error('Error approving review:', error);
             const errorMsg = (error.message || 'Unknown error').replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
-            await sendTelegramMessage(`❌ *Error approving review ${postId}*\n\n${errorMsg}`, 'Markdown');
+            await sendTelegramMessage(`❌ *Error approving review ${reviewId}*\n\n${errorMsg}`, 'Markdown');
           }
         } else if (rejectMatch) {
-          const postId = rejectMatch[1];
+          const reviewId = rejectMatch[1];
           bot?.answerCallbackQuery(update.callback_query.id, { text: '🗑️ Rejecting review...' });
-          
           try {
-            await fetchWordPress(
-              `https://admin.entrylab.io/wp-json/wp/v2/review/${postId}`,
-              {
-                method: 'DELETE',
-                requireAuth: true
-              }
-            );
-            
-            // Clear the reviews cache so the rejected review is removed immediately
-            apiCache.delete(REVIEWS_CACHE_KEY);
-            console.log('[Cache] Cleared reviews cache after rejection (button)');
-            
-            await sendTelegramMessage(
-              `🗑️ *Review Rejected*\n\nPost ID: ${postId}\nThe review has been moved to trash.`
-            );
+            const review = await findReview(reviewId);
+            if (!review) throw new Error(`Review ${reviewId} not found in DB`);
+            await db.update(reviewsTable)
+              .set({ status: "rejected", updatedAt: new Date() })
+              .where(eq(reviewsTable.id, review.id));
+            console.log('[Reviews] Rejected review', review.id);
+            await sendTelegramMessage(`🗑️ *Review Rejected*\n\n*Reviewer:* ${review.reviewerName}\n*Firm:* ${review.firmName || review.firmSlug}\n\nThe review has been rejected\\.`, 'MarkdownV2');
           } catch (error: any) {
             console.error('Error rejecting review:', error);
             const errorMsg = (error.message || 'Unknown error').replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
-            await sendTelegramMessage(`❌ *Error rejecting review ${postId}*\n\n${errorMsg}`, 'Markdown');
+            await sendTelegramMessage(`❌ *Error rejecting review ${reviewId}*\n\n${errorMsg}`, 'Markdown');
           }
         } else if (viewMatch) {
-          const postId = viewMatch[1];
+          const reviewId = viewMatch[1];
           bot?.answerCallbackQuery(update.callback_query.id, { text: '👁️ Fetching details...' });
-          
           try {
-            const post = await fetchWordPress(
-              `https://admin.entrylab.io/wp-json/wp/v2/review/${postId}`,
-              { requireAuth: true }
-            );
-            
-            const title = post.title?.rendered || 'Untitled';
-            const acf = post.acf || {};
-            const reviewText = acf.review_text || 'No review text';
-            
-            const escapeText = (text: string) => text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
-            
+            const review = await findReview(reviewId);
+            if (!review) throw new Error(`Review ${reviewId} not found`);
+            const escapeText = (t: string) => (t || '').replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
             await sendTelegramMessage(
-              `📄 *Full Review Details*\n\n*Title:* ${escapeText(title)}\n*Rating:* ${acf.rating}/5\n*Author:* ${escapeText(acf.reviewer_name || 'Anonymous')}\n\n*Review:*\n${escapeText(reviewText.substring(0, 500))}${reviewText.length > 500 ? '...' : ''}\n\n[Edit in WordPress](https://admin.entrylab.io/wp-admin/post.php?post=${postId}&action=edit)`,
+              `📄 *Full Review Details*\n\n*Firm:* ${escapeText(review.firmName || review.firmSlug)}\n*Rating:* ${review.rating || '?'}/10\n*Author:* ${escapeText(review.reviewerName)}\n\n*Title:* ${escapeText(review.title || '')}\n\n*Review:*\n${escapeText((review.reviewText || '').substring(0, 500))}${(review.reviewText || '').length > 500 ? '...' : ''}`,
               'Markdown'
             );
           } catch (error: any) {
             console.error('Error fetching review:', error);
             const errorMsg = (error.message || 'Unknown error').replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
-            await sendTelegramMessage(`❌ *Error fetching review ${postId}*\n\n${errorMsg}`, 'Markdown');
+            await sendTelegramMessage(`❌ *Error fetching review ${reviewId}*\n\n${errorMsg}`, 'Markdown');
           }
         } else {
           bot?.answerCallbackQuery(update.callback_query.id, { text: 'Unknown command' });
@@ -2362,82 +2375,71 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
           return res.sendStatus(403);
         }
         
-        // Parse commands like /approve_123, /reject_123, /view_123
-        const approveMatch = text.match(/^\/approve_(\d+)$/);
-        const rejectMatch = text.match(/^\/reject_(\d+)$/);
-        const viewMatch = text.match(/^\/view_(\d+)$/);
+        // Parse commands like /approve_<id>, /reject_<id>, /view_<id> (UUID or numeric)
+        const approveMatch = text.match(/^\/approve_([a-zA-Z0-9\-]+)$/);
+        const rejectMatch  = text.match(/^\/reject_([a-zA-Z0-9\-]+)$/);
+        const viewMatch    = text.match(/^\/view_([a-zA-Z0-9\-]+)$/);
+
+        const findReviewByIdOrWpId = async (id: string) => {
+          const isNumeric = /^\d+$/.test(id);
+          if (isNumeric) {
+            const [r] = await db.select().from(reviewsTable).where(eq(reviewsTable.wpPostId, Number(id)));
+            return r || null;
+          }
+          const [r] = await db.select().from(reviewsTable).where(eq(reviewsTable.id, id));
+          return r || null;
+        };
         
         if (approveMatch) {
-          const postId = approveMatch[1];
+          const reviewId = approveMatch[1];
           try {
-            // Update WordPress review status to 'publish'
-            const result = await fetchWordPress(
-              `https://admin.entrylab.io/wp-json/wp/v2/review/${postId}`,
-              {
-                method: 'POST',
-                body: { status: 'publish' },
-                requireAuth: true
-              }
-            );
-            
-            // Clear the reviews cache so the new approved review appears immediately
-            apiCache.delete(REVIEWS_CACHE_KEY);
-            console.log('[Cache] Cleared reviews cache after approval');
-            
+            const review = await findReviewByIdOrWpId(reviewId);
+            if (!review) throw new Error(`Review ${reviewId} not found in DB`);
+            await db.update(reviewsTable)
+              .set({ status: "approved", updatedAt: new Date() })
+              .where(eq(reviewsTable.id, review.id));
+            console.log('[Reviews] Approved review via command', review.id);
             await sendTelegramMessage(
-              `✅ *Review Approved!*\n\nPost ID: ${postId}\nThe review has been published successfully.\n\n🔗 [View Live Post](https://admin.entrylab.io/wp-admin/post.php?post=${postId}&action=edit)`,
+              `✅ *Review Approved!*\n\n*Reviewer:* ${review.reviewerName}\n*Firm:* ${review.firmName || review.firmSlug}\n\nThe review is now live on the site.`,
               'Markdown'
             );
           } catch (error: any) {
             console.error('Error approving review:', error);
             const errorMsg = (error.message || 'Unknown error').replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
-            await sendTelegramMessage(`❌ *Error approving review ${postId}*\n\n${errorMsg}`, 'Markdown');
+            await sendTelegramMessage(`❌ *Error approving review ${reviewId}*\n\n${errorMsg}`, 'Markdown');
           }
         } else if (rejectMatch) {
-          const postId = rejectMatch[1];
+          const reviewId = rejectMatch[1];
           try {
-            // Move review to trash
-            const result = await fetchWordPress(
-              `https://admin.entrylab.io/wp-json/wp/v2/review/${postId}`,
-              {
-                method: 'DELETE',
-                requireAuth: true
-              }
-            );
-            
-            // Clear the reviews cache so the rejected review is removed immediately
-            apiCache.delete(REVIEWS_CACHE_KEY);
-            console.log('[Cache] Cleared reviews cache after rejection');
-            
+            const review = await findReviewByIdOrWpId(reviewId);
+            if (!review) throw new Error(`Review ${reviewId} not found in DB`);
+            await db.update(reviewsTable)
+              .set({ status: "rejected", updatedAt: new Date() })
+              .where(eq(reviewsTable.id, review.id));
+            console.log('[Reviews] Rejected review via command', review.id);
             await sendTelegramMessage(
-              `🗑️ *Review Rejected*\n\nPost ID: ${postId}\nThe review has been moved to trash.`
+              `🗑️ *Review Rejected*\n\n*Reviewer:* ${review.reviewerName}\n*Firm:* ${review.firmName || review.firmSlug}\n\nThe review has been rejected.`,
+              'Markdown'
             );
           } catch (error: any) {
             console.error('Error rejecting review:', error);
             const errorMsg = (error.message || 'Unknown error').replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
-            await sendTelegramMessage(`❌ *Error rejecting review ${postId}*\n\n${errorMsg}`, 'Markdown');
+            await sendTelegramMessage(`❌ *Error rejecting review ${reviewId}*\n\n${errorMsg}`, 'Markdown');
           }
         } else if (viewMatch) {
-          const postId = viewMatch[1];
+          const reviewId = viewMatch[1];
           try {
-            // Fetch full review details
-            const post = await fetchWordPress(
-              `https://admin.entrylab.io/wp-json/wp/v2/review/${postId}`,
-              { requireAuth: true }
-            );
-            
-            const title = post.title?.rendered || 'Untitled';
-            const content = post.content?.rendered || '';
-            const plainContent = content.replace(/<[^>]*>/g, '').substring(0, 500);
-            
+            const review = await findReviewByIdOrWpId(reviewId);
+            if (!review) throw new Error(`Review ${reviewId} not found`);
+            const escapeText = (t: string) => (t || '').replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
             await sendTelegramMessage(
-              `📄 *Full Review Details*\n\n*Title:* ${title}\n\n*Content:*\n${plainContent}${content.length > 500 ? '...' : ''}\n\n[Edit in WordPress](https://admin.entrylab.io/wp-admin/post.php?post=${postId}&action=edit)`,
+              `📄 *Full Review Details*\n\n*Firm:* ${escapeText(review.firmName || review.firmSlug)}\n*Rating:* ${review.rating || '?'}/10\n*Author:* ${escapeText(review.reviewerName)}\n\n*Title:* ${escapeText(review.title || '')}\n\n*Review:*\n${escapeText((review.reviewText || '').substring(0, 500))}${(review.reviewText || '').length > 500 ? '...' : ''}`,
               'Markdown'
             );
           } catch (error: any) {
             console.error('Error fetching review:', error);
             const errorMsg = (error.message || 'Unknown error').replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
-            await sendTelegramMessage(`❌ *Error fetching review ${postId}*\n\n${errorMsg}`, 'Markdown');
+            await sendTelegramMessage(`❌ *Error fetching review ${reviewId}*\n\n${errorMsg}`, 'Markdown');
           }
         }
       }
@@ -2453,12 +2455,12 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
   app.post("/api/telegram/test-notification", async (req, res) => {
     try {
       await sendReviewNotification({
-        postId: 9999,
+        postId: "test-review-id-9999",
         brokerName: "Test Broker",
         rating: 4.5,
         author: "Test User",
         excerpt: "This is a test review notification to verify the Telegram bot integration is working correctly.",
-        reviewLink: "https://admin.entrylab.io/wp-admin/post.php?post=9999&action=edit"
+        reviewLink: "https://entrylab.io/admin/broker-reviews"
       });
       
       res.json({ success: true, message: "Test notification sent to Telegram channel" });
@@ -2468,64 +2470,12 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
     }
   });
 
-  // WordPress review webhook - receives notifications when new reviews are submitted
+  // Legacy WordPress review webhook — kept for backwards compatibility (WP is removed)
+  // New reviews are submitted via /api/reviews/submit and go directly to DB.
   app.post("/api/wordpress/review-webhook", async (req, res) => {
-    try {
-      const { post_id, post_title, post_status, post_type, acf } = req.body;
-      
-      // Debug logging
-      console.log('[WordPress Webhook] Received data:', JSON.stringify({ post_id, post_type, post_status, acf }, null, 2));
-      
-      // Only notify for pending reviews
-      if (post_status !== 'pending' || (post_type !== 'broker_review' && post_type !== 'prop_firm_review' && post_type !== 'review')) {
-        return res.sendStatus(200);
-      }
-      
-      // Extract review data from ACF fields
-      // For 'review' post type, extract broker name from reviewed_item
-      let brokerName = 'Unknown';
-      if (post_type === 'review' && acf?.reviewed_item) {
-        const reviewedItem = Array.isArray(acf.reviewed_item) ? acf.reviewed_item[0] : acf.reviewed_item;
-        console.log('[Broker Extraction] reviewedItem:', reviewedItem);
-        
-        // Handle both string ID and object formats
-        if (typeof reviewedItem === 'string' || typeof reviewedItem === 'number') {
-          // Just an ID - fetch broker name from WordPress
-          try {
-            const brokerData = await fetchWordPress(`https://admin.entrylab.io/wp-json/wp/v2/popular_broker/${reviewedItem}?acf_format=standard`);
-            brokerName = brokerData.title?.rendered || brokerData.acf?.name || 'Unknown';
-            console.log('[Broker Extraction] Fetched broker name:', brokerName);
-          } catch (err) {
-            console.error('[Broker Extraction] Failed to fetch broker:', err);
-          }
-        } else if (reviewedItem?.post_title) {
-          brokerName = reviewedItem.post_title;
-        }
-      } else {
-        brokerName = acf?.broker_name || acf?.prop_firm_name || 'Unknown';
-      }
-      
-      const rating = parseFloat(acf?.rating || acf?.overall_rating || '0');
-      const reviewerName = acf?.reviewer_name || 'Anonymous';
-      const reviewText = acf?.review_text || acf?.experience_text || '';
-      
-      console.log('[Telegram Notification] Sending:', { brokerName, rating, reviewerName });
-      
-      // Send Telegram notification
-      await sendReviewNotification({
-        postId: post_id,
-        brokerName,
-        rating,
-        author: reviewerName,
-        excerpt: reviewText,
-        reviewLink: `https://admin.entrylab.io/wp-admin/post.php?post=${post_id}&action=edit`
-      });
-      
-      res.sendStatus(200);
-    } catch (error) {
-      console.error('WordPress review webhook error:', error);
-      res.sendStatus(500);
-    }
+    // WordPress no longer calls this — just acknowledge
+    console.log('[Legacy Webhook] /api/wordpress/review-webhook called — ignored (WP removed)');
+    res.sendStatus(200);
   });
 
   // Legacy /category/* URL Redirects
