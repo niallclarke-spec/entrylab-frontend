@@ -1527,21 +1527,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Fetch media by ID (fallback when _embed doesn't work)
-  app.get("/api/wordpress/media/:id", async (req, res) => {
-    try {
-      const { id } = req.params;
-      const media = await fetchWordPressWithCache(
-        `https://admin.entrylab.io/wp-json/wp/v2/media/${id}`
-        // Use 15 min default cache
-      );
-      
-      // Set browser cache headers (5 min) to reduce repeat requests
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      res.json(media);
-    } catch (error) {
-      handleWordPressError(error, res, "fetch media");
-    }
+  // Media endpoint — DB articles store image URLs directly in featuredImage field,
+  // so this endpoint is only reached by legacy WP content (which no longer exists).
+  app.get("/api/wordpress/media/:id", (_req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.status(404).json({ error: "Media not found — all article images are stored directly in the database." });
   });
 
   // Redirect /home to / (301 permanent redirect)
@@ -2336,20 +2326,18 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
   // Injects title, meta description, and content for Google to see without waiting for JavaScript
   // This runs BEFORE Vite/static middleware
   
+  // Static SEO data for non-article pages (no WP calls needed)
+  const staticPageSeo: Record<string, { title: string; description: string }> = {
+    '/signals':   { title: 'Premium Forex Signals | EntryLab', description: 'Get real-time premium forex signals curated by professional traders. Join EntryLab and elevate your trading.' },
+    '/subscribe': { title: 'Subscribe to EntryLab Premium | EntryLab', description: 'Choose your EntryLab premium plan and get access to exclusive forex signals, broker insights, and more.' },
+    '/success':   { title: 'Payment Successful | EntryLab', description: 'Welcome to EntryLab Premium. Your subscription is now active.' },
+  };
+
   app.use(async (req, res, next) => {
     const url = req.originalUrl || req.url;
     
-    console.log('[SEO MIDDLEWARE] Request URL:', url);
-    
     // Only process HTML requests for specific page types
     const isHtmlRequest = !url.includes('.') || url.endsWith('.html');
-    
-    // Map React routes to WordPress page slugs
-    const wpPageMap: Record<string, string> = {
-      '/signals': 'signals',
-      '/subscribe': 'subscribe',
-      '/success': 'payment-success'
-    };
     
     const cleanUrlForCheck = url.split('?')[0];
     const needsSEO = cleanUrlForCheck === '/' ||
@@ -2359,24 +2347,21 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
                      url.startsWith('/broker/') ||
                      url.startsWith('/prop-firm/') ||
                      url.match(/^\/(news|broker-news|broker-guides|prop-firm-news|trading-tools)/) ||
-                     wpPageMap[cleanUrlForCheck]; // WordPress pages
+                     !!staticPageSeo[cleanUrlForCheck];
     
     if (isHtmlRequest && needsSEO) {
-      console.log('[SEO MIDDLEWARE] Will inject SEO data for:', url);
-      
       // Pre-fetch page data to inject into HTML
       let pageData: any = null;
       try {
         const cleanUrl = url.split('?')[0];
         
-        // Check if this is a WordPress page
-        if (wpPageMap[cleanUrl]) {
-          const wpSlug = wpPageMap[cleanUrl];
-          console.log('[SEO] Fetching WordPress page:', wpSlug);
-          pageData = await fetchWordPressWithCache(
-            `https://admin.entrylab.io/wp-json/wp/v2/pages?slug=${wpSlug}&_embed`
-          );
-          pageData = pageData?.[0];
+        // Static pages — no external fetch needed
+        if (staticPageSeo[cleanUrl]) {
+          const seo = staticPageSeo[cleanUrl];
+          pageData = {
+            title: { rendered: seo.title },
+            excerpt: { rendered: seo.description },
+          };
         } else if (url.startsWith('/broker/')) {
           const slug = url.replace('/broker/', '').split('?')[0];
           // Try DB first
