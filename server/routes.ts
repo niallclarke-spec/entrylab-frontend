@@ -149,6 +149,42 @@ function propFirmDbToWpFormat(row: any) {
   };
 }
 
+// Convert DB article row to WP post format so existing frontend code works unchanged
+function articleDbToWpFormat(article: any): any {
+  const catSlug = article.category || "news";
+  const catName = catSlug
+    .split("-")
+    .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+  return {
+    id: article.wpPostId || article.id,
+    slug: article.slug,
+    title: { rendered: article.title },
+    excerpt: { rendered: article.excerpt ? `<p>${article.excerpt}</p>` : "" },
+    content: { rendered: article.content || "" },
+    date: article.publishedAt?.toISOString?.() || article.createdAt?.toISOString?.() || new Date().toISOString(),
+    modified: article.updatedAt?.toISOString?.() || new Date().toISOString(),
+    link: `/${catSlug}/${article.slug}`,
+    featured_media: 0,
+    categories: [],
+    status: article.status === "published" ? "publish" : article.status,
+    yoast_head_json: {
+      title: article.seoTitle || article.title,
+      description: article.seoDescription || article.excerpt || "",
+    },
+    acf: {
+      related_broker: article.relatedBroker || null,
+    },
+    _embedded: {
+      author: [{ name: article.author || "EntryLab Team" }],
+      "wp:featuredmedia": article.featuredImage
+        ? [{ source_url: article.featuredImage, alt_text: article.title }]
+        : [],
+      "wp:term": [[{ id: 0, name: catName, slug: catSlug }]],
+    },
+  };
+}
+
 // Helper function to make WordPress API requests using native https module
 function fetchWordPress(url: string, options: { method?: string; body?: any; requireAuth?: boolean } = {}): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -1069,27 +1105,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/posts", async (req, res) => {
     try {
       const { category } = req.query;
-      let url = "https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&acf_format=standard&per_page=100&orderby=date&order=desc";
-      
-      if (category) {
-        // If category is a slug (string), first fetch the category to get its ID
-        if (typeof category === 'string' && isNaN(Number(category))) {
-          const categoryUrl = `https://admin.entrylab.io/wp-json/wp/v2/categories?slug=${category}`;
-          const categoryData = await fetchWordPressWithCache(categoryUrl);
-          
-          if (categoryData && categoryData.length > 0) {
-            url += `&categories=${categoryData[0].id}`;
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+
+      // ── DB-first: serve from articles table ──────────────────────────────
+      const dbArticles = await db
+        .select()
+        .from(articlesTable)
+        .where(eq(articlesTable.status, "published"))
+        .orderBy(desc(articlesTable.publishedAt));
+
+      if (dbArticles.length > 0) {
+        let results = dbArticles;
+
+        // Filter by category when requested
+        if (category && typeof category === 'string') {
+          const catId = category.trim();
+          // catId may be a WP numeric ID, a DB UUID, or a slug — resolve to slug
+          let catSlug: string | null = null;
+          const wpIdNum = parseInt(catId, 10);
+          if (!isNaN(wpIdNum)) {
+            const [cat] = await db.select({ slug: categoriesTable.slug })
+              .from(categoriesTable).where(eq(categoriesTable.wpId, wpIdNum));
+            if (cat) catSlug = cat.slug;
           }
+          if (!catSlug) {
+            const [cat] = await db.select({ slug: categoriesTable.slug })
+              .from(categoriesTable).where(eq(categoriesTable.id, catId));
+            if (cat) catSlug = cat.slug;
+          }
+          if (!catSlug) catSlug = catId; // treat raw string as slug
+          results = results.filter(a => a.category === catSlug);
+        }
+
+        return res.json(results.map(articleDbToWpFormat));
+      }
+
+      // ── WP fallback (while articles haven't been synced yet) ────────────
+      let url = "https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&acf_format=standard&per_page=100&orderby=date&order=desc";
+      if (category) {
+        if (typeof category === 'string' && isNaN(Number(category))) {
+          const categoryData = await fetchWordPressWithCache(
+            `https://admin.entrylab.io/wp-json/wp/v2/categories?slug=${category}`
+          );
+          if (categoryData?.length > 0) url += `&categories=${categoryData[0].id}`;
         } else {
-          // Category is already an ID
           url += `&categories=${category}`;
         }
       }
-      
-      const posts = await fetchWordPressWithCache(url); // Use 15 min default cache
-      
-      // Set browser cache headers (5 min) to reduce repeat requests
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      const posts = await fetchWordPressWithCache(url);
       res.json(posts);
     } catch (error) {
       handleWordPressError(error, res, "fetch posts");
@@ -1198,40 +1261,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dbPropFirms = dbPropFirmRows.map((r: any) => propFirmDbToWpFormat(r.firm));
       }
 
-      // Fetch all content types in parallel
-      const [posts, wpBrokers, wpPropFirms] = await Promise.all([
-        // Posts with regular category
-        categoryId 
-          ? fetchWordPressWithCache(
-              `https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&acf_format=standard&per_page=100&orderby=date&order=desc&categories=${categoryId}`
-            ).catch(() => [])
-          : Promise.resolve([]),
-        
-        // Brokers with broker-category taxonomy
-        brokerCategoryId
-          ? fetchWordPressWithCache(
+      // Resolve category slug from WP IDs or DB IDs for article filtering
+      let articleCatSlug: string | null = typeof category === 'string' ? category : null;
+      if (categoryId) {
+        const [cat] = await db.select({ slug: categoriesTable.slug })
+          .from(categoriesTable).where(eq(categoriesTable.wpId, categoryId));
+        if (cat) articleCatSlug = cat.slug;
+      }
+
+      // Fetch DB articles for this category
+      const dbArticleQuery = db.select().from(articlesTable)
+        .where(eq(articlesTable.status, "published"))
+        .orderBy(desc(articlesTable.publishedAt));
+      const allDbArticles = await dbArticleQuery;
+      const posts = (articleCatSlug
+        ? allDbArticles.filter(a => a.category === articleCatSlug)
+        : allDbArticles
+      ).map(articleDbToWpFormat);
+
+      // DB-first for brokers and prop firms (already in dbBrokers/dbPropFirms from above)
+      // If DB is empty, fall back to WP for brokers/prop firms
+      let mergedBrokers = dbBrokers;
+      let mergedPropFirms = dbPropFirms;
+      if (dbBrokers.length === 0) {
+        const wpBrokers = brokerCategoryId
+          ? await fetchWordPressWithCache(
               `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard&broker-category=${brokerCategoryId}`
             ).catch(() => [])
-          : Promise.resolve([]),
-        
-        // Prop firms with prop-firm-category taxonomy
-        propFirmCategoryId
-          ? fetchWordPressWithCache(
+          : [];
+        mergedBrokers = wpBrokers || [];
+      }
+      if (dbPropFirms.length === 0) {
+        const wpPropFirms = propFirmCategoryId
+          ? await fetchWordPressWithCache(
               `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard&prop-firm-category=${propFirmCategoryId}`
             ).catch(() => [])
-          : Promise.resolve([])
-      ]);
-
-      // Merge DB-assigned items with WP items (dedup by slug, DB takes priority)
-      const wpBrokerSlugs = new Set((wpBrokers || []).map((b: any) => b.slug));
-      const wpPropFirmSlugs = new Set((wpPropFirms || []).map((p: any) => p.slug));
-      const mergedBrokers = [...(wpBrokers || []), ...dbBrokers.filter((b: any) => !wpBrokerSlugs.has(b.slug))];
-      const mergedPropFirms = [...(wpPropFirms || []), ...dbPropFirms.filter((p: any) => !wpPropFirmSlugs.has(p.slug))];
+          : [];
+        mergedPropFirms = wpPropFirms || [];
+      }
 
       // Set browser cache headers (5 min) to reduce repeat requests
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json({
-        posts: posts || [],
+        posts,
         brokers: mergedBrokers,
         propFirms: mergedPropFirms
       });
@@ -1242,13 +1314,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/wordpress/brokers", async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      const rows = await db.select().from(brokersTable).orderBy(asc(brokersTable.name));
+      if (rows.length > 0) return res.json(rows.map(brokerDbToWpFormat));
+      // WP fallback
       const brokers = await fetchWordPressWithCache(
         "https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard"
-        // Use 15 min default cache
       );
-      
-      // Set browser cache headers (5 min) to reduce repeat requests
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json(brokers);
     } catch (error) {
       handleWordPressError(error, res, "fetch brokers");
@@ -1257,13 +1329,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/wordpress/prop-firms", async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      const rows = await db.select().from(propFirmsTable).orderBy(asc(propFirmsTable.name));
+      if (rows.length > 0) return res.json(rows.map(propFirmDbToWpFormat));
+      // WP fallback
       const propFirms = await fetchWordPressWithCache(
         "https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard"
-        // Use 15 min default cache
       );
-      
-      // Set browser cache headers (5 min) to reduce repeat requests
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json(propFirms);
     } catch (error) {
       handleWordPressError(error, res, "fetch prop firms");
@@ -1315,18 +1387,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/broker/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      const [row] = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
+      if (row) return res.json(brokerDbToWpFormat(row));
+      // WP fallback
       const brokers = await fetchWordPressWithCache(
         `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`
-        // Use 15 min default cache
       );
-      
-      // Set browser cache headers (5 min) to reduce repeat requests
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      
-      if (brokers.length === 0) {
-        return res.status(404).json({ error: "Broker not found" });
-      }
-      
+      if (!brokers?.length) return res.status(404).json({ error: "Broker not found" });
       res.json(brokers[0]);
     } catch (error) {
       handleWordPressError(error, res, "fetch broker");
@@ -1336,18 +1404,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/wordpress/prop-firm/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      const [row] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
+      if (row) return res.json(propFirmDbToWpFormat(row));
+      // WP fallback
       const propFirms = await fetchWordPressWithCache(
         `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`
-        // Use 15 min default cache
       );
-      
-      // Set browser cache headers (5 min) to reduce repeat requests
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      
-      if (propFirms.length === 0) {
-        return res.status(404).json({ error: "Prop firm not found" });
-      }
-      
+      if (!propFirms?.length) return res.status(404).json({ error: "Prop firm not found" });
       res.json(propFirms[0]);
     } catch (error) {
       handleWordPressError(error, res, "fetch prop firm");
@@ -1496,86 +1560,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/wordpress/trust-signals", async (req, res) => {
+  // ─── Admin email leads ────────────────────────────────────────────────────
+
+  app.get("/api/admin/email-leads", adminAuth, async (req, res) => {
     try {
-      // Fetch trust signals from WordPress options
-      const signals = await fetchWordPressWithCache(
-        "https://admin.entrylab.io/wp-json/entrylab/v1/trust-signals"
-        // Use 15 min default cache
-      );
-      
-      // Set browser cache headers (5 min) to reduce repeat requests
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      res.json(signals);
-    } catch (error) {
-      console.error("Error fetching trust signals:", error);
-      // Set browser cache headers even for fallback responses
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      // Return defaults on error
-      res.json([
-        { icon: "users", value: "50,000+", label: "Active Traders" },
-        { icon: "trending", value: "$2.5B+", label: "Trading Volume" },
-        { icon: "award", value: "100+", label: "Verified Brokers" },
-        { icon: "shield", value: "2020", label: "Trusted Since" },
-      ]);
+      const leads = await db
+        .select()
+        .from(emailCaptures)
+        .orderBy(desc(emailCaptures.createdAt));
+      res.json(leads);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
     }
+  });
+
+  app.delete("/api/admin/email-leads/:id", adminAuth, async (req, res) => {
+    try {
+      await db.delete(emailCaptures).where(eq(emailCaptures.id, req.params.id));
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get("/api/wordpress/trust-signals", (_req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=7200');
+    res.json([
+      { icon: "users",   value: "50,000+", label: "Active Traders" },
+      { icon: "trending", value: "$2.5B+", label: "Trading Volume" },
+      { icon: "award",   value: "100+",    label: "Verified Brokers" },
+      { icon: "shield",  value: "2020",    label: "Trusted Since" },
+    ]);
   });
 
   app.get("/api/wordpress/post/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+
+      // ── DB-first ─────────────────────────────────────────────────────────
+      const [dbArticle] = await db
+        .select()
+        .from(articlesTable)
+        .where(and(eq(articlesTable.slug, slug), eq(articlesTable.status, "published")));
+
+      if (dbArticle) {
+        const wpPost = articleDbToWpFormat(dbArticle);
+        // Attach related broker from DB if present
+        if (dbArticle.relatedBroker) {
+          try {
+            const [brokerRow] = await db.select().from(brokersTable)
+              .where(eq(brokersTable.slug, dbArticle.relatedBroker));
+            if (brokerRow) wpPost.relatedBroker = brokerDbToWpFormat(brokerRow);
+          } catch (_) {}
+        }
+        return res.json(wpPost);
+      }
+
+      // ── WP fallback ───────────────────────────────────────────────────────
       const posts = await fetchWordPressWithCache(
         `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed&acf_format=standard`
-        // Use 15 min default cache
       );
-      
-      if (posts.length === 0) {
-        res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-        return res.status(404).json({ error: "Post not found" });
-      }
-      
+      if (!posts?.length) return res.status(404).json({ error: "Post not found" });
+
       const post = posts[0];
-      
-      // Check if article has a related broker (ACF relationship field)
       if (post.acf?.related_broker) {
         try {
-          // related_broker can be:
-          // - A single ID number
-          // - An array of IDs
-          // - An array of post objects with ID property
-          // - A single post object with ID property
-          let brokerId;
-          
           const relatedBroker = post.acf.related_broker;
-          
-          if (Array.isArray(relatedBroker)) {
-            // It's an array - get the first item
-            const firstItem = relatedBroker[0];
-            brokerId = typeof firstItem === 'object' && firstItem.ID ? firstItem.ID : firstItem;
-          } else if (typeof relatedBroker === 'object' && relatedBroker.ID) {
-            // It's a single object with ID property
-            brokerId = relatedBroker.ID;
-          } else {
-            // It's a single ID
-            brokerId = relatedBroker;
-          }
-          
-          // Fetch the related broker details
-          const broker = await fetchWordPressWithCache(
+          let brokerId = Array.isArray(relatedBroker)
+            ? (typeof relatedBroker[0] === 'object' ? relatedBroker[0].ID : relatedBroker[0])
+            : (typeof relatedBroker === 'object' ? relatedBroker.ID : relatedBroker);
+          post.relatedBroker = await fetchWordPressWithCache(
             `https://admin.entrylab.io/wp-json/wp/v2/popular_broker/${brokerId}?acf_format=standard`
-            // Use 15 min default cache
           );
-          
-          // Add broker to response
-          post.relatedBroker = broker;
-        } catch (brokerError) {
-          console.error("Error fetching related broker:", brokerError);
-          // Continue without broker if fetch fails
-        }
+        } catch (_) {}
       }
-      
-      // Set browser cache headers (5 min) to reduce repeat requests
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json(post);
     } catch (error) {
       handleWordPressError(error, res, "fetch post");
@@ -1662,20 +1721,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/newsletter/subscribe", async (req, res) => {
     try {
-      const { email, source } = req.body;
-      
+      const { email, source, utmCampaign, utmSource, utmMedium, utmContent, utmTerm, gclid, fbclid } = req.body;
+
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return res.status(400).json({ error: "Invalid email address" });
       }
 
-      const result = await fetchWordPress(
-        "https://admin.entrylab.io/wp-json/entrylab/v1/newsletter/subscribe",
-        {
-          method: 'POST',
-          body: { email, source: source || 'Unknown' }
-        }
-      );
-      res.json(result);
+      const ipAddress = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim()
+        || req.socket?.remoteAddress || null;
+
+      // Write to DB (upsert by email — silently ignore duplicate)
+      await db.insert(emailCaptures).values({
+        email,
+        source: source || "newsletter",
+        utmCampaign: utmCampaign || null,
+        utmSource: utmSource || null,
+        utmMedium: utmMedium || null,
+        utmContent: utmContent || null,
+        utmTerm: utmTerm || null,
+        gclid: gclid || null,
+        fbclid: fbclid || null,
+        ipAddress,
+        userAgent: req.headers['user-agent'] || null,
+      }).onConflictDoNothing();
+
+      res.json({ success: true });
     } catch (error) {
       console.error("Error subscribing to newsletter:", error);
       res.status(500).json({ error: "Failed to subscribe" });
@@ -1696,21 +1766,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { email, firstName, brokerId, brokerName } = validationResult.data;
 
-      // Also subscribe to WordPress newsletter with broker source
-      try {
-        console.log(`[Broker Alert] Subscribing ${email} to newsletter with source: "${brokerName}"`);
-        await fetchWordPress(
-          "https://admin.entrylab.io/wp-json/entrylab/v1/newsletter/subscribe",
-          {
-            method: 'POST',
-            body: { email, source: brokerName }
-          }
-        );
-        console.log(`[Broker Alert] Successfully subscribed ${email} to newsletter with source: "${brokerName}"`);
-      } catch (wpError) {
-        console.error("Error subscribing to WordPress newsletter:", wpError);
-        // Continue even if WordPress newsletter fails
-      }
+      // Capture email in newsletter DB (non-blocking)
+      db.insert(emailCaptures).values({
+        email,
+        source: brokerName || "broker-alert",
+      }).onConflictDoNothing().catch((e: any) =>
+        console.error("[Broker Alert] Email capture failed:", e)
+      );
 
       // Store in our database
       await db.insert(brokerAlerts).values({
@@ -1796,12 +1858,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         reviewLink: `https://entrylab.io/admin/reviews`,
       }).catch((e: any) => console.error('[Telegram] Review notification failed:', e));
 
-      // Newsletter opt-in (non-blocking)
+      // Newsletter opt-in — capture in DB (non-blocking)
       if (newsletterOptin && email) {
-        fetchWordPress("https://admin.entrylab.io/wp-json/entrylab/v1/newsletter/subscribe", {
-          method: 'POST',
-          body: { email, source: resolvedFirmName ? `${resolvedFirmName} Review` : 'Review Page' }
-        }).catch((e: any) => console.error('Newsletter subscription failed:', e));
+        db.insert(emailCaptures).values({
+          email,
+          source: resolvedFirmName ? `${resolvedFirmName} Review` : "Review Page",
+        }).onConflictDoNothing().catch((e: any) =>
+          console.error("[Review] Email capture failed:", e)
+        );
       }
 
       res.json({ success: true, review: { id: savedReview.id } });
@@ -2528,25 +2592,84 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
           pageData = pageData?.[0];
         } else if (url.startsWith('/broker/')) {
           const slug = url.replace('/broker/', '').split('?')[0];
-          pageData = await fetchWordPressWithCache(
-            `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`
-          );
-          pageData = pageData?.[0]; // API returns array
+          // Try DB first
+          const [dbBroker] = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
+          if (dbBroker) {
+            pageData = {
+              name: dbBroker.name,
+              title: { rendered: dbBroker.name },
+              excerpt: { rendered: dbBroker.tagline || "" },
+              acf: {
+                broker_logo: { url: dbBroker.logoUrl || "" },
+                rating: dbBroker.rating?.toString() || "",
+                overall_score: dbBroker.rating?.toString() || "",
+                broker_intro: dbBroker.tagline || "",
+                regulation: dbBroker.regulation || "",
+                regulated_by: dbBroker.regulation || "",
+                min_deposit: (dbBroker as any).minDeposit || "",
+                max_leverage: (dbBroker as any).maxLeverage || "",
+                spread_from: (dbBroker as any).spreadFrom || "",
+                trading_platforms: (dbBroker as any).platforms || "",
+                deposit_methods: (dbBroker as any).paymentMethods || "",
+                headquarters: (dbBroker as any).headquarters || "",
+                founded: (dbBroker as any).yearFounded || "",
+                broker_usp: ((dbBroker as any).highlights || []).join(", "),
+                pros: (dbBroker as any).pros || [],
+                cons: (dbBroker as any).cons || [],
+                about: (dbBroker as any).content || "",
+              },
+            };
+          } else {
+            const wpData = await fetchWordPressWithCache(
+              `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`
+            ).catch(() => null);
+            pageData = wpData?.[0];
+          }
         } else if (url.startsWith('/prop-firm/')) {
           const slug = url.replace('/prop-firm/', '').split('?')[0];
-          pageData = await fetchWordPressWithCache(
-            `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`
-          );
-          pageData = pageData?.[0];
+          // Try DB first
+          const [dbFirm] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
+          if (dbFirm) {
+            pageData = {
+              name: dbFirm.name,
+              title: { rendered: dbFirm.name },
+              excerpt: { rendered: dbFirm.tagline || "" },
+              acf: {
+                prop_firm_logo: { url: dbFirm.logoUrl || "" },
+                rating: dbFirm.rating?.toString() || "",
+                overall_score: dbFirm.rating?.toString() || "",
+                firm_intro: dbFirm.tagline || "",
+                profit_split: (dbFirm as any).profitSplit || "",
+                max_funding_size: (dbFirm as any).maxFundingSize || "",
+                evaluation_fee: (dbFirm as any).evaluationFee || "",
+                headquarters: (dbFirm as any).headquarters || "",
+                prop_firm_usp: ((dbFirm as any).highlights || []).join(", "),
+                pros: (dbFirm as any).pros || [],
+                cons: (dbFirm as any).cons || [],
+              },
+            };
+          } else {
+            const wpData = await fetchWordPressWithCache(
+              `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`
+            ).catch(() => null);
+            pageData = wpData?.[0];
+          }
         } else if (url.match(/\/[^/]+\/[^/]+$/)) {
           // Article format: /category/slug
           const parts = url.split('/').filter(Boolean);
           if (parts.length === 2) {
             const slug = parts[1].split('?')[0];
-            pageData = await fetchWordPressWithCache(
-              `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed&acf_format=standard`
-            );
-            pageData = pageData?.[0];
+            // Try DB first
+            const [dbArticle] = await db.select().from(articlesTable)
+              .where(and(eq(articlesTable.slug, slug), eq(articlesTable.status, "published")));
+            if (dbArticle) {
+              pageData = articleDbToWpFormat(dbArticle);
+            } else {
+              const wpData = await fetchWordPressWithCache(
+                `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed&acf_format=standard`
+              ).catch(() => null);
+              pageData = wpData?.[0];
+            }
           }
         }
       } catch (error) {

@@ -119,12 +119,9 @@ export default function PropFirmReview() {
     );
   }
 
-  // SEO with fallbacks: Yoast SEO fields OR auto-generated defaults
-  const seoTitle = (wpPropFirm as any)?.yoast_head_json?.title || 
-                   `${stripHtml(propFirm.name)} Review 2025 | EntryLab`;
-  const seoDescription = (wpPropFirm as any)?.yoast_head_json?.og_description || 
-                         (wpPropFirm as any)?.yoast_head_json?.description ||
-                         propFirm.tagline || 
+  // SEO with auto-generated defaults from DB data
+  const seoTitle = `${stripHtml(propFirm.name)} Review 2025 | EntryLab`;
+  const seoDescription = propFirm.tagline || 
                          `Comprehensive review of ${stripHtml(propFirm.name)}. Read about funding, profit splits, evaluation process, and more.`;
 
   // Breadcrumbs for structured data

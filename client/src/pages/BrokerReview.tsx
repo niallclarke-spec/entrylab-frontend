@@ -107,12 +107,9 @@ export default function BrokerReview() {
     );
   }
 
-  // SEO with fallbacks: Yoast SEO fields OR auto-generated defaults
-  const seoTitle = (wpBroker as any)?.yoast_head_json?.title || 
-                   `${stripHtml(broker.name)} Review 2025 | EntryLab`;
-  const seoDescription = (wpBroker as any)?.yoast_head_json?.og_description || 
-                         (wpBroker as any)?.yoast_head_json?.description ||
-                         broker.tagline || 
+  // SEO with fallbacks: auto-generated defaults from DB data
+  const seoTitle = `${stripHtml(broker.name)} Review 2025 | EntryLab`;
+  const seoDescription = broker.tagline || 
                          `Comprehensive review of ${stripHtml(broker.name)}. Read about spreads, regulation, platforms, and more.`;
 
   // Breadcrumbs for structured data

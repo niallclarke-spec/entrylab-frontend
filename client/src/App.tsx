@@ -42,6 +42,7 @@ const AdminWpPages = lazy(() => import("@/pages/admin/AdminWpPages"));
 const AdminArticleEditor = lazy(() => import("@/pages/admin/AdminArticleEditor"));
 const AdminPlaceholder = lazy(() => import("@/pages/admin/AdminPlaceholder"));
 const AdminCategories = lazy(() => import("@/pages/admin/AdminCategories"));
+const AdminEmailLeads = lazy(() => import("@/pages/admin/AdminEmailLeads"));
 
 function PageLoadingFallback() {
   return (
@@ -107,6 +108,9 @@ function Router() {
       <Route path="/admin/broker-reviews">
         <S><AdminReviews type="broker-reviews" /></S>
       </Route>
+
+      {/* Blog Leads */}
+      <Route path="/admin/email-leads"><S><AdminEmailLeads /></S></Route>
 
       {/* Pages & Posts (articles) */}
       <Route path="/admin/pages"><S><AdminWpPages /></S></Route>

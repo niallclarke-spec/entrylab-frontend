@@ -6,7 +6,7 @@ import { C, font } from "@/lib/adminTheme";
 import {
   LayoutDashboard, TrendingUp, Star, Building2, ArrowLeftRight,
   FileText, PenLine, Tag, Globe, Monitor, Shield, CreditCard,
-  Link2, Search, Users, LogOut, ChevronLeft, ChevronRight,
+  Link2, Search, Users, LogOut, ChevronLeft, ChevronRight, Mail,
 } from "lucide-react";
 
 interface NavItem {
@@ -38,6 +38,7 @@ const sections: NavSection[] = [
       { id: "comparisons",  label: "Comparisons",   icon: ArrowLeftRight, href: "/admin/comparisons" },
       { id: "pages",        label: "Pages",          icon: FileText,       href: "/admin/pages" },
       { id: "posts",        label: "Blog Posts",     icon: PenLine,        href: "/admin/posts" },
+      { id: "email-leads",  label: "Blog Leads",     icon: Mail,           href: "/admin/email-leads" },
     ],
   },
   {
