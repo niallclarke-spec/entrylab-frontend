@@ -829,13 +829,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(articlesTable)
         .orderBy(desc(articlesTable.createdAt));
 
-      if (dbArticles.length > 0) return res.json(dbArticles);
-
-      // Fallback: pull from WordPress when DB has no articles yet
-      const wpPosts = await fetchAllWPPages(
-        'https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&acf_format=standard'
-      );
-      return res.json(wpPosts.map(mapWpPostToRow));
+      return res.json(dbArticles);
     } catch (err) {
       console.error("[Admin] Error fetching articles:", err);
       return res.status(500).json({ error: "Failed to fetch articles" });
@@ -860,19 +854,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(articlesTable)
         .where(eq(articlesTable.id, req.params.id));
       if (article) return res.json(article);
-
-      // Fallback: load from WordPress by numeric post ID
-      const wpId = parseInt(req.params.id, 10);
-      if (isNaN(wpId)) return res.status(404).json({ error: "Not found" });
-
-      const wpPost = await fetchWordPressWithCache(
-        `https://admin.entrylab.io/wp-json/wp/v2/posts/${wpId}?_embed&acf_format=standard`,
-        { cacheTTL: 300 }
-      );
-      if (!wpPost || wpPost.code === 'rest_post_invalid_id') {
-        return res.status(404).json({ error: "Not found" });
-      }
-      return res.json(mapWpPostToFull(wpPost));
+      return res.status(404).json({ error: "Not found" });
     } catch (err) {
       return res.status(500).json({ error: "Failed to fetch article" });
     }
@@ -1203,53 +1185,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { category } = req.query;
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
 
-      // ── DB-first: serve from articles table ──────────────────────────────
-      const dbArticles = await db
-        .select()
-        .from(articlesTable)
-        .where(eq(articlesTable.status, "published"))
+      let catSlug: string | null = null;
+      if (category && typeof category === 'string') {
+        const catId = category.trim();
+        const wpIdNum = parseInt(catId, 10);
+        if (!isNaN(wpIdNum)) {
+          const [cat] = await db.select({ slug: categoriesTable.slug })
+            .from(categoriesTable).where(eq(categoriesTable.wpId, wpIdNum));
+          if (cat) catSlug = cat.slug;
+        }
+        if (!catSlug) {
+          const [cat] = await db.select({ slug: categoriesTable.slug })
+            .from(categoriesTable).where(eq(categoriesTable.id, catId));
+          if (cat) catSlug = cat.slug;
+        }
+        if (!catSlug) catSlug = catId;
+      }
+
+      const query = db.select().from(articlesTable)
+        .where(catSlug
+          ? and(eq(articlesTable.status, "published"), eq(articlesTable.category, catSlug))
+          : eq(articlesTable.status, "published"))
         .orderBy(desc(articlesTable.publishedAt));
 
-      if (dbArticles.length > 0) {
-        let results = dbArticles;
-
-        // Filter by category when requested
-        if (category && typeof category === 'string') {
-          const catId = category.trim();
-          // catId may be a WP numeric ID, a DB UUID, or a slug — resolve to slug
-          let catSlug: string | null = null;
-          const wpIdNum = parseInt(catId, 10);
-          if (!isNaN(wpIdNum)) {
-            const [cat] = await db.select({ slug: categoriesTable.slug })
-              .from(categoriesTable).where(eq(categoriesTable.wpId, wpIdNum));
-            if (cat) catSlug = cat.slug;
-          }
-          if (!catSlug) {
-            const [cat] = await db.select({ slug: categoriesTable.slug })
-              .from(categoriesTable).where(eq(categoriesTable.id, catId));
-            if (cat) catSlug = cat.slug;
-          }
-          if (!catSlug) catSlug = catId; // treat raw string as slug
-          results = results.filter(a => a.category === catSlug);
-        }
-
-        return res.json(results.map(articleDbToWpFormat));
-      }
-
-      // ── WP fallback (while articles haven't been synced yet) ────────────
-      let url = "https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&acf_format=standard&per_page=100&orderby=date&order=desc";
-      if (category) {
-        if (typeof category === 'string' && isNaN(Number(category))) {
-          const categoryData = await fetchWordPressWithCache(
-            `https://admin.entrylab.io/wp-json/wp/v2/categories?slug=${category}`
-          );
-          if (categoryData?.length > 0) url += `&categories=${categoryData[0].id}`;
-        } else {
-          url += `&categories=${category}`;
-        }
-      }
-      const posts = await fetchWordPressWithCache(url);
-      res.json(posts);
+      const results = await query;
+      return res.json(results.map(articleDbToWpFormat));
     } catch (error) {
       handleWordPressError(error, res, "fetch posts");
     }
@@ -1259,27 +1219,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { slug } = req.query;
 
-      // Serve from DB when populated
-      const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "article")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
-      if (dbCats.length > 0) {
-        let results = dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 }));
-        if (slug && typeof slug === "string") {
-          results = results.filter((c) => c.slug === slug);
-        }
-        res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-        return res.json(results);
+      const dbCats = await db.select().from(categoriesTable)
+        .where(eq(categoriesTable.type, "article"))
+        .orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
+      let results = dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 }));
+      if (slug && typeof slug === "string") {
+        results = results.filter((c) => c.slug === slug);
       }
-
-      // Fallback to WordPress
-      let url = "https://admin.entrylab.io/wp-json/wp/v2/categories";
-      if (slug) {
-        url += `?slug=${slug}`;
-      }
-      const categories = await fetchWordPressWithCache(url); // Use 15 min default cache
-
-      // Set browser cache headers (5 min) to reduce repeat requests
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      res.json(categories);
+      return res.json(results);
     } catch (error) {
       handleWordPressError(error, res, "fetch categories");
     }
@@ -1324,21 +1272,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .orderBy(desc(articlesTable.publishedAt)),
       ]);
 
-      let mergedBrokers = dbBrokerRows.map((r: any) => brokerDbToWpFormat(r.broker));
-      let mergedPropFirms = dbPropFirmRows.map((r: any) => propFirmDbToWpFormat(r.firm));
+      const mergedBrokers = dbBrokerRows.map((r: any) => brokerDbToWpFormat(r.broker));
+      const mergedPropFirms = dbPropFirmRows.map((r: any) => propFirmDbToWpFormat(r.firm));
       const posts = dbArticleRows.map(articleDbToWpFormat);
-
-      // ── WP fallback only if junction table is empty AND we have a WP category ID ──
-      if (mergedBrokers.length === 0 && brokerCat?.wpId) {
-        mergedBrokers = await fetchWordPressWithCache(
-          `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard&broker-category=${brokerCat.wpId}`
-        ).catch(() => []) || [];
-      }
-      if (mergedPropFirms.length === 0 && propFirmCat?.wpId) {
-        mergedPropFirms = await fetchWordPressWithCache(
-          `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard&prop-firm-category=${propFirmCat.wpId}`
-        ).catch(() => []) || [];
-      }
 
       // Set browser cache headers (5 min) to reduce repeat requests
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
@@ -1425,14 +1361,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/brokers", async (req, res) => {
     try {
       const rows = await db.select().from(brokersTable).orderBy(asc(brokersTable.name));
-      if (rows.length === 0) {
-        // DB not yet migrated — fall back to WordPress
-        const wpBrokers = await fetchWordPressWithCache(
-          "https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard"
-        );
-        res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-        return res.json(wpBrokers);
-      }
       res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
       res.json(rows.map(brokerDbToApi));
     } catch (error) {
@@ -1443,20 +1371,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/brokers/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
-      const rows = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
-      if (rows.length > 0) {
-        res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
-        return res.json(brokerDbToApi(rows[0]));
-      }
-      // Fallback to WordPress
-      const wpBrokers = await fetchWordPressWithCache(
-        `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`
-      );
-      if (!wpBrokers || wpBrokers.length === 0) {
-        return res.status(404).json({ error: "Broker not found" });
-      }
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      res.json(wpBrokers[0]);
+      const [row] = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
+      if (!row) return res.status(404).json({ error: "Broker not found" });
+      res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+      return res.json(brokerDbToApi(row));
     } catch (error) {
       handleWordPressError(error, res, "fetch broker from DB");
     }
@@ -1479,13 +1397,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/prop-firms", async (req, res) => {
     try {
       const rows = await db.select().from(propFirmsTable).orderBy(asc(propFirmsTable.name));
-      if (rows.length === 0) {
-        const wpFirms = await fetchWordPressWithCache(
-          "https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard"
-        );
-        res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-        return res.json(wpFirms);
-      }
       // Fetch category assignments to populate categoryIds (matching /api/wordpress/prop-firm-categories response)
       const catRows = await db
         .select({ propFirmId: propFirmCategoriesTable.propFirmId, wpId: categoriesTable.wpId, dbId: categoriesTable.id })
@@ -1507,19 +1418,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/prop-firms/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
-      const rows = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
-      if (rows.length > 0) {
-        res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
-        return res.json(propFirmDbToApi(rows[0]));
-      }
-      const wpFirms = await fetchWordPressWithCache(
-        `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`
-      );
-      if (!wpFirms || wpFirms.length === 0) {
-        return res.status(404).json({ error: "Prop firm not found" });
-      }
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      res.json(wpFirms[0]);
+      const [row] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
+      if (!row) return res.status(404).json({ error: "Prop firm not found" });
+      res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+      return res.json(propFirmDbToApi(row));
     } catch (error) {
       handleWordPressError(error, res, "fetch prop firm from DB");
     }
@@ -1619,25 +1521,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(wpPost);
       }
 
-      // ── WP fallback ───────────────────────────────────────────────────────
-      const posts = await fetchWordPressWithCache(
-        `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed&acf_format=standard`
-      );
-      if (!posts?.length) return res.status(404).json({ error: "Post not found" });
-
-      const post = posts[0];
-      if (post.acf?.related_broker) {
-        try {
-          const relatedBroker = post.acf.related_broker;
-          let brokerId = Array.isArray(relatedBroker)
-            ? (typeof relatedBroker[0] === 'object' ? relatedBroker[0].ID : relatedBroker[0])
-            : (typeof relatedBroker === 'object' ? relatedBroker.ID : relatedBroker);
-          post.relatedBroker = await fetchWordPressWithCache(
-            `https://admin.entrylab.io/wp-json/wp/v2/popular_broker/${brokerId}?acf_format=standard`
-          );
-        } catch (_) {}
-      }
-      res.json(post);
+      return res.status(404).json({ error: "Post not found" });
     } catch (error) {
       handleWordPressError(error, res, "fetch post");
     }
@@ -1697,24 +1581,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/article/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
-      console.log(`[Redirect] Old URL detected: /article/${slug}`);
-      
-      // Fetch post to get its category
-      const posts = await fetchWordPressWithCache(
-        `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed`
-      );
-      
-      if (posts.length === 0) {
-        console.log(`[Redirect] Post not found: ${slug}`);
-        return res.status(404).send('Article not found');
-      }
-      
-      const post = posts[0];
-      const categorySlug = post._embedded?.["wp:term"]?.[0]?.[0]?.slug || "uncategorized";
-      const newUrl = `/${categorySlug}/${slug}`;
-      
-      console.log(`[Redirect] 301 redirect: /article/${slug} → ${newUrl}`);
-      res.redirect(301, newUrl);
+      const [article] = await db.select({ category: articlesTable.category })
+        .from(articlesTable).where(eq(articlesTable.slug, slug));
+      if (!article) return res.status(404).send('Article not found');
+      const categorySlug = article.category || "uncategorized";
+      return res.redirect(301, `/${categorySlug}/${slug}`);
     } catch (error) {
       console.error("[Redirect] Error:", error);
       res.status(500).send('Redirect failed');
@@ -2102,15 +1973,14 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
     res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
     
     try {
-      // Fetch posts and categories from WordPress; brokers and prop firms from DB
-      const [posts, brokersDb, propFirmsDb, categories] = await Promise.all([
-        fetchAllWPPages('https://admin.entrylab.io/wp-json/wp/v2/posts?_embed'),
+      const [posts, brokers, propFirms, categories] = await Promise.all([
+        db.select({ slug: articlesTable.slug, category: articlesTable.category, publishedAt: articlesTable.publishedAt })
+          .from(articlesTable).where(eq(articlesTable.status, "published")).orderBy(desc(articlesTable.publishedAt)),
         db.select({ slug: brokersTable.slug, lastUpdated: brokersTable.lastUpdated }).from(brokersTable),
         db.select({ slug: propFirmsTable.slug, lastUpdated: propFirmsTable.lastUpdated }).from(propFirmsTable),
-        fetchWordPressWithCache('https://admin.entrylab.io/wp-json/wp/v2/categories?per_page=100')
+        db.select({ slug: categoriesTable.slug, name: categoriesTable.name }).from(categoriesTable)
+          .where(eq(categoriesTable.type, "article")),
       ]);
-      const brokers = brokersDb.length > 0 ? brokersDb : await fetchAllWPPages('https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed');
-      const propFirms = propFirmsDb.length > 0 ? propFirmsDb : await fetchAllWPPages('https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed');
 
       const baseUrl = 'https://entrylab.io';
       const currentDate = new Date().toISOString();
@@ -2137,8 +2007,8 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
 
       // Category archive pages (broker-news, prop-firm-news, etc)
       const excludedCategories = ['uncategorized', 'uncategorised', 'home'];
-      categories.forEach((category: any) => {
-        if (category.count > 0 && !excludedCategories.includes(category.slug.toLowerCase())) {
+      categories.forEach((category) => {
+        if (!excludedCategories.includes(category.slug.toLowerCase())) {
           sitemap += `  <url>\n`;
           sitemap += `    <loc>${baseUrl}/${category.slug}</loc>\n`;
           sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
@@ -2172,10 +2042,10 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
       sitemap += `    <priority>0.8</priority>\n`;
       sitemap += `  </url>\n`;
 
-      // Articles - Use correct /:category/:slug format
-      posts.forEach((post: any) => {
-        const modifiedDate = new Date(post.modified).toISOString();
-        const categorySlug = post._embedded?.['wp:term']?.[0]?.[0]?.slug || 'uncategorized';
+      // Articles - Use /:category/:slug format from DB
+      posts.forEach((post) => {
+        const modifiedDate = post.publishedAt ? new Date(post.publishedAt).toISOString() : currentDate;
+        const categorySlug = post.category || 'uncategorized';
         sitemap += `  <url>\n`;
         sitemap += `    <loc>${baseUrl}/${categorySlug}/${post.slug}</loc>\n`;
         sitemap += `    <lastmod>${modifiedDate}</lastmod>\n`;
@@ -2184,7 +2054,7 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
         sitemap += `  </url>\n`;
       });
 
-      // Brokers (from DB or WP fallback)
+      // Brokers
       brokers.forEach((broker: any) => {
         const modifiedDate = broker.lastUpdated
           ? new Date(broker.lastUpdated).toISOString()
@@ -2536,15 +2406,9 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
                 about: (dbBroker as any).content || "",
               },
             };
-          } else {
-            const wpData = await fetchWordPressWithCache(
-              `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`
-            ).catch(() => null);
-            pageData = wpData?.[0];
           }
         } else if (url.startsWith('/prop-firm/')) {
           const slug = url.replace('/prop-firm/', '').split('?')[0];
-          // Try DB first
           const [dbFirm] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
           if (dbFirm) {
             pageData = {
@@ -2565,27 +2429,16 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
                 cons: (dbFirm as any).cons || [],
               },
             };
-          } else {
-            const wpData = await fetchWordPressWithCache(
-              `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`
-            ).catch(() => null);
-            pageData = wpData?.[0];
           }
         } else if (url.match(/\/[^/]+\/[^/]+$/)) {
           // Article format: /category/slug
           const parts = url.split('/').filter(Boolean);
           if (parts.length === 2) {
             const slug = parts[1].split('?')[0];
-            // Try DB first
             const [dbArticle] = await db.select().from(articlesTable)
               .where(and(eq(articlesTable.slug, slug), eq(articlesTable.status, "published")));
             if (dbArticle) {
               pageData = articleDbToWpFormat(dbArticle);
-            } else {
-              const wpData = await fetchWordPressWithCache(
-                `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed&acf_format=standard`
-              ).catch(() => null);
-              pageData = wpData?.[0];
             }
           }
         }

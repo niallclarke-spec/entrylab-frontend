@@ -1,7 +1,7 @@
 # Forex News & Trading Intelligence Hub
 
 ## Overview
-EntryLab is a full-stack web application designed as a Forex News & Trading Intelligence Hub. It aggregates and displays forex broker news, proprietary firm updates, and trading analysis, sourcing all content from a WordPress backend. The platform provides traders with a professional interface for broker information, articles, and market data, inspired by platforms like Bloomberg and CoinDesk, with a focus on business vision and market potential. Key capabilities include dynamic content display, user review submissions, and robust SEO for market visibility.
+EntryLab is a full-stack web application designed as a Forex News & Trading Intelligence Hub. It aggregates and displays forex broker news, proprietary firm updates, and trading analysis. The platform provides traders with a professional interface for broker information, articles, and market data, inspired by platforms like Bloomberg and CoinDesk. The backend is fully WordPress-free for all production runtime endpoints — all data (articles, brokers, prop firms, categories, reviews) is served exclusively from PostgreSQL. WordPress is only used by one-time migration endpoints.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
