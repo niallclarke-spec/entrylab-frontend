@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, ArrowLeft, Shield, TrendingUp } from "lucide-react";
-import type { WordPressPost } from "@shared/schema";
+import type { Article } from "@shared/schema";
 import { getArticleUrl, getCategoryName, getCategorySlug } from "@/lib/articleUtils";
 import { trackPageView, trackSearch } from "@/lib/gtm";
 import { ArticleCardSkeletonList } from "@/components/skeletons/ArticleCardSkeleton";
@@ -24,12 +24,12 @@ export default function CategoryArchive() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: allCategories } = useQuery<any[]>({
-    queryKey: ["/api/wordpress/categories"],
+    queryKey: ["/api/categories"],
   });
 
   // Fetch ALL posts once
-  const { data: allPosts, isLoading: postsLoading } = useQuery<WordPressPost[]>({
-    queryKey: ["/api/wordpress/posts"],
+  const { data: allPosts, isLoading: postsLoading } = useQuery<Article[]>({
+    queryKey: ["/api/articles"],
   });
 
   // Find the currently selected category
@@ -40,7 +40,7 @@ export default function CategoryArchive() {
     if (isAllPosts) {
       trackPageView("/news", "Recent Posts | EntryLab");
     } else if (category) {
-      const title = category.yoast_head_json?.title || `${category.name} | EntryLab`;
+      const title = `${category.name} | EntryLab`;
       trackPageView(`/${selectedCategory}`, title);
     }
   }, [category, selectedCategory, isAllPosts]);
@@ -54,20 +54,9 @@ export default function CategoryArchive() {
     };
   }, []);
 
-  const getAuthorName = (post: WordPressPost) => 
-    post._embedded?.author?.[0]?.name || "EntryLab Team";
+  const getAuthorName = (post: Article) => post.author || "EntryLab Team";
   
-  const getFeaturedImage = (post: WordPressPost) => {
-    const media = post._embedded?.["wp:featuredmedia"]?.[0];
-    if (!media) return undefined;
-    const sizes = (media as any).media_details?.sizes;
-    if (sizes) {
-      if (sizes.medium?.source_url) return sizes.medium.source_url;
-      if (sizes.medium_large?.source_url) return sizes.medium_large.source_url;
-      if (sizes.large?.source_url) return sizes.large.source_url;
-    }
-    return media.source_url;
-  };
+  const getFeaturedImage = (post: Article) => post.featuredImage || undefined;
 
   const stripHtml = (html: string) => {
     const div = document.createElement("div");
@@ -80,8 +69,8 @@ export default function CategoryArchive() {
     const postCategory = getCategorySlug(post);
     const matchesCategory = isAllPosts || postCategory === selectedCategory;
     const matchesSearch = searchQuery === "" || 
-      stripHtml(post.title.rendered).toLowerCase().includes(searchQuery.toLowerCase()) ||
-      stripHtml(post.excerpt.rendered).toLowerCase().includes(searchQuery.toLowerCase());
+      stripHtml(post.title).toLowerCase().includes(searchQuery.toLowerCase()) ||
+      stripHtml(post.excerpt || "").toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   }) || [];
 
@@ -94,23 +83,19 @@ export default function CategoryArchive() {
     }
   }, [searchQuery, filteredPosts.length, selectedCategory]);
 
-  // SEO with fallbacks: Yoast SEO fields OR auto-generated defaults
   const seoTitle = isAllPosts 
     ? "Recent Posts | EntryLab - Latest Forex & Trading News"
-    : (category?.yoast_head_json?.title || `${category?.name || 'Category'} | EntryLab - Forex News & Analysis`);
+    : `${category?.name || 'Category'} | EntryLab - Forex News & Analysis`;
   const seoDescription = isAllPosts
     ? "The latest forex broker news, prop firm updates, and trading analysis. Stay informed with our most recent posts."
-    : (category?.yoast_head_json?.og_description || 
-       category?.yoast_head_json?.description ||
-       category?.description || 
-       `Browse the latest ${category?.name?.toLowerCase() || 'articles'} from EntryLab. Expert analysis and insights for forex traders.`);
+    : (category?.description || `Browse the latest ${category?.name?.toLowerCase() || 'articles'} from EntryLab. Expert analysis and insights for forex traders.`);
 
   const canonicalUrl = isAllPosts ? "https://entrylab.io/news" : `https://entrylab.io/${selectedCategory}`;
 
   // Create ItemList schema data from filtered posts
   const itemListData = filteredPosts.slice(0, 20).map(post => ({
     url: `https://entrylab.io${getArticleUrl(post)}`,
-    name: stripHtml(post.title.rendered),
+    name: stripHtml(post.title),
     image: getFeaturedImage(post)
   }));
 
@@ -222,10 +207,10 @@ export default function CategoryArchive() {
               {filteredPosts.map((post) => (
                 <ArticleCard
                   key={post.id}
-                  title={post.title.rendered}
-                  excerpt={stripHtml((post as any).acf?.article_description || post.excerpt.rendered)}
+                  title={post.title}
+                  excerpt={stripHtml(post.excerpt || '')}
                   author={getAuthorName(post)}
-                  date={post.date}
+                  date={post.publishedAt ? String(post.publishedAt) : ""}
                   category={getCategoryName(post)}
                   link={getArticleUrl(post)}
                   imageUrl={getFeaturedImage(post)}

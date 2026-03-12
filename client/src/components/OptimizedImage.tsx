@@ -10,12 +10,12 @@ interface OptimizedImageProps {
   "data-testid"?: string;
 }
 
-// Generate responsive srcset for WordPress images
-function getWordPressSrcSet(src: string): string {
-  const isWordPressImage = src.includes('admin.entrylab.io');
-  if (!isWordPressImage) return "";
+// Generate responsive srcset for hosted images
+function getResponsiveSrcSet(src: string): string {
+  const isHostedImage = src.includes('admin.entrylab.io');
+  if (!isHostedImage) return "";
 
-  // WordPress image URL pattern: /uploads/2024/01/image-300x200.jpg
+  // Image URL pattern: /uploads/2024/01/image-300x200.jpg
   const urlPattern = /(-(\d+)x(\d+))(\.(jpg|jpeg|png|webp))$/i;
   const match = src.match(urlPattern);
   
@@ -35,7 +35,7 @@ function getWordPressSrcSet(src: string): string {
   // Remove the size suffix to get base URL
   const baseUrl = src.replace(urlPattern, extension);
   
-  // Generate srcset with WordPress standard widths, maintaining aspect ratio
+  // Generate srcset with standard widths, maintaining aspect ratio
   const sizes = [
     { width: 300, descriptor: '300w' },
     { width: 768, descriptor: '768w' },
@@ -63,10 +63,10 @@ export function OptimizedImage({
   priority = false,
   "data-testid": testId 
 }: OptimizedImageProps) {
-  const isWordPressImage = src.includes('admin.entrylab.io');
+  const isHostedImage = src.includes('admin.entrylab.io');
   
   // Generate srcset immediately (no async state changes)
-  const srcSet = isWordPressImage ? getWordPressSrcSet(src) : "";
+  const srcSet = isHostedImage ? getResponsiveSrcSet(src) : "";
   
   return (
     <img

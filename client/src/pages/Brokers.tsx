@@ -7,7 +7,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Shield, Star, TrendingUp, Zap, DollarSign, Headphones, FileText, CheckCircle2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { trackPageView, trackCategoryFilter } from "@/lib/gtm";
-import { transformBroker } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 
 const GLASS = {
@@ -45,10 +44,7 @@ export default function Brokers() {
     queryKey: ["/api/brokers"],
   });
 
-  const brokers: Broker[] = (rawBrokers || []).map((b: any) => {
-    if (b.acf !== undefined) return transformBroker(b);
-    return b as Broker;
-  }).filter(Boolean) as Broker[];
+  const brokers: Broker[] = (rawBrokers || []) as Broker[];
   const filteredBrokers = filterFeatured === null ? brokers : brokers.filter(b => b.featured === filterFeatured);
   const featuredCount = brokers.filter(b => b.featured).length;
   const avgRating = brokers.length > 0 ? (brokers.reduce((sum, b) => sum + b.rating, 0) / brokers.length).toFixed(1) : "0.0";

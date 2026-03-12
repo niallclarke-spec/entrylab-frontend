@@ -9,7 +9,6 @@ import { Shield, Star, CheckCircle2, ArrowRight, Newspaper } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { trackPageView } from "@/lib/gtm";
-import { transformBroker } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 
 const GLASS = {
@@ -42,15 +41,15 @@ export default function BrokerCategoryArchive() {
   }, []);
 
   const { data: brokerCategories } = useQuery<any[]>({
-    queryKey: ["/api/wordpress/broker-categories"],
+    queryKey: ["/api/broker-categories"],
   });
 
   const { data: categoryContent, isLoading } = useQuery<any>({
-    queryKey: [`/api/wordpress/category-content?category=${slug}`],
+    queryKey: [`/api/category-content?category=${slug}`],
     enabled: !!slug,
   });
 
-  const brokers = categoryContent?.brokers?.map(transformBroker).filter((b: Broker | null): b is Broker => b !== null) || [];
+  const brokers: Broker[] = categoryContent?.brokers || [];
   const totalVerified = brokers.filter((b: Broker) => b.verified).length;
   const avgRating = brokers.length > 0
     ? (brokers.reduce((sum: number, b: Broker) => sum + b.rating, 0) / brokers.length).toFixed(1)

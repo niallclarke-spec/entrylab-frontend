@@ -187,7 +187,7 @@ export default function AdminCategories() {
     try {
       const r = await apiRequest("POST", "/api/admin/migrate-categories");
       const data = await r.json();
-      setMigrateMsg(data.inserted === 0 ? "All categories already migrated." : `Imported ${data.inserted} categories from WordPress.`);
+      setMigrateMsg(data.inserted === 0 ? "All categories already imported." : `Imported ${data.inserted} categories.`);
       qc.invalidateQueries({ queryKey: ["/api/admin/categories"] });
     } catch {
       setMigrateMsg("Migration failed.");
@@ -235,7 +235,7 @@ export default function AdminCategories() {
               data-testid="button-migrate-categories"
             >
               <RefreshCw size={13} style={{ animation: migrating ? "spin 1s linear infinite" : undefined }} />
-              {migrating ? "Importing..." : "Import from WordPress"}
+              {migrating ? "Importing..." : "Import Categories"}
             </button>
             <ActionBtn
               label="New Category"

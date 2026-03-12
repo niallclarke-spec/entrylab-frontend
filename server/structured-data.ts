@@ -1,5 +1,6 @@
-import https from 'https';
-import { apiCache } from "./cache";
+import { db } from "./db";
+import { brokersTable, propFirmsTable, articlesTable } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 // Helper to strip HTML tags
 function stripHtml(html: string): string {
@@ -115,83 +116,6 @@ function isValidPhone(phone: string | undefined): boolean {
   return /[\d\+\-\(\)\s]{7,}/.test(phone);
 }
 
-// Helper function to make WordPress API requests
-function fetchWordPress(url: string): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const urlObj = new URL(url);
-    
-    const headers: Record<string, string> = {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      'Accept': 'application/json',
-      'Host': urlObj.hostname,
-      'Connection': 'keep-alive',
-    };
-    
-    const requestOptions = {
-      hostname: urlObj.hostname,
-      port: 443,
-      path: urlObj.pathname + urlObj.search,
-      method: 'GET',
-      headers,
-      servername: urlObj.hostname,
-      rejectUnauthorized: true,
-    };
-    
-    const req = https.request(requestOptions, (res) => {
-      let data = '';
-      
-      res.on('data', (chunk) => {
-        data += chunk;
-      });
-      
-      res.on('end', () => {
-        try {
-          if (res.statusCode && res.statusCode >= 400) {
-            reject(new Error(`HTTP ${res.statusCode}`));
-          } else {
-            resolve(JSON.parse(data));
-          }
-        } catch (e) {
-          reject(new Error('Invalid JSON response'));
-        }
-      });
-    });
-    
-    req.on('error', (err) => reject(err));
-    req.setTimeout(5000, () => {
-      req.destroy();
-      reject(new Error('Request timeout'));
-    });
-    
-    req.end();
-  });
-}
-
-// Cached WordPress API fetcher
-async function fetchWordPressWithCache(
-  url: string, 
-  options: { cacheTTL?: number; staleTTL?: number } = {}
-): Promise<any> {
-  const cacheTTL = options.cacheTTL || 900; // 15 minutes
-  const staleTTL = options.staleTTL || 3600; // 60 minutes
-  
-  // Check cache first
-  const cached = apiCache.get(url);
-  if (cached) {
-    // If stale, revalidate in background
-    if (apiCache.isStale(url)) {
-      fetchWordPress(url)
-        .then(data => apiCache.set(url, data, cacheTTL, staleTTL))
-        .catch(() => {}); // Ignore background errors
-    }
-    return cached;
-  }
-  
-  // Fetch fresh data
-  const data = await fetchWordPress(url);
-  apiCache.set(url, data, cacheTTL, staleTTL);
-  return data;
-}
 
 // Organization schema (always included)
 export function getOrganizationSchema() {
@@ -248,10 +172,12 @@ export function getWebSiteSchema() {
 // ItemList schema for brokers listing page
 export async function getBrokersListSchema() {
   try {
-    const brokers = await fetchWordPressWithCache(
-      `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=20&acf_format=standard`,
-      { cacheTTL: 900, staleTTL: 3600 }
-    );
+    const brokers = await db.select({
+      name: brokersTable.name,
+      slug: brokersTable.slug,
+      seoDescription: brokersTable.seoDescription,
+      tagline: brokersTable.tagline,
+    }).from(brokersTable).limit(20);
 
     if (!brokers || brokers.length === 0) return null;
 
@@ -262,12 +188,12 @@ export async function getBrokersListSchema() {
       "description": "Comprehensive reviews of top forex brokers including spreads, regulation, and trading conditions",
       "url": "https://entrylab.io/brokers",
       "numberOfItems": brokers.length,
-      "itemListElement": brokers.map((broker: any, index: number) => ({
+      "itemListElement": brokers.map((broker, index) => ({
         "@type": "ListItem",
         "position": index + 1,
-        "name": stripHtml(broker.title?.rendered || ''),
+        "name": broker.name,
         "url": `https://entrylab.io/broker/${broker.slug}`,
-        "description": stripHtml(broker.excerpt?.rendered || '').substring(0, 155)
+        "description": broker.seoDescription || broker.tagline || `Review of ${broker.name}`
       }))
     };
   } catch (error) {
@@ -279,10 +205,12 @@ export async function getBrokersListSchema() {
 // ItemList schema for prop firms listing page
 export async function getPropFirmsListSchema() {
   try {
-    const propFirms = await fetchWordPressWithCache(
-      `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=20&acf_format=standard`,
-      { cacheTTL: 900, staleTTL: 3600 }
-    );
+    const propFirms = await db.select({
+      name: propFirmsTable.name,
+      slug: propFirmsTable.slug,
+      seoDescription: propFirmsTable.seoDescription,
+      tagline: propFirmsTable.tagline,
+    }).from(propFirmsTable).limit(20);
 
     if (!propFirms || propFirms.length === 0) return null;
 
@@ -293,12 +221,12 @@ export async function getPropFirmsListSchema() {
       "description": "Comprehensive reviews of top prop trading firms including evaluation process, profit splits, and funding options",
       "url": "https://entrylab.io/prop-firms",
       "numberOfItems": propFirms.length,
-      "itemListElement": propFirms.map((firm: any, index: number) => ({
+      "itemListElement": propFirms.map((firm, index) => ({
         "@type": "ListItem",
         "position": index + 1,
-        "name": stripHtml(firm.title?.rendered || ''),
+        "name": firm.name,
         "url": `https://entrylab.io/prop-firm/${firm.slug}`,
-        "description": stripHtml(firm.excerpt?.rendered || '').substring(0, 155)
+        "description": firm.seoDescription || firm.tagline || `Review of ${firm.name}`
       }))
     };
   } catch (error) {
@@ -310,34 +238,21 @@ export async function getPropFirmsListSchema() {
 // Article schema generator
 export async function getArticleSchema(slug: string) {
   try {
-    const post = await fetchWordPressWithCache(
-      `https://admin.entrylab.io/wp-json/wp/v2/posts?slug=${slug}&_embed`,
-      { cacheTTL: 900, staleTTL: 3600 }
-    );
+    const rows = await db.select().from(articlesTable).where(eq(articlesTable.slug, slug)).limit(1);
+    if (!rows || rows.length === 0) return null;
 
-    if (!post || post.length === 0) return null;
-
-    const article = post[0];
-    const title = stripHtml(article.title?.rendered || '');
-    const description = stripHtml(article.excerpt?.rendered || '').substring(0, 155);
-    const authorName = article._embedded?.author?.[0]?.name || "EntryLab Editorial Team";
-    const authorSlug = article._embedded?.author?.[0]?.slug || "entrylab-team";
-    const categories = article._embedded?.["wp:term"]?.[0]?.map((t: any) => t.name) || [];
-    const tags = article._embedded?.["wp:term"]?.[1]?.map((t: any) => t.name) || [];
+    const article = rows[0];
+    const title = stripHtml(article.title || '');
+    const description = article.seoDescription || stripHtml(article.excerpt || '').substring(0, 155);
+    const authorName = article.author || "EntryLab Editorial Team";
+    const authorSlug = "entrylab-team";
+    const image = article.featuredImage || "https://entrylab.io/og-image.jpg";
     
-    // Get featured image
-    const media = article._embedded?.["wp:featuredmedia"]?.[0];
-    const image = media?.source_url || "https://entrylab.io/og-image.jpg";
-    
-    // Use GMT dates for proper timezone (WordPress stores UTC as GMT)
-    const datePublished = article.date_gmt ? `${article.date_gmt}Z` : article.date;
-    const dateModified = article.modified_gmt ? `${article.modified_gmt}Z` : (article.modified || article.date);
+    const datePublished = article.publishedAt ? article.publishedAt.toISOString() : article.createdAt.toISOString();
+    const dateModified = article.updatedAt ? article.updatedAt.toISOString() : datePublished;
 
-    // Determine article type based on category
-    const newsCategories = ['Broker News', 'Prop Firm News', 'News', 'broker-news', 'prop-firm-news', 'news'];
-    const isNewsArticle = categories.some((cat: string) => 
-      newsCategories.some(newsCat => cat.toLowerCase().includes(newsCat.toLowerCase()))
-    );
+    const newsCategories = ['broker-news', 'prop-firm-news', 'news'];
+    const isNewsArticle = newsCategories.some(c => (article.category || '').toLowerCase().includes(c));
     const articleType = isNewsArticle ? "NewsArticle" : "Article";
 
     const schemas = [];
@@ -368,8 +283,7 @@ export async function getArticleSchema(slug: string) {
         "@type": "WebPage",
         "@id": `https://entrylab.io/article/${slug}`
       },
-      ...(categories.length > 0 && { "articleSection": categories.join(", ") }),
-      ...(tags.length > 0 && { "keywords": tags.join(", ") })
+      ...(article.category && { "articleSection": article.category })
     });
 
     // Breadcrumb schema
@@ -408,29 +322,20 @@ export async function getArticleSchema(slug: string) {
 // Broker review schema generator
 export async function getBrokerSchema(slug: string) {
   try {
-    const brokers = await fetchWordPressWithCache(
-      `https://admin.entrylab.io/wp-json/wp/v2/popular_broker?slug=${slug}&_embed&acf_format=standard`,
-      { cacheTTL: 900, staleTTL: 3600 }
-    );
+    const rows = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug)).limit(1);
+    if (!rows || rows.length === 0) return null;
 
-    if (!brokers || brokers.length === 0) return null;
-
-    const broker = brokers[0];
-    const name = stripHtml(broker.title?.rendered || '');
-    
-    // Get SEO meta description from Yoast (prioritize over excerpt/tagline)
-    const yoastMeta = broker.yoast_head_json?.description;
-    const description = yoastMeta || 
-                       stripHtml(broker.excerpt?.rendered || '').substring(0, 155) || 
+    const broker = rows[0];
+    const name = broker.name;
+    const description = broker.seoDescription || broker.tagline ||
                        `Comprehensive review of ${name}. Compare spreads, regulation, and trading conditions.`;
     
-    const acf = broker.acf || {};
-    const rating = acf.rating || 0;
-    const link = acf.link || '';
-    const headquarters = acf.headquarters;
-    const support = acf.support;
-    const minDeposit = acf.min_deposit;
-    const yearFounded = acf.year_founded;
+    const rating = parseFloat(String(broker.rating ?? '0')) || 0;
+    const link = broker.affiliateLink || '';
+    const headquarters = broker.headquarters;
+    const support = broker.support;
+    const minDeposit = broker.minDeposit;
+    const yearFounded = broker.yearFounded;
     
     // Parse headquarters into address components
     const { locality, country } = parseHeadquarters(headquarters);
@@ -490,7 +395,7 @@ export async function getBrokerSchema(slug: string) {
         "@type": "Organization",
         "name": "EntryLab"
       },
-      "datePublished": broker.date,
+      "datePublished": broker.createdAt ? broker.createdAt.toISOString() : undefined,
       "reviewRating": {
         "@type": "Rating",
         "ratingValue": rating,
@@ -535,30 +440,20 @@ export async function getBrokerSchema(slug: string) {
 // Prop firm review schema generator
 export async function getPropFirmSchema(slug: string) {
   try {
-    const propFirms = await fetchWordPressWithCache(
-      `https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?slug=${slug}&_embed&acf_format=standard`,
-      { cacheTTL: 900, staleTTL: 3600 }
-    );
+    const rows = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug)).limit(1);
+    if (!rows || rows.length === 0) return null;
 
-    if (!propFirms || propFirms.length === 0) return null;
-
-    const propFirm = propFirms[0];
-    const name = stripHtml(propFirm.title?.rendered || '');
-    
-    // Get SEO meta description from Yoast (prioritize over excerpt)
-    const yoastMeta = propFirm.yoast_head_json?.description;
-    const description = yoastMeta || 
-                       stripHtml(propFirm.excerpt?.rendered || '').substring(0, 155) || 
+    const propFirm = rows[0];
+    const name = propFirm.name;
+    const description = propFirm.seoDescription || propFirm.tagline ||
                        `Comprehensive review of ${name}. Compare evaluation process, profit splits, and funding options.`;
     
-    const acf = propFirm.acf || {};
-    const rating = acf.rating || 0;
-    const faqData = acf.faq || [];
-    const link = acf.link || '';
-    const headquarters = acf.headquarters;
-    const support = acf.support;
-    const minDeposit = acf.minimum_account_size;
-    const yearFounded = acf.year_founded;
+    const rating = parseFloat(String(propFirm.rating ?? '0')) || 0;
+    const link = propFirm.affiliateLink || '';
+    const headquarters = propFirm.headquarters;
+    const support = propFirm.support;
+    const minDeposit = propFirm.evaluationFee;
+    const yearFounded: string | null = null;
     
     // Parse headquarters into address components
     const { locality, country } = parseHeadquarters(headquarters);
@@ -618,7 +513,7 @@ export async function getPropFirmSchema(slug: string) {
         "@type": "Organization",
         "name": "EntryLab"
       },
-      "datePublished": propFirm.date,
+      "datePublished": propFirm.createdAt ? propFirm.createdAt.toISOString() : undefined,
       "reviewRating": {
         "@type": "Rating",
         "ratingValue": rating,
@@ -626,22 +521,6 @@ export async function getPropFirmSchema(slug: string) {
         "worstRating": 1
       }
     });
-
-    // FAQ schema (if FAQ data exists)
-    if (faqData.length > 0) {
-      schemas.push({
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": faqData.map((item: any) => ({
-          "@type": "Question",
-          "name": stripHtml(item.question || ''),
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": stripHtml(item.answer || '')
-          }
-        }))
-      });
-    }
 
     // Breadcrumb schema
     schemas.push({

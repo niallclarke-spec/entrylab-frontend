@@ -15,7 +15,7 @@ const iconMap: Record<string, any> = {
 
 export function TrustSignals() {
   const { data: signals = [] } = useQuery<Array<{ icon: string; value: string; label: string }>>({
-    queryKey: ["/api/wordpress/trust-signals"],
+    queryKey: ["/api/trust-signals"],
   });
 
   const [primaryStat, ...secondaryStats] = signals;

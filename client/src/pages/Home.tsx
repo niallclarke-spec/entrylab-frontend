@@ -5,9 +5,8 @@ import { SEO } from "@/components/SEO";
 import { Hero } from "@/components/Hero";
 import { ArticleCard } from "@/components/ArticleCard";
 import { Footer } from "@/components/Footer";
-import { transformBroker, transformPropFirm } from "@/lib/transforms";
 import { getArticleUrl, getCategoryName } from "@/lib/articleUtils";
-import type { WordPressPost, Broker } from "@shared/schema";
+import type { Article, Broker } from "@shared/schema";
 import { trackPageView } from "@/lib/gtm";
 import { ArticleCardSkeletonList } from "@/components/skeletons/ArticleCardSkeleton";
 import { BrokerCardSkeletonList } from "@/components/skeletons/BrokerCardSkeleton";
@@ -28,46 +27,27 @@ export default function Home() {
     trackPageView("/", "Home | EntryLab - Forex News & Trading Intelligence");
   }, []);
 
-  const { data: categoryData } = useQuery<any[]>({
-    queryKey: ["/api/wordpress/categories", selectedCategory],
+  const { data: posts, isLoading } = useQuery<Article[]>({
+    queryKey: ["/api/articles", selectedCategory],
     queryFn: async () => {
-      if (!selectedCategory) return null;
-      const response = await fetch(`/api/wordpress/categories?slug=${selectedCategory}`);
-      if (!response.ok) throw new Error("Failed to fetch category");
-      return response.json();
-    },
-    enabled: !!selectedCategory,
-  });
-
-  const activeCategoryId = selectedCategory && categoryData?.[0]?.id ? categoryData[0].id : null;
-
-  const { data: posts, isLoading } = useQuery<WordPressPost[]>({
-    queryKey: ["/api/wordpress/posts", activeCategoryId],
-    queryFn: async () => {
-      const url = activeCategoryId
-        ? `/api/wordpress/posts?category=${activeCategoryId}`
-        : "/api/wordpress/posts";
+      const url = selectedCategory
+        ? `/api/articles?category=${selectedCategory}`
+        : "/api/articles";
       const response = await fetch(url);
-      if (!response.ok) throw new Error("Failed to fetch posts");
+      if (!response.ok) throw new Error("Failed to fetch articles");
       return response.json();
     },
   });
 
-  const { data: wordpressBrokers } = useQuery<any[]>({
-    queryKey: ["/api/wordpress/brokers"],
-  });
-
-  const { data: fallbackBrokers } = useQuery<Broker[]>({
+  const { data: brokers = [] } = useQuery<Broker[]>({
     queryKey: ["/api/brokers"],
   });
 
-  const { data: wordpressPropFirms } = useQuery<any[]>({
-    queryKey: ["/api/wordpress/prop-firms"],
+  const { data: propFirmsRaw = [] } = useQuery<Broker[]>({
+    queryKey: ["/api/prop-firms"],
   });
 
-  const wpBrokers = wordpressBrokers?.map(transformBroker).filter((b): b is Broker => b !== null) || [];
-  const brokers = wpBrokers.length > 0 ? wpBrokers : (fallbackBrokers || []);
-  const propFirms = (wordpressPropFirms?.map(transformPropFirm).filter(Boolean) || []).slice(0, 3);
+  const propFirms = propFirmsRaw.slice(0, 3);
 
   const featuredPost = posts?.[0];
   const latestPosts = posts?.slice(1, 7) || [];
@@ -81,19 +61,8 @@ export default function Home() {
     return div.textContent || div.innerText || "";
   };
 
-  const getAuthorName = (post: WordPressPost) => {
-    return post._embedded?.author?.[0]?.name || "EntryLab Team";
-  };
-
-  const getFeaturedImage = (post: WordPressPost) => {
-    const media = post._embedded?.["wp:featuredmedia"]?.[0];
-    if (!media) return undefined;
-    const sizes = (media as any).media_details?.sizes;
-    if (sizes?.medium_large?.source_url) return sizes.medium_large.source_url;
-    if (sizes?.large?.source_url) return sizes.large.source_url;
-    if (sizes?.medium?.source_url) return sizes.medium.source_url;
-    return media.source_url;
-  };
+  const getAuthorName = (post: Article) => post.author || "EntryLab Team";
+  const getFeaturedImage = (post: Article) => post.featuredImage || undefined;
 
   const featuredImage = featuredPost ? getFeaturedImage(featuredPost) : undefined;
 
@@ -128,10 +97,10 @@ export default function Home() {
       ) : featuredPost ? (
         <>
           <Hero
-            title={featuredPost.title.rendered}
-            excerpt={featuredPost.excerpt.rendered}
+            title={featuredPost.title}
+            excerpt={featuredPost.excerpt || ""}
             author={getAuthorName(featuredPost)}
-            date={featuredPost.date}
+            date={featuredPost.publishedAt ? String(featuredPost.publishedAt) : ""}
             category={getCategoryName(featuredPost)}
             link={getArticleUrl(featuredPost)}
             imageUrl={getFeaturedImage(featuredPost)}
@@ -193,10 +162,10 @@ export default function Home() {
                     {latestPosts.map((post) => (
                       <ArticleCard
                         key={post.id}
-                        title={post.title.rendered}
-                        excerpt={stripHtml((post as any).acf?.article_description || post.excerpt.rendered)}
+                        title={post.title}
+                        excerpt={stripHtml(post.excerpt || "")}
                         author={getAuthorName(post)}
-                        date={post.date}
+                        date={post.publishedAt ? String(post.publishedAt) : ""}
                         category={getCategoryName(post)}
                         link={getArticleUrl(post)}
                         imageUrl={getFeaturedImage(post)}

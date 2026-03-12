@@ -6,7 +6,7 @@ import { C, font, StatusBadge, ActionBtn } from "@/lib/adminTheme";
 import { format } from "date-fns";
 import { ExternalLink } from "lucide-react";
 
-interface WpPage {
+interface Page {
   id: string;
   title: string;
   slug: string;
@@ -23,7 +23,7 @@ const KNOWN_APP_ROUTES: Record<string, string> = {
   "payment-success": "/signals",
 };
 
-export default function AdminWpPages() {
+export default function AdminPages() {
   const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
 
@@ -36,8 +36,8 @@ export default function AdminWpPages() {
     if (!sessionLoading && !session) navigate("/admin/login");
   }, [session, sessionLoading, navigate]);
 
-  const { data: pagesRaw, isLoading } = useQuery<WpPage[]>({
-    queryKey: ["/api/admin/wp-pages"],
+  const { data: pagesRaw, isLoading } = useQuery<Page[]>({
+    queryKey: ["/api/admin/pages"],
     enabled: !!session,
   });
 
@@ -54,7 +54,7 @@ export default function AdminWpPages() {
           <div style={{ flex: "0 0 auto" }}>
             <h2 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: 0, fontFamily: font }}>Pages</h2>
             <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>
-              Static pages from WordPress — Home, Signals, Subscribe, etc.
+              Static pages — Home, Signals, Subscribe, etc.
             </p>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, flex: "1 1 auto", maxWidth: 400 }}>
@@ -143,9 +143,9 @@ export default function AdminWpPages() {
         </div>
 
         <p style={{ marginTop: 16, fontSize: 12, color: C.textDim }}>
-          Static pages are managed in WordPress. To edit content, visit{" "}
+          Static pages are managed via the admin CMS. To edit content, visit{" "}
           <a href="https://admin.entrylab.io/wp-admin/edit.php?post_type=page" target="_blank" rel="noopener noreferrer" style={{ color: C.accent }}>
-            WordPress Pages
+            CMS Pages
           </a>.
         </p>
       </div>

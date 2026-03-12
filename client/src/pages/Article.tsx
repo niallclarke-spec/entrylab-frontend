@@ -15,9 +15,9 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, User, Share2, BookOpen, TrendingUp, Building2, BarChart3, AlertCircle, ShieldCheck, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { transformBroker, processWordPressContent } from "@/lib/transforms";
+import { processArticleContent } from "@/lib/transforms";
 import { getArticleUrl, getCategoryName } from "@/lib/articleUtils";
-import type { WordPressPost, Broker } from "@shared/schema";
+import type { Article, Broker } from "@shared/schema";
 import { trackPageView, trackArticleView } from "@/lib/gtm";
 
 // Lazy load broker popup for better performance
@@ -27,21 +27,17 @@ export default function Article() {
   const params = useParams();
   const slug = params.slug;
 
-  const { data: post, isLoading } = useQuery<WordPressPost>({
-    queryKey: ["/api/wordpress/post", slug],
+  const { data: post, isLoading } = useQuery<Article>({
+    queryKey: ["/api/articles", slug],
     enabled: !!slug,
   });
 
-  const { data: wordpressBrokers } = useQuery<any[]>({
-    queryKey: ["/api/wordpress/brokers"],
+  const { data: brokers = [] } = useQuery<Broker[]>({
+    queryKey: ["/api/brokers"],
   });
 
-  const { data: wordpressPropFirms } = useQuery<any[]>({
-    queryKey: ["/api/wordpress/prop-firms"],
-  });
-
-  const { data: posts } = useQuery<WordPressPost[]>({
-    queryKey: ["/api/wordpress/posts"],
+  const { data: articles = [] } = useQuery<Article[]>({
+    queryKey: ["/api/articles"],
   });
 
   const stripHtml = (html: string) => {
@@ -50,35 +46,13 @@ export default function Article() {
     return div.textContent || div.innerText || "";
   };
 
-  const wpBrokers = wordpressBrokers?.map(transformBroker).filter((b): b is Broker => b !== null) || [];
-  const featuredBroker = wpBrokers.find(b => b.featured);
-  const popularBrokers = wpBrokers.slice(0, 3);
+  const featuredBroker = brokers.find(b => b.featured);
+  const popularBrokers = brokers.slice(0, 3);
   
-  // Transform related broker if it exists (from ACF relationship field)
-  const relatedBroker = (post as any)?.relatedBroker ? transformBroker((post as any).relatedBroker) : null;
+  const relatedBroker = (post as any)?.relatedBroker as Broker | null || null;
 
-  const getAuthorName = (p: WordPressPost) => p._embedded?.author?.[0]?.name || "EntryLab Team";
-  const getFeaturedImage = (p: WordPressPost) => {
-    const media = p._embedded?.["wp:featuredmedia"]?.[0];
-    if (!media) return undefined;
-    const sizes = (media as any).media_details?.sizes;
-    
-    // Use FULL SIZE for hero images to avoid blurriness from stretching
-    // Hero section is 1200px+ wide, so we need original resolution
-    // Only fallback to smaller sizes if full size unavailable
-    if (media.source_url) return media.source_url;
-    if (sizes?.large?.source_url) return sizes.large.source_url;
-    if (sizes?.medium_large?.source_url) return sizes.medium_large.source_url;
-    
-    return media.source_url;
-  };
-
-  // Fetch featured media separately if _embed fails but featured_media ID exists
-  const shouldFetchMedia = post && post.featured_media && !getFeaturedImage(post);
-  const { data: featuredMediaData } = useQuery({
-    queryKey: [`/api/wordpress/media/${post?.featured_media}`],
-    enabled: !!shouldFetchMedia,
-  });
+  const getAuthorName = (p: Article) => p.author || "EntryLab Team";
+  const getFeaturedImage = (p: Article) => p.featuredImage || undefined;
 
   useEffect(() => {
     document.body.style.setProperty("background", "#f8faf8", "important");
@@ -91,70 +65,46 @@ export default function Article() {
 
   useEffect(() => {
     if (post) {
-      const title = stripHtml(post.title.rendered);
-      const categories = post._embedded?.["wp:term"]?.[0]?.map((term: any) => term.name) || [];
-      const author = getAuthorName(post);
-      const categorySlug = post._embedded?.["wp:term"]?.[0]?.[0]?.slug || "uncategorized";
+      const title = stripHtml(post.title);
+      const categorySlug = post.category || "uncategorized";
       
       trackPageView(`/${categorySlug}/${slug}`, `${title} | EntryLab`);
       trackArticleView({
         article_title: title,
         article_slug: slug || '',
-        categories: categories,
-        author: author,
+        categories: post.category ? [post.category] : [],
+        author: getAuthorName(post),
       });
     }
   }, [post, slug]);
 
   // Get related articles from same category
-  const currentCategoryId = post?._embedded?.["wp:term"]?.[0]?.[0]?.id;
-  const relatedPosts = posts
-    ?.filter(p => p.id !== post?.id && p._embedded?.["wp:term"]?.[0]?.[0]?.id === currentCategoryId)
-    .slice(0, 2) || [];
+  const relatedPosts = articles
+    .filter(p => String(p.id) !== String(post?.id) && p.category === post?.category)
+    .slice(0, 2);
 
   const calculateReadingTime = (text: string) => {
     const words = text.trim().split(/\s+/).length;
     return Math.max(1, Math.ceil(words / 200));
   };
 
-  // Process content with heading IDs and table wrappers for Table of Contents (memoized to avoid repeated parsing)
+  // Process content with heading IDs and table wrappers for Table of Contents (memoized)
   const contentWithHeadingIds = useMemo(() => {
-    return post?.content?.rendered ? processWordPressContent(post.content.rendered) : '';
-  }, [post?.content?.rendered]);
+    return post?.content ? processArticleContent(post.content) : '';
+  }, [post?.content]);
 
-  // SEO: Use Yoast fields if available, otherwise auto-generate
-  const seoTitle = (post as any)?.yoast_head_json?.title || 
-                   `${stripHtml(post?.title?.rendered || '')} | EntryLab`;
-  const seoDescription = (post as any)?.yoast_head_json?.og_description || 
-                         (post as any)?.yoast_head_json?.description ||
-                         stripHtml(post?.excerpt?.rendered || '').substring(0, 155) ||
-                         `Read ${stripHtml(post?.title?.rendered || '')} on EntryLab - Forex broker news and trading analysis.`;
+  // SEO: Use stored seoTitle/seoDescription or auto-generate
+  const seoTitle = post?.seoTitle || `${stripHtml(post?.title || '')} | EntryLab`;
+  const seoDescription = post?.seoDescription ||
+    stripHtml(post?.excerpt || '').substring(0, 155) ||
+    `Read ${stripHtml(post?.title || '')} on EntryLab - Forex broker news and trading analysis.`;
 
   const addAffiliateLinks = (content: string): string => {
-    // Build keyword map from brokers and prop firms
     const affiliateKeywords: { name: string; url: string }[] = [];
     
-    // Add brokers
-    wordpressBrokers?.forEach((wpItem: any) => {
-      const name = wpItem.title?.rendered;
-      const affiliateLink = wpItem.acf?.affiliate_link;
-      if (name && affiliateLink) {
-        affiliateKeywords.push({ 
-          name: stripHtml(name).trim(), 
-          url: affiliateLink 
-        });
-      }
-    });
-    
-    // Add prop firms
-    wordpressPropFirms?.forEach((wpItem: any) => {
-      const name = wpItem.title?.rendered;
-      const affiliateLink = wpItem.acf?.affiliate_link;
-      if (name && affiliateLink) {
-        affiliateKeywords.push({ 
-          name: stripHtml(name).trim(), 
-          url: affiliateLink 
-        });
+    brokers.forEach((b: Broker) => {
+      if (b.name && b.link && b.link !== "#") {
+        affiliateKeywords.push({ name: b.name, url: b.link });
       }
     });
 
@@ -529,27 +479,19 @@ export default function Article() {
     );
   }
 
-  // Use embedded image first, fallback to separately fetched media
-  const featuredImage = getFeaturedImage(post) || 
-    (featuredMediaData as any)?.source_url || 
-    (featuredMediaData as any)?.media_details?.sizes?.large?.source_url;
-  const readingTime = calculateReadingTime(stripHtml(post.content.rendered));
+  const featuredImage = getFeaturedImage(post);
+  const readingTime = calculateReadingTime(stripHtml(post.content || ''));
   
   const seoImage = featuredImage || "https://entrylab.io/og-image.jpg";
-  // Use correct category-based URL format: /:category/:slug
   const seoUrl = `https://entrylab.io${getArticleUrl(post)}`;
 
-  // Extract categories and tags for structured data
-  const categories = post._embedded?.["wp:term"]?.[0]?.map((term: any) => term.name) || [];
-  const tags = post._embedded?.["wp:term"]?.[1]?.map((term: any) => term.name) || [];
-  const categorySlug = post._embedded?.["wp:term"]?.[0]?.[0]?.slug || "news";
+  const categorySlug = post.category || "news";
   const categoryName = getCategoryName(post);
   
-  // Breadcrumbs for structured data
   const breadcrumbs = [
     { name: "Home", url: "https://entrylab.io" },
     { name: categoryName, url: `https://entrylab.io/${categorySlug}` },
-    { name: stripHtml(post.title.rendered), url: seoUrl }
+    { name: stripHtml(post.title), url: seoUrl }
   ];
 
   return (
@@ -560,12 +502,12 @@ export default function Article() {
         image={seoImage}
         url={seoUrl}
         type="article"
-        publishedTime={post.date}
-        modifiedTime={post.modified}
+        publishedTime={post.publishedAt ? String(post.publishedAt) : undefined}
+        modifiedTime={post.updatedAt ? String(post.updatedAt) : undefined}
         author={getAuthorName(post)}
         preloadImage={featuredImage}
-        categories={categories}
-        tags={tags}
+        categories={post.category ? [post.category] : []}
+        tags={[]}
         breadcrumbs={breadcrumbs}
         disableStructuredData={true}
       />
@@ -599,7 +541,7 @@ export default function Article() {
                 {/* Title */}
                 <h1 
                   className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight" 
-                  dangerouslySetInnerHTML={{ __html: post.title.rendered }} 
+                  dangerouslySetInnerHTML={{ __html: post.title }} 
                 />
 
                 {/* Meta Info */}
@@ -620,10 +562,10 @@ export default function Article() {
                   </div>
                 </div>
 
-                {/* Article Description - Custom ACF field or fallback to excerpt (capped at 155 chars) */}
+                {/* Article excerpt */}
                 <p className="text-base md:text-lg text-white/80 leading-relaxed max-w-2xl">
-                  {stripHtml((post as any).acf?.article_description || post.excerpt.rendered).substring(0, 155)}
-                  {stripHtml((post as any).acf?.article_description || post.excerpt.rendered).length > 155 ? '...' : ''}
+                  {stripHtml(post.excerpt || '').substring(0, 155)}
+                  {stripHtml(post.excerpt || '').length > 155 ? '...' : ''}
                 </p>
 
                 {/* Forex News Icons Row */}
@@ -664,7 +606,7 @@ export default function Article() {
                   <div className="relative aspect-[22/10] md:aspect-[16/9] bg-muted">
                     <OptimizedImage
                       src={featuredImage}
-                      alt={stripHtml(post.title.rendered)}
+                      alt={stripHtml(post.title)}
                       width="900"
                       height="500"
                       className="w-full h-full object-cover"
@@ -705,7 +647,7 @@ export default function Article() {
               {/* Title */}
               <h1 
                 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight" 
-                dangerouslySetInnerHTML={{ __html: post.title.rendered }} 
+                dangerouslySetInnerHTML={{ __html: post.title }} 
               />
 
               {/* Meta Info */}
@@ -728,8 +670,8 @@ export default function Article() {
 
               {/* Article Description */}
               <p className="text-base md:text-lg text-white/80 leading-relaxed">
-                {stripHtml((post as any).acf?.article_description || post.excerpt.rendered).substring(0, 155)}
-                {stripHtml((post as any).acf?.article_description || post.excerpt.rendered).length > 155 ? '...' : ''}
+                {stripHtml(post.excerpt || '').substring(0, 155)}
+                {stripHtml(post.excerpt || '').length > 155 ? '...' : ''}
               </p>
             </div>
           </div>
@@ -916,10 +858,10 @@ export default function Article() {
                       {relatedPosts.map((relatedPost) => (
                         <ArticleCard
                           key={relatedPost.id}
-                          title={relatedPost.title.rendered}
-                          excerpt={stripHtml((relatedPost as any).acf?.article_description || relatedPost.excerpt.rendered)}
+                          title={relatedPost.title}
+                          excerpt={stripHtml(relatedPost.excerpt || '')}
                           author={getAuthorName(relatedPost)}
-                          date={relatedPost.date}
+                          date={relatedPost.publishedAt ? String(relatedPost.publishedAt) : ""}
                           category={getCategoryName(relatedPost)}
                           link={getArticleUrl(relatedPost)}
                           imageUrl={getFeaturedImage(relatedPost)}

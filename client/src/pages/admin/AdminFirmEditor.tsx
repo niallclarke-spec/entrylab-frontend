@@ -1029,7 +1029,7 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
                   </button>
                 </div>
                 <div style={{ marginTop: 8, fontSize: 11, color: C.textDim }}>
-                  You can paste a WordPress image URL or any external logo URL. The logo will be saved when you click Save.
+                  You can paste any external logo URL. The logo will be saved when you click Save.
                 </div>
               </div>
             </div>

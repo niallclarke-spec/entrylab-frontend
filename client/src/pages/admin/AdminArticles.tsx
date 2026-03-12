@@ -17,32 +17,10 @@ interface ArticleRow {
   createdAt: string;
 }
 
-// WP-sourced articles have numeric-only IDs; DB articles have UUID format (with dashes)
-function isWpArticle(id: string) { return /^\d+$/.test(id); }
-
 export default function AdminArticles() {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
-  const [syncing, setSyncing] = useState(false);
-  const [syncResult, setSyncResult] = useState<string | null>(null);
-
-  const handleSyncFromWP = async () => {
-    if (!window.confirm("Sync all WordPress posts into the database? Existing posts will be updated by WP post ID.")) return;
-    setSyncing(true);
-    setSyncResult(null);
-    try {
-      const r = await fetch("/api/admin/migrate-articles", { method: "POST", credentials: "include" });
-      const data = await r.json();
-      if (data.error) throw new Error(data.error);
-      setSyncResult(`Done: ${data.imported} new, ${data.updated} updated, ${data.skipped} skipped (${data.total} total).`);
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/articles"] });
-    } catch (e: any) {
-      setSyncResult(`Sync failed: ${e.message}`);
-    } finally {
-      setSyncing(false);
-    }
-  };
 
   const { data: session, isLoading: sessionLoading } = useQuery({
     queryKey: ["/api/admin/me"],
@@ -102,29 +80,11 @@ export default function AdminArticles() {
               onFocus={(e) => { e.target.style.borderColor = C.accent; }}
               onBlur={(e) => { e.target.style.borderColor = C.border; }}
             />
-            <ActionBtn
-              label={syncing ? "Syncing..." : "Sync from WordPress"}
-              onClick={handleSyncFromWP}
-              disabled={syncing}
-              small
-            />
             <Link href="/admin/posts/new">
               <ActionBtn label="+ New Post" primary small />
             </Link>
           </div>
         </div>
-
-        {syncResult && (
-          <div style={{
-            marginBottom: 16, padding: "10px 14px", borderRadius: 8,
-            background: syncResult.startsWith("Sync failed") ? "rgba(239,68,68,0.08)" : "rgba(8,242,149,0.08)",
-            border: `1px solid ${syncResult.startsWith("Sync failed") ? "rgba(239,68,68,0.25)" : "rgba(8,242,149,0.2)"}`,
-            fontSize: 13,
-            color: syncResult.startsWith("Sync failed") ? C.danger : C.accent,
-          }}>
-            {syncResult}
-          </div>
-        )}
 
         {/* Table */}
         <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
@@ -184,15 +144,13 @@ export default function AdminArticles() {
                         <Link href={`/admin/posts/${article.id}/edit`}>
                           <ActionBtn label="Edit" small />
                         </Link>
-                        {!isWpArticle(article.id) && (
-                          <ActionBtn
-                            label="Delete"
-                            small
-                            danger
-                            onClick={() => handleDelete(article.id, article.title)}
-                            disabled={deleteMutation.isPending}
-                          />
-                        )}
+                        <ActionBtn
+                          label="Delete"
+                          small
+                          danger
+                          onClick={() => handleDelete(article.id, article.title)}
+                          disabled={deleteMutation.isPending}
+                        />
                       </div>
                     </td>
                   </tr>

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, ArrowDownToLine, MessageSquare, Monitor, Calendar } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { transformBrokerDetailed, processWordPressContent } from "@/lib/transforms";
+import { processArticleContent } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
 import { getCountryCode } from "@/lib/countryCodeMap";
@@ -29,17 +29,13 @@ export default function BrokerReview() {
     enabled: !!slug,
   });
 
-  const reviewItemId = rawBroker?.wpPostId || (rawBroker?.acf !== undefined ? rawBroker?.id : null);
   const { data: reviews = [] } = useQuery<any[]>({
-    queryKey: ["/api/wordpress/reviews", reviewItemId],
-    enabled: !!reviewItemId,
+    queryKey: ["/api/reviews", rawBroker?.id],
+    enabled: !!rawBroker?.id,
   });
 
-  const broker: ReturnType<typeof transformBrokerDetailed> | null = rawBroker
-    ? (rawBroker.acf !== undefined ? transformBrokerDetailed(rawBroker) : rawBroker as any)
-    : null;
-
-  const processedContent = broker?.content ? processWordPressContent(broker.content) : "";
+  const broker: Broker | null = rawBroker ?? null;
+  const processedContent = broker?.content ? processArticleContent(broker.content) : "";
 
   useEffect(() => {
     if (broker) {
@@ -141,7 +137,7 @@ export default function BrokerReview() {
   const { locality, country } = parseHeadquarters(broker.headquarters);
 
   // Calculate actual user reviews (only use real user submissions)
-  const userRatings = reviews?.map((r: any) => parseFloat(r.acf?.rating || 0)).filter((r: number) => r > 0) || [];
+  const userRatings = reviews?.map((r: any) => parseFloat(r.rating || 0)).filter((r: number) => r > 0) || [];
   const hasUserReviews = userRatings.length >= 3; // Minimum 3 reviews to show aggregate
   const avgUserRating = hasUserReviews 
     ? userRatings.reduce((sum: number, r: number) => sum + r, 0) / userRatings.length 
@@ -714,8 +710,7 @@ export default function BrokerReview() {
           {reviews.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {reviews.map((review: any) => {
-                const acf = review.acf || {};
-                const reviewerName = acf.reviewer_name || 'Anonymous';
+                const reviewerName = review.reviewerName || 'Anonymous';
                 const initials = reviewerName
                   .split(' ')
                   .map((word: string) => word[0])
@@ -737,7 +732,7 @@ export default function BrokerReview() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-foreground truncate" data-testid={`review-title-${review.id}`}>
-                          {acf.review_title || review.title?.rendered}
+                          {review.title}
                         </h3>
                         <p className="text-xs text-muted-foreground" data-testid={`review-author-${review.id}`}>
                           {reviewerName}
@@ -749,16 +744,16 @@ export default function BrokerReview() {
                       {[...Array(5)].map((_, i) => (
                         <Star 
                           key={i} 
-                          className={`h-3 w-3 ${i < (acf.rating || 0) ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/20'}`} 
+                          className={`h-3 w-3 ${i < (review.rating || 0) ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/20'}`} 
                         />
                       ))}
                       <span className="text-sm font-semibold ml-1" data-testid={`review-rating-${review.id}`}>
-                        {acf.rating}/5
+                        {review.rating}/5
                       </span>
                     </div>
                     
                     <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4 flex-1" data-testid={`review-text-${review.id}`}>
-                      {acf.review_text}
+                      {review.reviewText}
                     </p>
                     
                     <p className="text-xs text-muted-foreground/60 mt-3">

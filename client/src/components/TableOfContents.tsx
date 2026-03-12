@@ -18,7 +18,7 @@ export function TableOfContents({ content }: TableOfContentsProps) {
 
   useEffect(() => {
     // Extract H2 headings from the processed content
-    // IDs are already added by processWordPressContent in transforms.ts
+    // IDs are already added by processArticleContent in transforms.ts
     const parser = new DOMParser();
     const doc = parser.parseFromString(content, "text/html");
     const headingElements = doc.querySelectorAll("h2[id^='section-']");

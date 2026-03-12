@@ -322,24 +322,22 @@ export const propFirmCategoriesTable = pgTable("prop_firm_categories", {
   categoryId: varchar("category_id").notNull().references(() => categoriesTable.id, { onDelete: "cascade" }),
 }, (t) => [primaryKey({ columns: [t.propFirmId, t.categoryId] })]);
 
-// ─── Legacy TypeScript interfaces (still used by frontend transforms) ───────
-export interface WordPressPost {
-  id: number;
+export interface Article {
+  id: string;
   slug: string;
-  title: { rendered: string };
-  excerpt: { rendered: string };
-  content: { rendered: string };
-  date: string;
-  modified: string;
-  link: string;
-  featured_media?: number;
-  categories?: number[];
-  author?: number;
-  _embedded?: {
-    author?: Array<{ name: string; avatar_urls?: { [key: string]: string } }>;
-    "wp:featuredmedia"?: Array<{ source_url: string; alt_text: string }>;
-    "wp:term"?: Array<Array<{ id: number; name: string; slug: string }>>;
-  };
+  title: string;
+  excerpt: string;
+  content: string;
+  author: string;
+  category: string;
+  categoryName: string;
+  featuredImage?: string | null;
+  publishedAt: string;
+  updatedAt: string;
+  status?: string;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  relatedBroker?: any;
 }
 
 export interface Broker {

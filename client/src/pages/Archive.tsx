@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, Shield, TrendingUp } from "lucide-react";
-import type { WordPressPost } from "@shared/schema";
+import type { Article } from "@shared/schema";
 import { getArticleUrl, getCategoryName, getCategorySlug } from "@/lib/articleUtils";
 import { trackPageView, trackSearch, trackCategoryFilter } from "@/lib/gtm";
 import { EXCLUDED_CATEGORIES } from "@/lib/constants";
@@ -33,28 +33,16 @@ export default function Archive() {
   }, []);
 
   const { data: categories } = useQuery<any[]>({
-    queryKey: ["/api/wordpress/categories"],
+    queryKey: ["/api/categories"],
   });
 
-  const { data: posts, isLoading } = useQuery<WordPressPost[]>({
-    queryKey: ["/api/wordpress/posts"],
+  const { data: posts, isLoading } = useQuery<Article[]>({
+    queryKey: ["/api/articles"],
   });
 
-  const getAuthorName = (post: WordPressPost) => 
-    post._embedded?.author?.[0]?.name || "EntryLab Team";
+  const getAuthorName = (post: Article) => post.author || "EntryLab Team";
   
-  const getFeaturedImage = (post: WordPressPost) => {
-    const media = post._embedded?.["wp:featuredmedia"]?.[0];
-    if (!media) return undefined;
-    const sizes = (media as any).media_details?.sizes;
-    if (sizes) {
-      // Archive cards are smaller, use medium for better performance
-      if (sizes.medium?.source_url) return sizes.medium.source_url;
-      if (sizes.medium_large?.source_url) return sizes.medium_large.source_url;
-      if (sizes.large?.source_url) return sizes.large.source_url;
-    }
-    return media.source_url;
-  };
+  const getFeaturedImage = (post: Article) => post.featuredImage || undefined;
 
   const stripHtml = (html: string) => {
     const div = document.createElement("div");
@@ -65,8 +53,8 @@ export default function Archive() {
   const filteredPosts = posts?.filter(post => {
     const matchesCategory = selectedCategory === "all" || getCategorySlug(post) === selectedCategory;
     const matchesSearch = searchQuery === "" || 
-      stripHtml(post.title.rendered).toLowerCase().includes(searchQuery.toLowerCase()) ||
-      stripHtml(post.excerpt.rendered).toLowerCase().includes(searchQuery.toLowerCase());
+      stripHtml(post.title).toLowerCase().includes(searchQuery.toLowerCase()) ||
+      stripHtml(post.excerpt || "").toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   }) || [];
 
@@ -136,7 +124,7 @@ export default function Archive() {
 
           {/* Category Tabs */}
           <div className="flex flex-wrap gap-2 justify-center mb-8">
-            {[{ name: "All Posts", slug: "all" }, ...(categories || []).filter(cat => !EXCLUDED_CATEGORIES.includes(cat.slug.toLowerCase()) && cat.count > 0)].map((cat) => {
+            {[{ name: "All Posts", slug: "all" }, ...(categories || []).filter(cat => !EXCLUDED_CATEGORIES.includes(cat.slug.toLowerCase()))].map((cat) => {
               const isSelected = selectedCategory === cat.slug;
               return (
                 <button
@@ -186,10 +174,10 @@ export default function Archive() {
               {filteredPosts.map((post) => (
                 <ArticleCard
                   key={post.id}
-                  title={post.title.rendered}
-                  excerpt={stripHtml((post as any).acf?.article_description || post.excerpt.rendered)}
+                  title={post.title}
+                  excerpt={stripHtml(post.excerpt || "")}
                   author={getAuthorName(post)}
-                  date={post.date}
+                  date={post.publishedAt ? String(post.publishedAt) : ""}
                   category={getCategoryName(post)}
                   link={getArticleUrl(post)}
                   imageUrl={getFeaturedImage(post)}

@@ -8,7 +8,7 @@ interface TrendingTopicsProps {
   onCategorySelect: (slug: string | null) => void;
 }
 
-interface WordPressCategory {
+interface Category {
   id: number;
   name: string;
   slug: string;
@@ -16,8 +16,8 @@ interface WordPressCategory {
 }
 
 export function TrendingTopics({ selectedCategory, onCategorySelect }: TrendingTopicsProps) {
-  const { data: categories } = useQuery<WordPressCategory[]>({
-    queryKey: ["/api/wordpress/categories"],
+  const { data: categories } = useQuery<Category[]>({
+    queryKey: ["/api/categories"],
   });
 
   const getIconAndColor = (slug: string, index: number) => {

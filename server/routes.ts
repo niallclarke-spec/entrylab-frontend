@@ -1,6 +1,5 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
-import https from "https";
 import path from "path";
 import fs from "fs";
 import multer from "multer";
@@ -14,13 +13,9 @@ import { getUncachableStripeClient } from "./stripeClient";
 import { eq, asc, ilike, desc, sql, and } from "drizzle-orm";
 import { getWelcomeEmailHtml, getCancellationEmailHtml, getFreeChannelEmailHtml } from "./emailTemplates";
 import { getUncachableResendClient } from "./resendClient";
-import { migrateBrokers, migratePropFirms } from "./migrate-wordpress";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { rateLimit } from "express-rate-limit";
-
-// Cache key for published reviews - used for cache invalidation after approval/rejection
-const REVIEWS_CACHE_KEY = 'https://admin.entrylab.io/wp-json/wp/v2/review?status=publish&acf_format=standard&per_page=100&_embed';
 
 // ─── DB row → API shape helpers ──────────────────────────────────────────────
 
@@ -108,256 +103,38 @@ function propFirmDbToApi(row: any) {
   };
 }
 
-// Convert DB broker row to WP-compatible shape so transformBroker() works on it
-function brokerDbToWpFormat(row: any) {
-  return {
-    id: row.id,
-    slug: row.slug,
-    link: `/broker/${row.slug}`,
-    title: { rendered: row.name },
-    acf: {
-      broker_logo: { url: row.logoUrl || "" },
-      rating: row.rating?.toString() || "4.5",
-      broker_intro: row.tagline || "",
-      affiliate_link: row.affiliateLink || "",
-      broker_usp: (row.highlights || []).join(", "),
-      is_featured: row.isFeatured ? "1" : "0",
-    },
-    _embedded: {},
-  };
-}
-
-// Convert DB prop firm row to WP-compatible shape so transformPropFirm() works on it
-function propFirmDbToWpFormat(row: any) {
-  return {
-    id: row.id,
-    slug: row.slug,
-    link: `/prop-firm/${row.slug}`,
-    title: { rendered: row.name },
-    acf: {
-      prop_firm_logo: { url: row.logoUrl || "" },
-      rating: row.rating?.toString() || "4.5",
-      prop_firm_intro: row.tagline || "",
-      affiliate_link: row.affiliateLink || "",
-      prop_firm_usp: (row.highlights || []).join(", "),
-      is_featured: row.isFeatured ? "1" : "0",
-      profit_split: row.profitSplit || "",
-      max_funding_size: row.maxFundingSize || "",
-    },
-    _embedded: {},
-    _dbCategoryIds: [],
-  };
-}
-
-// Convert DB article row to WP post format so existing frontend code works unchanged
-function articleDbToWpFormat(article: any): any {
+// Convert DB article row to clean flat API shape
+function articleToApi(article: any): any {
   const catSlug = article.category || "news";
   const catName = catSlug
     .split("-")
     .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
   return {
-    id: article.wpPostId || article.id,
+    id: article.id,
+    wpPostId: article.wpPostId || null,
     slug: article.slug,
-    title: { rendered: article.title },
-    excerpt: { rendered: article.excerpt ? `<p>${article.excerpt}</p>` : "" },
-    content: { rendered: article.content || "" },
-    date: article.publishedAt?.toISOString?.() || article.createdAt?.toISOString?.() || new Date().toISOString(),
-    modified: article.updatedAt?.toISOString?.() || new Date().toISOString(),
-    link: `/${catSlug}/${article.slug}`,
-    featured_media: 0,
-    categories: [],
-    status: article.status === "published" ? "publish" : article.status,
-    yoast_head_json: {
-      title: article.seoTitle || article.title,
-      description: article.seoDescription || article.excerpt || "",
-    },
-    acf: {
-      related_broker: article.relatedBroker || null,
-    },
-    _embedded: {
-      author: [{ name: article.author || "EntryLab Team" }],
-      "wp:featuredmedia": article.featuredImage
-        ? [{ source_url: article.featuredImage, alt_text: article.title }]
-        : [],
-      "wp:term": [[{ id: 0, name: catName, slug: catSlug }]],
-    },
+    title: article.title || "",
+    excerpt: article.excerpt || "",
+    content: article.content || "",
+    author: article.author || "EntryLab Team",
+    category: catSlug,
+    categoryName: catName,
+    featuredImage: article.featuredImage || null,
+    publishedAt: article.publishedAt?.toISOString?.() || article.createdAt?.toISOString?.() || new Date().toISOString(),
+    updatedAt: article.updatedAt?.toISOString?.() || new Date().toISOString(),
+    status: article.status,
+    seoTitle: article.seoTitle || article.title || null,
+    seoDescription: article.seoDescription || article.excerpt || null,
+    relatedBroker: null,
   };
 }
 
-// Helper function to make WordPress API requests using native https module
-function fetchWordPress(url: string, options: { method?: string; body?: any; requireAuth?: boolean } = {}): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const urlObj = new URL(url);
-    const method = options.method || 'GET';
-    const body = options.body ? JSON.stringify(options.body) : undefined;
-    
-    // Build headers object
-    const headers: Record<string, string> = {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      'Accept': 'application/json',
-      'Host': urlObj.hostname,
-      'Connection': 'keep-alive',
-    };
-    
-    // Add authentication for POST/PUT/DELETE requests or when explicitly required
-    if (options.requireAuth || method !== 'GET') {
-      const username = process.env.WORDPRESS_USERNAME;
-      const password = process.env.WORDPRESS_PASSWORD;
-      
-      if (username && password) {
-        const credentials = Buffer.from(`${username}:${password}`).toString('base64');
-        headers['Authorization'] = `Basic ${credentials}`;
-        console.log(`[WordPress Auth] Sending credentials for user: ${username}`);
-      } else {
-        console.error('[WordPress Auth] Missing credentials!');
-      }
-    }
-    
-    // Add content headers if body exists
-    if (body) {
-      headers['Content-Type'] = 'application/json';
-      headers['Content-Length'] = Buffer.byteLength(body).toString();
-    }
-    
-    const requestOptions = {
-      hostname: urlObj.hostname,
-      port: 443,
-      path: urlObj.pathname + urlObj.search,
-      method,
-      headers,
-      servername: urlObj.hostname, // SNI support
-      rejectUnauthorized: true,
-    };
-    
-    const req = https.request(requestOptions, (res) => {
-      let data = '';
-      
-      res.on('data', (chunk) => {
-        data += chunk;
-      });
-      
-      res.on('end', () => {
-        try {
-          if (res.statusCode && res.statusCode >= 400) {
-            // Try to parse error response, but handle invalid JSON
-            let errorMessage = `HTTP ${res.statusCode}`;
-            try {
-              const errorData = JSON.parse(data);
-              errorMessage = errorData.message || errorData.error || errorMessage;
-            } catch {
-              // If not JSON, include raw response preview
-              errorMessage += `: ${data.substring(0, 200)}`;
-            }
-            const error: any = new Error(errorMessage);
-            error.statusCode = res.statusCode;
-            error.isHttpError = true;
-            reject(error);
-          } else {
-            const parsedData = JSON.parse(data);
-            resolve(parsedData);
-          }
-        } catch (e) {
-          // WordPress returned non-JSON (likely HTML from WAF, rate limit, or error page)
-          const error: any = new Error('WordPress returned invalid response format');
-          error.statusCode = 502; // Bad Gateway
-          error.isParseError = true;
-          error.responsePreview = data.substring(0, 200);
-          // Check if it looks like HTML
-          if (data.trim().startsWith('<')) {
-            error.message = 'WordPress returned HTML instead of JSON (possible rate limit or WAF block)';
-          }
-          reject(error);
-        }
-      });
-    });
-    
-    req.on('error', (err) => {
-      reject(err);
-    });
-    
-    req.setTimeout(10000, () => {
-      req.destroy();
-      reject(new Error('Request timeout'));
-    });
-    
-    if (body) {
-      req.write(body);
-    }
-    
-    req.end();
-  });
-}
-
-// Cached WordPress API fetcher with stale-while-revalidate
-async function fetchWordPressWithCache(
-  url: string, 
-  options: { method?: string; body?: any; requireAuth?: boolean; cacheTTL?: number; staleTTL?: number } = {}
-): Promise<any> {
-  const method = options.method || 'GET';
-  const cacheTTL = options.cacheTTL || 900; // 15 minutes default (increased from 10)
-  const staleTTL = options.staleTTL || 3600; // 60 minutes stale-while-revalidate (increased from 30)
-  
-  // Only cache GET requests
-  if (method === 'GET') {
-    const cacheKey = url;
-    const cached = apiCache.get(cacheKey);
-    
-    if (cached) {
-      // Check if data is stale but still within stale-while-revalidate window
-      if (apiCache.isStale(cacheKey)) {
-        console.log(`[Cache STALE] ${url} - serving stale while revalidating`);
-        // Return stale data immediately, revalidate in background
-        fetchWordPress(url, options)
-          .then(freshData => {
-            apiCache.set(cacheKey, freshData, cacheTTL, staleTTL);
-            console.log(`[Cache REVALIDATED] ${url}`);
-          })
-          .catch(err => console.error(`[Cache REVALIDATION FAILED] ${url}:`, err.message));
-      } else {
-        console.log(`[Cache HIT] ${url}`);
-      }
-      return cached;
-    }
-    
-    console.log(`[Cache MISS] ${url}`);
-    const data = await fetchWordPress(url, options);
-    apiCache.set(cacheKey, data, cacheTTL, staleTTL);
-    return data;
-  }
-  
-  // Don't cache non-GET requests
-  return fetchWordPress(url, options);
-}
-
-// Helper function to handle WordPress API errors
-function handleWordPressError(error: any, res: any, operation: string) {
+// Generic API error handler
+function handleApiError(error: any, res: any, operation: string) {
   console.error(`Error ${operation}:`, error.message);
-  
-  // Set cache headers for error responses too (5 min browser cache)
   res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-  
-  // Determine appropriate status code
-  let statusCode = 500;
-  let errorMessage = `Failed to ${operation}`;
-  
-  if (error.isParseError) {
-    // WordPress returned non-JSON (WAF, rate limit, etc.)
-    statusCode = 502; // Bad Gateway
-    errorMessage = error.message;
-  } else if (error.isHttpError && error.statusCode) {
-    // WordPress returned an HTTP error
-    statusCode = error.statusCode;
-    errorMessage = error.message;
-  } else if (error.message?.includes('timeout')) {
-    statusCode = 504; // Gateway Timeout
-    errorMessage = 'WordPress request timed out';
-  }
-  
-  res.status(statusCode).json({ 
-    error: errorMessage,
-    details: error.responsePreview ? `Response: ${error.responsePreview}` : undefined
-  });
+  res.status(500).json({ error: `Failed to ${operation}` });
 }
 
 // Helper function to verify reCAPTCHA token
@@ -456,35 +233,6 @@ function decodeHtmlEntities(str: string): string {
     .replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;/g, "'")
     .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
     .replace(/&apos;/g, "'").replace(/&ndash;/g, '–').replace(/&mdash;/g, '—');
-}
-
-function mapWpPostToRow(post: any) {
-  const cat = post._embedded?.['wp:term']?.[0]?.[0]?.name ?? null;
-  return {
-    id: String(post.id),
-    title: decodeHtmlEntities(post.title?.rendered ?? ''),
-    slug: post.slug ?? '',
-    category: cat,
-    status: post.status === 'publish' ? 'published' : (post.status ?? 'draft'),
-    author: 'EntryLab',
-    publishedAt: post.date ?? null,
-    createdAt: post.date ?? new Date().toISOString(),
-    updatedAt: post.modified ?? post.date ?? new Date().toISOString(),
-  };
-}
-
-function mapWpPostToFull(post: any) {
-  const row = mapWpPostToRow(post);
-  const excerptHtml = post.excerpt?.rendered ?? '';
-  const excerpt = excerptHtml.replace(/<[^>]*>/g, '').trim();
-  return {
-    ...row,
-    content: post.content?.rendered ?? '',
-    excerpt,
-    featuredImage: post._embedded?.['wp:featuredmedia']?.[0]?.source_url ?? '',
-    seoTitle: post.yoast_head_json?.title ?? row.title,
-    seoDescription: post.yoast_head_json?.description ?? '',
-  };
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -619,8 +367,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .set({ status, updatedAt: new Date() })
         .where(eq(reviewsTable.id, id));
       const [updated] = await db.select().from(reviewsTable).where(eq(reviewsTable.id, id));
-      // Invalidate public reviews cache
-      apiCache.delete(REVIEWS_CACHE_KEY);
       return res.json({ ok: true, review: updated });
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
@@ -630,183 +376,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/admin/reviews/:id", adminAuth, async (req, res) => {
     try {
       await db.delete(reviewsTable).where(eq(reviewsTable.id, req.params.id));
-      apiCache.delete(REVIEWS_CACHE_KEY);
       return res.json({ ok: true });
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
-    }
-  });
-
-  // Migrate existing WordPress reviews into DB (run once)
-  app.post("/api/admin/migrate-reviews", adminAuth, async (req, res) => {
-    try {
-      const wpUser = process.env.WORDPRESS_USERNAME;
-      const wpPass = process.env.WORDPRESS_PASSWORD;
-      const authHeader = wpUser && wpPass
-        ? { Authorization: "Basic " + Buffer.from(`${wpUser}:${wpPass}`).toString("base64") }
-        : {};
-      const fetchWithAuth = async (url: string) => {
-        const r = await fetch(url, { headers: authHeader as Record<string, string> });
-        if (!r.ok) return [];
-        return await r.json();
-      };
-      const [published, pending] = await Promise.all([
-        fetchWithAuth("https://admin.entrylab.io/wp-json/wp/v2/review?per_page=100&acf_format=standard&status=publish"),
-        fetchWithAuth("https://admin.entrylab.io/wp-json/wp/v2/review?per_page=100&acf_format=standard&status=pending"),
-      ]);
-      let imported = 0, skipped = 0;
-      for (const r of [...(Array.isArray(published) ? published : []), ...(Array.isArray(pending) ? pending : [])]) {
-        const acf = r.acf || {};
-        const existing = await db.select().from(reviewsTable).where(eq(reviewsTable.wpPostId, r.id));
-        if (existing.length > 0) { skipped++; continue; }
-        const reviewedItem = acf.reviewed_item;
-        const firmName = Array.isArray(reviewedItem) ? reviewedItem[0]?.post_title : reviewedItem?.post_title || "Unknown";
-        const firmSlug = Array.isArray(reviewedItem) ? reviewedItem[0]?.post_name : reviewedItem?.post_name || "unknown";
-        await db.insert(reviewsTable).values({
-          firmType: acf.item_type || "broker",
-          firmSlug,
-          firmName,
-          reviewerName: acf.reviewer_name || "Anonymous",
-          reviewerEmail: acf.reviewer_email || null,
-          rating: acf.rating ? String(acf.rating) : null,
-          title: r.title?.rendered || acf.review_title || null,
-          reviewText: acf.review_text || null,
-          newsletterOptin: !!acf.newsletter_optin,
-          status: r.status === "publish" ? "approved" : "pending",
-          wpPostId: r.id,
-        });
-        imported++;
-      }
-      return res.json({ ok: true, imported, skipped });
-    } catch (err: any) {
-      return res.status(500).json({ error: err.message });
-    }
-  });
-
-  // ── Migrate broker & prop firm category assignments from WP junction data ──
-  app.post("/api/admin/migrate-broker-categories", adminAuth, async (req, res) => {
-    try {
-      // Fetch all broker and prop firm category taxonomies from WP
-      const [wpBrokerCats, wpPropFirmCats] = await Promise.all([
-        fetchWordPressWithCache("https://admin.entrylab.io/wp-json/wp/v2/broker-category?per_page=100").catch(() => []),
-        fetchWordPressWithCache("https://admin.entrylab.io/wp-json/wp/v2/prop-firm-category?per_page=100").catch(() => []),
-      ]);
-
-      // Fetch all brokers and prop firms from WP with their category assignments
-      const [wpBrokers, wpFirms] = await Promise.all([
-        fetchWordPressWithCache("https://admin.entrylab.io/wp-json/wp/v2/popular_broker?_embed&per_page=100&acf_format=standard").catch(() => []),
-        fetchWordPressWithCache("https://admin.entrylab.io/wp-json/wp/v2/popular_prop_firm?_embed&per_page=100&acf_format=standard").catch(() => []),
-      ]);
-
-      // Build WP cat ID → DB category ID map
-      const dbBrokerCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "broker"));
-      const dbPropFirmCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "prop_firm"));
-      const brokerCatWpIdToDbId = new Map(dbBrokerCats.filter(c => c.wpId).map(c => [c.wpId!, c.id]));
-      const propFirmCatWpIdToDbId = new Map(dbPropFirmCats.filter(c => c.wpId).map(c => [c.wpId!, c.id]));
-
-      // Get all DB brokers and prop firms by slug for lookup
-      const dbBrokers = await db.select({ id: brokersTable.id, slug: brokersTable.slug }).from(brokersTable);
-      const dbPropFirms = await db.select({ id: propFirmsTable.id, slug: propFirmsTable.slug }).from(propFirmsTable);
-      const brokerSlugToId = new Map(dbBrokers.map(b => [b.slug, b.id]));
-      const propFirmSlugToId = new Map(dbPropFirms.map(f => [f.slug, f.id]));
-
-      let brokerAssignments = 0, propFirmAssignments = 0;
-
-      // Insert broker category assignments
-      for (const wpBroker of (wpBrokers || [])) {
-        const brokerId = brokerSlugToId.get(wpBroker.slug);
-        if (!brokerId) continue;
-        const wpCatIds: number[] = wpBroker['broker-category'] || wpBroker.broker_category || [];
-        for (const wpCatId of wpCatIds) {
-          const dbCatId = brokerCatWpIdToDbId.get(wpCatId);
-          if (!dbCatId) continue;
-          await db.insert(brokerCategoriesTable).values({ brokerId, categoryId: dbCatId }).onConflictDoNothing();
-          brokerAssignments++;
-        }
-      }
-
-      // Insert prop firm category assignments
-      for (const wpFirm of (wpFirms || [])) {
-        const firmId = propFirmSlugToId.get(wpFirm.slug);
-        if (!firmId) continue;
-        const wpCatIds: number[] = wpFirm['prop-firm-category'] || wpFirm.prop_firm_category || [];
-        for (const wpCatId of wpCatIds) {
-          const dbCatId = propFirmCatWpIdToDbId.get(wpCatId);
-          if (!dbCatId) continue;
-          await db.insert(propFirmCategoriesTable).values({ propFirmId: firmId, categoryId: dbCatId }).onConflictDoNothing();
-          propFirmAssignments++;
-        }
-      }
-
-      return res.json({ ok: true, brokerAssignments, propFirmAssignments });
-    } catch (err: any) {
-      return res.status(500).json({ error: err.message });
-    }
-  });
-
-  // ── Image migration — download WP-hosted logos to local /uploads/logos/ ──
-  app.post("/api/admin/migrate-images", adminAuth, async (req, res) => {
-    try {
-      const logosDir = path.join(process.cwd(), "uploads", "logos");
-      if (!fs.existsSync(logosDir)) fs.mkdirSync(logosDir, { recursive: true });
-
-      const brokers = await db.select({ id: brokersTable.id, slug: brokersTable.slug, logoUrl: brokersTable.logoUrl }).from(brokersTable);
-      const firms = await db.select({ id: propFirmsTable.id, slug: propFirmsTable.slug, logoUrl: propFirmsTable.logoUrl }).from(propFirmsTable);
-
-      const downloadImage = async (srcUrl: string, filename: string): Promise<string | null> => {
-        try {
-          const destPath = path.join(logosDir, filename);
-          if (fs.existsSync(destPath)) return `/uploads/logos/${filename}`;
-          const resp = await fetch(srcUrl, { signal: AbortSignal.timeout(10000) });
-          if (!resp.ok) return null;
-          const buf = Buffer.from(await resp.arrayBuffer());
-          fs.writeFileSync(destPath, buf);
-          return `/uploads/logos/${filename}`;
-        } catch { return null; }
-      };
-
-      const isWpUrl = (u: string | null) => u && (u.includes('admin.entrylab.io') || u.includes('wp-content'));
-      let updated = 0, skipped = 0, failed = 0;
-
-      for (const row of brokers) {
-        if (!isWpUrl(row.logoUrl)) { skipped++; continue; }
-        const ext = row.logoUrl!.split('.').pop()?.split('?')[0] || 'png';
-        const newUrl = await downloadImage(row.logoUrl!, `broker-${row.slug}.${ext}`);
-        if (newUrl) {
-          await db.update(brokersTable).set({ logoUrl: newUrl, updatedAt: new Date() }).where(eq(brokersTable.id, row.id));
-          updated++;
-        } else { failed++; }
-      }
-
-      for (const row of firms) {
-        if (!isWpUrl(row.logoUrl)) { skipped++; continue; }
-        const ext = row.logoUrl!.split('.').pop()?.split('?')[0] || 'png';
-        const newUrl = await downloadImage(row.logoUrl!, `firm-${row.slug}.${ext}`);
-        if (newUrl) {
-          await db.update(propFirmsTable).set({ logoUrl: newUrl, updatedAt: new Date() }).where(eq(propFirmsTable.id, row.id));
-          updated++;
-        } else { failed++; }
-      }
-
-      return res.json({ ok: true, updated, skipped, failed });
-    } catch (err: any) {
-      return res.status(500).json({ error: err.message });
-    }
-  });
-
-  // Legacy review status update endpoint — now purely DB-backed
-  app.put("/api/admin/reviews-wp/:id", adminAuth, async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { status } = req.body;
-      const dbStatus = status === "publish" ? "approved" : status === "trash" ? "rejected" : (status || "pending");
-      await db.update(reviewsTable)
-        .set({ status: dbStatus, updatedAt: new Date() })
-        .where(eq(reviewsTable.id, id));
-      return res.json({ ok: true, status: dbStatus });
-    } catch (err: any) {
-      console.error("[Admin] Error updating review:", err);
-      return res.status(500).json({ error: "Failed to update review" });
     }
   });
 
@@ -836,8 +408,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ─── Static pages — hardcoded list (WordPress removed) ──────────────────
-  app.get("/api/admin/wp-pages", adminAuth, async (_req, res) => {
+  // ─── Static pages — hardcoded list ───────────────────────────────────────
+  app.get("/api/admin/pages", adminAuth, async (_req, res) => {
     const staticPages = [
       { id: "about", slug: "about", title: "About EntryLab", status: "published", link: "https://entrylab.io/about", date: null, modified: null },
       { id: "terms",  slug: "terms",  title: "Terms & Conditions", status: "published", link: "https://entrylab.io/terms",  date: null, modified: null },
@@ -1064,102 +636,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ─── Migrate WP categories into local DB ─────────────────────────────────────
-
-  app.post("/api/admin/migrate-categories", adminAuth, async (req, res) => {
-    try {
-      const [articleCats, brokerCats, propFirmCats] = await Promise.all([
-        fetchWordPressWithCache("https://admin.entrylab.io/wp-json/wp/v2/categories?per_page=100", 0),
-        fetchWordPressWithCache("https://admin.entrylab.io/wp-json/wp/v2/broker-category?per_page=100", 0),
-        fetchWordPressWithCache("https://admin.entrylab.io/wp-json/wp/v2/prop-firm-category?per_page=100", 0),
-      ]);
-
-      const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-      let inserted = 0;
-
-      const upsertCats = async (cats: any[], type: string) => {
-        for (const cat of cats) {
-          if (!cat.name || !cat.slug) continue;
-          const existing = await db.select().from(categoriesTable).where(eq(categoriesTable.slug, cat.slug));
-          if (existing.length === 0) {
-            await db.insert(categoriesTable).values({ name: cat.name, slug: cat.slug, type, wpId: cat.id, sortOrder: cat.menu_order ?? 0 });
-            inserted++;
-          }
-        }
-      };
-
-      await upsertCats(Array.isArray(articleCats) ? articleCats : [], "article");
-      await upsertCats(Array.isArray(brokerCats) ? brokerCats : [], "broker");
-      await upsertCats(Array.isArray(propFirmCats) ? propFirmCats : [], "prop_firm");
-
-      return res.json({ ok: true, inserted });
-    } catch (err: any) {
-      return res.status(500).json({ error: err.message });
-    }
-  });
-
-  // ─── Migrate all WordPress posts → articles table ────────────────────────
-  app.post("/api/admin/migrate-articles", adminAuth, async (req, res) => {
-    try {
-      const wpPosts = await fetchAllWPPages(
-        "https://admin.entrylab.io/wp-json/wp/v2/posts?_embed&acf_format=standard&per_page=100"
-      );
-      let imported = 0, updated = 0, skipped = 0;
-      for (const post of wpPosts) {
-        if (!post.slug || !post.title?.rendered) { skipped++; continue; }
-        const full = mapWpPostToFull(post);
-        const catSlug = post._embedded?.['wp:term']?.[0]?.[0]?.slug ?? null;
-        const acf = post.acf || {};
-        const relatedBroker = acf.related_broker
-          ? (Array.isArray(acf.related_broker) ? acf.related_broker[0]?.post_name : acf.related_broker?.post_name ?? null)
-          : null;
-        const values = {
-          title: full.title,
-          slug: full.slug,
-          excerpt: full.excerpt || null,
-          content: full.content || null,
-          category: catSlug,
-          status: full.status,
-          featuredImage: full.featuredImage || null,
-          seoTitle: full.seoTitle || null,
-          seoDescription: full.seoDescription || null,
-          author: "EntryLab",
-          relatedBroker,
-          wpPostId: post.id,
-          publishedAt: post.date ? new Date(post.date) : null,
-          updatedAt: new Date(),
-        };
-        const existing = await db.select({ id: articlesTable.id })
-          .from(articlesTable)
-          .where(eq(articlesTable.wpPostId, post.id));
-        if (existing.length > 0) {
-          await db.update(articlesTable).set(values).where(eq(articlesTable.wpPostId, post.id));
-          updated++;
-        } else {
-          await db.insert(articlesTable).values(values).onConflictDoUpdate({
-            target: articlesTable.slug,
-            set: { ...values },
-          });
-          imported++;
-        }
-      }
-      return res.json({ ok: true, imported, updated, skipped, total: wpPosts.length });
-    } catch (err: any) {
-      console.error("[Migrate] Articles error:", err);
-      return res.status(500).json({ error: err.message });
-    }
-  });
-
   // ─── Public article endpoints ──────────────────────────────────────────────
 
   app.get("/api/articles", async (req, res) => {
     try {
-      const articles = await db
-        .select()
-        .from(articlesTable)
-        .where(eq(articlesTable.status, "published"))
+      const { category } = req.query;
+      const catSlug = category && typeof category === "string" ? category.trim() : null;
+      const query = db.select().from(articlesTable)
+        .where(catSlug
+          ? and(eq(articlesTable.status, "published"), eq(articlesTable.category, catSlug))
+          : eq(articlesTable.status, "published"))
         .orderBy(desc(articlesTable.publishedAt));
-      return res.json(articles);
+      const results = await query;
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      return res.json(results.map(articleToApi));
     } catch (err) {
       return res.status(500).json({ error: "Failed to fetch articles" });
     }
@@ -1170,55 +660,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const [article] = await db
         .select()
         .from(articlesTable)
-        .where(eq(articlesTable.slug, req.params.slug));
-      if (!article || article.status !== "published") {
-        return res.status(404).json({ error: "Not found" });
+        .where(and(eq(articlesTable.slug, req.params.slug), eq(articlesTable.status, "published")));
+      if (!article) return res.status(404).json({ error: "Not found" });
+      const result = articleToApi(article);
+      if (article.relatedBroker) {
+        try {
+          const [brokerRow] = await db.select().from(brokersTable).where(eq(brokersTable.slug, article.relatedBroker));
+          if (brokerRow) result.relatedBroker = brokerDbToApi(brokerRow);
+        } catch (_) {}
       }
-      return res.json(article);
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      return res.json(result);
     } catch (err) {
       return res.status(500).json({ error: "Failed to fetch article" });
     }
   });
 
-  app.get("/api/wordpress/posts", async (req, res) => {
-    try {
-      const { category } = req.query;
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+  // ─── Public category/content endpoints ────────────────────────────────────
 
-      let catSlug: string | null = null;
-      if (category && typeof category === 'string') {
-        const catId = category.trim();
-        const wpIdNum = parseInt(catId, 10);
-        if (!isNaN(wpIdNum)) {
-          const [cat] = await db.select({ slug: categoriesTable.slug })
-            .from(categoriesTable).where(eq(categoriesTable.wpId, wpIdNum));
-          if (cat) catSlug = cat.slug;
-        }
-        if (!catSlug) {
-          const [cat] = await db.select({ slug: categoriesTable.slug })
-            .from(categoriesTable).where(eq(categoriesTable.id, catId));
-          if (cat) catSlug = cat.slug;
-        }
-        if (!catSlug) catSlug = catId;
-      }
-
-      const query = db.select().from(articlesTable)
-        .where(catSlug
-          ? and(eq(articlesTable.status, "published"), eq(articlesTable.category, catSlug))
-          : eq(articlesTable.status, "published"))
-        .orderBy(desc(articlesTable.publishedAt));
-
-      const results = await query;
-      return res.json(results.map(articleDbToWpFormat));
-    } catch (error) {
-      handleWordPressError(error, res, "fetch posts");
-    }
-  });
-
-  app.get("/api/wordpress/categories", async (req, res) => {
+  app.get("/api/categories", async (req, res) => {
     try {
       const { slug } = req.query;
-
       const dbCats = await db.select().from(categoriesTable)
         .where(eq(categoriesTable.type, "article"))
         .orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
@@ -1229,33 +691,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       return res.json(results);
     } catch (error) {
-      handleWordPressError(error, res, "fetch categories");
+      handleApiError(error, res, "fetch categories");
     }
   });
 
-  // Aggregated category content endpoint - returns posts, brokers, and prop firms for a category
-  app.get("/api/wordpress/category-content", async (req, res) => {
+  app.get("/api/broker-categories", async (req, res) => {
+    try {
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "broker")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
+      return res.json(dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 })));
+    } catch (error) {
+      console.error("Error fetching broker categories:", error);
+      res.json([]);
+    }
+  });
+
+  app.get("/api/prop-firm-categories", async (req, res) => {
+    try {
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "prop_firm")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
+      return res.json(dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 })));
+    } catch (error) {
+      console.error("Error fetching prop firm categories:", error);
+      res.json([]);
+    }
+  });
+
+  app.get("/api/category-content", async (req, res) => {
     try {
       const { category } = req.query;
-      
-      if (!category) {
-        return res.status(400).json({ error: "Category parameter required" });
-      }
-
+      if (!category) return res.status(400).json({ error: "Category parameter required" });
       const catSlug = typeof category === 'string' ? category : String(category);
 
-      // ── Round 1: Resolve all DB category records in parallel ─────────────
-      const [brokerCatRows, propFirmCatRows, articleCatRows] = await Promise.all([
+      const [brokerCatRows, propFirmCatRows] = await Promise.all([
         db.select().from(categoriesTable).where(and(eq(categoriesTable.slug, catSlug), eq(categoriesTable.type, "broker"))),
         db.select().from(categoriesTable).where(and(eq(categoriesTable.slug, catSlug), eq(categoriesTable.type, "prop_firm"))),
-        db.select().from(categoriesTable).where(and(eq(categoriesTable.slug, catSlug), eq(categoriesTable.type, "article"))),
       ]);
       const brokerCat = brokerCatRows[0] || null;
       const propFirmCat = propFirmCatRows[0] || null;
-      const articleCat = articleCatRows[0] || null;
-      const articleCatSlug = articleCat?.slug ?? catSlug;
 
-      // ── Round 2: Fetch all data in parallel ───────────────────────────────
       const [dbBrokerRows, dbPropFirmRows, dbArticleRows] = await Promise.all([
         brokerCat
           ? db.select({ broker: brokersTable }).from(brokerCategoriesTable)
@@ -1268,91 +742,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
               .where(eq(propFirmCategoriesTable.categoryId, propFirmCat.id))
           : Promise.resolve([]),
         db.select().from(articlesTable)
-          .where(and(eq(articlesTable.status, "published"), eq(articlesTable.category, articleCatSlug)))
+          .where(and(eq(articlesTable.status, "published"), eq(articlesTable.category, catSlug)))
           .orderBy(desc(articlesTable.publishedAt)),
       ]);
 
-      const mergedBrokers = dbBrokerRows.map((r: any) => brokerDbToWpFormat(r.broker));
-      const mergedPropFirms = dbPropFirmRows.map((r: any) => propFirmDbToWpFormat(r.firm));
-      const posts = dbArticleRows.map(articleDbToWpFormat);
-
-      // Set browser cache headers (5 min) to reduce repeat requests
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.json({
-        posts,
-        brokers: mergedBrokers,
-        propFirms: mergedPropFirms
+        articles: dbArticleRows.map(articleToApi),
+        brokers: dbBrokerRows.map((r: any) => brokerDbToApi(r.broker)),
+        propFirms: dbPropFirmRows.map((r: any) => propFirmDbToApi(r.firm)),
       });
     } catch (error) {
-      handleWordPressError(error, res, "fetch category content");
+      handleApiError(error, res, "fetch category content");
     }
   });
 
-  app.get("/api/wordpress/brokers", async (req, res) => {
-    try {
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      const rows = await db.select().from(brokersTable).orderBy(asc(brokersTable.name));
-      return res.json(rows.map(brokerDbToWpFormat));
-    } catch (error) {
-      handleWordPressError(error, res, "fetch brokers");
-    }
+  app.get("/api/trust-signals", (_req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=7200');
+    res.json([
+      { icon: "users",   value: "50,000+", label: "Active Traders" },
+      { icon: "trending", value: "$2.5B+", label: "Trading Volume" },
+      { icon: "award",   value: "100+",    label: "Verified Brokers" },
+      { icon: "shield",  value: "2020",    label: "Trusted Since" },
+    ]);
   });
 
-  app.get("/api/wordpress/prop-firms", async (req, res) => {
+  app.get("/api/reviews/:itemId", async (req, res) => {
     try {
+      const { itemId } = req.params;
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      const rows = await db.select().from(propFirmsTable).orderBy(asc(propFirmsTable.name));
-      return res.json(rows.map(propFirmDbToWpFormat));
-    } catch (error) {
-      handleWordPressError(error, res, "fetch prop firms");
-    }
-  });
 
-  app.get("/api/wordpress/broker-categories", async (req, res) => {
-    try {
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "broker")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
-      return res.json(dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 })));
-    } catch (error) {
-      console.error("Error fetching broker categories:", error);
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      let firmSlug: string | null = null;
+      if (/^\d+$/.test(itemId)) {
+        const wpId = parseInt(itemId, 10);
+        const brokerMatch = await db.select({ slug: brokersTable.slug }).from(brokersTable).where(eq(brokersTable.wpPostId, wpId));
+        if (brokerMatch.length > 0) {
+          firmSlug = brokerMatch[0].slug;
+        } else {
+          const propMatch = await db.select({ slug: propFirmsTable.slug }).from(propFirmsTable).where(eq(propFirmsTable.wpPostId, wpId));
+          if (propMatch.length > 0) firmSlug = propMatch[0].slug;
+        }
+      } else {
+        firmSlug = itemId;
+      }
+
+      if (firmSlug) {
+        const dbReviews = await db.select().from(reviewsTable)
+          .where(and(eq(reviewsTable.firmSlug, firmSlug), eq(reviewsTable.status, "approved")))
+          .orderBy(desc(reviewsTable.createdAt));
+        return res.json(dbReviews.map((r) => ({
+          id: r.id,
+          rating: r.rating ? parseFloat(String(r.rating)) : 0,
+          title: r.title || "",
+          reviewText: r.reviewText || "",
+          reviewerName: r.reviewerName || "Anonymous",
+          date: r.createdAt,
+          status: "approved",
+        })));
+      }
+
       res.json([]);
-    }
-  });
-
-  app.get("/api/wordpress/prop-firm-categories", async (req, res) => {
-    try {
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "prop_firm")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
-      return res.json(dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 })));
     } catch (error) {
-      console.error("Error fetching prop firm categories:", error);
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      console.error("Error fetching reviews:", error);
       res.json([]);
-    }
-  });
-
-  app.get("/api/wordpress/broker/:slug", async (req, res) => {
-    try {
-      const { slug } = req.params;
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      const [row] = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
-      if (row) return res.json(brokerDbToWpFormat(row));
-      return res.status(404).json({ error: "Broker not found" });
-    } catch (error) {
-      handleWordPressError(error, res, "fetch broker");
-    }
-  });
-
-  app.get("/api/wordpress/prop-firm/:slug", async (req, res) => {
-    try {
-      const { slug } = req.params;
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      const [row] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
-      if (row) return res.json(propFirmDbToWpFormat(row));
-      return res.status(404).json({ error: "Prop firm not found" });
-    } catch (error) {
-      handleWordPressError(error, res, "fetch prop firm");
     }
   });
 
@@ -1364,7 +816,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
       res.json(rows.map(brokerDbToApi));
     } catch (error) {
-      handleWordPressError(error, res, "fetch brokers from DB");
+      handleApiError(error, res, "fetch brokers from DB");
     }
   });
 
@@ -1376,7 +828,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
       return res.json(brokerDbToApi(row));
     } catch (error) {
-      handleWordPressError(error, res, "fetch broker from DB");
+      handleApiError(error, res, "fetch broker from DB");
     }
   });
 
@@ -1397,7 +849,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/prop-firms", async (req, res) => {
     try {
       const rows = await db.select().from(propFirmsTable).orderBy(asc(propFirmsTable.name));
-      // Fetch category assignments to populate categoryIds (matching /api/wordpress/prop-firm-categories response)
       const catRows = await db
         .select({ propFirmId: propFirmCategoriesTable.propFirmId, wpId: categoriesTable.wpId, dbId: categoriesTable.id })
         .from(propFirmCategoriesTable)
@@ -1411,7 +862,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
       res.json(rows.map(row => ({ ...propFirmDbToApi(row), categoryIds: catMap.get(row.id) || [] })));
     } catch (error) {
-      handleWordPressError(error, res, "fetch prop firms from DB");
+      handleApiError(error, res, "fetch prop firms from DB");
     }
   });
 
@@ -1423,7 +874,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
       return res.json(propFirmDbToApi(row));
     } catch (error) {
-      handleWordPressError(error, res, "fetch prop firm from DB");
+      handleApiError(error, res, "fetch prop firm from DB");
     }
   });
 
@@ -1439,30 +890,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ─── Migration endpoint (run once to pull from WordPress into DB) ─────────────
-
-  app.post("/api/admin/migrate-from-wordpress", async (req, res) => {
-    const secret = req.headers["x-admin-secret"];
-    if (secret !== process.env.ADMIN_SECRET && secret !== "entrylab-migrate-2025") {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-    try {
-      console.log("[Migrate] Starting WordPress → DB migration...");
-      const [brokerResult, propFirmResult] = await Promise.all([
-        migrateBrokers(),
-        migratePropFirms(),
-      ]);
-      console.log(`[Migrate] Done. Brokers: ${brokerResult.count}, PropFirms: ${propFirmResult.count}`);
-      res.json({
-        success: true,
-        brokers: brokerResult,
-        propFirms: propFirmResult,
-      });
-    } catch (error: any) {
-      console.error("[Migrate] Fatal error:", error);
-      res.status(500).json({ error: error.message });
-    }
-  });
 
   // ─── Admin email leads ────────────────────────────────────────────────────
 
@@ -1487,52 +914,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/wordpress/trust-signals", (_req, res) => {
-    res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=7200');
-    res.json([
-      { icon: "users",   value: "50,000+", label: "Active Traders" },
-      { icon: "trending", value: "$2.5B+", label: "Trading Volume" },
-      { icon: "award",   value: "100+",    label: "Verified Brokers" },
-      { icon: "shield",  value: "2020",    label: "Trusted Since" },
-    ]);
-  });
-
-  app.get("/api/wordpress/post/:slug", async (req, res) => {
-    try {
-      const { slug } = req.params;
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-
-      // ── DB-first ─────────────────────────────────────────────────────────
-      const [dbArticle] = await db
-        .select()
-        .from(articlesTable)
-        .where(and(eq(articlesTable.slug, slug), eq(articlesTable.status, "published")));
-
-      if (dbArticle) {
-        const wpPost = articleDbToWpFormat(dbArticle);
-        // Attach related broker from DB if present
-        if (dbArticle.relatedBroker) {
-          try {
-            const [brokerRow] = await db.select().from(brokersTable)
-              .where(eq(brokersTable.slug, dbArticle.relatedBroker));
-            if (brokerRow) wpPost.relatedBroker = brokerDbToWpFormat(brokerRow);
-          } catch (_) {}
-        }
-        return res.json(wpPost);
-      }
-
-      return res.status(404).json({ error: "Post not found" });
-    } catch (error) {
-      handleWordPressError(error, res, "fetch post");
-    }
-  });
-
-  // Media endpoint — DB articles store image URLs directly in featuredImage field,
-  // so this endpoint is only reached by legacy WP content (which no longer exists).
-  app.get("/api/wordpress/media/:id", (_req, res) => {
-    res.setHeader('Cache-Control', 'public, max-age=3600');
-    res.status(404).json({ error: "Media not found — all article images are stored directly in the database." });
-  });
 
   // Redirect /home to / (301 permanent redirect)
   app.get("/home", (req, res) => {
@@ -1738,55 +1119,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/wordpress/reviews/:itemId", async (req, res) => {
-    try {
-      const { itemId } = req.params;
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-
-      // Try to resolve the firm slug from the WP post ID in the DB
-      let firmSlug: string | null = null;
-      const wpId = parseInt(itemId, 10);
-      if (!isNaN(wpId)) {
-        const brokerMatch = await db.select({ slug: brokersTable.slug })
-          .from(brokersTable).where(eq(brokersTable.wpPostId, wpId));
-        if (brokerMatch.length > 0) {
-          firmSlug = brokerMatch[0].slug;
-        } else {
-          const propMatch = await db.select({ slug: propFirmsTable.slug })
-            .from(propFirmsTable).where(eq(propFirmsTable.wpPostId, wpId));
-          if (propMatch.length > 0) firmSlug = propMatch[0].slug;
-        }
-      }
-
-      // Also try slug directly if itemId doesn't look numeric
-      const slugFromParam = /^\d+$/.test(itemId) ? firmSlug : itemId;
-
-      // Serve approved reviews from DB
-      const lookupSlug = slugFromParam || firmSlug;
-      if (lookupSlug) {
-        const dbReviews = await db.select().from(reviewsTable)
-          .where(and(eq(reviewsTable.firmSlug, lookupSlug), eq(reviewsTable.status, "approved")))
-          .orderBy(desc(reviewsTable.createdAt));
-        return res.json(dbReviews.map((r) => ({
-          id: r.id,
-          acf: {
-            rating: r.rating,
-            review_title: r.title,
-            review_text: r.reviewText,
-            reviewer_name: r.reviewerName,
-          },
-          date: r.createdAt,
-          status: "publish",
-        })));
-      }
-
-      res.json([]);
-    } catch (error) {
-      console.error("Error fetching reviews:", error);
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      res.json([]);
-    }
-  });
 
   app.get("/api/forex/quotes", async (req, res) => {
     try {
@@ -1852,7 +1184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.send(`# EntryLab
 > Forex broker news, prop firm reviews, and XAU/USD trading signals for retail traders worldwide.
 
-EntryLab is an independent trading intelligence platform that publishes unbiased forex broker reviews, proprietary trading firm evaluations, and curated XAU/USD (Gold) trading signals. All editorial content is sourced through a WordPress CMS backend and served via a headless React frontend.
+EntryLab is an independent trading intelligence platform that publishes unbiased forex broker reviews, proprietary trading firm evaluations, and curated XAU/USD (Gold) trading signals. All editorial content is served from a PostgreSQL database via a headless React frontend.
 
 ## What EntryLab Covers
 
@@ -1901,59 +1233,6 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
 `);
   });
 
-  // Helper: fetch ALL pages from a WordPress REST endpoint (handles pagination)
-  async function fetchAllWPPages(baseUrl: string): Promise<any[]> {
-    // Fetch first page and check X-WP-TotalPages header
-    const firstPageUrl = baseUrl.includes('?')
-      ? `${baseUrl}&per_page=100&page=1`
-      : `${baseUrl}?per_page=100&page=1`;
-
-    const urlObj = new URL(firstPageUrl);
-    const options = {
-      hostname: urlObj.hostname,
-      path: urlObj.pathname + urlObj.search,
-      method: 'GET',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'application/json',
-      },
-      rejectUnauthorized: true,
-    };
-
-    const { data: firstData, totalPages } = await new Promise<{ data: any[]; totalPages: number }>((resolve, reject) => {
-      const req = https.request(options, (res) => {
-        let raw = '';
-        res.on('data', (c) => raw += c);
-        res.on('end', () => {
-          try {
-            const parsed = JSON.parse(raw);
-            const pages = parseInt(res.headers['x-wp-totalpages'] as string || '1', 10);
-            resolve({ data: Array.isArray(parsed) ? parsed : [], totalPages: isNaN(pages) ? 1 : pages });
-          } catch {
-            resolve({ data: [], totalPages: 1 });
-          }
-        });
-      });
-      req.on('error', reject);
-      req.setTimeout(12000, () => { req.destroy(); reject(new Error('Timeout')); });
-      req.end();
-    });
-
-    if (totalPages <= 1) return firstData;
-
-    // Fetch remaining pages in parallel
-    const remainingPages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
-    const rest = await Promise.all(
-      remainingPages.map((page) => {
-        const pageUrl = baseUrl.includes('?')
-          ? `${baseUrl}&per_page=100&page=${page}`
-          : `${baseUrl}?per_page=100&page=${page}`;
-        return fetchWordPressWithCache(pageUrl).catch(() => []);
-      })
-    );
-
-    return [firstData, ...rest].flat();
-  }
 
   // Dynamic Sitemap XML - CRITICAL: Set headers FIRST before any async operations
   app.get('/sitemap.xml', async (_req, res) => {
@@ -2297,16 +1576,9 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
     }
   });
 
-  // Legacy WordPress review webhook — kept for backwards compatibility (WP is removed)
-  // New reviews are submitted via /api/reviews/submit and go directly to DB.
-  app.post("/api/wordpress/review-webhook", async (req, res) => {
-    // WordPress no longer calls this — just acknowledge
-    console.log('[Legacy Webhook] /api/wordpress/review-webhook called — ignored (WP removed)');
-    res.sendStatus(200);
-  });
 
   // Legacy /category/* URL Redirects
-  // Redirect old WordPress /category/* URLs to new format (without /category/ prefix)
+  // Redirect legacy /category/* URLs to new format (without /category/ prefix)
   // This must run BEFORE SEO middleware
   app.use((req, res, next) => {
     const url = req.originalUrl || req.url;
@@ -2359,37 +1631,30 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
         if (staticPageSeo[cleanUrl]) {
           const seo = staticPageSeo[cleanUrl];
           pageData = {
-            title: { rendered: seo.title },
-            excerpt: { rendered: seo.description },
+            name: seo.title,
+            tagline: seo.description,
           };
         } else if (url.startsWith('/broker/')) {
           const slug = url.replace('/broker/', '').split('?')[0];
-          // Try DB first
           const [dbBroker] = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
           if (dbBroker) {
             pageData = {
               name: dbBroker.name,
-              title: { rendered: dbBroker.name },
-              excerpt: { rendered: dbBroker.tagline || "" },
-              acf: {
-                broker_logo: { url: dbBroker.logoUrl || "" },
-                rating: dbBroker.rating?.toString() || "",
-                overall_score: dbBroker.rating?.toString() || "",
-                broker_intro: dbBroker.tagline || "",
-                regulation: dbBroker.regulation || "",
-                regulated_by: dbBroker.regulation || "",
-                min_deposit: (dbBroker as any).minDeposit || "",
-                max_leverage: (dbBroker as any).maxLeverage || "",
-                spread_from: (dbBroker as any).spreadFrom || "",
-                trading_platforms: (dbBroker as any).platforms || "",
-                deposit_methods: (dbBroker as any).paymentMethods || "",
-                headquarters: (dbBroker as any).headquarters || "",
-                founded: (dbBroker as any).yearFounded || "",
-                broker_usp: ((dbBroker as any).highlights || []).join(", "),
-                pros: (dbBroker as any).pros || [],
-                cons: (dbBroker as any).cons || [],
-                about: (dbBroker as any).content || "",
-              },
+              tagline: dbBroker.tagline || "",
+              rating: dbBroker.rating?.toString() || "",
+              regulation: dbBroker.regulation || "",
+              minDeposit: (dbBroker as any).minDeposit || "",
+              maxLeverage: (dbBroker as any).maxLeverage || "",
+              spreadFrom: (dbBroker as any).spreadFrom || "",
+              platforms: (dbBroker as any).platforms || "",
+              paymentMethods: (dbBroker as any).paymentMethods || "",
+              headquarters: (dbBroker as any).headquarters || "",
+              yearFounded: (dbBroker as any).yearFounded || "",
+              highlights: ((dbBroker as any).highlights || []).join(", "),
+              pros: (dbBroker as any).pros || [],
+              cons: (dbBroker as any).cons || [],
+              content: (dbBroker as any).content || "",
+              logoUrl: dbBroker.logoUrl || "",
             };
           }
         } else if (url.startsWith('/prop-firm/')) {
@@ -2398,21 +1663,18 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
           if (dbFirm) {
             pageData = {
               name: dbFirm.name,
-              title: { rendered: dbFirm.name },
-              excerpt: { rendered: dbFirm.tagline || "" },
-              acf: {
-                prop_firm_logo: { url: dbFirm.logoUrl || "" },
-                rating: dbFirm.rating?.toString() || "",
-                overall_score: dbFirm.rating?.toString() || "",
-                firm_intro: dbFirm.tagline || "",
-                profit_split: (dbFirm as any).profitSplit || "",
-                max_funding_size: (dbFirm as any).maxFundingSize || "",
-                evaluation_fee: (dbFirm as any).evaluationFee || "",
-                headquarters: (dbFirm as any).headquarters || "",
-                prop_firm_usp: ((dbFirm as any).highlights || []).join(", "),
-                pros: (dbFirm as any).pros || [],
-                cons: (dbFirm as any).cons || [],
-              },
+              tagline: dbFirm.tagline || "",
+              rating: dbFirm.rating?.toString() || "",
+              profitSplit: (dbFirm as any).profitSplit || "",
+              maxFundingSize: (dbFirm as any).maxFundingSize || "",
+              evaluationFee: (dbFirm as any).evaluationFee || "",
+              maxDrawdown: (dbFirm as any).maxDrawdown || "",
+              headquarters: (dbFirm as any).headquarters || "",
+              highlights: ((dbFirm as any).highlights || []).join(", "),
+              pros: (dbFirm as any).pros || [],
+              cons: (dbFirm as any).cons || [],
+              content: (dbFirm as any).content || "",
+              logoUrl: dbFirm.logoUrl || "",
             };
           }
         } else if (url.match(/\/[^/]+\/[^/]+$/)) {
@@ -2423,7 +1685,7 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
             const [dbArticle] = await db.select().from(articlesTable)
               .where(and(eq(articlesTable.slug, slug), eq(articlesTable.status, "published")));
             if (dbArticle) {
-              pageData = articleDbToWpFormat(dbArticle);
+              pageData = articleToApi(dbArticle);
             }
           }
         }
@@ -2435,7 +1697,7 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
       const originalEnd = res.end;
       const originalSend = res.send;
       
-      // Sanitize WordPress HTML for SSR injection — strips dangerous tags but keeps semantic structure
+      // Sanitize HTML for SSR injection — strips dangerous tags but keeps semantic structure
       function sanitizeForSSR(rawHtml: string): string {
         return rawHtml
           // Remove script, style, iframe, noscript blocks entirely (including content)
@@ -2460,14 +1722,13 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
           .trim();
       }
 
-      // Build SSR body content from WordPress data
+      // Build SSR body content from DB data
       function buildSSRContent(pageData: any, pageUrl: string): string {
         if (!pageData) return '';
 
         const cleanUrl = pageUrl.split('?')[0];
-        const acf = pageData.acf || {};
-        const title = (pageData.title?.rendered || pageData.name || '').replace(/<[^>]+>/g, '');
-        const excerpt = (pageData.excerpt?.rendered || '').replace(/<[^>]+>/g, '').trim();
+        const title = (pageData.name || pageData.title || '').replace(/<[^>]+>/g, '');
+        const excerpt = (pageData.tagline || pageData.excerpt || '').replace(/<[^>]+>/g, '').trim();
 
         let html = `<style>#ssr-content{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:24px 16px;color:#1a1a1a}#ssr-content h1{font-size:2rem;font-weight:700;margin-bottom:16px}#ssr-content h2{font-size:1.4rem;font-weight:600;margin:24px 0 12px}#ssr-content p{margin-bottom:12px;line-height:1.7}#ssr-content dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}#ssr-content dt{font-weight:600;color:#555}#ssr-content dd{color:#222}#ssr-content ul{padding-left:20px;margin-bottom:12px}#ssr-content li{margin-bottom:4px}#ssr-nav{padding:16px;border-top:1px solid #eee;margin-top:24px}#ssr-nav ul{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:8px}#ssr-nav a{color:#2bb32a;text-decoration:none;font-size:0.9rem}</style>`;
         html += `<div id="ssr-content">`;
@@ -2482,22 +1743,21 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
           html += `<p>${excerpt}</p>`;
         }
 
-        // Helper to clean ACF text/HTML field
-        const cleanAcf = (val: any): string =>
+        const cleanStr = (val: any): string =>
           val ? String(val).replace(/<[^>]+>/g, '').trim() : '';
 
         // Broker-specific fields
         if (cleanUrl.startsWith('/broker/')) {
           const fields: [string, any][] = [
-            ['Rating', acf.overall_score || acf.rating],
-            ['Regulation', acf.regulation || acf.regulated_by],
-            ['Minimum Deposit', acf.min_deposit],
-            ['Maximum Leverage', acf.max_leverage || acf.leverage],
-            ['Spreads From', acf.spread_from || acf.spreads_from || acf.spread],
-            ['Trading Platforms', acf.trading_platforms],
-            ['Deposit Methods', acf.deposit_methods],
-            ['Founded', acf.founded || acf.year_founded],
-            ['Headquarters', acf.headquarters || acf.hq],
+            ['Rating', pageData.rating],
+            ['Regulation', pageData.regulation],
+            ['Minimum Deposit', pageData.minDeposit],
+            ['Maximum Leverage', pageData.maxLeverage],
+            ['Spreads From', pageData.spreadFrom],
+            ['Trading Platforms', pageData.platforms],
+            ['Deposit Methods', pageData.paymentMethods],
+            ['Founded', pageData.yearFounded],
+            ['Headquarters', pageData.headquarters],
           ].filter(([, v]) => v);
 
           if (fields.length > 0) {
@@ -2508,38 +1768,29 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
             html += `</dl>`;
           }
 
-          // ACF rich text fields — intro, USP, why choose, summary
-          const intro = cleanAcf(acf.broker_intro || acf.intro);
-          const usp = cleanAcf(acf.broker_usp || acf.usp);
-          const whyChoose = cleanAcf(acf.why_choose);
-          const summary = cleanAcf(acf.review_summary || acf.summary);
-          const bonusOffer = cleanAcf(acf.bonus_offer);
+          const intro = cleanStr(pageData.tagline);
+          const highlights = cleanStr(pageData.highlights);
 
           if (intro) html += `<h2>Overview</h2><p>${intro}</p>`;
-          if (usp) html += `<p>${usp}</p>`;
-          if (whyChoose) html += `<h2>Why Choose ${title}?</h2><p>${whyChoose}</p>`;
-          if (bonusOffer) html += `<h2>Bonus &amp; Promotions</h2><p>${bonusOffer}</p>`;
-          if (summary) html += `<h2>Review Summary</h2><p>${summary}</p>`;
+          if (highlights) html += `<p>${highlights}</p>`;
 
-          // Pros and cons — can be arrays or comma-separated strings
-          const pros = acf.pros;
-          const cons = acf.cons;
+          const pros = pageData.pros;
+          const cons = pageData.cons;
           if (pros) {
             html += `<h2>Pros</h2><ul>`;
             const prosList = Array.isArray(pros) ? pros : String(pros).split(/[,\n]+/);
-            prosList.forEach((p: any) => { const t = cleanAcf(p); if (t) html += `<li>${t}</li>`; });
+            prosList.forEach((p: any) => { const t = cleanStr(p); if (t) html += `<li>${t}</li>`; });
             html += `</ul>`;
           }
           if (cons) {
             html += `<h2>Cons</h2><ul>`;
             const consList = Array.isArray(cons) ? cons : String(cons).split(/[,\n]+/);
-            consList.forEach((c: any) => { const t = cleanAcf(c); if (t) html += `<li>${t}</li>`; });
+            consList.forEach((c: any) => { const t = cleanStr(c); if (t) html += `<li>${t}</li>`; });
             html += `</ul>`;
           }
 
-          // Fall back to WordPress post content if available
-          if (pageData.content?.rendered) {
-            const bodyHtml = sanitizeForSSR(pageData.content.rendered).substring(0, 10000);
+          if (pageData.content) {
+            const bodyHtml = sanitizeForSSR(pageData.content).substring(0, 10000);
             html += bodyHtml;
           }
         }
@@ -2547,16 +1798,12 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
         // Prop firm-specific fields
         else if (cleanUrl.startsWith('/prop-firm/')) {
           const fields: [string, any][] = [
-            ['Rating', acf.overall_score || acf.rating],
-            ['Account Sizes', acf.account_sizes],
-            ['Profit Split', acf.profit_split],
-            ['Maximum Drawdown', acf.max_drawdown],
-            ['Daily Drawdown', acf.daily_drawdown],
-            ['Evaluation Fee', acf.evaluation_fee || acf.challenge_fee],
-            ['Minimum Trading Days', acf.min_trading_days],
-            ['Profit Target', acf.profit_target],
-            ['Founded', acf.founded || acf.year_founded],
-            ['Headquarters', acf.headquarters || acf.hq],
+            ['Rating', pageData.rating],
+            ['Profit Split', pageData.profitSplit],
+            ['Max Funding', pageData.maxFundingSize],
+            ['Maximum Drawdown', pageData.maxDrawdown],
+            ['Evaluation Fee', pageData.evaluationFee],
+            ['Headquarters', pageData.headquarters],
           ].filter(([, v]) => v);
 
           if (fields.length > 0) {
@@ -2567,49 +1814,44 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
             html += `</dl>`;
           }
 
-          // ACF rich text fields for prop firms
-          const intro = cleanAcf(acf.firm_intro || acf.broker_intro || acf.intro);
-          const overview = cleanAcf(acf.overview);
-          const whyChoose = cleanAcf(acf.why_choose);
-          const summary = cleanAcf(acf.review_summary || acf.summary);
+          const intro = cleanStr(pageData.tagline);
+          const highlights = cleanStr(pageData.highlights);
 
           if (intro) html += `<h2>Overview</h2><p>${intro}</p>`;
-          if (overview && overview !== intro) html += `<p>${overview}</p>`;
-          if (whyChoose) html += `<h2>Why Choose ${title}?</h2><p>${whyChoose}</p>`;
-          if (summary) html += `<h2>Review Summary</h2><p>${summary}</p>`;
+          if (highlights) html += `<p>${highlights}</p>`;
 
-          const pros = acf.pros;
-          const cons = acf.cons;
+          const pros = pageData.pros;
+          const cons = pageData.cons;
           if (pros) {
             html += `<h2>Pros</h2><ul>`;
             const prosList = Array.isArray(pros) ? pros : String(pros).split(/[,\n]+/);
-            prosList.forEach((p: any) => { const t = cleanAcf(p); if (t) html += `<li>${t}</li>`; });
+            prosList.forEach((p: any) => { const t = cleanStr(p); if (t) html += `<li>${t}</li>`; });
             html += `</ul>`;
           }
           if (cons) {
             html += `<h2>Cons</h2><ul>`;
             const consList = Array.isArray(cons) ? cons : String(cons).split(/[,\n]+/);
-            consList.forEach((c: any) => { const t = cleanAcf(c); if (t) html += `<li>${t}</li>`; });
+            consList.forEach((c: any) => { const t = cleanStr(c); if (t) html += `<li>${t}</li>`; });
             html += `</ul>`;
           }
 
-          if (pageData.content?.rendered) {
-            const bodyHtml = sanitizeForSSR(pageData.content.rendered).substring(0, 10000);
+          if (pageData.content) {
+            const bodyHtml = sanitizeForSSR(pageData.content).substring(0, 10000);
             html += bodyHtml;
           }
         }
 
         // Article pages
         else {
-          const author = pageData._embedded?.['author']?.[0]?.name;
-          const date = pageData.date ? new Date(pageData.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+          const author = pageData.author;
+          const date = pageData.publishedAt ? new Date(pageData.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
 
           if (author || date) {
             html += `<p><small>${[author, date].filter(Boolean).join(' · ')}</small></p>`;
           }
 
-          if (pageData.content?.rendered) {
-            const bodyHtml = sanitizeForSSR(pageData.content.rendered).substring(0, 30000);
+          if (pageData.content) {
+            const bodyHtml = sanitizeForSSR(pageData.content).substring(0, 30000);
             html += bodyHtml;
           }
         }
@@ -2632,42 +1874,37 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
         
         // Inject title and meta tags if we have page data
         if (pageData) {
-          const yoast = pageData.yoast_head_json || {};
-          
-          // Get SEO title (Yoast > fallback)
-          const seoTitle = yoast.title || 
-                          `${pageData.title?.rendered || pageData.name || ''} | EntryLab`;
-          
-          // Get SEO description (Yoast > excerpt > content > generated from ACF fields)
-          const acfForDesc = pageData.acf || {};
-          const rawName = (pageData.title?.rendered || pageData.name || '').replace(/<[^>]+>/g, '');
-          
-          // Build a rich fallback description from structured ACF data when Yoast provides none
+          // Get SEO title from DB seoTitle field or generate from name
+          const seoTitle = pageData.seoTitle ||
+                          `${(pageData.name || pageData.title || '').replace(/<[^>]+>/g, '')} | EntryLab`;
+
+          const rawName = (pageData.name || pageData.title || '').replace(/<[^>]+>/g, '');
+
+          // Build rich fallback description from DB fields
           let generatedDescription = '';
           if (cleanUrl.startsWith('/broker/')) {
             const parts = [
               rawName ? `Read our expert ${rawName} review.` : '',
-              acfForDesc.overall_score || acfForDesc.rating ? `Rating: ${acfForDesc.overall_score || acfForDesc.rating}/5.` : '',
-              acfForDesc.regulation || acfForDesc.regulated_by ? `Regulated by ${acfForDesc.regulation || acfForDesc.regulated_by}.` : '',
-              acfForDesc.min_deposit ? `Min deposit: ${acfForDesc.min_deposit}.` : '',
-              acfForDesc.max_leverage || acfForDesc.leverage ? `Leverage up to ${acfForDesc.max_leverage || acfForDesc.leverage}.` : '',
+              pageData.rating ? `Rating: ${pageData.rating}/5.` : '',
+              pageData.regulation ? `Regulated by ${pageData.regulation}.` : '',
+              pageData.minDeposit ? `Min deposit: ${pageData.minDeposit}.` : '',
+              pageData.maxLeverage ? `Leverage up to ${pageData.maxLeverage}.` : '',
             ].filter(Boolean).join(' ');
             generatedDescription = parts || `${rawName} broker review — ratings, fees, regulation, and trading conditions on EntryLab.`;
           } else if (cleanUrl.startsWith('/prop-firm/')) {
             const parts = [
               rawName ? `Read our ${rawName} review.` : '',
-              acfForDesc.overall_score || acfForDesc.rating ? `Rating: ${acfForDesc.overall_score || acfForDesc.rating}/5.` : '',
-              acfForDesc.profit_split ? `Profit split: ${acfForDesc.profit_split}.` : '',
-              acfForDesc.account_sizes ? `Account sizes: ${acfForDesc.account_sizes}.` : '',
-              acfForDesc.max_drawdown ? `Max drawdown: ${acfForDesc.max_drawdown}.` : '',
+              pageData.rating ? `Rating: ${pageData.rating}/5.` : '',
+              pageData.profitSplit ? `Profit split: ${pageData.profitSplit}.` : '',
+              pageData.maxFundingSize ? `Max funding: ${pageData.maxFundingSize}.` : '',
+              pageData.maxDrawdown ? `Max drawdown: ${pageData.maxDrawdown}.` : '',
             ].filter(Boolean).join(' ');
             generatedDescription = parts || `${rawName} prop firm review — payouts, rules, evaluation process on EntryLab.`;
           }
 
-          const seoDescription = yoast.og_description || 
-                                yoast.description || 
-                                pageData.excerpt?.rendered?.replace(/<[^>]*>/g, '').substring(0, 160) ||
-                                pageData.content?.rendered?.replace(/<[^>]*>/g, '').substring(0, 160) ||
+          const seoDescription = pageData.seoDescription ||
+                                (pageData.excerpt || '').replace(/<[^>]*>/g, '').substring(0, 160) ||
+                                (pageData.tagline || '').replace(/<[^>]*>/g, '').substring(0, 160) ||
                                 generatedDescription;
           
           // Inject title tag
@@ -2697,7 +1934,7 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
           // Inject Open Graph tags + canonical
           const ogTitle = seoTitle.replace(/"/g, '&quot;');
           const ogDesc = seoDescription.replace(/"/g, '&quot;');
-          const ogImage = yoast.og_image?.[0]?.url || pageData._embedded?.['wp:featuredmedia']?.[0]?.source_url || 'https://entrylab.io/og-image.jpg';
+          const ogImage = pageData.featuredImage || pageData.logoUrl || 'https://entrylab.io/og-image.jpg';
           const ogUrl = `https://entrylab.io${cleanUrl}`;
           
           const ogTags = `
@@ -2726,42 +1963,40 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
           }
 
           // FAQ JSON-LD for broker review pages — used by AI tools (Perplexity, ChatGPT) for cited Q&A
-          if (cleanUrl.startsWith('/broker/') && pageData.acf) {
+          if (cleanUrl.startsWith('/broker/') && pageData.name) {
             try {
-              const acf = pageData.acf;
-              const brokerName = (pageData.title?.rendered || pageData.name || '').replace(/<[^>]+>/g, '');
+              const brokerName = pageData.name.replace(/<[^>]+>/g, '');
               const faqItems: Array<{ q: string; a: string }> = [];
 
-              const reg = acf.regulation || acf.regulated_by;
-              if (reg) faqItems.push({
+              if (pageData.regulation) faqItems.push({
                 q: `Is ${brokerName} regulated?`,
-                a: (reg === 'No Regulation' || reg === 'Unregulated')
+                a: (pageData.regulation === 'No Regulation' || pageData.regulation === 'Unregulated')
                   ? `${brokerName} is not regulated by a major financial authority and operates as an offshore broker.`
-                  : `${brokerName} is regulated by ${reg}.`
+                  : `${brokerName} is regulated by ${pageData.regulation}.`
               });
-              if (acf.min_deposit) faqItems.push({
+              if (pageData.minDeposit) faqItems.push({
                 q: `What is the minimum deposit for ${brokerName}?`,
-                a: `The minimum deposit for ${brokerName} is ${acf.min_deposit}.`
+                a: `The minimum deposit for ${brokerName} is ${pageData.minDeposit}.`
               });
-              if (acf.max_leverage || acf.leverage) faqItems.push({
+              if (pageData.maxLeverage) faqItems.push({
                 q: `What leverage does ${brokerName} offer?`,
-                a: `${brokerName} offers leverage up to ${acf.max_leverage || acf.leverage}.`
+                a: `${brokerName} offers leverage up to ${pageData.maxLeverage}.`
               });
-              if (acf.trading_platforms) faqItems.push({
+              if (pageData.platforms) faqItems.push({
                 q: `What trading platforms does ${brokerName} support?`,
-                a: `${brokerName} supports: ${acf.trading_platforms}.`
+                a: `${brokerName} supports: ${pageData.platforms}.`
               });
-              if (acf.overall_score || acf.rating) faqItems.push({
+              if (pageData.rating) faqItems.push({
                 q: `What is ${brokerName}'s rating on EntryLab?`,
-                a: `${brokerName} has an overall rating of ${acf.overall_score || acf.rating} out of 5 on EntryLab.`
+                a: `${brokerName} has an overall rating of ${pageData.rating} out of 5 on EntryLab.`
               });
-              if (acf.spread_from || acf.spreads_from || acf.spread) faqItems.push({
+              if (pageData.spreadFrom) faqItems.push({
                 q: `What are ${brokerName}'s spreads?`,
-                a: `${brokerName} offers spreads from ${acf.spread_from || acf.spreads_from || acf.spread}.`
+                a: `${brokerName} offers spreads from ${pageData.spreadFrom}.`
               });
-              if (acf.deposit_methods) faqItems.push({
+              if (pageData.paymentMethods) faqItems.push({
                 q: `What deposit methods does ${brokerName} accept?`,
-                a: `${brokerName} accepts the following deposit methods: ${acf.deposit_methods}.`
+                a: `${brokerName} accepts the following deposit methods: ${pageData.paymentMethods}.`
               });
 
               if (faqItems.length >= 2) {
@@ -3085,7 +2320,7 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
     }
   });
 
-  // Free signup endpoint - WordPress calls this when users submit the free signals form
+  // Free signup endpoint - called when users submit the free signals form
   app.post('/api/free-signup', async (req, res) => {
     try {
       const { email, name, source, gclid, fbclid } = req.body;

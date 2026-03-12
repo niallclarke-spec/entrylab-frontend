@@ -6,7 +6,6 @@ import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { transformBroker } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 import { Star, X, Plus, ExternalLink, Shield, DollarSign, TrendingUp, Monitor, CreditCard, Headphones, Check, Minus } from "lucide-react";
 import { Link } from "wouter";
@@ -113,10 +112,7 @@ export default function Compare() {
   });
 
   const brokers: Broker[] = useMemo(
-    () =>
-      (rawBrokers || [])
-        .map((b: any) => (b.acf !== undefined ? transformBroker(b) : (b as Broker)))
-        .filter(Boolean) as Broker[],
+    () => (rawBrokers || []) as Broker[],
     [rawBrokers]
   );
 

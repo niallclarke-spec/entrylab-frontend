@@ -1,4 +1,4 @@
-// Simple in-memory cache with TTL and stale-while-revalidate for WordPress API responses
+// Simple in-memory cache with TTL and stale-while-revalidate for API responses
 interface CacheEntry {
   data: any;
   timestamp: number;

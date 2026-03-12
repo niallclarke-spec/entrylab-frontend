@@ -8,7 +8,6 @@ import { Shield, Star, TrendingUp, Zap, DollarSign, Target, CheckCircle2, Shield
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { trackPageView, trackCategoryFilter } from "@/lib/gtm";
-import { transformPropFirm } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 
 interface PropFirmCategory {
@@ -43,7 +42,7 @@ export default function PropFirms() {
   });
 
   const { data: categories = [] } = useQuery<PropFirmCategory[]>({
-    queryKey: ["/api/wordpress/prop-firm-categories"],
+    queryKey: ["/api/prop-firm-categories"],
   });
 
   const urlCategory = params.category
@@ -52,10 +51,10 @@ export default function PropFirms() {
 
   const selectedCategory = urlCategory?.id || null;
 
-  const propFirms: (Broker & { categoryIds: number[] })[] = (rawPropFirms || []).map((p: any) => {
-    if (p.acf !== undefined) return transformPropFirm(p);
-    return { ...p, categoryIds: [] } as Broker & { categoryIds: number[] };
-  }).filter(Boolean) as (Broker & { categoryIds: number[] })[];
+  const propFirms: (Broker & { categoryIds: number[] })[] = (rawPropFirms || []).map((p: any) => ({
+    ...p,
+    categoryIds: p.categoryIds || [],
+  })) as (Broker & { categoryIds: number[] })[];
 
   let filteredPropFirms = propFirms;
   if (filterFeatured !== null) filteredPropFirms = filteredPropFirms.filter(p => p.featured === filterFeatured);

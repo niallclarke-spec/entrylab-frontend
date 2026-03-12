@@ -144,16 +144,9 @@ export default function AdminArticleEditor() {
     setForm((f) => ({ ...f, title: val, slug: slugTouched ? f.slug : slugify(val) }));
   };
 
-  // WP-sourced articles have numeric IDs (no dashes); DB articles have UUID format
-  const isWpArticle = !isNew && !!articleId && /^\d+$/.test(articleId);
-
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (isNew) {
-        return apiRequest("POST", "/api/admin/articles", form);
-      }
-      // If this is a WP article, PUT will 404 (no DB record) → create instead
-      if (isWpArticle) {
         return apiRequest("POST", "/api/admin/articles", form);
       }
       return apiRequest("PUT", `/api/admin/articles/${articleId}`, form);

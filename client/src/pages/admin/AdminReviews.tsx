@@ -82,7 +82,7 @@ export default function AdminReviews({ type }: AdminReviewsProps) {
   const [migrating, setMigrating] = useState(false);
   const [migrateResult, setMigrateResult] = useState<string | null>(null);
   const handleMigrateReviews = async () => {
-    if (!window.confirm("Import existing WordPress reviews into the database? Existing DB reviews won't be duplicated.")) return;
+    if (!window.confirm("Import existing reviews into the database? Existing DB reviews won't be duplicated.")) return;
     setMigrating(true);
     setMigrateResult(null);
     try {
@@ -120,7 +120,7 @@ export default function AdminReviews({ type }: AdminReviewsProps) {
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <ActionBtn
-              label={migrating ? "Importing..." : "Import from WordPress"}
+              label={migrating ? "Importing..." : "Import Reviews"}
               small
               onClick={handleMigrateReviews}
               disabled={migrating}

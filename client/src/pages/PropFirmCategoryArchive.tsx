@@ -9,7 +9,6 @@ import { Shield, Star, CheckCircle2, ShieldCheck, ArrowRight, Newspaper } from "
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { trackPageView } from "@/lib/gtm";
-import { transformPropFirm } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 
 export default function PropFirmCategoryArchive() {
@@ -34,15 +33,15 @@ export default function PropFirmCategoryArchive() {
   }, []);
 
   const { data: propFirmCategories } = useQuery<any[]>({
-    queryKey: ["/api/wordpress/prop-firm-categories"],
+    queryKey: ["/api/prop-firm-categories"],
   });
 
   const { data: categoryContent, isLoading } = useQuery<any>({
-    queryKey: [`/api/wordpress/category-content?category=${slug}`],
+    queryKey: [`/api/category-content?category=${slug}`],
     enabled: !!slug,
   });
 
-  const propFirms = categoryContent?.propFirms?.map(transformPropFirm).filter((p: Broker | null): p is Broker => p !== null) || [];
+  const propFirms: Broker[] = categoryContent?.propFirms || [];
   const totalVerified = propFirms.filter((p: Broker) => p.verified).length;
   const avgRating = propFirms.length > 0
     ? (propFirms.reduce((sum: number, p: Broker) => sum + p.rating, 0) / propFirms.length).toFixed(1)
