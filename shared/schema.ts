@@ -260,7 +260,7 @@ export const reviewsTable = pgTable("reviews", {
   reviewText: text("review_text"),
   newsletterOptin: boolean("newsletter_optin").default(false),
   status: text("status").default("pending").notNull(), // pending | approved | rejected
-  wpPostId: integer("wp_post_id"),             // set when imported from WordPress
+  wpPostId: integer("wp_post_id"),             // legacy post ID for redirect lookups
   telegramMessageId: text("telegram_message_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

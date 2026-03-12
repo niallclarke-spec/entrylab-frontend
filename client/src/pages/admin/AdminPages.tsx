@@ -114,7 +114,7 @@ export default function AdminPages() {
                             {appRoute}
                           </span>
                         ) : (
-                          <span style={{ color: C.textDim, fontSize: 12 }}>WP only</span>
+                          <span style={{ color: C.textDim, fontSize: 12 }}>External</span>
                         )}
                       </td>
                       <td style={{ padding: "14px 16px" }}>
@@ -143,10 +143,7 @@ export default function AdminPages() {
         </div>
 
         <p style={{ marginTop: 16, fontSize: 12, color: C.textDim }}>
-          Static pages are managed via the admin CMS. To edit content, visit{" "}
-          <a href="https://admin.entrylab.io/wp-admin/edit.php?post_type=page" target="_blank" rel="noopener noreferrer" style={{ color: C.accent }}>
-            CMS Pages
-          </a>.
+          Static pages are managed directly in the admin panel.
         </p>
       </div>
     </AdminLayout>
