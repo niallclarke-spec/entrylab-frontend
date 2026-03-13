@@ -576,27 +576,23 @@ export default function BrokerReview() {
               )}
 
               {/* Bottom CTA */}
-              <Card className="p-8 text-center relative overflow-hidden" style={{ background: "#1a1e1c" }}>
-                <div className="absolute top-[-100px] right-[-100px] w-[300px] h-[300px] rounded-full opacity-40 pointer-events-none" style={{ background: "radial-gradient(circle, #2bb32a 0%, transparent 70%)", filter: "blur(80px)" }} />
-                <div className="absolute bottom-[-80px] left-[-80px] w-[200px] h-[200px] rounded-full opacity-30 pointer-events-none" style={{ background: "radial-gradient(circle, #2bb32a 0%, transparent 70%)", filter: "blur(60px)" }} />
-                <div className="relative z-10">
-                  <h3 className="text-2xl font-bold mb-3 text-white">Ready to Start Trading?</h3>
-                  <p className="text-white/60 mb-6">
-                    Join thousands of traders who trust {stripHtml(broker.name)}
-                  </p>
-                  <Button size="lg" asChild data-testid="button-visit-broker-bottom" onClick={() => trackAffiliateClick({
-                    broker_name: broker.name,
-                    broker_type: 'broker',
-                    page_location: 'broker_review',
-                    placement_type: 'bottom_cta',
-                    rating: broker.rating,
-                    affiliate_link: broker.link
-                  })}>
-                    <a href={broker.link} target="_blank" rel="noopener noreferrer" className="btn-white-link">
-                      Visit {stripHtml(broker.name)} <ChevronRight className="ml-2 h-4 w-4" />
-                    </a>
-                  </Button>
-                </div>
+              <Card className="p-8 text-center">
+                <h3 className="text-2xl font-bold mb-3">Ready to Start Trading?</h3>
+                <p className="text-muted-foreground mb-6">
+                  Join thousands of traders who trust {stripHtml(broker.name)}
+                </p>
+                <Button size="lg" asChild data-testid="button-visit-broker-bottom" onClick={() => trackAffiliateClick({
+                  broker_name: broker.name,
+                  broker_type: 'broker',
+                  page_location: 'broker_review',
+                  placement_type: 'bottom_cta',
+                  rating: broker.rating,
+                  affiliate_link: broker.link
+                })}>
+                  <a href={broker.link} target="_blank" rel="noopener noreferrer" className="btn-white-link">
+                    Visit {stripHtml(broker.name)} <ChevronRight className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
               </Card>
             </div>
 

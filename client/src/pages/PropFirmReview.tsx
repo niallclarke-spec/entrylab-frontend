@@ -609,27 +609,23 @@ export default function PropFirmReview() {
               )}
 
               {/* Bottom CTA */}
-              <Card className="p-8 text-center relative overflow-hidden" style={{ background: "#1a1e1c" }}>
-                <div className="absolute top-[-100px] right-[-100px] w-[300px] h-[300px] rounded-full opacity-40 pointer-events-none" style={{ background: "radial-gradient(circle, #2bb32a 0%, transparent 70%)", filter: "blur(80px)" }} />
-                <div className="absolute bottom-[-80px] left-[-80px] w-[200px] h-[200px] rounded-full opacity-30 pointer-events-none" style={{ background: "radial-gradient(circle, #2bb32a 0%, transparent 70%)", filter: "blur(60px)" }} />
-                <div className="relative z-10">
-                  <h3 className="text-2xl font-bold mb-3 text-white">Ready to Get Funded?</h3>
-                  <p className="text-white/60 mb-6">
-                    Join thousands of funded traders with {stripHtml(propFirm.name)}
-                  </p>
-                  <Button size="lg" asChild data-testid="button-visit-prop-firm-bottom" onClick={() => trackAffiliateClick({
-                    broker_name: propFirm.name,
-                    broker_type: 'prop_firm',
-                    page_location: 'prop_firm_review',
-                    placement_type: 'bottom_cta',
-                    rating: propFirm.rating,
-                    affiliate_link: propFirm.link
-                  })}>
-                    <a href={propFirm.link} target="_blank" rel="noopener noreferrer" className="btn-white-link">
-                      Visit {stripHtml(propFirm.name)} <ChevronRight className="ml-2 h-4 w-4" />
-                    </a>
-                  </Button>
-                </div>
+              <Card className="p-8 text-center">
+                <h3 className="text-2xl font-bold mb-3">Ready to Get Funded?</h3>
+                <p className="text-muted-foreground mb-6">
+                  Join thousands of funded traders with {stripHtml(propFirm.name)}
+                </p>
+                <Button size="lg" asChild data-testid="button-visit-prop-firm-bottom" onClick={() => trackAffiliateClick({
+                  broker_name: propFirm.name,
+                  broker_type: 'prop_firm',
+                  page_location: 'prop_firm_review',
+                  placement_type: 'bottom_cta',
+                  rating: propFirm.rating,
+                  affiliate_link: propFirm.link
+                })}>
+                  <a href={propFirm.link} target="_blank" rel="noopener noreferrer" className="btn-white-link">
+                    Visit {stripHtml(propFirm.name)} <ChevronRight className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
               </Card>
             </div>
 
