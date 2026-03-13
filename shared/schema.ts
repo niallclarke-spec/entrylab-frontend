@@ -158,7 +158,7 @@ export const brokersTable = pgTable("brokers_data", {
   countries: text("countries").array(),
   platformsList: text("platforms_arr").array(),
   instruments: text("instruments").array(),
-  legacyPostId: integer("wp_post_id"),
+  legacyPostId: integer("legacy_post_id"),
   lastUpdated: timestamp("last_updated"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -203,7 +203,7 @@ export const propFirmsTable = pgTable("prop_firms_data", {
   headquarters: text("headquarters"),
   paymentMethods: text("payment_methods"),
   payoutMethods: text("payout_methods"),
-  legacyPostId: integer("wp_post_id"),
+  legacyPostId: integer("legacy_post_id"),
   lastUpdated: timestamp("last_updated"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -230,7 +230,7 @@ export const articlesTable = pgTable("articles", {
   seoDescription: text("seo_description"),
   author: text("author").default("EntryLab"),
   relatedBroker: text("related_broker"),   // broker slug this article is about
-  legacyPostId: integer("wp_post_id"),     // legacy post ID for redirect lookups
+  legacyPostId: integer("legacy_post_id"),  // legacy post ID for redirect lookups
   publishedAt: timestamp("published_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -260,7 +260,7 @@ export const reviewsTable = pgTable("reviews", {
   reviewText: text("review_text"),
   newsletterOptin: boolean("newsletter_optin").default(false),
   status: text("status").default("pending").notNull(), // pending | approved | rejected
-  legacyPostId: integer("wp_post_id"),         // legacy post ID for redirect lookups
+  legacyPostId: integer("legacy_post_id"),     // legacy post ID for redirect lookups
   telegramMessageId: text("telegram_message_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -300,7 +300,7 @@ export const categoriesTable = pgTable("categories", {
   type: text("type").notNull(), // "article" | "broker" | "prop_firm"
   description: text("description"),
   sortOrder: integer("sort_order").default(0),
-  legacyId: integer("wp_id"),
+  legacyId: integer("legacy_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
