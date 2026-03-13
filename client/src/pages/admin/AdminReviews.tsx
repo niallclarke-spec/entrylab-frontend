@@ -79,24 +79,6 @@ export default function AdminReviews({ type }: AdminReviewsProps) {
     },
   });
 
-  const [migrating, setMigrating] = useState(false);
-  const [migrateResult, setMigrateResult] = useState<string | null>(null);
-  const handleMigrateReviews = async () => {
-    if (!window.confirm("Import existing reviews into the database? Existing DB reviews won't be duplicated.")) return;
-    setMigrating(true);
-    setMigrateResult(null);
-    try {
-      const r = await fetch("/api/admin/migrate-reviews", { method: "POST", credentials: "include" });
-      const data = await r.json();
-      setMigrateResult(`Imported ${data.imported}, skipped ${data.skipped} (already in DB).`);
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/reviews"] });
-    } catch {
-      setMigrateResult("Migration failed.");
-    } finally {
-      setMigrating(false);
-    }
-  };
-
   const displayed = reviews.filter((r) => {
     if (filter !== "all" && r.status !== filter) return false;
     return true;
@@ -118,21 +100,7 @@ export default function AdminReviews({ type }: AdminReviewsProps) {
               ) : "All reviews moderated"} — stored in database
             </p>
           </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <ActionBtn
-              label={migrating ? "Importing..." : "Import Reviews"}
-              small
-              onClick={handleMigrateReviews}
-              disabled={migrating}
-            />
-          </div>
         </div>
-
-        {migrateResult && (
-          <div style={{ marginBottom: 16, padding: "10px 14px", borderRadius: 8, background: "rgba(8,242,149,0.08)", border: `1px solid rgba(8,242,149,0.2)`, fontSize: 13, color: C.accent }}>
-            {migrateResult}
-          </div>
-        )}
 
         {/* Filter tabs */}
         <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>

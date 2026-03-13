@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- Theme detection: runs before ANYTHING renders — prevents white flash -->
+    <script>
+      (function(){try{var t=localStorage.getItem("theme")||"dark";document.documentElement.classList.add(t);}catch(e){document.documentElement.classList.add("dark");}})();
+    </script>
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5" />
     
@@ -24,8 +29,8 @@
     
     <!-- Inline Critical CSS for instant rendering -->
     <style>
-      :root{--background:0 0% 100%;--foreground:220 15% 15%;--primary:271 91% 65%;--card:220 15% 98%;--border:220 15% 88%;--muted:220 12% 92%;--muted-foreground:220 10% 35%;--radius:.5rem}
-      .dark{--background:220 15% 8%;--foreground:220 15% 92%;--primary:271 91% 65%;--card:220 15% 12%;--border:220 15% 20%;--muted:220 15% 15%;--muted-foreground:220 10% 65%}
+      :root{--background:0 0% 100%;--foreground:220 15% 15%;--primary:120 62% 43%;--card:220 15% 98%;--border:220 15% 88%;--muted:220 12% 92%;--muted-foreground:220 10% 35%;--radius:.5rem}
+      .dark{--background:220 15% 8%;--foreground:220 15% 92%;--primary:120 62% 43%;--card:220 15% 12%;--border:220 15% 20%;--muted:220 15% 15%;--muted-foreground:220 10% 65%}
       *{box-sizing:border-box;margin:0;padding:0}
       body{margin:0;font-family:Inter,system-ui,sans-serif;background:hsl(var(--background));color:hsl(var(--foreground));-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:1.5}
       #root{min-height:100vh;display:flex;flex-direction:column}
@@ -47,6 +52,12 @@
       .prose h2{margin-top:2em;margin-bottom:1em;font-size:1.5em;font-weight:700}
       .prose table{width:100%;border-collapse:collapse;margin:1.5em 0}
       .prose td,.prose th{border:1px solid hsl(var(--border));padding:0.75em}
+      /* Skeleton pulse animation */
+      @keyframes sk-pulse{0%,100%{opacity:1}50%{opacity:.5}}
+      .sk{animation:sk-pulse 1.8s ease-in-out infinite}
+      /* Skeleton colors — auto-adapts to light/dark */
+      .sk-block{background:hsl(var(--muted));border-radius:6px}
+      .sk-card{background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:8px;overflow:hidden}
     </style>
     
     <!-- Defer CSS to prevent render blocking - Handle both static and dynamic CSS -->
@@ -243,7 +254,139 @@
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KPCJDF2M"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
-    <div id="root"></div>
+    <div id="root">
+      <!-- Static skeleton — instantly painted from HTML, no JS or external CSS needed.
+           React replaces this automatically when it mounts into #root. -->
+      <div style="min-height:100vh;background:hsl(var(--background));display:flex;flex-direction:column">
+
+        <!-- Navbar skeleton -->
+        <header style="height:60px;background:hsl(var(--card));border-bottom:1px solid hsl(var(--border));display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:50;flex-shrink:0">
+          <!-- Logo -->
+          <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+            <div class="sk sk-block" style="width:32px;height:32px;border-radius:8px;flex-shrink:0"></div>
+            <div class="sk sk-block" style="width:88px;height:16px"></div>
+          </div>
+          <!-- Nav links — hidden on mobile -->
+          <div style="display:flex;gap:24px;margin-left:16px;align-items:center">
+            <div class="sk sk-block" style="width:42px;height:12px;display:none" id="sk-nav"></div>
+          </div>
+          <!-- Right controls -->
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-shrink:0">
+            <div class="sk sk-block" style="width:32px;height:32px;border-radius:8px"></div>
+            <div class="sk sk-block" style="width:32px;height:32px;border-radius:8px"></div>
+            <div class="sk sk-block" style="width:32px;height:32px;border-radius:8px"></div>
+          </div>
+        </header>
+
+        <!-- Page content -->
+        <main style="flex:1;max-width:1280px;width:100%;margin:0 auto;padding:32px 24px 48px">
+
+          <!-- Category pills row -->
+          <div style="display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap">
+            <div class="sk sk-block" style="height:32px;width:72px;border-radius:9999px;opacity:0.9"></div>
+            <div class="sk sk-block" style="height:32px;width:110px;border-radius:9999px;opacity:0.6"></div>
+            <div class="sk sk-block" style="height:32px;width:95px;border-radius:9999px;opacity:0.5"></div>
+            <div class="sk sk-block" style="height:32px;width:130px;border-radius:9999px;opacity:0.4"></div>
+            <div class="sk sk-block" style="height:32px;width:85px;border-radius:9999px;opacity:0.35"></div>
+          </div>
+
+          <!-- Page heading -->
+          <div style="margin-bottom:32px">
+            <div class="sk sk-block" style="width:260px;max-width:80%;height:28px;margin-bottom:12px"></div>
+            <div class="sk sk-block" style="width:420px;max-width:100%;height:14px;opacity:0.6"></div>
+          </div>
+
+          <!-- Card grid — 3 cols desktop / 2 tablet / 1 mobile -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:16px">
+
+            <!-- Card 1 -->
+            <div class="sk-card">
+              <div class="sk sk-block" style="width:100%;height:160px;border-radius:0;border-bottom:1px solid hsl(var(--border))"></div>
+              <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;gap:8px;align-items:center">
+                  <div class="sk sk-block" style="width:56px;height:20px;border-radius:9999px"></div>
+                  <div class="sk sk-block" style="width:70px;height:12px;opacity:0.5"></div>
+                </div>
+                <div class="sk sk-block" style="width:100%;height:16px"></div>
+                <div class="sk sk-block" style="width:85%;height:16px;opacity:0.7"></div>
+                <div class="sk sk-block" style="width:60%;height:12px;opacity:0.4;margin-top:4px"></div>
+              </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="sk-card">
+              <div class="sk sk-block" style="width:100%;height:160px;border-radius:0;border-bottom:1px solid hsl(var(--border))"></div>
+              <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;gap:8px;align-items:center">
+                  <div class="sk sk-block" style="width:70px;height:20px;border-radius:9999px"></div>
+                  <div class="sk sk-block" style="width:60px;height:12px;opacity:0.5"></div>
+                </div>
+                <div class="sk sk-block" style="width:100%;height:16px"></div>
+                <div class="sk sk-block" style="width:90%;height:16px;opacity:0.7"></div>
+                <div class="sk sk-block" style="width:50%;height:12px;opacity:0.4;margin-top:4px"></div>
+              </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="sk-card">
+              <div class="sk sk-block" style="width:100%;height:160px;border-radius:0;border-bottom:1px solid hsl(var(--border))"></div>
+              <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;gap:8px;align-items:center">
+                  <div class="sk sk-block" style="width:62px;height:20px;border-radius:9999px"></div>
+                  <div class="sk sk-block" style="width:80px;height:12px;opacity:0.5"></div>
+                </div>
+                <div class="sk sk-block" style="width:95%;height:16px"></div>
+                <div class="sk sk-block" style="width:80%;height:16px;opacity:0.7"></div>
+                <div class="sk sk-block" style="width:65%;height:12px;opacity:0.4;margin-top:4px"></div>
+              </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="sk-card">
+              <div class="sk sk-block" style="width:100%;height:160px;border-radius:0;border-bottom:1px solid hsl(var(--border))"></div>
+              <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;gap:8px;align-items:center">
+                  <div class="sk sk-block" style="width:80px;height:20px;border-radius:9999px"></div>
+                  <div class="sk sk-block" style="width:55px;height:12px;opacity:0.5"></div>
+                </div>
+                <div class="sk sk-block" style="width:100%;height:16px"></div>
+                <div class="sk sk-block" style="width:75%;height:16px;opacity:0.7"></div>
+                <div class="sk sk-block" style="width:55%;height:12px;opacity:0.4;margin-top:4px"></div>
+              </div>
+            </div>
+
+            <!-- Card 5 -->
+            <div class="sk-card">
+              <div class="sk sk-block" style="width:100%;height:160px;border-radius:0;border-bottom:1px solid hsl(var(--border))"></div>
+              <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;gap:8px;align-items:center">
+                  <div class="sk sk-block" style="width:65px;height:20px;border-radius:9999px"></div>
+                  <div class="sk sk-block" style="width:72px;height:12px;opacity:0.5"></div>
+                </div>
+                <div class="sk sk-block" style="width:100%;height:16px"></div>
+                <div class="sk sk-block" style="width:88%;height:16px;opacity:0.7"></div>
+                <div class="sk sk-block" style="width:70%;height:12px;opacity:0.4;margin-top:4px"></div>
+              </div>
+            </div>
+
+            <!-- Card 6 -->
+            <div class="sk-card">
+              <div class="sk sk-block" style="width:100%;height:160px;border-radius:0;border-bottom:1px solid hsl(var(--border))"></div>
+              <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;gap:8px;align-items:center">
+                  <div class="sk sk-block" style="width:75px;height:20px;border-radius:9999px"></div>
+                  <div class="sk sk-block" style="width:65px;height:12px;opacity:0.5"></div>
+                </div>
+                <div class="sk sk-block" style="width:92%;height:16px"></div>
+                <div class="sk sk-block" style="width:78%;height:16px;opacity:0.7"></div>
+                <div class="sk sk-block" style="width:48%;height:12px;opacity:0.4;margin-top:4px"></div>
+              </div>
+            </div>
+
+          </div>
+        </main>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

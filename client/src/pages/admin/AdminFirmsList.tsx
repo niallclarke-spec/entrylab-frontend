@@ -61,26 +61,6 @@ export default function AdminFirmsList({ type }: AdminFirmsListProps) {
     },
   });
 
-  const [migratingImages, setMigratingImages] = useState(false);
-  const [imagesMigrateMsg, setImagesMigrateMsg] = useState<string | null>(null);
-
-  const handleMigrateImages = async () => {
-    if (!window.confirm("Download all externally-hosted logos to local storage? This updates all brokers and prop firms.")) return;
-    setMigratingImages(true);
-    setImagesMigrateMsg(null);
-    try {
-      const r = await apiRequest("POST", "/api/admin/migrate-images");
-      const data = await r.json();
-      if (data.error) throw new Error(data.error);
-      setImagesMigrateMsg(`Done: ${data.updated} updated, ${data.skipped} skipped, ${data.failed} failed.`);
-      queryClient.invalidateQueries({ queryKey: [apiPath] });
-    } catch (e: any) {
-      setImagesMigrateMsg(`Failed: ${e.message}`);
-    } finally {
-      setMigratingImages(false);
-    }
-  };
-
   const handleDelete = (slug: string, name: string) => {
     if (window.confirm(`Delete "${name}"? This cannot be undone.`)) {
       deleteMutation.mutate(slug);
@@ -101,32 +81,11 @@ export default function AdminFirmsList({ type }: AdminFirmsListProps) {
             </p>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <button
-              onClick={handleMigrateImages}
-              disabled={migratingImages}
-              data-testid="button-migrate-images"
-              style={{
-                padding: "8px 14px", fontSize: 13, fontWeight: 600, borderRadius: 8, cursor: migratingImages ? "not-allowed" : "pointer",
-                background: "rgba(8,242,149,0.08)", color: "#08F295", border: "1px solid rgba(8,242,149,0.25)",
-                opacity: migratingImages ? 0.6 : 1, fontFamily: font,
-              }}
-            >
-              {migratingImages ? "Migrating..." : "Migrate Images"}
-            </button>
             <Link href={newPath}>
               <ActionBtn label={`+ Add ${isProp ? "Prop Firm" : "Broker"}`} primary />
             </Link>
           </div>
         </div>
-        {imagesMigrateMsg && (
-          <div style={{ marginBottom: 16, padding: "10px 14px", borderRadius: 8, fontSize: 13, fontFamily: font,
-            background: imagesMigrateMsg.startsWith("Failed") ? "rgba(242,75,75,0.1)" : "rgba(8,242,149,0.08)",
-            color: imagesMigrateMsg.startsWith("Failed") ? "#F24B4B" : "#08F295",
-            border: `1px solid ${imagesMigrateMsg.startsWith("Failed") ? "rgba(242,75,75,0.2)" : "rgba(8,242,149,0.2)"}` }}>
-            {imagesMigrateMsg}
-          </div>
-        )}
-
         {/* Table */}
         <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
           {isLoading ? (

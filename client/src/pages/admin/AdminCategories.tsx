@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { AdminLayout } from "@/components/AdminLayout";
 import { C, font, ActionBtn } from "@/lib/adminTheme";
-import { Tag, Plus, Pencil, Trash2, RefreshCw, Check, X } from "lucide-react";
+import { Tag, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 
 type CategoryType = "article" | "broker" | "prop_firm";
 
@@ -167,8 +167,6 @@ export default function AdminCategories() {
   const [activeType, setActiveType] = useState<CategoryType | "all">("all");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
-  const [migrating, setMigrating] = useState(false);
-  const [migrateMsg, setMigrateMsg] = useState("");
   const qc = useQueryClient();
 
   const { data: categories = [], isLoading } = useQuery<Category[]>({
@@ -180,21 +178,6 @@ export default function AdminCategories() {
     mutationFn: (id: string) => apiRequest("DELETE", `/api/admin/categories/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["/api/admin/categories"] }),
   });
-
-  const handleMigrate = async () => {
-    setMigrating(true);
-    setMigrateMsg("");
-    try {
-      const r = await apiRequest("POST", "/api/admin/migrate-categories");
-      const data = await r.json();
-      setMigrateMsg(data.inserted === 0 ? "All categories already imported." : `Imported ${data.inserted} categories.`);
-      qc.invalidateQueries({ queryKey: ["/api/admin/categories"] });
-    } catch {
-      setMigrateMsg("Migration failed.");
-    } finally {
-      setMigrating(false);
-    }
-  };
 
   const filtered = activeType === "all" ? categories : categories.filter((c) => c.type === activeType);
   const grouped: Record<CategoryType, Category[]> = {
@@ -227,16 +210,6 @@ export default function AdminCategories() {
             <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Manage article, broker, and prop firm taxonomy categories</p>
           </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-            {migrateMsg && <span style={{ fontSize: 12, color: C.accent }}>{migrateMsg}</span>}
-            <button
-              onClick={handleMigrate}
-              disabled={migrating}
-              style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 7, border: `1px solid ${C.borderLight}`, background: "transparent", color: C.textMuted, fontSize: 12, fontWeight: 600, cursor: migrating ? "not-allowed" : "pointer", fontFamily: font }}
-              data-testid="button-migrate-categories"
-            >
-              <RefreshCw size={13} style={{ animation: migrating ? "spin 1s linear infinite" : undefined }} />
-              {migrating ? "Importing..." : "Import Categories"}
-            </button>
             <ActionBtn
               label="New Category"
               primary
