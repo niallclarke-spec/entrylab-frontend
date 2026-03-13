@@ -705,6 +705,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (brokerRow) result.relatedBroker = brokerDbToApi(brokerRow);
         } catch (_) {}
       }
+      // Hydrate relatedPropFirm (full object like relatedBroker)
+      if (article.relatedPropFirm) {
+        try {
+          const [pfRow] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, article.relatedPropFirm));
+          if (pfRow) result.relatedPropFirm = propFirmDbToApi(pfRow);
+        } catch (_) {}
+      }
       // Add internal links to broker/prop firm mentions in article content
       const selfUrl = `/${article.category || 'news'}/${article.slug}`;
       if (result.content) {

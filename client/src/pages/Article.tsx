@@ -50,6 +50,9 @@ export default function Article() {
   const popularBrokers = brokers.slice(0, 3);
   
   const relatedBroker = (post as any)?.relatedBroker as Broker | null || null;
+  const relatedPropFirm = (post as any)?.relatedPropFirm as any | null || null;
+  const featuredFirm = relatedBroker || relatedPropFirm;
+  const featuredFirmType = relatedBroker ? "broker" : relatedPropFirm ? "propfirm" : null;
 
   const getAuthorName = (p: Article) => p.author || "EntryLab Team";
   const getFeaturedImage = (p: Article) => p.featuredImage || undefined;
@@ -710,6 +713,46 @@ export default function Article() {
 
               {/* Article Content with Broker Insertion */}
               <div className="rounded-lg p-6 md:p-8" style={{ background: "#ffffff", border: "1px solid #e8edea" }}>
+                {/* Featured Firm Logo Banner */}
+                {featuredFirm && featuredFirmType && (
+                  <a
+                    href={featuredFirmType === "broker" ? `/broker/${featuredFirm.slug}` : `/prop-firm/${featuredFirm.slug}`}
+                    className="flex items-center gap-4 mb-8 p-4 rounded-xl no-underline group"
+                    style={{ background: "#f5f7f6", border: "1px solid #e8edea", textDecoration: "none" }}
+                  >
+                    {featuredFirm.logo ? (
+                      <div className="flex-shrink-0 flex items-center justify-center rounded-xl overflow-hidden"
+                        style={{ width: 64, height: 64, background: "#fff", border: "1px solid #e8edea", padding: 8 }}>
+                        <img
+                          src={featuredFirm.logo}
+                          alt={featuredFirm.name}
+                          style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex-shrink-0 flex items-center justify-center rounded-xl font-bold text-lg"
+                        style={{ width: 64, height: 64, background: "#e8edea", color: "#4b5563" }}>
+                        {featuredFirm.name?.[0]}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span style={{ fontSize: 15, fontWeight: 700, color: "#111827" }}>{featuredFirm.name}</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20, background: featuredFirmType === "broker" ? "#dcfce7" : "#ede9fe", color: featuredFirmType === "broker" ? "#16a34a" : "#7c3aed" }}>
+                          {featuredFirmType === "broker" ? "Broker" : "Prop Firm"}
+                        </span>
+                      </div>
+                      {featuredFirm.tagline && (
+                        <p style={{ fontSize: 13, color: "#6b7280", margin: 0, lineHeight: 1.4 }} className="line-clamp-1">
+                          {featuredFirm.tagline}
+                        </p>
+                      )}
+                    </div>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "#16a34a", whiteSpace: "nowrap", flexShrink: 0 }} className="group-hover:underline">
+                      Full Review →
+                    </span>
+                  </a>
+                )}
                 <div style={{ color: "#111827" }}>
                   {parseContentWithBroker(contentWithHeadingIds, featuredBroker)}
                 </div>

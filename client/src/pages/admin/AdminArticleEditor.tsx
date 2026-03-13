@@ -21,11 +21,14 @@ interface ArticleForm {
   seoTitle: string;
   seoDescription: string;
   author: string;
+  relatedBroker: string;
+  relatedPropFirm: string;
 }
 
 const empty: ArticleForm = {
   title: "", slug: "", excerpt: "", content: "", category: "",
   status: "draft", featuredImage: "", seoTitle: "", seoDescription: "", author: "EntryLab",
+  relatedBroker: "", relatedPropFirm: "",
 };
 
 function DInput({ placeholder, value, onChange, type = "text", large = false }: {
@@ -101,6 +104,112 @@ function DSelect({ value, onChange, options }: { value: string; onChange: (v: st
   );
 }
 
+function FirmPickerPanel({
+  label,
+  value,
+  onChange,
+  items,
+  getLogoUrl,
+  getSlug,
+  getName,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  items: any[];
+  getLogoUrl: (item: any) => string;
+  getSlug: (item: any) => string;
+  getName: (item: any) => string;
+  placeholder: string;
+}) {
+  const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const selected = items.find((i) => getSlug(i) === value);
+  const filtered = items.filter((i) =>
+    getName(i).toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div style={{ position: "relative" }}>
+      <PanelLabel>{label}</PanelLabel>
+
+      {/* Selected preview */}
+      {selected ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: C.bg, border: `1px solid ${C.accent}`, borderRadius: 8, marginBottom: 8 }}>
+          {getLogoUrl(selected) ? (
+            <img src={getLogoUrl(selected)} alt="" style={{ width: 32, height: 32, objectFit: "contain", borderRadius: 6, background: "#fff", padding: 2 }} />
+          ) : (
+            <div style={{ width: 32, height: 32, borderRadius: 6, background: C.surface, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: C.textMuted }}>
+              {getName(selected)[0]}
+            </div>
+          )}
+          <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: C.text }}>{getName(selected)}</span>
+          <button
+            onClick={() => onChange("")}
+            style={{ fontSize: 12, color: C.danger, background: "none", border: "none", cursor: "pointer", padding: "2px 6px" }}
+          >
+            Remove
+          </button>
+        </div>
+      ) : null}
+
+      {/* Search input */}
+      <input
+        placeholder={placeholder}
+        value={search}
+        onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        style={{
+          width: "100%", padding: "9px 12px", borderRadius: 7, border: `1px solid ${C.border}`,
+          background: C.bg, color: C.text, fontSize: 13, fontFamily: font,
+          outline: "none", boxSizing: "border-box",
+        }}
+      />
+
+      {/* Dropdown */}
+      {open && filtered.length > 0 && (
+        <div style={{
+          position: "absolute", top: "100%", left: 0, right: 0, zIndex: 50,
+          background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8,
+          maxHeight: 220, overflowY: "auto", marginTop: 4, boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+        }}>
+          <div
+            style={{ padding: "8px 12px", fontSize: 12, color: C.textMuted, cursor: "pointer", borderBottom: `1px solid ${C.border}` }}
+            onMouseDown={() => { onChange(""); setSearch(""); setOpen(false); }}
+          >
+            — None —
+          </div>
+          {filtered.map((item) => (
+            <div
+              key={getSlug(item)}
+              onMouseDown={() => { onChange(getSlug(item)); setSearch(""); setOpen(false); }}
+              style={{
+                display: "flex", alignItems: "center", gap: 10, padding: "8px 12px",
+                cursor: "pointer", borderBottom: `1px solid ${C.border}`,
+                background: getSlug(item) === value ? C.accent + "22" : "transparent",
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = C.accent + "11"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = getSlug(item) === value ? C.accent + "22" : "transparent"; }}
+            >
+              {getLogoUrl(item) ? (
+                <img src={getLogoUrl(item)} alt="" style={{ width: 28, height: 28, objectFit: "contain", borderRadius: 5, background: "#fff", padding: 2 }} />
+              ) : (
+                <div style={{ width: 28, height: 28, borderRadius: 5, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: C.textMuted }}>
+                  {getName(item)[0]}
+                </div>
+              )}
+              <span style={{ fontSize: 13, color: C.text }}>{getName(item)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminArticleEditor() {
   const params = useParams<{ id?: string }>();
   const articleId = params.id;
@@ -126,6 +235,19 @@ export default function AdminArticleEditor() {
     enabled: !isNew && !!session,
   });
 
+  const { data: brokersData } = useQuery<any[]>({
+    queryKey: ["/api/brokers"],
+    enabled: !!session,
+  });
+
+  const { data: propFirmsData } = useQuery<any[]>({
+    queryKey: ["/api/prop-firms"],
+    enabled: !!session,
+  });
+
+  const brokers = brokersData || [];
+  const propFirms = propFirmsData || [];
+
   useEffect(() => {
     if (existing && !articleLoading) {
       setForm({
@@ -133,6 +255,7 @@ export default function AdminArticleEditor() {
         content: existing.content || "", category: existing.category || "", status: existing.status || "draft",
         featuredImage: existing.featuredImage || "", seoTitle: existing.seoTitle || "",
         seoDescription: existing.seoDescription || "", author: existing.author || "EntryLab",
+        relatedBroker: existing.relatedBroker || "", relatedPropFirm: existing.relatedPropFirm || "",
       });
       setSlugTouched(true);
     }
@@ -146,10 +269,13 @@ export default function AdminArticleEditor() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      if (isNew) {
-        return apiRequest("POST", "/api/admin/articles", form);
-      }
-      return apiRequest("PUT", `/api/admin/articles/${articleId}`, form);
+      const payload = {
+        ...form,
+        relatedBroker: form.relatedBroker || null,
+        relatedPropFirm: form.relatedPropFirm || null,
+      };
+      if (isNew) return apiRequest("POST", "/api/admin/articles", payload);
+      return apiRequest("PUT", `/api/admin/articles/${articleId}`, payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/articles"] });
@@ -278,6 +404,35 @@ export default function AdminArticleEditor() {
                   { value: "scheduled", label: "Scheduled" },
                 ]}
               />
+            </SidePanel>
+
+            {/* Featured Firm — Broker or Prop Firm logo appears in article */}
+            <SidePanel>
+              <div style={{ marginBottom: 16 }}>
+                <FirmPickerPanel
+                  label="FEATURED BROKER"
+                  value={form.relatedBroker}
+                  onChange={(v) => setField("relatedBroker", v)}
+                  items={brokers}
+                  getLogoUrl={(b) => b.logoUrl || b.logo || ""}
+                  getSlug={(b) => b.slug}
+                  getName={(b) => b.name}
+                  placeholder="Search brokers..."
+                />
+              </div>
+              <FirmPickerPanel
+                label="FEATURED PROP FIRM"
+                value={form.relatedPropFirm}
+                onChange={(v) => setField("relatedPropFirm", v)}
+                items={propFirms}
+                getLogoUrl={(p) => p.logoUrl || p.logo || ""}
+                getSlug={(p) => p.slug}
+                getName={(p) => p.name}
+                placeholder="Search prop firms..."
+              />
+              <p style={{ fontSize: 11, color: C.textDim, marginTop: 10, lineHeight: 1.5 }}>
+                The selected firm's logo will appear as a branded card within the article.
+              </p>
             </SidePanel>
 
             <SidePanel>

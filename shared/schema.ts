@@ -230,6 +230,7 @@ export const articlesTable = pgTable("articles", {
   seoDescription: text("seo_description"),
   author: text("author").default("EntryLab"),
   relatedBroker: text("related_broker"),   // broker slug this article is about
+  relatedPropFirm: text("related_prop_firm"), // prop firm slug this article is about
   legacyPostId: integer("legacy_post_id"),  // legacy post ID for redirect lookups
   publishedAt: timestamp("published_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
