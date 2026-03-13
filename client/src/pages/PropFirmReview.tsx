@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, MessageSquare, Copy, CheckCircle2, Calendar } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { processArticleContent } from "@/lib/transforms";
+import { processBrokerContent } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
 import { getCountryCode } from "@/lib/countryCodeMap";
@@ -47,7 +47,7 @@ export default function PropFirmReview() {
   });
 
   const propFirm: Broker | null = rawPropFirm ?? null;
-  const processedContent = propFirm?.content ? processArticleContent(propFirm.content) : "";
+  const processedContent = propFirm?.content ? processBrokerContent(propFirm.content) : "";
 
   useEffect(() => {
     if (propFirm) {

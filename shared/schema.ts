@@ -243,7 +243,7 @@ export const insertArticleSchema = createInsertSchema(articlesTable).omit({
 });
 
 export type InsertArticle = z.infer<typeof insertArticleSchema>;
-export type Article = typeof articlesTable.$inferSelect;
+export type ArticleRow = typeof articlesTable.$inferSelect;
 
 // ─── Reviews DB table ────────────────────────────────────────────────────────
 // Single table for both broker and prop firm reviews.

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, ArrowDownToLine, MessageSquare, Monitor, Calendar } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { processArticleContent } from "@/lib/transforms";
+import { processBrokerContent } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
 import { trackPageView, trackReviewView, trackAffiliateClick } from "@/lib/gtm";
 import { getCountryCode } from "@/lib/countryCodeMap";
@@ -35,7 +35,7 @@ export default function BrokerReview() {
   });
 
   const broker: Broker | null = rawBroker ?? null;
-  const processedContent = broker?.content ? processArticleContent(broker.content) : "";
+  const processedContent = broker?.content ? processBrokerContent(broker.content) : "";
 
   useEffect(() => {
     if (broker) {
