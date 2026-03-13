@@ -18,6 +18,17 @@ export default defineConfig({
           ),
         ]
       : []),
+    ...(process.env.NODE_ENV === "production"
+      ? [
+          await import("vite-plugin-compression2").then(({ compression }) =>
+            compression({
+              algorithms: ["gzip", "brotliCompress"],
+              include: /\.(js|css|html|svg|json|txt|xml|woff2)$/,
+              threshold: 1024,
+            })
+          ),
+        ]
+      : []),
   ],
   resolve: {
     alias: {
