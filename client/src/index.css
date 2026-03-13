@@ -510,6 +510,15 @@
     word-wrap: break-word;
   }
 
+  /* Images and figures in prose must never exceed their container width.
+     This prevents externally-hosted images with inline width:100% styles
+     from blowing out CSS Grid tracks and pushing adjacent columns off-screen. */
+  .prose img,
+  .prose figure {
+    max-width: 100%;
+    height: auto;
+  }
+
   /* Break long URLs and text in paragraphs and lists only (NOT tables) */
   .prose :where(p, li):not(:where([class~="not-prose"] *)) {
     overflow-wrap: break-word;
