@@ -8,6 +8,7 @@ import { db } from "./db";
 import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures, subscriptions, brokersTable, propFirmsTable, articlesTable, insertArticleSchema, pageViewsTable, categoriesTable, brokerCategoriesTable, propFirmCategoriesTable, reviewsTable, insertReviewSchema } from "../shared/schema";
 import { apiCache } from "./cache";
 import { sendReviewNotification, sendTelegramMessage, getTelegramBot } from "./telegram";
+import { addInternalLinks, invalidateInternalLinksCache } from "./internal-links";
 import { generateStructuredData } from "./structured-data";
 import { getUncachableStripeClient } from "./stripeClient";
 import { eq, asc, ilike, desc, sql, and } from "drizzle-orm";
@@ -301,6 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .insert(brokersTable)
         .values({ ...body, lastUpdated: new Date() })
         .returning();
+      invalidateInternalLinksCache();
       return res.status(201).json(broker);
     } catch (err: any) {
       console.error("[Admin] Error creating broker:", err);
@@ -311,6 +313,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/admin/brokers/:slug", adminAuth, async (req, res) => {
     try {
       await db.delete(brokersTable).where(eq(brokersTable.slug, req.params.slug));
+      invalidateInternalLinksCache();
       return res.json({ success: true });
     } catch (err: any) {
       return res.status(500).json({ error: err.message || "Failed to delete broker" });
@@ -328,6 +331,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .insert(propFirmsTable)
         .values({ ...body, lastUpdated: new Date() })
         .returning();
+      invalidateInternalLinksCache();
       return res.status(201).json(firm);
     } catch (err: any) {
       console.error("[Admin] Error creating prop firm:", err);
@@ -338,6 +342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/admin/prop-firms/:slug", adminAuth, async (req, res) => {
     try {
       await db.delete(propFirmsTable).where(eq(propFirmsTable.slug, req.params.slug));
+      invalidateInternalLinksCache();
       return res.json({ success: true });
     } catch (err: any) {
       return res.status(500).json({ error: err.message || "Failed to delete prop firm" });
@@ -699,6 +704,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const [brokerRow] = await db.select().from(brokersTable).where(eq(brokersTable.slug, article.relatedBroker));
           if (brokerRow) result.relatedBroker = brokerDbToApi(brokerRow);
         } catch (_) {}
+      }
+      // Add internal links to broker/prop firm mentions in article content
+      const selfUrl = `/${article.category || 'news'}/${article.slug}`;
+      if (result.content) {
+        result.content = await addInternalLinks(result.content, selfUrl);
       }
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       return res.json(result);
@@ -1239,59 +1249,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // llms.txt — AI/LLM-readable site index (llmstxt.org standard)
-  app.get('/llms.txt', (_req, res) => {
+  app.get('/llms.txt', async (_req, res) => {
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=86400');
-    res.send(`# EntryLab
-> Forex broker news, prop firm reviews, and XAU/USD trading signals for retail traders worldwide.
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    try {
+      const [brokers, propFirms, recentArticles] = await Promise.all([
+        db.select({ name: brokersTable.name, slug: brokersTable.slug, tagline: brokersTable.tagline })
+          .from(brokersTable).orderBy(asc(brokersTable.name)),
+        db.select({ name: propFirmsTable.name, slug: propFirmsTable.slug, tagline: propFirmsTable.tagline })
+          .from(propFirmsTable).orderBy(asc(propFirmsTable.name)),
+        db.select({ title: articlesTable.title, slug: articlesTable.slug, category: articlesTable.category, excerpt: articlesTable.excerpt, publishedAt: articlesTable.publishedAt })
+          .from(articlesTable)
+          .where(eq(articlesTable.status, 'published'))
+          .orderBy(desc(articlesTable.publishedAt))
+          .limit(20),
+      ]);
 
-EntryLab is an independent trading intelligence platform that publishes unbiased forex broker reviews, proprietary trading firm evaluations, and curated XAU/USD (Gold) trading signals. All editorial content is served from a PostgreSQL database via a headless React frontend.
+      const baseUrl = 'https://entrylab.io';
+
+      const brokerLines = brokers.map(b => {
+        const tagline = b.tagline ? `: ${b.tagline.replace(/\n/g, ' ').slice(0, 120)}` : '';
+        return `- [${b.name} Review](${baseUrl}/broker/${b.slug})${tagline}`;
+      }).join('\n');
+
+      const propFirmLines = propFirms.map(p => {
+        const tagline = p.tagline ? `: ${p.tagline.replace(/\n/g, ' ').slice(0, 120)}` : '';
+        return `- [${p.name} Review](${baseUrl}/prop-firm/${p.slug})${tagline}`;
+      }).join('\n');
+
+      const articleLines = recentArticles.map(a => {
+        const excerpt = a.excerpt ? ` — ${a.excerpt.replace(/<[^>]+>/g, '').replace(/\n/g, ' ').slice(0, 120)}` : '';
+        const cat = a.category || 'news';
+        return `- [${a.title}](${baseUrl}/${cat}/${a.slug})${excerpt}`;
+      }).join('\n');
+
+      const output = `# EntryLab
+> Independent forex broker reviews, prop firm evaluations, and XAU/USD trading signals for retail traders worldwide.
+
+EntryLab is an independent trading intelligence platform. We publish unbiased forex broker reviews, proprietary trading firm evaluations, and curated gold (XAU/USD) trading signals. All content is researched independently — EntryLab is not affiliated with any broker or firm it covers.
 
 ## What EntryLab Covers
 
-- **Forex Broker Reviews**: In-depth analysis of regulated forex brokers including spreads, leverage, regulation, minimum deposits, supported platforms (MetaTrader 4, MetaTrader 5), and trading conditions.
-- **Prop Firm Reviews**: Evaluations of proprietary trading firms (funded account providers) covering evaluation rules, profit splits, maximum drawdown limits, payout policies, and scaling plans.
-- **Broker & Prop Firm News**: Breaking news and regulatory updates affecting forex brokers and prop trading firms globally.
-- **XAU/USD Trading Signals**: Real-time and historical gold trading signals with entry, stop-loss, and take-profit levels delivered via Telegram.
+- **Forex Broker Reviews**: Spreads, leverage, regulation, minimum deposits, MetaTrader 4/5, trading conditions.
+- **Prop Firm Reviews**: Evaluation rules, profit splits, drawdown limits, payout policies, scaling plans.
+- **Broker & Prop Firm News**: Breaking news and regulatory updates affecting the forex industry.
+- **XAU/USD Trading Signals**: Real-time gold trading signals with entry, stop-loss, and take-profit levels via Telegram.
 - **Market Analysis**: Educational content and trading guides for forex and commodity markets.
 
-## Key URLs
+## Key Pages
 
-- Homepage: https://entrylab.io/
-- Broker Reviews Index: https://entrylab.io/brokers
-- Prop Firm Reviews Index: https://entrylab.io/prop-firms
-- Broker News: https://entrylab.io/broker-news
-- Prop Firm News: https://entrylab.io/prop-firm-news
-- Trading Signals: https://entrylab.io/signals
-- Subscribe to Premium Signals: https://entrylab.io/subscribe
-- Sitemap: https://entrylab.io/sitemap.xml
+- [Homepage](${baseUrl}/): Latest forex news and trading intelligence
+- [Broker Reviews](${baseUrl}/brokers): Compare all reviewed forex brokers
+- [Prop Firm Reviews](${baseUrl}/prop-firms): Evaluate proprietary trading firms
+- [Broker News](${baseUrl}/broker-news): Latest broker industry news
+- [Prop Firm News](${baseUrl}/prop-firm-news): Latest prop firm industry news
+- [Trading Signals](${baseUrl}/signals): Premium XAU/USD trading signals
+- [Subscribe](${baseUrl}/subscribe): Premium signal subscription ($49/month or $319/year)
+- [Broker Comparison](${baseUrl}/compare): Side-by-side broker comparison tool
+- [Sitemap](${baseUrl}/sitemap.xml)
 
-## Content Format
+## Forex Broker Reviews (${brokers.length} brokers)
 
-Individual broker and prop firm reviews are available at:
-- https://entrylab.io/broker/{broker-slug}
-- https://entrylab.io/prop-firm/{firm-slug}
+${brokerLines}
 
-Articles follow the pattern:
-- https://entrylab.io/article/{article-slug}
-- https://entrylab.io/{category}/{article-slug}
+## Prop Firm Reviews (${propFirms.length} firms)
+
+${propFirmLines}
+
+## Recent Articles (latest ${recentArticles.length})
+
+${articleLines}
 
 ## What EntryLab Does NOT Cover
 
 - Cryptocurrency or DeFi trading
 - Stock market or equity investing
-- Specific financial advice or personalised investment recommendations
+- Personalised financial or investment advice
 - Real-time market data feeds
 
 ## About
 
-EntryLab was founded in 2024. All broker and prop firm reviews are independently researched. Ratings are based on objective criteria including regulation, trading costs, platform quality, and user experience. EntryLab is not affiliated with any broker or prop firm it reviews.
+EntryLab was founded in 2024. All reviews are independently researched. Ratings use objective criteria: regulation, trading costs, platform quality, user experience. EntryLab is not affiliated with any broker or prop firm it reviews.
 
 ## Contact
 
-- Website: https://entrylab.io
+- Website: ${baseUrl}
 - Telegram Community: https://t.me/entrylabs
-`);
+`;
+      res.send(output);
+    } catch (err) {
+      console.error('[llms.txt] Error generating:', err);
+      res.status(500).send('# EntryLab\n> Forex broker reviews and trading signals.\n\nSee https://entrylab.io/sitemap.xml for content index.\n');
+    }
   });
 
 
@@ -1313,7 +1362,7 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
     
     try {
       const [posts, brokers, propFirms, categories] = await Promise.all([
-        db.select({ slug: articlesTable.slug, category: articlesTable.category, publishedAt: articlesTable.publishedAt })
+        db.select({ slug: articlesTable.slug, category: articlesTable.category, publishedAt: articlesTable.publishedAt, updatedAt: articlesTable.updatedAt })
           .from(articlesTable).where(eq(articlesTable.status, "published")).orderBy(desc(articlesTable.publishedAt)),
         db.select({ slug: brokersTable.slug, lastUpdated: brokersTable.lastUpdated }).from(brokersTable),
         db.select({ slug: propFirmsTable.slug, lastUpdated: propFirmsTable.lastUpdated }).from(propFirmsTable),
@@ -1391,7 +1440,7 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
 
       // Articles - Use /:category/:slug format from DB
       posts.forEach((post) => {
-        const modifiedDate = post.publishedAt ? new Date(post.publishedAt).toISOString() : currentDate;
+        const modifiedDate = (post.updatedAt || post.publishedAt) ? new Date(post.updatedAt || post.publishedAt!).toISOString() : currentDate;
         const categorySlug = post.category || 'uncategorized';
         sitemap += `  <url>\n`;
         sitemap += `    <loc>${baseUrl}/${categorySlug}/${post.slug}</loc>\n`;
