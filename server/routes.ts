@@ -1295,6 +1295,15 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
   });
 
 
+  // Robots.txt
+  app.get('/robots.txt', (_req, res) => {
+    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(
+      `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\n\nSitemap: https://entrylab.io/sitemap.xml`
+    );
+  });
+
   // Dynamic Sitemap XML - CRITICAL: Set headers FIRST before any async operations
   app.get('/sitemap.xml', async (_req, res) => {
     // Set XML headers IMMEDIATELY - this prevents Express from serving HTML
@@ -1370,6 +1379,14 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
       sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
       sitemap += `    <changefreq>weekly</changefreq>\n`;
       sitemap += `    <priority>0.8</priority>\n`;
+      sitemap += `  </url>\n`;
+
+      // Compare page
+      sitemap += `  <url>\n`;
+      sitemap += `    <loc>${baseUrl}/compare</loc>\n`;
+      sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
+      sitemap += `    <changefreq>weekly</changefreq>\n`;
+      sitemap += `    <priority>0.7</priority>\n`;
       sitemap += `  </url>\n`;
 
       // Articles - Use /:category/:slug format from DB
@@ -2013,13 +2030,23 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
           const ogImage = pageData.featuredImage || pageData.logoUrl || 'https://entrylab.io/og-image.jpg';
           const ogUrl = `https://entrylab.io${cleanUrl}`;
           
+          const ogType = cleanUrl.match(/^\/[^/]+\/[^/]+$/) && !cleanUrl.startsWith('/broker/') && !cleanUrl.startsWith('/prop-firm/')
+            ? 'article'
+            : 'website';
+
           const ogTags = `
     <!-- Open Graph / SEO -->
     <meta property="og:title" content="${ogTitle}">
     <meta property="og:description" content="${ogDesc}">
     <meta property="og:image" content="${ogImage}">
     <meta property="og:url" content="${ogUrl}">
-    <meta property="og:type" content="article">
+    <meta property="og:type" content="${ogType}">
+    <meta property="og:site_name" content="EntryLab">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@entrylabio">
+    <meta name="twitter:title" content="${ogTitle}">
+    <meta name="twitter:description" content="${ogDesc}">
+    <meta name="twitter:image" content="${ogImage}">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="${ogUrl}">`;
           
