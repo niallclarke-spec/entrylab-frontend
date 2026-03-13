@@ -14,7 +14,7 @@ interface Category {
   type: CategoryType;
   description?: string;
   sortOrder?: number;
-  wpId?: number;
+  legacyId?: number;
 }
 
 const TYPE_LABELS: Record<CategoryType, string> = {

@@ -23,7 +23,7 @@ interface Review {
   date: string;
   excerpt: string;
   title: string;
-  wpPostId: number | null;
+  legacyPostId: number | null;
   createdAt: string;
 }
 

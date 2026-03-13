@@ -59,7 +59,6 @@ function brokerDbToApi(row: any) {
     countries: row.countries || [],
     platformsList,
     instruments: row.instruments || [],
-    wpPostId: row.wpPostId,
   };
 }
 
@@ -112,7 +111,6 @@ function articleToApi(article: any): any {
     .join(" ");
   return {
     id: article.id,
-    wpPostId: article.wpPostId || null,
     slug: article.slug,
     title: article.title || "",
     excerpt: article.excerpt || "",
@@ -139,7 +137,6 @@ function articleToListApi(article: any): any {
     .join(" ");
   return {
     id: article.id,
-    wpPostId: article.wpPostId || null,
     slug: article.slug,
     title: article.title || "",
     excerpt: article.excerpt || "",
@@ -371,7 +368,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         excerpt: (r.reviewText || "").substring(0, 180),
         title: r.title || "",
         email: r.reviewerEmail,
-        wpPostId: r.wpPostId,
+        legacyPostId: r.legacyPostId,
         createdAt: r.createdAt,
       })));
     } catch (err: any) {
@@ -721,7 +718,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const dbCats = await db.select().from(categoriesTable)
           .where(eq(categoriesTable.type, "article"))
           .orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
-        results = dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 }));
+        results = dbCats.map((c) => ({ id: c.legacyId ?? c.id, name: c.name, slug: c.slug, count: 1 }));
         apiCache.set(cacheKey, results, 300, 600);
       }
       if (slug && typeof slug === "string") {
@@ -740,7 +737,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let cached = apiCache.get(cacheKey);
       if (!cached || apiCache.isStale(cacheKey)) {
         const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "broker")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
-        cached = dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 }));
+        cached = dbCats.map((c) => ({ id: c.legacyId ?? c.id, name: c.name, slug: c.slug, count: 1 }));
         apiCache.set(cacheKey, cached, 300, 600);
       }
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
@@ -757,7 +754,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let cached = apiCache.get(cacheKey);
       if (!cached || apiCache.isStale(cacheKey)) {
         const dbCats = await db.select().from(categoriesTable).where(eq(categoriesTable.type, "prop_firm")).orderBy(asc(categoriesTable.sortOrder), asc(categoriesTable.name));
-        cached = dbCats.map((c) => ({ id: c.wpId ?? c.id, name: c.name, slug: c.slug, count: 1 }));
+        cached = dbCats.map((c) => ({ id: c.legacyId ?? c.id, name: c.name, slug: c.slug, count: 1 }));
         apiCache.set(cacheKey, cached, 300, 600);
       }
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
@@ -825,12 +822,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let firmSlug: string | null = null;
       if (/^\d+$/.test(itemId)) {
-        const wpId = parseInt(itemId, 10);
-        const brokerMatch = await db.select({ slug: brokersTable.slug }).from(brokersTable).where(eq(brokersTable.wpPostId, wpId));
+        const legacyNumericId = parseInt(itemId, 10);
+        const brokerMatch = await db.select({ slug: brokersTable.slug }).from(brokersTable).where(eq(brokersTable.legacyPostId, legacyNumericId));
         if (brokerMatch.length > 0) {
           firmSlug = brokerMatch[0].slug;
         } else {
-          const propMatch = await db.select({ slug: propFirmsTable.slug }).from(propFirmsTable).where(eq(propFirmsTable.wpPostId, wpId));
+          const propMatch = await db.select({ slug: propFirmsTable.slug }).from(propFirmsTable).where(eq(propFirmsTable.legacyPostId, legacyNumericId));
           if (propMatch.length > 0) firmSlug = propMatch[0].slug;
         }
       } else {
@@ -911,12 +908,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!cached || apiCache.isStale(cacheKey)) {
         const rows = await db.select().from(propFirmsTable).orderBy(asc(propFirmsTable.name));
         const catRows = await db
-          .select({ propFirmId: propFirmCategoriesTable.propFirmId, wpId: categoriesTable.wpId, dbId: categoriesTable.id })
+          .select({ propFirmId: propFirmCategoriesTable.propFirmId, legacyId: categoriesTable.legacyId, dbId: categoriesTable.id })
           .from(propFirmCategoriesTable)
           .innerJoin(categoriesTable, eq(propFirmCategoriesTable.categoryId, categoriesTable.id));
         const catMap = new Map<number, (number | string)[]>();
         for (const r of catRows) {
-          const publicId = r.wpId ?? r.dbId;
+          const publicId = r.legacyId ?? r.dbId;
           if (!catMap.has(r.propFirmId)) catMap.set(r.propFirmId, []);
           catMap.get(r.propFirmId)!.push(publicId);
         }
@@ -1402,7 +1399,7 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
         sitemap += `  </url>\n`;
       });
 
-      // Prop Firms (from DB or WP fallback)
+      // Prop Firms
       propFirms.forEach((firm: any) => {
         const modifiedDate = firm.lastUpdated
           ? new Date(firm.lastUpdated).toISOString()
@@ -1460,16 +1457,16 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
           return res.sendStatus(403);
         }
         
-        // Parse callback data — supports UUID and legacy numeric WP IDs
+        // Parse callback data — supports UUID and legacy numeric IDs
         const approveMatch = callbackData?.match(/^approve_([a-zA-Z0-9\-]+)$/);
         const rejectMatch  = callbackData?.match(/^reject_([a-zA-Z0-9\-]+)$/);
         const viewMatch    = callbackData?.match(/^view_([a-zA-Z0-9\-]+)$/);
 
-        // Helper: look up review by DB UUID or legacy wpPostId
+        // Helper: look up review by DB UUID or legacy numeric ID
         const findReview = async (id: string) => {
           const isNumeric = /^\d+$/.test(id);
           if (isNumeric) {
-            const [r] = await db.select().from(reviewsTable).where(eq(reviewsTable.wpPostId, Number(id)));
+            const [r] = await db.select().from(reviewsTable).where(eq(reviewsTable.legacyPostId, Number(id)));
             return r || null;
           }
           const [r] = await db.select().from(reviewsTable).where(eq(reviewsTable.id, id));
@@ -1550,10 +1547,10 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
         const rejectMatch  = text.match(/^\/reject_([a-zA-Z0-9\-]+)$/);
         const viewMatch    = text.match(/^\/view_([a-zA-Z0-9\-]+)$/);
 
-        const findReviewByIdOrWpId = async (id: string) => {
+        const findReviewById = async (id: string) => {
           const isNumeric = /^\d+$/.test(id);
           if (isNumeric) {
-            const [r] = await db.select().from(reviewsTable).where(eq(reviewsTable.wpPostId, Number(id)));
+            const [r] = await db.select().from(reviewsTable).where(eq(reviewsTable.legacyPostId, Number(id)));
             return r || null;
           }
           const [r] = await db.select().from(reviewsTable).where(eq(reviewsTable.id, id));
@@ -1563,7 +1560,7 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
         if (approveMatch) {
           const reviewId = approveMatch[1];
           try {
-            const review = await findReviewByIdOrWpId(reviewId);
+            const review = await findReviewById(reviewId);
             if (!review) throw new Error(`Review ${reviewId} not found in DB`);
             await db.update(reviewsTable)
               .set({ status: "approved", updatedAt: new Date() })
@@ -1581,7 +1578,7 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
         } else if (rejectMatch) {
           const reviewId = rejectMatch[1];
           try {
-            const review = await findReviewByIdOrWpId(reviewId);
+            const review = await findReviewById(reviewId);
             if (!review) throw new Error(`Review ${reviewId} not found in DB`);
             await db.update(reviewsTable)
               .set({ status: "rejected", updatedAt: new Date() })
@@ -1599,7 +1596,7 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
         } else if (viewMatch) {
           const reviewId = viewMatch[1];
           try {
-            const review = await findReviewByIdOrWpId(reviewId);
+            const review = await findReviewById(reviewId);
             if (!review) throw new Error(`Review ${reviewId} not found`);
             const escapeText = (t: string) => (t || '').replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
             await sendTelegramMessage(
@@ -1662,7 +1659,7 @@ EntryLab was founded in 2024. All broker and prop firm reviews are independently
   // Injects title, meta description, and content for Google to see without waiting for JavaScript
   // This runs BEFORE Vite/static middleware
   
-  // Static SEO data for non-article pages (no WP calls needed)
+  // Static SEO data for non-article pages
   const staticPageSeo: Record<string, { title: string; description: string }> = {
     '/signals':   { title: 'Premium Forex Signals | EntryLab', description: 'Get real-time premium forex signals curated by professional traders. Join EntryLab and elevate your trading.' },
     '/subscribe': { title: 'Subscribe to EntryLab Premium | EntryLab', description: 'Choose your EntryLab premium plan and get access to exclusive forex signals, broker insights, and more.' },

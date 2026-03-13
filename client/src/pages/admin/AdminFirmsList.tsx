@@ -65,7 +65,7 @@ export default function AdminFirmsList({ type }: AdminFirmsListProps) {
   const [imagesMigrateMsg, setImagesMigrateMsg] = useState<string | null>(null);
 
   const handleMigrateImages = async () => {
-    if (!window.confirm("Download all WP-hosted logos to local storage? This updates all brokers and prop firms.")) return;
+    if (!window.confirm("Download all externally-hosted logos to local storage? This updates all brokers and prop firms.")) return;
     setMigratingImages(true);
     setImagesMigrateMsg(null);
     try {
