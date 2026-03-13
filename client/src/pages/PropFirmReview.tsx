@@ -609,23 +609,27 @@ export default function PropFirmReview() {
               )}
 
               {/* Bottom CTA */}
-              <Card className="p-8 text-center bg-gradient-to-br from-primary/10 to-transparent">
-                <h3 className="text-2xl font-bold mb-3">Ready to Get Funded?</h3>
-                <p className="text-muted-foreground mb-6">
-                  Join thousands of funded traders with {stripHtml(propFirm.name)}
-                </p>
-                <Button size="lg" asChild data-testid="button-visit-prop-firm-bottom" onClick={() => trackAffiliateClick({
-                  broker_name: propFirm.name,
-                  broker_type: 'prop_firm',
-                  page_location: 'prop_firm_review',
-                  placement_type: 'bottom_cta',
-                  rating: propFirm.rating,
-                  affiliate_link: propFirm.link
-                })}>
-                  <a href={propFirm.link} target="_blank" rel="noopener noreferrer" className="btn-white-link">
-                    Visit {stripHtml(propFirm.name)} <ChevronRight className="ml-2 h-4 w-4" />
-                  </a>
-                </Button>
+              <Card className="p-8 text-center relative overflow-hidden" style={{ background: "#1a1e1c" }}>
+                <div className="absolute top-[-100px] right-[-100px] w-[300px] h-[300px] rounded-full opacity-40 pointer-events-none" style={{ background: "radial-gradient(circle, #2bb32a 0%, transparent 70%)", filter: "blur(80px)" }} />
+                <div className="absolute bottom-[-80px] left-[-80px] w-[200px] h-[200px] rounded-full opacity-30 pointer-events-none" style={{ background: "radial-gradient(circle, #2bb32a 0%, transparent 70%)", filter: "blur(60px)" }} />
+                <div className="relative z-10">
+                  <h3 className="text-2xl font-bold mb-3 text-white">Ready to Get Funded?</h3>
+                  <p className="text-white/60 mb-6">
+                    Join thousands of funded traders with {stripHtml(propFirm.name)}
+                  </p>
+                  <Button size="lg" asChild data-testid="button-visit-prop-firm-bottom" onClick={() => trackAffiliateClick({
+                    broker_name: propFirm.name,
+                    broker_type: 'prop_firm',
+                    page_location: 'prop_firm_review',
+                    placement_type: 'bottom_cta',
+                    rating: propFirm.rating,
+                    affiliate_link: propFirm.link
+                  })}>
+                    <a href={propFirm.link} target="_blank" rel="noopener noreferrer" className="btn-white-link">
+                      Visit {stripHtml(propFirm.name)} <ChevronRight className="ml-2 h-4 w-4" />
+                    </a>
+                  </Button>
+                </div>
               </Card>
             </div>
 
@@ -782,38 +786,41 @@ export default function PropFirmReview() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-16 bg-gradient-to-br from-primary/10 via-primary/5 to-background border-y">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+      <section className="relative overflow-hidden py-16" style={{ background: "#1a1e1c" }}>
+        <div className="signals-bg-orb signals-bg-orb-1" />
+        <div className="signals-bg-orb signals-bg-orb-2" />
+        <div className="signals-bg-orb signals-bg-orb-3" />
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <div className="mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4" data-testid="text-final-cta-headline">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4" data-testid="text-final-cta-headline">
               Ready to Get Funded with {stripHtml(propFirm.name)}?
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-white/60 max-w-2xl mx-auto">
               Join thousands of traders who have been funded through {stripHtml(propFirm.name)}
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 mb-10">
             <div className="flex flex-col items-center gap-2" data-testid="cta-benefit-1">
-              <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                <Shield className="h-6 w-6 text-emerald-500" />
+              <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <Shield className="h-6 w-6 text-emerald-400" />
               </div>
-              <h3 className="font-semibold text-foreground">Trusted Platform</h3>
-              <p className="text-sm text-muted-foreground">Industry-leading prop firm</p>
+              <h3 className="font-semibold text-white">Trusted Platform</h3>
+              <p className="text-sm text-white/60">Industry-leading prop firm</p>
             </div>
             <div className="flex flex-col items-center gap-2" data-testid="cta-benefit-2">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
                 <TrendingUp className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-semibold text-foreground">High Profit Split</h3>
-              <p className="text-sm text-muted-foreground">Keep more of your profits</p>
+              <h3 className="font-semibold text-white">High Profit Split</h3>
+              <p className="text-sm text-white/60">Keep more of your profits</p>
             </div>
             <div className="flex flex-col items-center gap-2" data-testid="cta-benefit-3">
-              <div className="w-12 h-12 rounded-full bg-chart-2/10 flex items-center justify-center">
-                <Zap className="h-6 w-6 text-chart-2" />
+              <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
+                <Zap className="h-6 w-6 text-white" />
               </div>
-              <h3 className="font-semibold text-foreground">Quick Evaluation</h3>
-              <p className="text-sm text-muted-foreground">Get funded fast</p>
+              <h3 className="font-semibold text-white">Quick Evaluation</h3>
+              <p className="text-sm text-white/60">Get funded fast</p>
             </div>
           </div>
 
@@ -831,13 +838,13 @@ export default function PropFirmReview() {
               </a>
             </Button>
             <Link href="/prop-firms">
-              <Button variant="outline" size="lg" className="min-w-[200px]" data-testid="button-compare-prop-firms">
+              <Button variant="outline" size="lg" className="min-w-[200px] border-white/30 text-white" data-testid="button-compare-prop-firms">
                 Compare Other Prop Firms
               </Button>
             </Link>
           </div>
 
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-white/40">
             Risk Warning: Trading involves risk. Ensure you understand the evaluation process and trading rules before participating.
           </p>
         </div>

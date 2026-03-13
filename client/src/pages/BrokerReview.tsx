@@ -576,23 +576,27 @@ export default function BrokerReview() {
               )}
 
               {/* Bottom CTA */}
-              <Card className="p-8 text-center bg-gradient-to-br from-primary/10 to-transparent">
-                <h3 className="text-2xl font-bold mb-3">Ready to Start Trading?</h3>
-                <p className="text-muted-foreground mb-6">
-                  Join thousands of traders who trust {stripHtml(broker.name)}
-                </p>
-                <Button size="lg" asChild data-testid="button-visit-broker-bottom" onClick={() => trackAffiliateClick({
-                  broker_name: broker.name,
-                  broker_type: 'broker',
-                  page_location: 'broker_review',
-                  placement_type: 'bottom_cta',
-                  rating: broker.rating,
-                  affiliate_link: broker.link
-                })}>
-                  <a href={broker.link} target="_blank" rel="noopener noreferrer" className="btn-white-link">
-                    Visit {stripHtml(broker.name)} <ChevronRight className="ml-2 h-4 w-4" />
-                  </a>
-                </Button>
+              <Card className="p-8 text-center relative overflow-hidden" style={{ background: "#1a1e1c" }}>
+                <div className="absolute top-[-100px] right-[-100px] w-[300px] h-[300px] rounded-full opacity-40 pointer-events-none" style={{ background: "radial-gradient(circle, #2bb32a 0%, transparent 70%)", filter: "blur(80px)" }} />
+                <div className="absolute bottom-[-80px] left-[-80px] w-[200px] h-[200px] rounded-full opacity-30 pointer-events-none" style={{ background: "radial-gradient(circle, #2bb32a 0%, transparent 70%)", filter: "blur(60px)" }} />
+                <div className="relative z-10">
+                  <h3 className="text-2xl font-bold mb-3 text-white">Ready to Start Trading?</h3>
+                  <p className="text-white/60 mb-6">
+                    Join thousands of traders who trust {stripHtml(broker.name)}
+                  </p>
+                  <Button size="lg" asChild data-testid="button-visit-broker-bottom" onClick={() => trackAffiliateClick({
+                    broker_name: broker.name,
+                    broker_type: 'broker',
+                    page_location: 'broker_review',
+                    placement_type: 'bottom_cta',
+                    rating: broker.rating,
+                    affiliate_link: broker.link
+                  })}>
+                    <a href={broker.link} target="_blank" rel="noopener noreferrer" className="btn-white-link">
+                      Visit {stripHtml(broker.name)} <ChevronRight className="ml-2 h-4 w-4" />
+                    </a>
+                  </Button>
+                </div>
               </Card>
             </div>
 
@@ -784,13 +788,16 @@ export default function BrokerReview() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-16 bg-gradient-to-br from-primary/10 via-primary/5 to-background border-y">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+      <section className="relative overflow-hidden py-16" style={{ background: "#1a1e1c" }}>
+        <div className="signals-bg-orb signals-bg-orb-1" />
+        <div className="signals-bg-orb signals-bg-orb-2" />
+        <div className="signals-bg-orb signals-bg-orb-3" />
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <div className="mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4" data-testid="text-final-cta-headline">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4" data-testid="text-final-cta-headline">
               Ready to Start Trading with {stripHtml(broker.name)}?
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-white/60 max-w-2xl mx-auto">
               Join thousands of traders who trust {stripHtml(broker.name)} for their forex trading needs
             </p>
           </div>
@@ -800,52 +807,52 @@ export default function BrokerReview() {
             // REGULATED BROKER: Show benefits
             <div className="grid md:grid-cols-3 gap-6 mb-10">
               <div className="flex flex-col items-center gap-2" data-testid="cta-benefit-1">
-                <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                  <Shield className="h-6 w-6 text-emerald-500" />
+                <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                  <Shield className="h-6 w-6 text-emerald-400" />
                 </div>
-                <h3 className="font-semibold text-foreground">Regulated & Safe</h3>
-                <p className="text-sm text-muted-foreground">Your funds are protected</p>
+                <h3 className="font-semibold text-white">Regulated & Safe</h3>
+                <p className="text-sm text-white/60">Your funds are protected</p>
               </div>
               <div className="flex flex-col items-center gap-2" data-testid="cta-benefit-2">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
                   <TrendingUp className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="font-semibold text-foreground">Competitive Spreads</h3>
-                <p className="text-sm text-muted-foreground">Trade with low costs</p>
+                <h3 className="font-semibold text-white">Competitive Spreads</h3>
+                <p className="text-sm text-white/60">Trade with low costs</p>
               </div>
               <div className="flex flex-col items-center gap-2" data-testid="cta-benefit-3">
-                <div className="w-12 h-12 rounded-full bg-chart-2/10 flex items-center justify-center">
-                  <Zap className="h-6 w-6 text-chart-2" />
+                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
+                  <Zap className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="font-semibold text-foreground">Fast Execution</h3>
-                <p className="text-sm text-muted-foreground">No slippage, instant trades</p>
+                <h3 className="font-semibold text-white">Fast Execution</h3>
+                <p className="text-sm text-white/60">No slippage, instant trades</p>
               </div>
             </div>
           ) : (
             // UNREGULATED BROKER: Show actual stats with circular icons
             <div className="grid md:grid-cols-3 gap-6 mb-10">
               <div className="flex flex-col items-center gap-2" data-testid="cta-stat-min-deposit">
-                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center">
                   <DollarSign className="h-7 w-7 text-primary" />
                 </div>
-                <h3 className="font-semibold text-foreground">{broker.minDeposit || 'N/A'}</h3>
-                <p className="text-sm text-muted-foreground">Min Deposit</p>
+                <h3 className="font-semibold text-white">{broker.minDeposit || 'N/A'}</h3>
+                <p className="text-sm text-white/60">Min Deposit</p>
               </div>
               <div className="flex flex-col items-center gap-2" data-testid="cta-stat-max-leverage">
-                <div className="w-14 h-14 rounded-full bg-amber-500/10 flex items-center justify-center">
-                  <Zap className="h-7 w-7 text-amber-500" />
+                <div className="w-14 h-14 rounded-full bg-amber-500/20 flex items-center justify-center">
+                  <Zap className="h-7 w-7 text-amber-400" />
                 </div>
-                <h3 className="font-semibold text-foreground">{broker.maxLeverage || 'N/A'}</h3>
-                <p className="text-sm text-muted-foreground">Max Leverage</p>
+                <h3 className="font-semibold text-white">{broker.maxLeverage || 'N/A'}</h3>
+                <p className="text-sm text-white/60">Max Leverage</p>
               </div>
               <div className="flex flex-col items-center gap-2" data-testid="cta-stat-deposit-methods">
-                <div className="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center">
-                  <CreditCard className="h-7 w-7 text-blue-500" />
+                <div className="w-14 h-14 rounded-full bg-blue-500/20 flex items-center justify-center">
+                  <CreditCard className="h-7 w-7 text-blue-400" />
                 </div>
-                <h3 className="font-semibold text-foreground truncate px-2 max-w-full">
+                <h3 className="font-semibold text-white truncate px-2 max-w-full">
                   {broker.paymentMethods ? broker.paymentMethods.split(',')[0] + (broker.paymentMethods.includes(',') ? '+' : '') : 'N/A'}
                 </h3>
-                <p className="text-sm text-muted-foreground">Deposit Methods</p>
+                <p className="text-sm text-white/60">Deposit Methods</p>
               </div>
             </div>
           )}
@@ -857,13 +864,13 @@ export default function BrokerReview() {
               </a>
             </Button>
             <Link href="/brokers">
-              <Button variant="outline" size="lg" className="min-w-[200px]" data-testid="button-compare-brokers">
+              <Button variant="outline" size="lg" className="min-w-[200px] border-white/30 text-white" data-testid="button-compare-brokers">
                 Compare Other Brokers
               </Button>
             </Link>
           </div>
 
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-white/40">
             Risk Warning: CFDs are complex instruments and come with a high risk of losing money rapidly due to leverage. 
             You should consider whether you understand how CFDs work and whether you can afford to take the high risk of losing your money.
           </p>
