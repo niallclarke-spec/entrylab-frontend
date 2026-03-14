@@ -65,7 +65,7 @@ function Router() {
   return (
     <Switch>
       {/* ── Admin routes first — must come before wildcard paths ── */}
-      <Route path="/admin/login"><AdminLogin /></Route>
+      <Route path="/admin/login" component={AdminLogin} />
 
       <Route path="/admin/prop-firms/new">
         <S><AdminFirmEditor type="prop_firm" /></S>
