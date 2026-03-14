@@ -64,24 +64,9 @@ function S({ children }: { children: React.ReactNode }) {
 function Router() {
   return (
     <Switch>
-      <Route path="/"><S><Home /></S></Route>
-      <Route path="/brokers"><S><Brokers /></S></Route>
-      <Route path="/broker-categories/:slug"><S><BrokerCategoryArchive /></S></Route>
-      <Route path="/broker/:slug"><S><BrokerReview /></S></Route>
-      <Route path="/prop-firms/:category?"><S><PropFirms /></S></Route>
-      <Route path="/prop-firm/:slug"><S><PropFirmReview /></S></Route>
-      <Route path="/signals"><S><SignalsLanding /></S></Route>
-      <Route path="/subscribe"><S><Subscribe /></S></Route>
-      <Route path="/success"><S><Success /></S></Route>
-      <Route path="/free-access"><S><FreeAccess /></S></Route>
-      <Route path="/dashboard"><S><Dashboard /></S></Route>
-      <Route path="/terms"><S><TermsConditions /></S></Route>
-      <Route path="/compare"><S><Compare /></S></Route>
-
-      {/* ── Admin routes ── */}
+      {/* ── Admin routes first — must come before wildcard paths ── */}
       <Route path="/admin/login"><S><AdminLogin /></S></Route>
 
-      {/* Prop Firms */}
       <Route path="/admin/prop-firms/new">
         <S><AdminFirmEditor type="prop_firm" /></S>
       </Route>
@@ -95,7 +80,6 @@ function Router() {
         <S><AdminReviews type="prop-firm-reviews" /></S>
       </Route>
 
-      {/* Brokers */}
       <Route path="/admin/brokers/new">
         <S><AdminFirmEditor type="broker" /></S>
       </Route>
@@ -109,27 +93,21 @@ function Router() {
         <S><AdminReviews type="broker-reviews" /></S>
       </Route>
 
-      {/* Blog Leads */}
       <Route path="/admin/email-leads"><S><AdminEmailLeads /></S></Route>
 
-      {/* Pages & Posts (articles) */}
       <Route path="/admin/pages"><S><AdminPages /></S></Route>
       <Route path="/admin/posts/new"><S><AdminArticleEditor /></S></Route>
       <Route path="/admin/posts/:id/edit"><S><AdminArticleEditor /></S></Route>
       <Route path="/admin/posts"><S><AdminArticles /></S></Route>
 
-      {/* Legacy articles routes (keep working) */}
       <Route path="/admin/articles/new"><S><AdminArticleEditor /></S></Route>
       <Route path="/admin/articles/:id/edit"><S><AdminArticleEditor /></S></Route>
       <Route path="/admin/articles"><S><AdminArticles /></S></Route>
 
-      {/* Taxonomy & Settings placeholders */}
       <Route path="/admin/comparisons">
         <S><AdminPlaceholder title="Comparisons" description="Build head-to-head comparison pages (e.g. FTMO vs FundedNext) with editorial content and side-by-side data tables." /></S>
       </Route>
-      <Route path="/admin/categories">
-        <S><AdminCategories /></S>
-      </Route>
+      <Route path="/admin/categories"><S><AdminCategories /></S></Route>
       <Route path="/admin/tags">
         <S><AdminPlaceholder title="Tags & Categories" description="Manage firm tags like 'beginner-friendly', 'instant-funding', 'us-traders' and assign them to firms." /></S>
       </Route>
@@ -154,16 +132,27 @@ function Router() {
       <Route path="/admin/users">
         <S><AdminPlaceholder title="Team / Users" description="Manage admin users, roles, and access permissions for the EntryLab content team." /></S>
       </Route>
-
-      {/* Admin root → Dashboard */}
       <Route path="/admin"><S><AdminDashboard /></S></Route>
 
       {/* ── Public routes ── */}
-      <Route path="/:category/:slug"><S><Article /></S></Route>
+      <Route path="/brokers"><S><Brokers /></S></Route>
+      <Route path="/broker-categories/:slug"><S><BrokerCategoryArchive /></S></Route>
+      <Route path="/broker/:slug"><S><BrokerReview /></S></Route>
+      <Route path="/prop-firms/:category?"><S><PropFirms /></S></Route>
+      <Route path="/prop-firm/:slug"><S><PropFirmReview /></S></Route>
+      <Route path="/signals"><S><SignalsLanding /></S></Route>
+      <Route path="/subscribe"><S><Subscribe /></S></Route>
+      <Route path="/success"><S><Success /></S></Route>
+      <Route path="/free-access"><S><FreeAccess /></S></Route>
+      <Route path="/dashboard"><S><Dashboard /></S></Route>
+      <Route path="/terms"><S><TermsConditions /></S></Route>
+      <Route path="/compare"><S><Compare /></S></Route>
       <Route path="/top-cfd-brokers"><S><BrokerCategoryArchive /></S></Route>
       <Route path="/top-3-cfd-brokers"><S><BrokerCategoryArchive /></S></Route>
       <Route path="/best-verified-propfirms"><S><PropFirmCategoryArchive /></S></Route>
+      <Route path="/:category/:slug"><S><Article /></S></Route>
       <Route path="/:slug"><S><CategoryArchive /></S></Route>
+      <Route path="/"><S><Home /></S></Route>
       <Route><S><NotFound /></S></Route>
     </Switch>
   );
