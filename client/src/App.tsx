@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Switch, Route } from "wouter";
+import AdminLogin from "@/pages/admin/AdminLogin";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -31,8 +32,7 @@ const TermsConditions = lazy(() => import("@/pages/TermsConditions"));
 const Compare = lazy(() => import("@/pages/Compare"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
-// Admin pages
-const AdminLogin = lazy(() => import("@/pages/admin/AdminLogin"));
+// Admin pages (AdminLogin imported directly above for reliability)
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const AdminFirmsList = lazy(() => import("@/pages/admin/AdminFirmsList"));
 const AdminFirmEditor = lazy(() => import("@/pages/admin/AdminFirmEditor"));
@@ -65,7 +65,7 @@ function Router() {
   return (
     <Switch>
       {/* ── Admin routes first — must come before wildcard paths ── */}
-      <Route path="/admin/login"><S><AdminLogin /></S></Route>
+      <Route path="/admin/login"><AdminLogin /></Route>
 
       <Route path="/admin/prop-firms/new">
         <S><AdminFirmEditor type="prop_firm" /></S>
