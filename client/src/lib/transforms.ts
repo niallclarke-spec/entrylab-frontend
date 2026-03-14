@@ -67,8 +67,7 @@ export function stripInlineColors(content: string): string {
 /**
  * Strip Gutenberg block editor class names from HTML elements.
  * Classes like wp-block-*, has-alpha-channel-opacity, is-layout-* are
- * injected by the WordPress block editor and have no effect without WP CSS,
- * but can interfere with Tailwind Typography prose styling.
+ * injected by the Gutenberg editor and interfere with Tailwind Typography prose styling.
  */
 export function stripGutenbergClasses(content: string): string {
   if (!content) return content;
