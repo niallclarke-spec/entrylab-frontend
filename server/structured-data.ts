@@ -389,6 +389,18 @@ export async function getBrokerSchema(slug: string) {
       financialServiceSchema.foundingDate = yearFounded;
     }
     
+    // AggregateRating — enables star ratings in Google SERPs
+    if (rating > 0) {
+      financialServiceSchema.aggregateRating = {
+        "@type": "AggregateRating",
+        "ratingValue": rating,
+        "bestRating": 5,
+        "worstRating": 1,
+        "ratingCount": 1,
+        "reviewCount": 1
+      };
+    }
+
     schemas.push(financialServiceSchema);
 
     // Review schema - references the FinancialService above using @id
@@ -505,6 +517,18 @@ export async function getPropFirmSchema(slug: string) {
     }
     if (yearFounded) {
       financialServiceSchema.foundingDate = yearFounded;
+    }
+
+    // AggregateRating — enables star ratings in Google SERPs
+    if (rating > 0) {
+      financialServiceSchema.aggregateRating = {
+        "@type": "AggregateRating",
+        "ratingValue": rating,
+        "bestRating": 5,
+        "worstRating": 1,
+        "ratingCount": 1,
+        "reviewCount": 1
+      };
     }
     
     schemas.push(financialServiceSchema);

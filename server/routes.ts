@@ -1871,6 +1871,8 @@ EntryLab was founded in 2024. All reviews are independently researched. Ratings 
             const [dbBroker] = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
             if (dbBroker) {
               pageData = {
+                seoTitle: (dbBroker as any).seoTitle || null,
+                seoDescription: (dbBroker as any).seoDescription || null,
                 name: dbBroker.name,
                 tagline: dbBroker.tagline || "",
                 rating: dbBroker.rating?.toString() || "",
@@ -1899,6 +1901,8 @@ EntryLab was founded in 2024. All reviews are independently researched. Ratings 
             const [dbFirm] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
             if (dbFirm) {
               pageData = {
+                seoTitle: (dbFirm as any).seoTitle || null,
+                seoDescription: (dbFirm as any).seoDescription || null,
                 name: dbFirm.name,
                 tagline: dbFirm.tagline || "",
                 rating: dbFirm.rating?.toString() || "",

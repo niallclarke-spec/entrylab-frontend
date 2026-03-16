@@ -1,0 +1,82 @@
+# EntryLab — Forex News & Trading Intelligence
+> EntryLab is an independent trading intelligence platform covering forex brokers, proprietary trading firms, and XAU/USD signals. We publish expert reviews, news, and comparative analysis for retail and professional traders worldwide.
+
+## What EntryLab Covers
+
+EntryLab publishes three core content types:
+
+- **Broker Reviews**: In-depth, independently researched reviews of regulated and offshore forex brokers. Covering spreads, regulation, minimum deposit, leverage, platforms (MT4, MT5, cTrader, TradingView, TradeLocker), and withdrawal reliability.
+- **Prop Firm Reviews**: Evaluation-based funded trader programmes. Covering profit splits, max drawdown rules, evaluation fees, payout speed, and platform access.
+- **Trading News & Analysis**: Regulatory updates, broker closure alerts, platform launches, and market tools for traders.
+
+## Key Pages
+
+- Homepage: https://entrylab.io/
+- Broker Directory (17 reviewed brokers): https://entrylab.io/brokers
+- Prop Firm Directory (14 reviewed firms): https://entrylab.io/prop-firms
+- Broker Comparison Tool: https://entrylab.io/compare
+- Premium Signals: https://entrylab.io/signals
+
+## Content Categories
+
+- Broker News: https://entrylab.io/broker-news
+- Prop Firm News: https://entrylab.io/prop-firm-news
+- Broker Guides: https://entrylab.io/broker-guides
+- Prop Firm Guides: https://entrylab.io/prop-firm-guides
+- Trading Tools: https://entrylab.io/trading-tools
+- General News: https://entrylab.io/news
+
+## Broker Reviews (17 brokers)
+
+Each broker review page at https://entrylab.io/broker/{slug} includes: rating, regulation, minimum deposit, leverage, spreads, platforms, deposit methods, pros/cons, and a structured FAQ. Reviewed brokers include:
+
+- IC Markets (ASIC, CySEC, FSA | Raw ECN | from $200) — https://entrylab.io/broker/ic-markets
+- Pepperstone (FCA, ASIC, CySEC | Raw + cTrader | from $0) — https://entrylab.io/broker/pepperstone
+- FP Markets (ASIC, CySEC | Raw + IRESS DMA | from $100) — https://entrylab.io/broker/fp-markets
+- AvaTrade (6 regulators | AvaProtect | from $100) — https://entrylab.io/broker/avatrade
+- CMC Markets (FCA, ASIC | Next Generation platform | from $0) — https://entrylab.io/broker/cmc-markets
+- XM (CySEC, ASIC, DFSA | from $5 | up to 1:1000) — https://entrylab.io/broker/xm
+- IG (FCA, ASIC, CFTC | 17,000+ markets | from $0) — https://entrylab.io/broker/ig-group
+- Saxo Bank (FSA, FCA, ASIC | SaxoTraderGO | 72,000+ instruments) — https://entrylab.io/broker/saxo-bank
+- Eightcap (ASIC, FCA, CySEC | TradingView | from $100) — https://entrylab.io/broker/eightcap
+- OctaFX (CySEC | Copy Trading | from $25) — https://entrylab.io/broker/octafx
+- Moneta Markets (FCA | from $50 | up to 1:1000) — https://entrylab.io/broker/moneta-markets
+- TMGM (ASIC, FMA | from $100) — https://entrylab.io/broker/tmgm
+- Trade Nation (FCA, ASIC | Fixed Spreads | from $0) — https://entrylab.io/broker/trade-nation
+- Tradu (FCA, ASIC, CySEC, CIRO | from $50) — https://entrylab.io/broker/tradu
+- HeroFX (Offshore | TradeLocker | from $5) — https://entrylab.io/broker/herofx-review
+- GatesFX (Offshore | MT5 + TradeLocker | from $10) — https://entrylab.io/broker/gatesfx-review
+- Liquid Brokers (ASIC | from $10) — https://entrylab.io/broker/liquidbrokers-review
+
+## Prop Firm Reviews (14 firms)
+
+Each prop firm review at https://entrylab.io/prop-firm/{slug} includes: profit split, max funding, evaluation fee, drawdown rules, payout speed, and trading rules. Reviewed firms include:
+
+- FTMO (80-90% split | up to $200K | from $155) — https://entrylab.io/prop-firm/ftmo
+- FundedNext (80-95% split | up to $200K | from $32) — https://entrylab.io/prop-firm/fundednext
+- Fintokei (80-95% split | up to €400K | from €99) — https://entrylab.io/prop-firm/fintokei
+- Funding Pips (80-95% split | up to $2M | instant payouts) — https://entrylab.io/prop-firm/funding-pips
+- E8 Markets (80-100% split | up to $1M | from $33) — https://entrylab.io/prop-firm/e8-markets
+- The5ers (50-100% split | up to $4M scaling | from $39) — https://entrylab.io/prop-firm/the5ers
+- FunderPro (daily rewards | flexible evaluation) — https://entrylab.io/prop-firm/funderpro
+- TX3 Funding (formerly TopTier Trader | FX & Futures) — https://entrylab.io/prop-firm/tx3-funding
+- Lux Trading Firm (real-money funded | live capital) — https://entrylab.io/prop-firm/lux-trading-firm
+- Smart Trader Funds (unlimited time evaluation) — https://entrylab.io/prop-firm/smart-trader-funds
+- Goat Funded Trader (instant funding options) — https://entrylab.io/prop-firm/goat-funded-trader
+- RebelsFunding (independent verification) — https://entrylab.io/prop-firm/rebelsfunding
+- Crypto Fund Trader (crypto-focused prop firm) — https://entrylab.io/prop-firm/crypto-fund-trader
+- Wall Street Funded (structured evaluation) — https://entrylab.io/prop-firm/wall-street-funded
+
+## Editorial Standards
+
+EntryLab reviews are produced by an independent editorial team. Ratings are assigned on a 1-5 scale based on: regulatory compliance, trading conditions, platform quality, customer support, and withdrawal reliability. Affiliate links may be present on broker pages; this does not influence our ratings or editorial conclusions. All data is verified against official broker/firm disclosures and current as of the review date.
+
+## Machine-Readable Data
+
+- Sitemap: https://entrylab.io/sitemap.xml
+- Structured data: JSON-LD on all pages (Organization, Article, Review, BreadcrumbList, FAQPage, FinancialService, ItemList schemas)
+
+## Contact & Socials
+
+- Telegram: https://t.me/entrylabs
+- Website: https://entrylab.io
