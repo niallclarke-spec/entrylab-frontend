@@ -1,0 +1,109 @@
+
+*** System restart required ***
+Last login: Mon Mar 16 20:33:39 2026 from 169.254.0.1
+root@srv1049571:~# pm2 logs entrylab --lines 50
+[TAILING] Tailing last 50 lines for [entrylab] process (change the value with --lines option)
+/root/.pm2/logs/entrylab-error.log last 50 lines:
+0|entrylab |       _ending: true,
+0|entrylab |       _emitMessage: false,
+0|entrylab |       _connecting: true,
+0|entrylab |       [Symbol(shapeMode)]: false,
+0|entrylab |       [Symbol(kCapture)]: false
+0|entrylab |     },
+0|entrylab |     queryQueue: [],
+0|entrylab |     binary: false,
+0|entrylab |     processID: 1965911948,
+0|entrylab |     secretKey: 1831606088,
+0|entrylab |     ssl: {},
+0|entrylab |     _connectionTimeoutMillis: 0,
+0|entrylab |     _connectionCallback: null,
+0|entrylab |     saslSession: null,
+0|entrylab |     release: [Function (anonymous)],
+0|entrylab |     activeQuery: null,
+0|entrylab |     readyForQuery: true,
+0|entrylab |     hasExecuted: true,
+0|entrylab |     _poolUseCount: 6,
+0|entrylab |     [Symbol(shapeMode)]: false,
+0|entrylab |     [Symbol(kCapture)]: false
+0|entrylab |   }
+0|entrylab | }
+0|entrylab | Webhook error: duplicate key value violates unique constraint "webhook_events_stripe_event_id_key"
+0|entrylab | Webhook error: null value in column "id" of relation "invoices" violates not-null constraint
+0|entrylab | Webhook error: duplicate key value violates unique constraint "webhook_events_stripe_event_id_key"
+0|entrylab | Webhook error: duplicate key value violates unique constraint "webhook_events_stripe_event_id_key"
+0|entrylab | Error generating sitemap: Error: Timeout
+0|entrylab |     at ClientRequest.<anonymous> (file:///var/www/entrylab/dist/index.js:2559:16)
+0|entrylab |     at Object.onceWrapper (node:events:638:28)
+0|entrylab |     at ClientRequest.emit (node:events:524:28)
+0|entrylab |     at TLSSocket.emitRequestTimeout (node:_http_client:849:9)
+0|entrylab |     at Object.onceWrapper (node:events:638:28)
+0|entrylab |     at TLSSocket.emit (node:events:536:35)
+0|entrylab |     at Socket._onTimeout (node:net:595:8)
+0|entrylab |     at listOnTimeout (node:internal/timers:581:17)
+0|entrylab |     at process.processTimers (node:internal/timers:519:7)
+0|entrylab | Webhook error: Unhandled webhook event
+0|entrylab | Webhook error: duplicate key value violates unique constraint "webhook_events_stripe_event_id_key"
+0|entrylab | Webhook error: null value in column "id" of relation "invoices" violates not-null constraint
+0|entrylab | Webhook error: duplicate key value violates unique constraint "webhook_events_stripe_event_id_key"
+0|entrylab | Webhook error: duplicate key value violates unique constraint "webhook_events_stripe_event_id_key"
+0|entrylab | Webhook error: duplicate key value violates unique constraint "webhook_events_stripe_event_id_key"
+0|entrylab | Error: Connection terminated unexpectedly
+0|entrylab |     at Connection.<anonymous> (/var/www/entrylab/node_modules/pg/lib/client.js:136:73)
+0|entrylab |     at Object.onceWrapper (node:events:638:28)
+0|entrylab |     at Connection.emit (node:events:524:28)
+0|entrylab |     at Socket.<anonymous> (/var/www/entrylab/node_modules/pg/lib/connection.js:62:12)
+0|entrylab |     at Socket.emit (node:events:536:35)
+0|entrylab |     at TCP.<anonymous> (node:net:343:12)
+
+/root/.pm2/logs/entrylab-out.log last 50 lines:
+0|entrylab | Sync complete: 0 items synced
+0|entrylab | Sync complete: 0 items synced
+0|entrylab | Sync complete: 0 items synced
+0|entrylab | Upserting final batch of 1 items
+0|entrylab | Upserting final batch of 1 items
+0|entrylab | Upserting final batch of 1 items
+0|entrylab | Upserting final batch of 1 items
+0|entrylab | Upserting final batch of 1 items
+0|entrylab | Sync complete: 1 items synced
+0|entrylab | Sync complete: 1 items synced
+0|entrylab | Sync complete: 1 items synced
+0|entrylab | Sync complete: 1 items synced
+0|entrylab | Sync complete: 1 items synced
+0|entrylab | Fetching items to sync from Stripe
+0|entrylab | Sync complete: 0 items synced
+0|entrylab | Syncing payment_intents
+0|entrylab | Incremental sync from cursor: 1773507212
+0|entrylab | Fetching items to sync from Stripe
+0|entrylab | Upserting final batch of 1 items
+0|entrylab | Sync complete: 1 items synced
+0|entrylab | Syncing tax_ids
+0|entrylab | Fetching items to sync from Stripe
+0|entrylab | Sync complete: 0 items synced
+0|entrylab | Syncing credit notes
+0|entrylab | Fetching items to sync from Stripe
+0|entrylab | Sync complete: 0 items synced
+0|entrylab | Syncing disputes
+0|entrylab | Fetching items to sync from Stripe
+0|entrylab | Sync complete: 0 items synced
+0|entrylab | Syncing early fraud warnings
+0|entrylab | Fetching items to sync from Stripe
+0|entrylab | Sync complete: 0 items synced
+0|entrylab | Syncing refunds
+0|entrylab | Fetching items to sync from Stripe
+0|entrylab | Sync complete: 0 items synced
+0|entrylab | Syncing checkout sessions
+0|entrylab | Incremental sync from cursor: 1770835949
+0|entrylab | Fetching items to sync from Stripe
+0|entrylab | Upserting final batch of 1 items
+0|entrylab | Sync complete: 1 items synced
+0|entrylab | Stripe data synced
+0|entrylab | 8:53:23 PM [express] GET /api/prop-firms 200 in 1077ms :: [{"id":"1a1e3f8a-6d93-46d9-b272-74f4644ea7…
+0|entrylab | 8:53:23 PM [express] GET /api/brokers 200 in 1089ms :: [{"id":"01dd79bf-6339-4d16-a7a3-89b268dd2f2a"…
+0|entrylab | 8:53:24 PM [express] GET /api/articles 200 in 1681ms :: [{"id":"fdeb7790-ec76-4346-8ad0-b44473f44317…
+0|entrylab | 8:53:24 PM [express] GET /api/categories 200 in 75ms :: [{"id":43,"name":"Broker Guides","slug":"bro…
+0|entrylab | 8:53:29 PM [express] GET /api/articles/gatesfx-vs-hankotrade-offshore-broker-comparison-2026 200 in …
+0|entrylab | 8:53:33 PM [express] GET /api/broker-categories 200 in 78ms :: [{"id":62,"name":"Top 3 CFD Brokers",…
+0|entrylab | 8:53:33 PM [express] GET /api/category-content 200 in 380ms :: {"articles":[],"brokers":[{"id":"df27…
+0|entrylab | 8:53:40 PM [express] GET /api/prop-firm-categories 200 in 74ms :: [{"id":60,"name":"Best Verified Pr…
+0|entrylab | 8:53:40 PM [express] GET /api/category-content 200 in 290ms :: {"articles":[],"brokers":[],"propFirm…
+

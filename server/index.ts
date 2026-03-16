@@ -232,5 +232,11 @@ app.use('/api', apiLimiter);
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    // Pre-warm the cache so the first real user never hits a cold Neon connection
+    const base = `http://localhost:${port}`;
+    const endpoints = ['/api/articles', '/api/brokers', '/api/prop-firms', '/api/categories', '/sitemap.xml'];
+    Promise.allSettled(endpoints.map(ep => fetch(`${base}${ep}`)))
+      .then(() => log('Cache warm-up complete'))
+      .catch(() => {});
   });
 })();
