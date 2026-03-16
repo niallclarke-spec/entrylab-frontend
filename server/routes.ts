@@ -302,6 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .insert(brokersTable)
         .values({ ...body, lastUpdated: new Date() })
         .returning();
+      apiCache.delete('brokers:list');
       invalidateInternalLinksCache();
       return res.status(201).json(broker);
     } catch (err: any) {
@@ -312,7 +313,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/admin/brokers/:slug", adminAuth, async (req, res) => {
     try {
-      await db.delete(brokersTable).where(eq(brokersTable.slug, req.params.slug));
+      const { slug } = req.params;
+      await db.delete(brokersTable).where(eq(brokersTable.slug, slug));
+      apiCache.delete(`broker:${slug}`);
+      apiCache.delete('brokers:list');
       invalidateInternalLinksCache();
       return res.json({ success: true });
     } catch (err: any) {
@@ -331,6 +335,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .insert(propFirmsTable)
         .values({ ...body, lastUpdated: new Date() })
         .returning();
+      apiCache.delete('prop-firms:list');
       invalidateInternalLinksCache();
       return res.status(201).json(firm);
     } catch (err: any) {
@@ -341,7 +346,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/admin/prop-firms/:slug", adminAuth, async (req, res) => {
     try {
-      await db.delete(propFirmsTable).where(eq(propFirmsTable.slug, req.params.slug));
+      const { slug } = req.params;
+      await db.delete(propFirmsTable).where(eq(propFirmsTable.slug, slug));
+      apiCache.delete(`prop-firm:${slug}`);
+      apiCache.delete('prop-firms:list');
       invalidateInternalLinksCache();
       return res.json({ success: true });
     } catch (err: any) {
@@ -497,6 +505,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .where(eq(articlesTable.id, req.params.id))
         .returning();
       if (!article) return res.status(404).json({ error: "Not found" });
+      apiCache.delete(`article:${article.slug}`);
+      apiCache.delete('articles:list:all');
+      if (article.category) apiCache.delete(`articles:list:${article.category}`);
       return res.json(article);
     } catch (err: any) {
       if (err.code === "23505") return res.status(409).json({ error: "Slug already exists" });
@@ -511,6 +522,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .where(eq(articlesTable.id, req.params.id))
         .returning();
       if (!deleted) return res.status(404).json({ error: "Not found" });
+      apiCache.delete(`article:${deleted.slug}`);
+      apiCache.delete('articles:list:all');
+      if (deleted.category) apiCache.delete(`articles:list:${deleted.category}`);
       return res.json({ ok: true });
     } catch (err) {
       return res.status(500).json({ error: "Failed to delete article" });
@@ -693,6 +707,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/articles/:slug", async (req, res) => {
     try {
+      const cacheKey = `article:${req.params.slug}`;
+      const cached = apiCache.get(cacheKey);
+      if (cached && !apiCache.isStale(cacheKey)) {
+        res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+        res.setHeader('X-Cache', 'HIT');
+        return res.json(cached);
+      }
       const [article] = await db
         .select()
         .from(articlesTable)
@@ -705,19 +726,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (brokerRow) result.relatedBroker = brokerDbToApi(brokerRow);
         } catch (_) {}
       }
-      // Hydrate relatedPropFirm (full object like relatedBroker)
       if (article.relatedPropFirm) {
         try {
           const [pfRow] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, article.relatedPropFirm));
           if (pfRow) result.relatedPropFirm = propFirmDbToApi(pfRow);
         } catch (_) {}
       }
-      // Add internal links to broker/prop firm mentions in article content
       const selfUrl = `/${article.category || 'news'}/${article.slug}`;
       if (result.content) {
         result.content = await addInternalLinks(result.content, selfUrl);
       }
+      apiCache.set(cacheKey, result, 300, 600);
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      res.setHeader('X-Cache', 'MISS');
       return res.json(result);
     } catch (err) {
       return res.status(500).json({ error: "Failed to fetch article" });
@@ -895,10 +916,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/brokers/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
+      const cacheKey = `broker:${slug}`;
+      let cached = apiCache.get(cacheKey);
+      if (cached && !apiCache.isStale(cacheKey)) {
+        res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+        res.setHeader('X-Cache', 'HIT');
+        return res.json(cached);
+      }
       const [row] = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
       if (!row) return res.status(404).json({ error: "Broker not found" });
-      res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
-      return res.json(brokerDbToApi(row));
+      cached = brokerDbToApi(row);
+      apiCache.set(cacheKey, cached, 300, 600);
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      res.setHeader('X-Cache', 'MISS');
+      return res.json(cached);
     } catch (error) {
       handleApiError(error, res, "fetch broker from DB");
     }
@@ -910,6 +941,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updates = req.body;
       await db.update(brokersTable).set({ ...updates, lastUpdated: new Date() }).where(eq(brokersTable.slug, slug));
       const rows = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
+      apiCache.delete(`broker:${slug}`);
+      apiCache.delete('brokers:list');
       res.json(rows[0] ? brokerDbToApi(rows[0]) : { success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -947,10 +980,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/prop-firms/:slug", async (req, res) => {
     try {
       const { slug } = req.params;
+      const cacheKey = `prop-firm:${slug}`;
+      let cached = apiCache.get(cacheKey);
+      if (cached && !apiCache.isStale(cacheKey)) {
+        res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+        res.setHeader('X-Cache', 'HIT');
+        return res.json(cached);
+      }
       const [row] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
       if (!row) return res.status(404).json({ error: "Prop firm not found" });
-      res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
-      return res.json(propFirmDbToApi(row));
+      cached = propFirmDbToApi(row);
+      apiCache.set(cacheKey, cached, 300, 600);
+      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      res.setHeader('X-Cache', 'MISS');
+      return res.json(cached);
     } catch (error) {
       handleApiError(error, res, "fetch prop firm from DB");
     }
@@ -962,6 +1005,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updates = req.body;
       await db.update(propFirmsTable).set({ ...updates, lastUpdated: new Date() }).where(eq(propFirmsTable.slug, slug));
       const rows = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
+      apiCache.delete(`prop-firm:${slug}`);
+      apiCache.delete('prop-firms:list');
       res.json(rows[0] ? propFirmDbToApi(rows[0]) : { success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
