@@ -150,22 +150,14 @@ export function getOrganizationSchema() {
   };
 }
 
-// WebSite schema with SearchAction (helps AI overview eligibility)
+// WebSite schema
 export function getWebSiteSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "EntryLab",
     "url": "https://entrylab.io",
-    "description": "Forex broker reviews, prop firm evaluations, and XAU/USD trading signals",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": "https://entrylab.io/search?q={search_term_string}"
-      },
-      "query-input": "required name=search_term_string"
-    }
+    "description": "Forex broker reviews, prop firm evaluations, and XAU/USD trading signals"
   };
 }
 
@@ -235,6 +227,16 @@ export async function getPropFirmsListSchema() {
   }
 }
 
+// Human-readable category names for breadcrumbs
+const categoryLabels: Record<string, string> = {
+  'broker-news': 'Broker News',
+  'prop-firm-news': 'Prop Firm News',
+  'broker-guides': 'Broker Guides',
+  'prop-firm-guides': 'Prop Firm Guides',
+  'trading-tools': 'Trading Tools',
+  'news': 'News',
+};
+
 // Article schema generator
 export async function getArticleSchema(slug: string) {
   try {
@@ -245,8 +247,7 @@ export async function getArticleSchema(slug: string) {
     const title = stripHtml(article.title || '');
     const description = article.seoDescription || stripHtml(article.excerpt || '').substring(0, 155);
     const authorName = article.author || "EntryLab Editorial Team";
-    const authorSlug = "entrylab-team";
-    const image = article.featuredImage || "https://entrylab.io/og-image.jpg";
+    const image = article.featuredImage || "https://entrylab.io/assets/entrylab-logo-green.png";
     
     const datePublished = article.publishedAt ? article.publishedAt.toISOString() : article.createdAt.toISOString();
     const dateModified = article.updatedAt ? article.updatedAt.toISOString() : datePublished;
@@ -254,6 +255,12 @@ export async function getArticleSchema(slug: string) {
     const newsCategories = ['broker-news', 'prop-firm-news', 'news'];
     const isNewsArticle = newsCategories.some(c => (article.category || '').toLowerCase().includes(c));
     const articleType = isNewsArticle ? "NewsArticle" : "Article";
+
+    // Canonical URL uses /:category/:slug format
+    const categorySlug = article.category || 'news';
+    const canonicalUrl = `https://entrylab.io/${categorySlug}/${slug}`;
+    const categoryLabel = categoryLabels[categorySlug] || categorySlug;
+    const categoryUrl = `https://entrylab.io/${categorySlug}`;
 
     const schemas = [];
 
@@ -267,26 +274,26 @@ export async function getArticleSchema(slug: string) {
       "datePublished": datePublished,
       "dateModified": dateModified,
       "author": {
-        "@type": "Person",
+        "@type": "Organization",
         "name": authorName,
-        "url": `https://entrylab.io/author/${authorSlug}`
+        "url": "https://entrylab.io"
       },
       "publisher": {
         "@type": "Organization",
         "name": "EntryLab",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://entrylab.io/favicon.svg"
+          "url": "https://entrylab.io/assets/entrylab-logo-green.png"
         }
       },
       "mainEntityOfPage": {
         "@type": "WebPage",
-        "@id": `https://entrylab.io/article/${slug}`
+        "@id": canonicalUrl
       },
-      ...(article.category && { "articleSection": article.category })
+      ...(article.category && { "articleSection": categoryLabel })
     });
 
-    // Breadcrumb schema
+    // Breadcrumb schema using correct canonical URLs
     schemas.push({
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
@@ -300,14 +307,14 @@ export async function getArticleSchema(slug: string) {
         {
           "@type": "ListItem",
           "position": 2,
-          "name": "Articles",
-          "item": "https://entrylab.io/archive"
+          "name": categoryLabel,
+          "item": categoryUrl
         },
         {
           "@type": "ListItem",
           "position": 3,
           "name": title,
-          "item": `https://entrylab.io/article/${slug}`
+          "item": canonicalUrl
         }
       ]
     });
@@ -603,7 +610,7 @@ export async function generateStructuredData(url: string): Promise<string> {
     if (propFirmsListSchema) {
       schemas.push(propFirmsListSchema);
     }
-  } else if (urlParts.length === 2 && ['news', 'broker-news', 'broker-guides', 'prop-firm-news', 'trading-tools'].includes(urlParts[0])) {
+  } else if (urlParts.length === 2 && ['news', 'broker-news', 'broker-guides', 'prop-firm-news', 'prop-firm-guides', 'trading-tools'].includes(urlParts[0])) {
     // Handle /:category/:slug article format (e.g., /broker-news/zarafx-gets-raided)
     const articleSchemas = await getArticleSchema(urlParts[1]);
     if (articleSchemas) {

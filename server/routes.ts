@@ -1797,7 +1797,10 @@ EntryLab was founded in 2024. All reviews are independently researched. Ratings 
                      url.startsWith('/article/') || 
                      url.startsWith('/broker/') ||
                      url.startsWith('/prop-firm/') ||
-                     url.match(/^\/(news|broker-news|broker-guides|prop-firm-news|trading-tools)/) ||
+                     url.match(/^\/(news|broker-news|broker-guides|prop-firm-news|prop-firm-guides|trading-tools)/) ||
+                     url.startsWith('/broker-categories/') ||
+                     url.startsWith('/prop-firm-categories/') ||
+                     cleanUrlForCheck === '/compare' ||
                      !!staticPageSeo[cleanUrlForCheck];
     
     if (isHtmlRequest && needsSEO) {
@@ -2128,7 +2131,7 @@ EntryLab was founded in 2024. All reviews are independently researched. Ratings 
           // Inject Open Graph tags + canonical
           const ogTitle = seoTitle.replace(/"/g, '&quot;');
           const ogDesc = seoDescription.replace(/"/g, '&quot;');
-          const ogImage = pageData.featuredImage || pageData.logoUrl || 'https://entrylab.io/og-image.jpg';
+          const ogImage = pageData.featuredImage || pageData.logoUrl || 'https://entrylab.io/assets/entrylab-logo-green.png';
           const ogUrl = `https://entrylab.io${cleanUrl}`;
           
           const ogType = cleanUrl.match(/^\/[^/]+\/[^/]+$/) && !cleanUrl.startsWith('/broker/') && !cleanUrl.startsWith('/prop-firm/')
