@@ -1,6 +1,6 @@
 import { db } from "./db";
-import { brokersTable, propFirmsTable, articlesTable } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { brokersTable, propFirmsTable, articlesTable, reviewsTable } from "@shared/schema";
+import { eq, and, count, avg } from "drizzle-orm";
 
 // Helper to strip HTML tags
 function stripHtml(html: string): string {
@@ -227,6 +227,27 @@ export async function getPropFirmsListSchema() {
   }
 }
 
+// Fetch approved user review stats for a broker or prop firm
+async function getApprovedReviewStats(firmType: string, firmSlug: string): Promise<{ reviewCount: number; avgRating: number }> {
+  try {
+    const rows = await db
+      .select({ avgRating: avg(reviewsTable.rating), total: count() })
+      .from(reviewsTable)
+      .where(and(
+        eq(reviewsTable.firmType, firmType),
+        eq(reviewsTable.firmSlug, firmSlug),
+        eq(reviewsTable.status, 'approved')
+      ));
+    const reviewCount = Number(rows[0]?.total ?? 0);
+    // User reviews are on a 1–10 scale; normalise to 1–5 for consistency
+    const avgRaw = parseFloat(String(rows[0]?.avgRating ?? '0')) || 0;
+    const avgRating = avgRaw / 2;
+    return { reviewCount, avgRating };
+  } catch {
+    return { reviewCount: 0, avgRating: 0 };
+  }
+}
+
 // Human-readable category names for breadcrumbs
 const categoryLabels: Record<string, string> = {
   'broker-news': 'Broker News',
@@ -290,7 +311,11 @@ export async function getArticleSchema(slug: string) {
         "@type": "WebPage",
         "@id": canonicalUrl
       },
-      ...(article.category && { "articleSection": categoryLabel })
+      ...(article.category && { "articleSection": categoryLabel }),
+      "speakable": {
+        "@type": "SpeakableSpecification",
+        "cssSelector": ["h1", ".article-excerpt"]
+      }
     });
 
     // Breadcrumb schema using correct canonical URLs
@@ -389,15 +414,20 @@ export async function getBrokerSchema(slug: string) {
       financialServiceSchema.foundingDate = yearFounded;
     }
     
-    // AggregateRating — enables star ratings in Google SERPs
+    // AggregateRating — combines EntryLab editorial rating with approved user reviews
     if (rating > 0) {
+      const userStats = await getApprovedReviewStats('broker', slug);
+      const totalCount = 1 + userStats.reviewCount;
+      const combinedRating = userStats.reviewCount > 0
+        ? Math.round(((rating + userStats.avgRating * userStats.reviewCount) / totalCount) * 10) / 10
+        : rating;
       financialServiceSchema.aggregateRating = {
         "@type": "AggregateRating",
-        "ratingValue": rating,
+        "ratingValue": combinedRating,
         "bestRating": 5,
         "worstRating": 1,
-        "ratingCount": 1,
-        "reviewCount": 1
+        "ratingCount": totalCount,
+        "reviewCount": totalCount
       };
     }
 
@@ -519,15 +549,20 @@ export async function getPropFirmSchema(slug: string) {
       financialServiceSchema.foundingDate = yearFounded;
     }
 
-    // AggregateRating — enables star ratings in Google SERPs
+    // AggregateRating — combines EntryLab editorial rating with approved user reviews
     if (rating > 0) {
+      const userStats = await getApprovedReviewStats('prop_firm', slug);
+      const totalCount = 1 + userStats.reviewCount;
+      const combinedRating = userStats.reviewCount > 0
+        ? Math.round(((rating + userStats.avgRating * userStats.reviewCount) / totalCount) * 10) / 10
+        : rating;
       financialServiceSchema.aggregateRating = {
         "@type": "AggregateRating",
-        "ratingValue": rating,
+        "ratingValue": combinedRating,
         "bestRating": 5,
         "worstRating": 1,
-        "ratingCount": 1,
-        "reviewCount": 1
+        "ratingCount": totalCount,
+        "reviewCount": totalCount
       };
     }
     

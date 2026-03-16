@@ -566,7 +566,7 @@ export default function Article() {
                 </div>
 
                 {/* Article excerpt */}
-                <p className="text-base md:text-lg text-white/80 leading-relaxed max-w-2xl">
+                <p className="article-excerpt text-base md:text-lg text-white/80 leading-relaxed max-w-2xl">
                   {stripHtml(post.excerpt || '').substring(0, 155)}
                   {stripHtml(post.excerpt || '').length > 155 ? '...' : ''}
                 </p>
@@ -672,7 +672,7 @@ export default function Article() {
               </div>
 
               {/* Article Description */}
-              <p className="text-base md:text-lg text-white/80 leading-relaxed">
+              <p className="article-excerpt text-base md:text-lg text-white/80 leading-relaxed">
                 {stripHtml(post.excerpt || '').substring(0, 155)}
                 {stripHtml(post.excerpt || '').length > 155 ? '...' : ''}
               </p>
