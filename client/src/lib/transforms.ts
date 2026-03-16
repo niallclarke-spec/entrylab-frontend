@@ -66,8 +66,8 @@ export function stripInlineColors(content: string): string {
 
 /**
  * Strip legacy block-editor class names from HTML elements.
- * Classes like wp-block-*, has-alpha-channel-opacity, is-layout-* are
- * injected by the block editor and interfere with Tailwind Typography prose styling.
+ * Block-editor and layout utility classes injected during article creation
+ * interfere with Tailwind Typography prose styling — strip them before render.
  */
 function stripLegacyEditorClasses(content: string): string {
   if (!content) return content;
