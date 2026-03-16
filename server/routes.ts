@@ -1779,9 +1779,22 @@ EntryLab was founded in 2024. All reviews are independently researched. Ratings 
   
   // Static SEO data for non-article pages
   const staticPageSeo: Record<string, { title: string; description: string }> = {
-    '/signals':   { title: 'Premium Forex Signals | EntryLab', description: 'Get real-time premium forex signals curated by professional traders. Join EntryLab and elevate your trading.' },
-    '/subscribe': { title: 'Subscribe to EntryLab Premium | EntryLab', description: 'Choose your EntryLab premium plan and get access to exclusive forex signals, broker insights, and more.' },
-    '/success':   { title: 'Payment Successful | EntryLab', description: 'Welcome to EntryLab Premium. Your subscription is now active.' },
+    '/signals':    { title: 'Premium Forex Signals | EntryLab',                           description: 'Get real-time premium forex signals curated by professional traders. Access high-probability setups and elevate your trading with EntryLab.' },
+    '/subscribe':  { title: 'Subscribe to EntryLab Premium | EntryLab',                   description: 'Choose your EntryLab premium plan. Get access to exclusive forex signals, broker insights, expert analysis, and more — starting today.' },
+    '/success':    { title: 'Payment Successful | EntryLab',                               description: 'Welcome to EntryLab Premium. Your subscription is now active.' },
+    '/brokers':    { title: 'Best Forex Brokers 2026 | EntryLab',                         description: 'Compare the best forex brokers for 2026. Expert ratings, spreads, regulation, and minimum deposits — reviewed and ranked by EntryLab.' },
+    '/prop-firms': { title: 'Best Prop Firms 2026 | EntryLab',                            description: 'Find the best prop trading firms in 2026. Side-by-side comparisons of profit splits, evaluation fees, and payout speed — curated by EntryLab.' },
+    '/compare':    { title: 'Compare Forex Brokers & Prop Firms Side by Side | EntryLab', description: "Use EntryLab's comparison tool to evaluate brokers and prop firms on spreads, fees, regulation, and funding models — all in one view." },
+  };
+
+  // SEO data for category archive pages
+  const categoryArchiveSeo: Record<string, { title: string; description: string }> = {
+    'broker-news':      { title: 'Broker News & Industry Updates 2026 | EntryLab',    description: 'Breaking forex broker news, regulatory changes, and industry updates. Stay ahead of closures, launches, and platform changes with EntryLab.' },
+    'prop-firm-news':   { title: 'Prop Firm News & Updates 2026 | EntryLab',          description: 'Latest prop firm news — rebrand announcements, rule changes, payout updates, and new challenge launches. Stay informed with EntryLab.' },
+    'broker-guides':    { title: 'Forex Broker Guides & Deep Dives 2026 | EntryLab',  description: "In-depth broker guides covering platforms, fees, withdrawals, and account types. Make smarter trading decisions with EntryLab's expert analysis." },
+    'prop-firm-guides': { title: 'Prop Firm Guides & Strategy Tips 2026 | EntryLab',  description: 'Detailed prop firm guides — evaluation strategies, drawdown management, payout tips, and platform comparisons. Pass your challenge with EntryLab.' },
+    'trading-tools':    { title: 'Trading Tools & Platform Reviews 2026 | EntryLab',  description: 'Expert reviews of trading tools, VPS providers, platform integrations, and risk management features. Find the right tools with EntryLab.' },
+    'news':             { title: 'Latest Trading News & Market Analysis | EntryLab',   description: 'Stay on top of forex and prop trading news. Market analysis, broker updates, and industry developments — all in one place on EntryLab.' },
   };
 
   app.use(async (req, res, next) => {
@@ -1813,9 +1826,23 @@ EntryLab was founded in 2024. All reviews are independently researched. Ratings 
         if (staticPageSeo[cleanUrl]) {
           const seo = staticPageSeo[cleanUrl];
           pageData = {
+            seoTitle: seo.title,
+            seoDescription: seo.description,
             name: seo.title,
             tagline: seo.description,
           };
+        // Category archive pages
+        } else if (cleanUrl.match(/^\/(broker-news|prop-firm-news|broker-guides|prop-firm-guides|trading-tools|news)$/)) {
+          const catSlug = cleanUrl.slice(1);
+          const seo = categoryArchiveSeo[catSlug];
+          if (seo) {
+            pageData = {
+              seoTitle: seo.title,
+              seoDescription: seo.description,
+              name: seo.title,
+              tagline: seo.description,
+            };
+          }
         } else if (url.startsWith('/broker/')) {
           const slug = url.replace('/broker/', '').split('?')[0];
           const ssrKey = `ssr:broker:${slug}`;
