@@ -293,6 +293,19 @@ export const insertPageViewSchema = createInsertSchema(pageViewsTable).omit({
 export type InsertPageView = z.infer<typeof insertPageViewSchema>;
 export type PageView = typeof pageViewsTable.$inferSelect;
 
+// ─── Static page SEO table ───────────────────────────────────────────────────
+export const staticPageSeoTable = pgTable("static_page_seo", {
+  slug:           text("slug").primaryKey(),          // e.g. "/brokers" or "broker-news"
+  label:          text("label").notNull(),            // human-readable name for admin UI
+  seoTitle:       text("seo_title"),
+  seoDescription: text("seo_description"),
+  updatedAt:      timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertStaticPageSeoSchema = createInsertSchema(staticPageSeoTable).omit({ updatedAt: true });
+export type InsertStaticPageSeo = z.infer<typeof insertStaticPageSeoSchema>;
+export type StaticPageSeo = typeof staticPageSeoTable.$inferSelect;
+
 // ─── Category taxonomy tables ────────────────────────────────────────────────
 export const categoriesTable = pgTable("categories", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

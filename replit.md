@@ -32,12 +32,13 @@ Preferred communication style: Simple, everyday language.
 
 ### Data Layer
 - **Database**: PostgreSQL (Neon serverless), managed with Drizzle ORM.
-- **Tables**: `articles`, `brokers_data`, `prop_firms_data`, `categories`, `broker_categories`, `prop_firm_categories`, `reviews`, `signal_users`, `subscriptions`, `email_captures`, `webhook_events`, `broker_alerts`, `article_views`.
+- **Tables**: `articles`, `brokers_data`, `prop_firms_data`, `categories`, `broker_categories`, `prop_firm_categories`, `reviews`, `signal_users`, `subscriptions`, `email_captures`, `webhook_events`, `broker_alerts`, `article_views`, `static_page_seo`.
 - **Current Data**: 41 published articles, 17 brokers, 14 prop firms, 10 categories — all in PostgreSQL.
 - **Data Sources**: 100% PostgreSQL. No external CMS or API dependency for any runtime data.
 - **Category Assignments**: `broker_categories` and `prop_firm_categories` junction tables with composite PKs.
 - **Comparison Feature**: `/compare` page supports side-by-side comparison of up to 4 brokers.
-- **Admin Panel**: Full CRUD for articles, brokers, prop firms, categories, and reviews via `/admin/*` routes.
+- **Admin Panel**: Full CRUD for articles, brokers, prop firms, categories, reviews, and static page SEO via `/admin/*` routes.
+- **Static Page SEO**: `static_page_seo` table (PK: slug) stores seo_title + seo_description for 6 static pages (`/brokers`, `/prop-firms`, `/compare`, `/signals`, `/subscribe`, `/success`) and 6 category archives (`broker-news`, `prop-firm-news`, `broker-guides`, `prop-firm-guides`, `trading-tools`, `news`). Editable from admin at `/admin/pages`. Admin endpoints: `GET /api/admin/static-page-seo`, `PUT /api/admin/static-page-seo/:slug`.
 
 ### Design System
 - **Theming**: Dark/light mode with `localStorage` persistence, defaulting to dark.
