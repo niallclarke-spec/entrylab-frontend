@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "cZfN45eCevN4Glmm4Gw8w"
+uri = "file://entrylab-seo-audit.xlsx"
+type = "table"
+title = "EntryLab SEO Audit – All Pages"
