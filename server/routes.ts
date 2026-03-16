@@ -1433,6 +1433,89 @@ EntryLab was founded in 2024. All reviews are independently researched. Ratings 
     );
   });
 
+  // RSS Feed - for Google News, Google Discover, Feedly and other aggregators
+  app.get('/feed.xml', async (_req, res) => {
+    res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=1800, stale-while-revalidate=3600');
+    try {
+      const articles = await db
+        .select({
+          slug: articlesTable.slug,
+          title: articlesTable.title,
+          excerpt: articlesTable.excerpt,
+          category: articlesTable.category,
+          author: articlesTable.author,
+          featuredImage: articlesTable.featuredImage,
+          publishedAt: articlesTable.publishedAt,
+          updatedAt: articlesTable.updatedAt,
+        })
+        .from(articlesTable)
+        .where(eq(articlesTable.status, 'published'))
+        .orderBy(desc(articlesTable.publishedAt))
+        .limit(50);
+
+      const categoryLabels: Record<string, string> = {
+        'broker-news': 'Broker News', 'prop-firm-news': 'Prop Firm News',
+        'broker-guides': 'Broker Guides', 'prop-firm-guides': 'Prop Firm Guides',
+        'trading-tools': 'Trading Tools', 'news': 'News',
+      };
+
+      const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      const stripTags = (s: string) => s.replace(/<[^>]*>/g, '').trim();
+
+      const items = articles.map(a => {
+        const catSlug = a.category || 'news';
+        const link = `https://entrylab.io/${catSlug}/${a.slug}`;
+        const title = escape(stripTags(a.title || ''));
+        const desc = escape(stripTags(a.excerpt || '').substring(0, 280));
+        const pubDate = (a.publishedAt || a.updatedAt || new Date()).toUTCString();
+        const category = escape(categoryLabels[catSlug] || catSlug);
+        const author = escape(a.author || 'EntryLab Editorial Team');
+        const imageTag = a.featuredImage
+          ? `\n        <enclosure url="${escape(a.featuredImage)}" type="image/jpeg" length="0"/>`
+          : '';
+        return `    <item>
+      <title>${title}</title>
+      <link>${link}</link>
+      <guid isPermaLink="true">${link}</guid>
+      <description>${desc}</description>
+      <pubDate>${pubDate}</pubDate>
+      <category>${category}</category>
+      <author>editorial@entrylab.io (${author})</author>${imageTag}
+    </item>`;
+      }).join('\n');
+
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:media="http://search.yahoo.com/mrss/"
+  xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>EntryLab — Forex News &amp; Trading Intelligence</title>
+    <link>https://entrylab.io</link>
+    <description>Forex broker news, prop firm updates, and XAU/USD trading analysis for retail traders worldwide.</description>
+    <language>en-us</language>
+    <managingEditor>editorial@entrylab.io (EntryLab)</managingEditor>
+    <webMaster>editorial@entrylab.io (EntryLab)</webMaster>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <ttl>30</ttl>
+    <image>
+      <url>https://entrylab.io/assets/entrylab-logo-green.png</url>
+      <title>EntryLab</title>
+      <link>https://entrylab.io</link>
+    </image>
+    <atom:link href="https://entrylab.io/feed.xml" rel="self" type="application/rss+xml"/>
+${items}
+  </channel>
+</rss>`;
+
+      res.send(xml);
+    } catch (err) {
+      console.error('[RSS] Feed generation error:', err);
+      res.status(500).send('<?xml version="1.0"?><rss version="2.0"><channel></channel></rss>');
+    }
+  });
+
   // Dynamic Sitemap XML - CRITICAL: Set headers FIRST before any async operations
   app.get('/sitemap.xml', async (_req, res) => {
     // Set XML headers IMMEDIATELY - this prevents Express from serving HTML
@@ -2189,21 +2272,44 @@ EntryLab was founded in 2024. All reviews are independently researched. Ratings 
             ? 'article'
             : 'website';
 
+          // Article-specific OG tags (og:article:* namespace)
+          const catLabelMap: Record<string, string> = {
+            'broker-news': 'Broker News', 'prop-firm-news': 'Prop Firm News',
+            'broker-guides': 'Broker Guides', 'prop-firm-guides': 'Prop Firm Guides',
+            'trading-tools': 'Trading Tools', 'news': 'News',
+          };
+          let articleOgTags = '';
+          if (ogType === 'article' && pageData) {
+            const pub = pageData.publishedAt ? new Date(pageData.publishedAt).toISOString() : '';
+            const mod = pageData.updatedAt ? new Date(pageData.updatedAt).toISOString() : pub;
+            const catRaw = pageData.category || '';
+            const sec = catLabelMap[catRaw] || catRaw;
+            const auth = pageData.author || 'EntryLab Editorial Team';
+            if (pub) articleOgTags += `\n    <meta property="article:published_time" content="${pub}">`;
+            if (mod) articleOgTags += `\n    <meta property="article:modified_time" content="${mod}">`;
+            if (sec) articleOgTags += `\n    <meta property="article:section" content="${sec}">`;
+            if (auth) articleOgTags += `\n    <meta property="article:author" content="${auth}">`;
+          }
+
+          const twitterCreator = ogType === 'article' ? '\n    <meta name="twitter:creator" content="@entrylabio">' : '';
+
           const ogTags = `
     <!-- Open Graph / SEO -->
+    <meta property="og:locale" content="en_US">
     <meta property="og:title" content="${ogTitle}">
     <meta property="og:description" content="${ogDesc}">
     <meta property="og:image" content="${ogImage}">
     <meta property="og:url" content="${ogUrl}">
     <meta property="og:type" content="${ogType}">
-    <meta property="og:site_name" content="EntryLab">
+    <meta property="og:site_name" content="EntryLab">${articleOgTags}
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@entrylabio">
+    <meta name="twitter:site" content="@entrylabio">${twitterCreator}
     <meta name="twitter:title" content="${ogTitle}">
     <meta name="twitter:description" content="${ogDesc}">
     <meta name="twitter:image" content="${ogImage}">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="${ogUrl}">`;
+    <link rel="canonical" href="${ogUrl}">
+    <link rel="alternate" type="application/rss+xml" title="EntryLab Forex News" href="https://entrylab.io/feed.xml">`;
           
           modifiedHtml = modifiedHtml.replace('</head>', `${ogTags}\n  </head>`);
 
