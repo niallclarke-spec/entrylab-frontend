@@ -65,11 +65,11 @@ export function stripInlineColors(content: string): string {
 }
 
 /**
- * Strip Gutenberg block editor class names from HTML elements.
+ * Strip legacy block-editor class names from HTML elements.
  * Classes like wp-block-*, has-alpha-channel-opacity, is-layout-* are
- * injected by the Gutenberg editor and interfere with Tailwind Typography prose styling.
+ * injected by the block editor and interfere with Tailwind Typography prose styling.
  */
-export function stripGutenbergClasses(content: string): string {
+function stripLegacyEditorClasses(content: string): string {
   if (!content) return content;
 
   const parser = new DOMParser();
@@ -119,11 +119,11 @@ export function stripLeadingH1(content: string): string {
 
 /**
  * Process article content for display.
- * Strips Gutenberg classes, adds heading IDs, wraps tables, strips inline colours.
+ * Strips legacy editor classes, adds heading IDs, wraps tables, strips inline colours.
  */
 export function processArticleContent(content: string): string {
   if (!content) return content;
-  let processed = stripGutenbergClasses(content);
+  let processed = stripLegacyEditorClasses(content);
   processed = addHeadingIds(processed);
   processed = wrapTablesForMobile(processed);
   processed = stripInlineColors(processed);
@@ -138,7 +138,7 @@ export function processArticleContent(content: string): string {
 export function processBrokerContent(content: string): string {
   if (!content) return content;
   let processed = stripLeadingH1(content);
-  processed = stripGutenbergClasses(processed);
+  processed = stripLegacyEditorClasses(processed);
   processed = addHeadingIds(processed);
   processed = wrapTablesForMobile(processed);
   processed = stripInlineColors(processed);
