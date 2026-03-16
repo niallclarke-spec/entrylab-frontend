@@ -574,6 +574,218 @@ export function makeComparisonSlug(slugA: string, slugB: string): string {
   return `${first}-vs-${second}`;
 }
 
+// ─── Alternatives page generation ────────────────────────────────────────────
+
+export interface AlternativeEntry {
+  entityId: string;
+  entitySlug: string;
+  entityName: string;
+  rating: number;
+  wins: number;
+  score: string;
+  winCategoryLabels: string[];
+  summary: string;
+}
+
+function computeBrokerAlternatives(
+  main: BrokerData,
+  others: BrokerData[]
+): { alternatives: AlternativeEntry[]; faqData: Array<{ q: string; a: string }> } {
+  const sorted = [...others].sort((a, b) => {
+    const ra = parseFloat(String(a.rating ?? 0));
+    const rb = parseFloat(String(b.rating ?? 0));
+    return rb - ra;
+  });
+  const top = sorted.slice(0, 6);
+
+  const alternatives: AlternativeEntry[] = top.map((alt) => {
+    const [a, b] = main.slug < alt.slug ? [main, alt] : [alt, main];
+    const data = computeBrokerComparison(a, b);
+    const cats = Object.values(data.categoryWinners) as CategoryResult[];
+    const altWins = cats.filter((c) => c.winnerId === alt.id).length;
+    const mainWins = cats.filter((c) => c.winnerId === main.id).length;
+    const winCategoryLabels = cats.filter((c) => c.winnerId === alt.id).map((c) => c.label);
+
+    let summary = `${alt.name} is a strong alternative to ${main.name}`;
+    if (winCategoryLabels.length > 0) {
+      summary += `, particularly if you prioritise ${winCategoryLabels.slice(0, 2).join(" and ").toLowerCase()}`;
+    }
+    if (alt.regulation) summary += `. It is regulated by ${alt.regulation}`;
+    if (alt.spreadFrom) summary += ` with spreads from ${alt.spreadFrom}`;
+    summary += ".";
+
+    return {
+      entityId: alt.id,
+      entitySlug: alt.slug,
+      entityName: alt.name,
+      rating: parseFloat(String(alt.rating ?? 0)),
+      wins: altWins,
+      score: `${altWins}-${mainWins}`,
+      winCategoryLabels,
+      summary,
+    };
+  });
+
+  const faqData: Array<{ q: string; a: string }> = [
+    {
+      q: `What are the best alternatives to ${main.name}?`,
+      a: `The top alternatives to ${main.name} are ${top.slice(0, 3).map((b) => b.name).join(", ")}. Each offers competitive trading conditions across regulation, spreads, and platform support.`,
+    },
+    {
+      q: `Why might I choose a different broker over ${main.name}?`,
+      a: `Traders may prefer alternatives if they need ${top[0] ? `features that ${top[0].name} excels in, such as its ${alternatives[0]?.winCategoryLabels[0]?.toLowerCase() ?? "trading conditions"}` : "different regulatory coverage or trading platforms"}. Comparing brokers helps find the best fit for your trading style.`,
+    },
+    {
+      q: `Is ${main.name} the cheapest broker?`,
+      a: `${main.name} has spreads from ${main.spreadFrom || "N/A"}. ${top[0]?.name ? `${top[0].name} starts from ${top[0].spreadFrom || "N/A"}, making it${parseFloat(String(top[0].spreadFrom ?? "99")) < parseFloat(String(main.spreadFrom ?? "99")) ? " potentially cheaper" : " comparable"}.` : "Compare brokers to find the lowest spreads for your preferred instruments."}`,
+    },
+    {
+      q: `How does ${main.name} compare to ${top[0]?.name ?? "other brokers"}?`,
+      a: alternatives[0]?.summary ?? `Both are well-regulated brokers offering retail and professional trading accounts. Key differences lie in spreads, minimum deposits, and platform selection.`,
+    },
+  ];
+
+  return { alternatives, faqData };
+}
+
+function computePropFirmAlternatives(
+  main: PropFirmData,
+  others: PropFirmData[]
+): { alternatives: AlternativeEntry[]; faqData: Array<{ q: string; a: string }> } {
+  const sorted = [...others].sort((a, b) => {
+    const ra = parseFloat(String(a.rating ?? 0));
+    const rb = parseFloat(String(b.rating ?? 0));
+    return rb - ra;
+  });
+  const top = sorted.slice(0, 6);
+
+  const alternatives: AlternativeEntry[] = top.map((alt) => {
+    const [a, b] = main.slug < alt.slug ? [main, alt] : [alt, main];
+    const data = computePropFirmComparison(a, b);
+    const cats = Object.values(data.categoryWinners) as CategoryResult[];
+    const altWins = cats.filter((c) => c.winnerId === alt.id).length;
+    const mainWins = cats.filter((c) => c.winnerId === main.id).length;
+    const winCategoryLabels = cats.filter((c) => c.winnerId === alt.id).map((c) => c.label);
+
+    let summary = `${alt.name} is a top alternative to ${main.name}`;
+    if (winCategoryLabels.length > 0) {
+      summary += `, especially for traders who value ${winCategoryLabels.slice(0, 2).join(" and ").toLowerCase()}`;
+    }
+    if (alt.profitSplit) summary += `. It offers up to ${alt.profitSplit} profit split`;
+    if (alt.maxFundingSize) summary += ` with accounts up to ${alt.maxFundingSize}`;
+    summary += ".";
+
+    return {
+      entityId: alt.id,
+      entitySlug: alt.slug,
+      entityName: alt.name,
+      rating: parseFloat(String(alt.rating ?? 0)),
+      wins: altWins,
+      score: `${altWins}-${mainWins}`,
+      winCategoryLabels,
+      summary,
+    };
+  });
+
+  const faqData: Array<{ q: string; a: string }> = [
+    {
+      q: `What are the best alternatives to ${main.name}?`,
+      a: `The top alternatives to ${main.name} are ${top.slice(0, 3).map((f) => f.name).join(", ")}. All offer funded trading accounts with competitive profit splits and clear challenge rules.`,
+    },
+    {
+      q: `Why would a trader choose an alternative to ${main.name}?`,
+      a: `Reasons vary — some traders prefer lower challenge fees, higher profit splits, or more flexible drawdown rules. ${top[0]?.name ? `For example, ${top[0].name} may offer ${alternatives[0]?.winCategoryLabels[0]?.toLowerCase() ?? "competitive advantages"} compared to ${main.name}.` : "Compare the alternatives to find the firm that best matches your trading style."}`,
+    },
+    {
+      q: `How does ${main.name} compare to ${top[0]?.name ?? "other prop firms"}?`,
+      a: alternatives[0]?.summary ?? `Both are reputable prop trading firms. Evaluate their challenge types, profit targets, and drawdown limits to find the right fit.`,
+    },
+    {
+      q: `Is ${main.name} a good prop firm?`,
+      a: `${main.name} holds an EntryLab rating of ${main.rating ?? "N/A"}/10. Key strengths include ${main.profitSplit ? `profit split up to ${main.profitSplit}` : "competitive challenge structure"}${main.maxFundingSize ? ` and funding up to ${main.maxFundingSize}` : ""}. Check our full review for a detailed breakdown.`,
+    },
+  ];
+
+  return { alternatives, faqData };
+}
+
+export async function generateAllAlternatives(): Promise<{ brokers: number; propFirms: number }> {
+  const [brokers, propFirms] = await Promise.all([
+    db.select().from(brokersTable),
+    db.select().from(propFirmsTable),
+  ]);
+
+  const existingAlt = await db
+    .select({ slug: comparisonsTable.slug })
+    .from(comparisonsTable)
+    .where(eq(comparisonsTable.comparisonType, "alternatives"));
+  const existingAltSlugs = new Set(existingAlt.map((c) => c.slug));
+
+  let brokerCount = 0;
+  let propFirmCount = 0;
+  const now = new Date();
+
+  for (const broker of brokers) {
+    const altSlug = `${broker.slug}-alternatives`;
+    if (existingAltSlugs.has(altSlug)) continue;
+
+    const others = brokers.filter((b) => b.id !== broker.id);
+    const { alternatives, faqData } = computeBrokerAlternatives(broker, others);
+
+    await db.insert(comparisonsTable).values({
+      entityType: "broker",
+      comparisonType: "alternatives",
+      entityAId: broker.id,
+      entityBId: null,
+      entityASlug: broker.slug,
+      entityBSlug: null,
+      entityAName: broker.name,
+      entityBName: null,
+      slug: altSlug,
+      status: "draft",
+      categoryWinners: { alternatives } as any,
+      overallWinnerId: null,
+      overallScore: null,
+      faqData: faqData as any,
+      publishedAt: null,
+      updatedAt: now,
+    });
+    existingAltSlugs.add(altSlug);
+    brokerCount++;
+  }
+
+  for (const firm of propFirms) {
+    const altSlug = `${firm.slug}-alternatives`;
+    if (existingAltSlugs.has(altSlug)) continue;
+
+    const others = propFirms.filter((f) => f.id !== firm.id);
+    const { alternatives, faqData } = computePropFirmAlternatives(firm, others);
+
+    await db.insert(comparisonsTable).values({
+      entityType: "prop_firm",
+      comparisonType: "alternatives",
+      entityAId: firm.id,
+      entityBId: null,
+      entityASlug: firm.slug,
+      entityBSlug: null,
+      entityAName: firm.name,
+      entityBName: null,
+      slug: altSlug,
+      status: "draft",
+      categoryWinners: { alternatives } as any,
+      overallWinnerId: null,
+      overallScore: null,
+      faqData: faqData as any,
+      publishedAt: null,
+      updatedAt: now,
+    });
+    existingAltSlugs.add(altSlug);
+    propFirmCount++;
+  }
+
+  return { brokers: brokerCount, propFirms: propFirmCount };
+}
+
 export async function generateAllMissingPairs(): Promise<{ brokers: number; propFirms: number }> {
   const [brokers, propFirms, existingComparisons] = await Promise.all([
     db.select().from(brokersTable),

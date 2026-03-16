@@ -1,0 +1,70 @@
+# REPLIT TASK: Batch Generate All Comparison Drafts
+
+You have already built the comparison system with the admin dashboard, comparison page templates, winner logic, and auto-generation triggers. Now you need to actually populate the database with draft comparison articles for every existing broker pair and every existing prop firm pair.
+
+---
+
+## WHAT TO DO
+
+### Step 1: Generate All Broker Comparison Drafts
+
+1. Fetch every broker from the database.
+2. For every unique pair of brokers (A vs B), check if a comparison record already exists. If it does, skip it.
+3. If it does not exist, create a new comparison record with status = `draft`.
+4. For each new draft:
+   - Set `entity_a` and `entity_b` in alphabetical order by slug (A before B, always).
+   - Pull both brokers' data from the database.
+   - Run the programmatic winner logic across all 7 broker comparison categories.
+   - Store the winner for each category in `category_winners`.
+   - Calculate the overall score (e.g. "4-3") and set `overall_winner_id`.
+   - Generate the template-based editorial text for all 7 comparison sections using the sentence templates and each broker's actual data.
+   - Generate the FAQ answers using each broker's actual data.
+   - Generate the verdict/use-case text using each broker's actual data.
+   - Set `created_at` to now. Leave `published_at` as null.
+
+### Step 2: Generate All Prop Firm Comparison Drafts
+
+Same as Step 1 but for every unique pair of prop firms, using the 7 prop firm comparison categories.
+
+### Step 3: Generate All Broker Alternatives Page Drafts
+
+For every broker, create a draft alternatives page:
+- Find the top 5–7 other brokers ranked by overall_rating.
+- Generate the alternatives content with mini comparison summaries.
+- Set status = `draft`.
+
+### Step 4: Generate All Prop Firm Alternatives Page Drafts
+
+Same as Step 3 but for every prop firm.
+
+### Step 5: Verify
+
+After all drafts are generated:
+- Log the total number of broker comparison drafts created.
+- Log the total number of prop firm comparison drafts created.
+- Log the total number of alternatives page drafts created.
+- Confirm all drafts are visible in the admin dashboard at `/admin/comparisons`.
+- Confirm NO drafts are visible on the public site, hub pages, sitemap, or internal links.
+
+---
+
+## CRITICAL RULES
+
+- **Every record created must have status = `draft`.** Do not publish anything.
+- **Do not add any of these pages to the sitemap.**
+- **Do not show any of these pages on hub pages or in internal links.**
+- **Do not make any of these pages publicly accessible.**
+- **Skip pairs that already exist** — do not create duplicates.
+- **URLs must be alphabetical** — `avatrade-vs-ic-markets`, never the reverse.
+- **Every draft must have fully populated content** — the comparison table data, all 7 category winner calculations, all 7 editorial text sections filled in with real data from both entities, all FAQ answers filled in, and the verdict section filled in. A draft should be a complete, ready-to-publish article. The admin should be able to open any draft, read it, and hit publish without needing to edit anything.
+
+---
+
+## THIS TASK IS COMPLETE WHEN
+
+1. The admin dashboard shows a draft comparison for every possible broker pair.
+2. The admin dashboard shows a draft comparison for every possible prop firm pair.
+3. The admin dashboard shows a draft alternatives page for every broker.
+4. The admin dashboard shows a draft alternatives page for every prop firm.
+5. Every draft has complete content — not empty templates, not placeholder text, but real data-driven comparison articles ready to publish.
+6. Nothing is publicly visible. Zero drafts on the live site.

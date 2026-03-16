@@ -12,7 +12,7 @@ import { addInternalLinks, invalidateInternalLinksCache } from "./internal-links
 import { generateStructuredData } from "./structured-data";
 import { getUncachableStripeClient } from "./stripeClient";
 import { eq, asc, ilike, desc, sql, and, or, ne, inArray } from "drizzle-orm";
-import { generateAllMissingPairs, regenerateComparisons, onEntityUpdated, onEntityCreated, makeComparisonSlug } from "./comparison-engine";
+import { generateAllMissingPairs, generateAllAlternatives, regenerateComparisons, onEntityUpdated, onEntityCreated, makeComparisonSlug } from "./comparison-engine";
 import { getWelcomeEmailHtml, getCancellationEmailHtml, getFreeChannelEmailHtml } from "./emailTemplates";
 import { getUncachableResendClient } from "./resendClient";
 import jwt from "jsonwebtoken";
@@ -743,8 +743,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/comparisons/generate-all", adminAuth, async (_req, res) => {
     try {
-      const result = await generateAllMissingPairs();
-      return res.json({ ok: true, ...result });
+      const [pairs, alts] = await Promise.all([
+        generateAllMissingPairs(),
+        generateAllAlternatives(),
+      ]);
+      return res.json({
+        ok: true,
+        brokers: pairs.brokers,
+        propFirms: pairs.propFirms,
+        brokerAlternatives: alts.brokers,
+        propFirmAlternatives: alts.propFirms,
+      });
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
     }
