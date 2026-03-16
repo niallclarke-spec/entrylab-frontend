@@ -43,6 +43,10 @@ const AdminArticleEditor = lazy(() => import("@/pages/admin/AdminArticleEditor")
 const AdminPlaceholder = lazy(() => import("@/pages/admin/AdminPlaceholder"));
 const AdminCategories = lazy(() => import("@/pages/admin/AdminCategories"));
 const AdminEmailLeads = lazy(() => import("@/pages/admin/AdminEmailLeads"));
+const AdminComparisons = lazy(() => import("@/pages/admin/AdminComparisons"));
+const ComparisonPage = lazy(() => import("@/pages/ComparisonPage"));
+const ComparisonBrokerHub = lazy(() => import("@/pages/ComparisonBrokerHub"));
+const ComparisonPropFirmHub = lazy(() => import("@/pages/ComparisonPropFirmHub"));
 
 function PageLoadingFallback() {
   return (
@@ -105,7 +109,7 @@ function Router() {
       <Route path="/admin/articles"><S><AdminArticles /></S></Route>
 
       <Route path="/admin/comparisons">
-        <S><AdminPlaceholder title="Comparisons" description="Build head-to-head comparison pages (e.g. FTMO vs FundedNext) with editorial content and side-by-side data tables." /></S>
+        <S><AdminComparisons /></S>
       </Route>
       <Route path="/admin/categories"><S><AdminCategories /></S></Route>
       <Route path="/admin/tags">
@@ -146,6 +150,10 @@ function Router() {
       <Route path="/free-access"><S><FreeAccess /></S></Route>
       <Route path="/dashboard"><S><Dashboard /></S></Route>
       <Route path="/terms"><S><TermsConditions /></S></Route>
+      <Route path="/compare/broker/:slug"><S><ComparisonPage /></S></Route>
+      <Route path="/compare/prop-firm/:slug"><S><ComparisonPage /></S></Route>
+      <Route path="/compare/broker"><S><ComparisonBrokerHub /></S></Route>
+      <Route path="/compare/prop-firm"><S><ComparisonPropFirmHub /></S></Route>
       <Route path="/compare"><S><Compare /></S></Route>
       <Route path="/top-cfd-brokers"><S><BrokerCategoryArchive /></S></Route>
       <Route path="/top-3-cfd-brokers"><S><BrokerCategoryArchive /></S></Route>

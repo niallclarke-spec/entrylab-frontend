@@ -11,7 +11,7 @@ Preferred communication style: Simple, everyday language.
 ### Frontend
 - **Frameworks & Libraries**: React 18 with TypeScript, Vite for tooling, `wouter` for routing, React Query for server state, React Context for theme.
 - **UI/UX**: Shadcn UI (Radix UI primitives), "new-york" preset, Tailwind CSS. Dark mode by default with light/dark toggle. Inter font for text, JetBrains Mono for financial data.
-- **Key Features**: Category archive pages, SEO-optimised `/:category/:slug` URLs, 6-step review modal, broker comparison page (`/compare`), broker/prop-firm contextual article displays.
+- **Key Features**: Category archive pages, SEO-optimised `/:category/:slug` URLs, 6-step review modal, broker comparison tool (`/compare`), broker/prop-firm contextual article displays, full Comparison System with hub pages + individual vs pages (`/compare/broker/:slug`, `/compare/prop-firm/:slug`).
 - **Performance**: Client-side CSS deferral, static asset caching, image optimisation (WebP, responsive `srcset`), loading skeletons, `font-display: swap`.
 
 ### Backend
@@ -25,18 +25,19 @@ Preferred communication style: Simple, everyday language.
   - Monthly → "Premium Forex Signals - Monthly"
   - One-time (lifetime) → "Premium Forex Signals - Lifetime"
   - Free users: static `https://t.me/entrylabs` link
-- **Key Endpoints**: `/api/articles`, `/api/categories`, `/api/category-content`, `/api/brokers`, `/api/prop-firms`, `/api/trust-signals`, `/api/reviews/:id`, `/api/reviews/submit`, Stripe webhook, Telegram webhook.
+- **Key Endpoints**: `/api/articles`, `/api/categories`, `/api/category-content`, `/api/brokers`, `/api/prop-firms`, `/api/trust-signals`, `/api/reviews/:id`, `/api/reviews/submit`, Stripe webhook, Telegram webhook. Comparison endpoints: `/api/comparisons/hub/:entityType`, `/api/comparisons/related/:entityType/:slug`, `/api/comparisons/:entityType/:slug`. Admin comparison endpoints: `/api/admin/comparisons`, `/api/admin/comparisons/stats`, `/api/admin/comparisons/generate-all`, `/api/admin/comparisons/bulk`, `/api/admin/comparisons/:id`.
 - **SEO Middleware**: Server-side injection of title, meta description, Open Graph tags, canonical URLs, and JSON-LD structured data — all sourced from PostgreSQL.
 - **Structured Data**: JSON-LD generated server-side for Organization, FinancialService, Article, Review, BreadcrumbList, and FAQPage schemas.
 - **Webhook Resilience**: All Stripe handlers include defensive error handling and non-blocking external API calls.
 
 ### Data Layer
 - **Database**: PostgreSQL (Neon serverless), managed with Drizzle ORM.
-- **Tables**: `articles`, `brokers_data`, `prop_firms_data`, `categories`, `broker_categories`, `prop_firm_categories`, `reviews`, `signal_users`, `subscriptions`, `email_captures`, `webhook_events`, `broker_alerts`, `article_views`, `static_page_seo`.
+- **Tables**: `articles`, `brokers_data`, `prop_firms_data`, `categories`, `broker_categories`, `prop_firm_categories`, `reviews`, `signal_users`, `subscriptions`, `email_captures`, `webhook_events`, `broker_alerts`, `article_views`, `static_page_seo`, `comparisons`.
 - **Current Data**: 41 published articles, 17 brokers, 14 prop firms, 10 categories — all in PostgreSQL.
 - **Data Sources**: 100% PostgreSQL. No external CMS or API dependency for any runtime data.
 - **Category Assignments**: `broker_categories` and `prop_firm_categories` junction tables with composite PKs.
-- **Comparison Feature**: `/compare` page supports side-by-side comparison of up to 4 brokers.
+- **Comparison Tool**: `/compare` page supports side-by-side comparison of up to 4 brokers.
+- **Comparison System**: Auto-generated vs pages for every entity pair. `comparisons` table (status: draft/published/updated/archived). Comparison engine in `server/comparison-engine.ts` — 14 winner-logic categories, FAQ generation, `generateAllMissingPairs()`. Hub pages at `/compare/broker` and `/compare/prop-firm`. Individual pages at `/compare/broker/:slug` and `/compare/prop-firm/:slug`. Admin UI at `/admin/comparisons`. SSR tags injected for all comparison URLs.
 - **Admin Panel**: Full CRUD for articles, brokers, prop firms, categories, reviews, and static page SEO via `/admin/*` routes.
 - **Static Page SEO**: `static_page_seo` table (PK: slug) stores seo_title + seo_description for 6 static pages (`/brokers`, `/prop-firms`, `/compare`, `/signals`, `/subscribe`, `/success`) and 6 category archives (`broker-news`, `prop-firm-news`, `broker-guides`, `prop-firm-guides`, `trading-tools`, `news`). Editable from admin at `/admin/pages`. Admin endpoints: `GET /api/admin/static-page-seo`, `PUT /api/admin/static-page-seo/:slug`.
 

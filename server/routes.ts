@@ -5,13 +5,14 @@ import fs from "fs";
 import multer from "multer";
 import { storage } from "./storage";
 import { db } from "./db";
-import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures, subscriptions, brokersTable, propFirmsTable, articlesTable, insertArticleSchema, pageViewsTable, categoriesTable, brokerCategoriesTable, propFirmCategoriesTable, reviewsTable, insertReviewSchema, staticPageSeoTable } from "../shared/schema";
+import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures, subscriptions, brokersTable, propFirmsTable, articlesTable, insertArticleSchema, pageViewsTable, categoriesTable, brokerCategoriesTable, propFirmCategoriesTable, reviewsTable, insertReviewSchema, staticPageSeoTable, comparisonsTable } from "../shared/schema";
 import { apiCache } from "./cache";
 import { sendReviewNotification, sendTelegramMessage, getTelegramBot } from "./telegram";
 import { addInternalLinks, invalidateInternalLinksCache } from "./internal-links";
 import { generateStructuredData } from "./structured-data";
 import { getUncachableStripeClient } from "./stripeClient";
-import { eq, asc, ilike, desc, sql, and } from "drizzle-orm";
+import { eq, asc, ilike, desc, sql, and, or, ne, inArray } from "drizzle-orm";
+import { generateAllMissingPairs, regenerateComparisons, onEntityUpdated, onEntityCreated, makeComparisonSlug } from "./comparison-engine";
 import { getWelcomeEmailHtml, getCancellationEmailHtml, getFreeChannelEmailHtml } from "./emailTemplates";
 import { getUncachableResendClient } from "./resendClient";
 import jwt from "jsonwebtoken";
@@ -304,6 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .returning();
       apiCache.delete('brokers:list');
       invalidateInternalLinksCache();
+      onEntityCreated("broker", broker.id).catch(() => {});
       return res.status(201).json(broker);
     } catch (err: any) {
       console.error("[Admin] Error creating broker:", err);
@@ -337,6 +339,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .returning();
       apiCache.delete('prop-firms:list');
       invalidateInternalLinksCache();
+      onEntityCreated("prop_firm", firm.id).catch(() => {});
       return res.status(201).json(firm);
     } catch (err: any) {
       console.error("[Admin] Error creating prop firm:", err);
@@ -704,6 +707,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ─── Admin comparison endpoints ───────────────────────────────────────────
+
+  app.get("/api/admin/comparisons", adminAuth, async (req, res) => {
+    try {
+      const { status, entityType, q, sort } = req.query as Record<string, string>;
+      let query = db.select().from(comparisonsTable);
+      const conditions: any[] = [];
+      if (status && status !== "all") conditions.push(eq(comparisonsTable.status, status));
+      if (entityType && entityType !== "all") conditions.push(eq(comparisonsTable.entityType, entityType));
+      if (q) conditions.push(or(ilike(comparisonsTable.entityAName, `%${q}%`), ilike(comparisonsTable.entityBName ?? "", `%${q}%`)));
+      const rows = await (conditions.length
+        ? db.select().from(comparisonsTable).where(and(...conditions))
+        : db.select().from(comparisonsTable));
+      let sorted = rows;
+      if (sort === "alpha") sorted = rows.sort((a, b) => a.entityAName.localeCompare(b.entityAName));
+      else if (sort === "status") sorted = rows.sort((a, b) => a.status.localeCompare(b.status));
+      else sorted = rows.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      return res.json(sorted);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get("/api/admin/comparisons/stats", adminAuth, async (req, res) => {
+    try {
+      const rows = await db.select({ status: comparisonsTable.status }).from(comparisonsTable);
+      const stats = { draft: 0, published: 0, updated: 0, archived: 0 };
+      rows.forEach((r) => { if (r.status in stats) (stats as any)[r.status]++; });
+      return res.json(stats);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post("/api/admin/comparisons/generate-all", adminAuth, async (_req, res) => {
+    try {
+      const result = await generateAllMissingPairs();
+      return res.json({ ok: true, ...result });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post("/api/admin/comparisons/bulk", adminAuth, async (req, res) => {
+    try {
+      const { ids, action } = req.body as { ids: string[]; action: "publish" | "archive" | "regenerate" };
+      if (!ids?.length || !action) return res.status(400).json({ error: "ids and action required" });
+      if (action === "regenerate") {
+        await regenerateComparisons(ids);
+      } else {
+        const status = action === "publish" ? "published" : "archived";
+        const now = new Date();
+        for (const id of ids) {
+          const upd: any = { status, updatedAt: now };
+          if (action === "publish") upd.publishedAt = now;
+          await db.update(comparisonsTable).set(upd).where(eq(comparisonsTable.id, id));
+        }
+      }
+      return res.json({ ok: true });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.put("/api/admin/comparisons/:id", adminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { action } = req.body as { action: "publish" | "archive" | "draft" };
+      const now = new Date();
+      const upd: any = { status: action === "publish" ? "published" : action, updatedAt: now };
+      if (action === "publish") upd.publishedAt = now;
+      await db.update(comparisonsTable).set(upd).where(eq(comparisonsTable.id, id));
+      return res.json({ ok: true });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
   // ─── Public article endpoints ──────────────────────────────────────────────
 
   app.get("/api/articles", async (req, res) => {
@@ -922,6 +1003,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ─── Public comparison endpoints ─────────────────────────────────────────────
+
+  // Hub endpoint: published comparisons for a given entity type
+  // MUST be before /:entityType/:slug to avoid route collision
+  app.get("/api/comparisons/hub/:entityType", async (req, res) => {
+    try {
+      const { entityType } = req.params;
+      const rows = await db.select().from(comparisonsTable)
+        .where(and(
+          eq(comparisonsTable.entityType, entityType),
+          eq(comparisonsTable.status, "published"),
+          eq(comparisonsTable.comparisonType, "vs")
+        ))
+        .orderBy(desc(comparisonsTable.publishedAt));
+      return res.json(rows);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Related comparisons — MUST be before /:entityType/:slug to avoid "related" being captured as entityType
+  app.get("/api/comparisons/related/:entityType/:slug", async (req, res) => {
+    try {
+      const { entityType, slug } = req.params;
+      const rows = await db.select().from(comparisonsTable)
+        .where(and(
+          eq(comparisonsTable.entityType, entityType),
+          eq(comparisonsTable.status, "published"),
+          or(
+            eq(comparisonsTable.entityASlug, slug),
+            eq(comparisonsTable.entityBSlug as any, slug)
+          )
+        ))
+        .orderBy(desc(comparisonsTable.publishedAt));
+      return res.json(rows);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Single comparison page by type and slug
+  app.get("/api/comparisons/:entityType/:slug", async (req, res) => {
+    try {
+      const { entityType, slug } = req.params;
+      const [row] = await db.select().from(comparisonsTable)
+        .where(and(eq(comparisonsTable.slug, slug), eq(comparisonsTable.entityType, entityType)));
+      if (!row) return res.status(404).json({ error: "Comparison not found" });
+      // Only return published comparisons to the public
+      if (row.status !== "published" && row.status !== "updated") {
+        return res.status(404).json({ error: "Not found" });
+      }
+      return res.json(row);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
   // ─── DB-backed broker endpoints ─────────────────────────────────────────────
 
   app.get("/api/brokers", async (req, res) => {
@@ -971,6 +1109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const rows = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
       apiCache.delete(`broker:${slug}`);
       apiCache.delete('brokers:list');
+      if (rows[0]) onEntityUpdated("broker", rows[0].id).catch(() => {});
       res.json(rows[0] ? brokerDbToApi(rows[0]) : { success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1035,6 +1174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const rows = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
       apiCache.delete(`prop-firm:${slug}`);
       apiCache.delete('prop-firms:list');
+      if (rows[0]) onEntityUpdated("prop_firm", rows[0].id).catch(() => {});
       res.json(rows[0] ? propFirmDbToApi(rows[0]) : { success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1919,6 +2059,10 @@ ${items}
                      cleanUrlForCheck === '/brokers' ||
                      cleanUrlForCheck === '/prop-firms' ||
                      cleanUrlForCheck === '/compare' ||
+                     cleanUrlForCheck === '/compare/broker' ||
+                     cleanUrlForCheck === '/compare/prop-firm' ||
+                     url.startsWith('/compare/broker/') ||
+                     url.startsWith('/compare/prop-firm/') ||
                      cleanUrlForCheck === '/signals' ||
                      cleanUrlForCheck === '/subscribe' ||
                      cleanUrlForCheck === '/success' ||
@@ -1999,6 +2143,31 @@ ${items}
                 cons: (dbFirm as any).cons || [],
                 content: (dbFirm as any).content || "",
                 logoUrl: dbFirm.logoUrl || "",
+              };
+              apiCache.set(ssrKey, pageData, 300, 600);
+            }
+          }
+        } else if (url.startsWith('/compare/broker/') || url.startsWith('/compare/prop-firm/')) {
+          // Comparison pages: /compare/broker/:slug or /compare/prop-firm/:slug
+          const compSlug = url.replace(/^\/compare\/(broker|prop-firm)\//, '').split('?')[0];
+          const compEntityType = url.startsWith('/compare/broker/') ? 'broker' : 'prop_firm';
+          const ssrKey = `ssr:comparison:${compSlug}`;
+          pageData = apiCache.get(ssrKey);
+          if (!pageData || apiCache.isStale(ssrKey)) {
+            const [comp] = await db.select().from(comparisonsTable)
+              .where(and(eq(comparisonsTable.slug, compSlug), eq(comparisonsTable.entityType, compEntityType)));
+            if (comp && (comp.status === 'published' || comp.status === 'updated')) {
+              const winnerName = comp.overallWinnerId === comp.entityAId
+                ? comp.entityAName
+                : comp.overallWinnerId === comp.entityBId
+                ? comp.entityBName
+                : null;
+              pageData = {
+                seoTitle: `${comp.entityAName} vs ${comp.entityBName} Compared (2026) | EntryLab`,
+                seoDescription: `${comp.entityAName} vs ${comp.entityBName} — which is better? We compare regulation, costs, platforms and more across 7 categories.${winnerName ? ` Winner: ${winnerName}.` : ''}`,
+                name: `${comp.entityAName} vs ${comp.entityBName}`,
+                publishedAt: comp.publishedAt,
+                updatedAt: comp.updatedAt,
               };
               apiCache.set(ssrKey, pageData, 300, 600);
             }

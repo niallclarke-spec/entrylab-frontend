@@ -139,6 +139,8 @@ export const brokersTable = pgTable("brokers_data", {
   minWithdrawal: text("min_withdrawal"),
   maxLeverage: text("max_leverage"),
   spreadFrom: text("spread_from"),
+  commission: text("commission"),
+  accountTypes: text("account_types").array(),
   platforms: text("platforms"),
   paymentMethods: text("payment_methods"),
   headquarters: text("headquarters"),
@@ -182,6 +184,11 @@ export const propFirmsTable = pgTable("prop_firms_data", {
   profitSplit: text("profit_split"),
   maxFundingSize: text("max_funding_size"),
   evaluationFee: text("evaluation_fee"),
+  challengeTypes: text("challenge_types"),
+  profitTarget: text("profit_target"),
+  dailyDrawdown: text("daily_drawdown"),
+  maxDrawdown: text("max_drawdown"),
+  payoutFrequency: text("payout_frequency"),
   discountCode: text("discount_code"),
   discountAmount: text("discount_amount"),
   propFirmUsp: text("prop_firm_usp"),
@@ -335,6 +342,37 @@ export const propFirmCategoriesTable = pgTable("prop_firm_categories", {
   propFirmId: varchar("prop_firm_id").notNull().references(() => propFirmsTable.id, { onDelete: "cascade" }),
   categoryId: varchar("category_id").notNull().references(() => categoriesTable.id, { onDelete: "cascade" }),
 }, (t) => [primaryKey({ columns: [t.propFirmId, t.categoryId] })]);
+
+// ─── Comparisons table ───────────────────────────────────────────────────────
+export const comparisonsTable = pgTable("comparisons", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  entityType: text("entity_type").notNull(), // 'broker' | 'prop_firm'
+  comparisonType: text("comparison_type").notNull().default("vs"), // 'vs' | 'alternatives'
+  entityAId: text("entity_a_id").notNull(),
+  entityBId: text("entity_b_id"),
+  entityASlug: text("entity_a_slug").notNull(),
+  entityBSlug: text("entity_b_slug"),
+  entityAName: text("entity_a_name").notNull(),
+  entityBName: text("entity_b_name"),
+  slug: text("slug").notNull().unique(),
+  status: text("status").notNull().default("draft"), // draft | published | updated | archived
+  categoryWinners: jsonb("category_winners"),
+  overallWinnerId: text("overall_winner_id"),
+  overallScore: text("overall_score"),
+  faqData: jsonb("faq_data"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  publishedAt: timestamp("published_at"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertComparisonSchema = createInsertSchema(comparisonsTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertComparison = z.infer<typeof insertComparisonSchema>;
+export type ComparisonRecord = typeof comparisonsTable.$inferSelect;
 
 export interface Article {
   id: string;

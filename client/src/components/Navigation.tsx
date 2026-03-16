@@ -1,4 +1,4 @@
-import { Search, Menu, X, TrendingUp, Newspaper, Shield, Zap, GitCompare } from "lucide-react";
+import { Search, Menu, X, TrendingUp, Newspaper, Shield, Zap, GitCompare, ChevronDown } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { prefetchRoute } from "@/lib/prefetch";
@@ -6,13 +6,21 @@ import { prefetchRoute } from "@/lib/prefetch";
 const navLinks = [
   { href: "/top-cfd-brokers", label: "Top CFD Brokers", testId: "link-top-cfd-brokers", icon: Shield },
   { href: "/best-verified-propfirms", label: "Best Prop Firms", testId: "link-best-prop-firms", icon: TrendingUp },
-  { href: "/compare", label: "Compare", testId: "link-compare", icon: GitCompare },
   { href: "/news", label: "News", testId: "link-news", icon: Newspaper },
+];
+
+const compareDropdownLinks = [
+  { href: "/compare", label: "Compare Brokers (Tool)", testId: "link-compare-tool" },
+  { href: "/compare/broker", label: "Broker vs Broker", testId: "link-compare-brokers" },
+  { href: "/compare/prop-firm", label: "Prop Firm vs Prop Firm", testId: "link-compare-prop-firms" },
 ];
 
 export function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [compareOpen, setCompareOpen] = useState(false);
   const [location] = useLocation();
+
+  const isCompareActive = location.startsWith("/compare");
 
   return (
     <>
@@ -54,6 +62,51 @@ export function Navigation() {
                     </Link>
                   );
                 })}
+
+                {/* Compare dropdown */}
+                <div
+                  className="relative"
+                  onMouseEnter={() => setCompareOpen(true)}
+                  onMouseLeave={() => setCompareOpen(false)}
+                >
+                  <button
+                    data-testid="link-compare"
+                    className={`flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      isCompareActive
+                        ? "text-[#2bb32a] bg-[#2bb32a]/10"
+                        : "text-[#adb2b1] hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <GitCompare className="h-4 w-4" />
+                    Compare
+                    <ChevronDown className={`h-3 w-3 transition-transform ${compareOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {/* Dropdown — visibility toggled (no layout shift) */}
+                  <div
+                    className="absolute left-0 top-full pt-1"
+                    style={{ visibility: compareOpen ? "visible" : "hidden" }}
+                  >
+                    <div className="w-52 rounded-xl border border-white/10 bg-[#1a1e1c] shadow-xl overflow-hidden py-1">
+                      {compareDropdownLinks.map(({ href, label, testId }) => (
+                        <Link
+                          key={href}
+                          href={href}
+                          data-testid={testId}
+                          onMouseEnter={() => prefetchRoute(href)}
+                          onClick={() => setCompareOpen(false)}
+                          className={`block px-4 py-2.5 text-sm transition-colors ${
+                            location === href
+                              ? "text-[#2bb32a] bg-[#2bb32a]/10"
+                              : "text-[#adb2b1] hover:text-white hover:bg-white/5"
+                          }`}
+                        >
+                          {label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </nav>
             </div>
 
@@ -110,6 +163,26 @@ export function Navigation() {
                 {label}
               </Link>
             ))}
+
+            {/* Compare section in mobile menu */}
+            <div className="py-2 px-3">
+              <p className="text-xs text-zinc-600 uppercase tracking-wider mb-2 flex items-center gap-1">
+                <GitCompare className="h-3 w-3" /> Compare
+              </p>
+              {compareDropdownLinks.map(({ href, label, testId }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  data-testid={`link-mobile-${testId.replace("link-", "")}`}
+                  onTouchStart={() => prefetchRoute(href)}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center py-2.5 pl-4 text-sm text-[#adb2b1] hover:text-white transition-colors"
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+
             <Link
               href="/signals"
               data-testid="link-mobile-signals"

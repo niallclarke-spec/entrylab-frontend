@@ -1,0 +1,473 @@
+# REPLIT TASK: Build a Broker & Prop Firm Comparison System for EntryLab.io
+
+---
+
+## CRITICAL RULES — READ BEFORE DOING ANYTHING
+
+1. **EVERY comparison page MUST be created as a DRAFT. Never publish automatically.** The admin will manually publish pages via an admin dashboard. No exceptions.
+2. **Drafts are NOT visible to the public.** They do not appear on hub pages, in the sitemap, in navigation, or in internal links. Only published pages are visible.
+3. **When a draft is published**, THEN and ONLY THEN: add it to the sitemap, show it on hub pages, include it in internal linking sections, and make it crawlable.
+4. **URLs are always alphabetical.** `avatrade-vs-ic-markets` — never the reverse. If someone visits the reverse URL, 301 redirect to the alphabetical version.
+5. **This system covers TWO entity types:** Brokers AND Prop Firms. Both follow the same architecture but have different comparison categories and data fields. Build both.
+
+---
+
+## WHAT YOU ARE BUILDING
+
+A system that:
+- Auto-generates a comparison page (as a draft) for every possible pair of brokers and every possible pair of prop firms
+- Lets the admin publish drafts on their own schedule via an admin dashboard
+- Auto-generates new drafts whenever a new broker or prop firm is added
+- Handles the full lifecycle: draft → published → updated → archived
+- Includes hub pages, navigation, internal linking, schema markup, and FAQ sections
+
+---
+
+## SECTION 1: DATABASE
+
+### 1A. Comparison Record Schema
+
+Create a `comparisons` table/collection with these fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string/uuid | Unique ID |
+| entity_type | enum | `broker` or `prop_firm` |
+| entity_a_id | foreign key | References the first broker/prop firm |
+| entity_b_id | foreign key | References the second broker/prop firm (alphabetically after A) |
+| slug | string | Auto-generated: `{entity-a-slug}-vs-{entity-b-slug}` |
+| status | enum | `draft`, `published`, `updated`, `archived` |
+| category_winners | JSON | Object storing the winner of each of the 7 categories |
+| overall_winner_id | foreign key | Which entity won the most categories |
+| overall_score | string | e.g. "4-3" or "5-2" |
+| created_at | datetime | When the draft was generated |
+| published_at | datetime | When the admin published it (null if draft) |
+| updated_at | datetime | Last time data was refreshed |
+
+**IMPORTANT:** `entity_a` must ALWAYS be alphabetically before `entity_b` by slug. Enforce this at creation time.
+
+### 1B. Additional Fields on Broker Schema
+
+If these fields do not already exist on the broker model, add them:
+
+- `spreads` — string (e.g. "From 0.0 pips")
+- `commission` — string (e.g. "$7/lot" or "Commission-free")
+- `year_founded` — string (e.g. "2019")
+- `headquarters` — string (e.g. "United Kingdom")
+- `account_types` — array of strings (e.g. ["Standard", "ECN", "VIP"])
+- `overall_rating` — number (e.g. 7.5, out of 10)
+
+### 1C. Additional Fields on Prop Firm Schema
+
+If these fields do not already exist on the prop firm model, add them:
+
+- `challenge_types` — string (e.g. "1-Step, 2-Step, Instant Funding")
+- `profit_split` — string (e.g. "Up to 90%")
+- `max_funding` — string (e.g. "$200,000")
+- `challenge_price` — string (e.g. "From $49")
+- `profit_target` — string (e.g. "8% Phase 1, 5% Phase 2")
+- `daily_drawdown` — string (e.g. "5%")
+- `max_drawdown` — string (e.g. "10%")
+- `payout_frequency` — string (e.g. "Bi-weekly")
+
+---
+
+## SECTION 2: ADMIN DASHBOARD
+
+**This is the most important UI. Build this first.**
+
+Create an admin page at `/admin/comparisons` with:
+
+### 2A. Stats Bar (top of page)
+Four stat cards showing:
+- Total Drafts (count of status=draft)
+- Total Published (count of status=published)
+- Needs Review (count of status=updated)
+- Archived (count of status=archived)
+
+### 2B. Filterable Table
+A table of ALL comparison records with columns:
+- Checkbox (for bulk selection)
+- Entity A name
+- Entity B name
+- Type (broker / prop firm) — shown as a badge
+- Status (draft / published / updated / archived) — shown as a coloured badge
+- Overall Winner name
+- Score (e.g. "4-3")
+- Date Created
+- Date Published
+- Quick Publish button (only shown for drafts and updated)
+
+### 2C. Filters & Sort
+- **Filter by status:** All / Drafts / Published / Updated / Archived
+- **Filter by type:** All / Brokers / Prop Firms
+- **Search** by entity name
+- **Sort by:** Date created (newest first default), alphabetical, status
+
+### 2D. Bulk Actions
+- Select multiple rows via checkboxes
+- "Publish Selected" button — changes status to published, sets published_at, adds to sitemap, updates hub pages, adds to internal linking
+- "Archive Selected" button — changes status to archived
+- "Regenerate Selected" button — re-pulls data from both entities and regenerates comparison data
+
+### 2E. "Generate All Missing" Button
+A prominent button at the top that:
+1. Finds all broker pairs that don't have a comparison record yet
+2. Finds all prop firm pairs that don't have a comparison record yet
+3. Creates draft records for all missing pairs
+4. Shows a confirmation: "Generated X new broker comparisons and Y new prop firm comparisons as drafts"
+
+---
+
+## SECTION 3: COMPARISON PAGE TEMPLATE
+
+### 3A. URLs
+- Broker: `/compare/broker/{broker-a-slug}-vs-{broker-b-slug}`
+- Prop firm: `/compare/prop-firm/{firm-a-slug}-vs-{firm-b-slug}`
+
+### 3B. SEO Tags
+- **Title tag:** `{Entity A} vs {Entity B} Compared (2026) | EntryLab`
+- **Meta description:** `{Entity A} vs {Entity B} — which is better? We compare regulation, costs, platforms, and more across 7 key categories to help you decide.`
+- **H1:** `{Entity A} vs {Entity B}`
+- **Canonical:** self-referencing `<link rel="canonical" href="https://entrylab.io/compare/broker/{slug}">`
+
+### 3C. Page Layout (in this exact order, top to bottom)
+
+**1. Hero Section**
+- H1: `{Entity A} vs {Entity B}`
+- Subtitle: "Compared across 7 key categories"
+- Both entity logos displayed side by side with "VS" between them
+- Overall winner badge: "Winner: {Entity X}" with score (e.g. "5-2")
+- "Last updated: {date}" displayed visibly
+
+**2. Quick Comparison Table**
+A full side-by-side data table above the fold. For brokers:
+
+| Feature | {Broker A} | {Broker B} |
+|---------|-----------|-----------|
+| Regulation | {value} | {value} |
+| Min Deposit | {value} | {value} |
+| Spreads (EUR/USD) | {value} | {value} |
+| Commission | {value} | {value} |
+| Trading Platforms | {value} | {value} |
+| Max Leverage | {value} | {value} |
+| Deposit Methods | {value} | {value} |
+| Our Rating | {value}/10 | {value}/10 |
+
+For prop firms, the same table format but with prop firm fields (challenge types, profit split, max funding, etc.).
+
+Highlight the winning value in each row with a green background or green text. The losing value gets grey/neutral styling.
+
+**3. Seven Comparison Sections**
+For each of the 7 categories (see Section 4 below):
+- H2: `{Category Name} — {Winner} Wins` (or "— Tie" if tied)
+- 2–3 paragraphs of template-based editorial text comparing both entities on this category. Use sentence templates with dynamic data insertion (see Section 5).
+- Mini data card showing the key metrics for this category side by side
+- Green checkmark badge on the winner's side, grey on the loser
+
+**4. Score Summary**
+Visual tally: `{Entity A}: X wins | {Entity B}: Y wins`
+Declare the overall winner.
+
+**5. Verdict Section**
+- H2: `The Verdict: {Entity A} or {Entity B}?`
+- Template-based editorial paragraph declaring the winner and why
+- Use-case guidance: "Choose {Entity A} if you prioritise X. Choose {Entity B} if you need Y."
+- Two CTA buttons: "Read Full {Entity A} Review →" and "Read Full {Entity B} Review →" linking to each entity's review page on EntryLab
+
+**6. FAQ Section**
+Auto-generate 5–7 FAQs using these templates (replace entity names dynamically):
+- "Is {Entity A} better than {Entity B}?"
+- "Which has lower spreads/fees, {Entity A} or {Entity B}?"
+- "Is {Entity A} safer/more trustworthy than {Entity B}?"
+- "Can I use MT5 with both {Entity A} and {Entity B}?"
+- "Which has a lower minimum deposit/challenge fee?"
+- "Is {Entity A} regulated?"
+- "Which is better for beginners?"
+
+Each answer: 2–3 sentences, generated from the comparison data. Implement as an accordion component.
+
+**7. Related Comparisons Section**
+- "Other {Entity A} Comparisons" — links to all OTHER published comparison pages involving Entity A
+- "Other {Entity B} Comparisons" — links to all OTHER published comparison pages involving Entity B
+- Only show PUBLISHED comparisons here, never drafts
+
+---
+
+## SECTION 4: COMPARISON CATEGORIES & WINNER LOGIC
+
+### 4A. Broker vs Broker — 7 Categories
+
+**Category 1: Regulation & Safety**
+- Compare: regulation field values
+- Winner logic: Tier 1 (FCA, ASIC, CySEC, BaFin, MAS, FINMA, FMA NZ, JFSA) beats Tier 2 (FSA Seychelles, FSCA, DFSA, FSC Mauritius) beats Offshore/Unregulated. More regulators beats fewer at the same tier.
+
+**Category 2: Trading Costs**
+- Compare: spreads and commission fields
+- Winner logic: Lower EUR/USD spread wins. If equal, lower commission wins.
+
+**Category 3: Platforms & Tools**
+- Compare: trading_platforms field
+- Winner logic: Count of unique platforms. More = winner. Proprietary platform = bonus point. Copy trading = bonus point.
+
+**Category 4: Account Types & Minimum Deposit**
+- Compare: account_types array and minimum_deposit field
+- Winner logic: Lower minimum deposit wins. More account types = tiebreaker.
+
+**Category 5: Deposit & Withdrawal**
+- Compare: deposit_methods and minimum_withdrawal fields
+- Winner logic: More deposit methods wins. Crypto support = bonus. Lower/no withdrawal fees = bonus.
+
+**Category 6: Leverage & Instruments**
+- Compare: max_leverage field
+- Winner logic: Higher max leverage wins. More instrument types = tiebreaker.
+
+**Category 7: Customer Support & Reputation**
+- Compare: available data on support channels, Trustpilot rating if stored
+- Winner logic: Live chat beats email only. 24/7 beats business hours. Higher rating wins.
+
+### 4B. Prop Firm vs Prop Firm — 7 Categories
+
+**Category 1: Challenge Structure**
+- Compare: challenge_types, profit_target fields
+- Winner logic: More challenge options wins. Lower profit targets = more trader-friendly = bonus.
+
+**Category 2: Pricing**
+- Compare: challenge_price field
+- Winner logic: Lower challenge fee for equivalent account size wins.
+
+**Category 3: Profit Split & Payouts**
+- Compare: profit_split, payout_frequency fields
+- Winner logic: Higher profit split percentage wins. More frequent payouts = tiebreaker.
+
+**Category 4: Drawdown Rules**
+- Compare: daily_drawdown, max_drawdown fields
+- Winner logic: Higher (more lenient) drawdown limits win. Static drawdown beats trailing drawdown.
+
+**Category 5: Trading Platforms**
+- Compare: trading_platforms field
+- Winner logic: Same as broker Category 3.
+
+**Category 6: Scaling & Max Funding**
+- Compare: max_funding field
+- Winner logic: Higher max funding wins.
+
+**Category 7: Reputation & Trust**
+- Compare: Trustpilot rating, year_founded, payout proof if available
+- Winner logic: Higher rating wins. Longer in business = tiebreaker.
+
+---
+
+## SECTION 5: TEMPLATE-BASED EDITORIAL TEXT
+
+Do NOT leave comparison sections as raw data only. Each of the 7 sections needs 2–3 sentences of readable text. Use sentence templates with dynamic data. Here are examples:
+
+**Regulation & Safety (broker example):**
+> "When it comes to regulation, {Winner} holds the edge. {Winner} is regulated by {Winner.regulation}, a {tier description} authority, while {Loser} operates under {Loser.regulation}. For traders who prioritise safety and fund protection, {Winner} is the stronger choice in this category."
+
+**Trading Costs (broker example):**
+> "{Winner} offers tighter trading costs overall. With EUR/USD spreads {from/at} {Winner.spreads} and commissions of {Winner.commission}, it undercuts {Loser}, which charges spreads of {Loser.spreads} with {Loser.commission} commission. Cost-conscious traders will find {Winner} more competitive."
+
+**Challenge Structure (prop firm example):**
+> "{Winner} provides more flexibility in how traders can get funded. It offers {Winner.challenge_types}, compared to {Loser}'s {Loser.challenge_types}. With a profit target of {Winner.profit_target}, {Winner} also sets a more achievable bar for traders looking to pass their evaluation."
+
+Create similar templates for ALL 7 categories for BOTH brokers and prop firms. The templates should read naturally and not feel robotic. Vary the sentence structures across categories so the page doesn't feel repetitive.
+
+---
+
+## SECTION 6: STRUCTURED DATA (JSON-LD)
+
+Add to the `<head>` of every PUBLISHED comparison page:
+
+### FAQ Schema
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is {Entity A} better than {Entity B}?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{Generated FAQ answer text}"
+      }
+    }
+  ]
+}
+```
+Include ALL 5–7 FAQs in this schema.
+
+### Article Schema
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "{Entity A} vs {Entity B} Compared (2026)",
+  "description": "{Meta description}",
+  "author": { "@type": "Organization", "name": "EntryLab" },
+  "publisher": { "@type": "Organization", "name": "EntryLab", "url": "https://entrylab.io" },
+  "datePublished": "{published_at ISO date}",
+  "dateModified": "{updated_at ISO date}"
+}
+```
+
+### Breadcrumb Schema
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://entrylab.io" },
+    { "@type": "ListItem", "position": 2, "name": "Compare Brokers", "item": "https://entrylab.io/compare/broker" },
+    { "@type": "ListItem", "position": 3, "name": "{Entity A} vs {Entity B}" }
+  ]
+}
+```
+
+---
+
+## SECTION 7: HUB PAGES
+
+### 7A. Main Hub: `/compare/`
+- H1: "Compare Forex Brokers & Prop Firms"
+- Two sections: "Broker Comparisons" and "Prop Firm Comparisons"
+- Grid of cards for each PUBLISHED comparison (not drafts)
+- Each card shows: both logos, both names, winner badge, score, link to comparison page
+- "Quick Compare" picker: two dropdown selects where user picks two entities, click "Compare →", navigates to that comparison page (if published) or shows "Coming soon" (if draft/doesn't exist)
+
+### 7B. Broker Hub: `/compare/broker/`
+- H1: "Compare Forex Brokers Side by Side"
+- Same grid of published broker comparison cards
+- Searchable/filterable by broker name
+- Quick Compare picker (broker-only dropdowns)
+
+### 7C. Prop Firm Hub: `/compare/prop-firm/`
+- Same as 7B but for prop firms
+
+**REMINDER: Hub pages only show PUBLISHED comparisons. Never show drafts.**
+
+---
+
+## SECTION 8: NAVIGATION
+
+Add "Compare" to the main site header navigation. On hover (desktop) or tap (mobile), show a dropdown:
+
+```
+Compare
+  ├── Compare Brokers       → /compare/broker/
+  └── Compare Prop Firms    → /compare/prop-firm/
+```
+
+Match the existing header design and dropdown styling.
+
+---
+
+## SECTION 9: AUTO-GENERATION TRIGGERS
+
+### 9A. New Broker/Prop Firm Added
+When a new broker or prop firm record is created and saved:
+1. Loop through ALL existing entities of the same type
+2. Create a draft comparison for each pair involving the new entity
+3. Calculate winners and scores for each draft
+4. Do NOT publish, do NOT add to sitemap or hub pages
+
+### 9B. Broker/Prop Firm Data Updated
+When any field on a broker or prop firm is edited:
+1. Find all comparison records (any status) involving that entity
+2. Recalculate the comparison data, winners, and scores
+3. If the comparison is published, set status to `updated` and update `updated_at`
+4. If the comparison is a draft, just update the data silently
+
+### 9C. Broker/Prop Firm Marked as Closed/Inactive
+When an entity is marked as closed or inactive:
+1. Set all its comparison records to status `archived`
+2. Published comparison pages should show a banner: "{Entity} is no longer operating. View alternatives →"
+3. Remove archived pages from the sitemap
+
+---
+
+## SECTION 10: INTERNAL LINKING
+
+### 10A. On Every Broker/Prop Firm Review Page
+Add a section near the bottom titled "Compare {Entity Name} with Other Brokers/Prop Firms". Display a grid or list of links to all PUBLISHED comparison pages involving that entity. Do not show drafts.
+
+### 10B. On Every Comparison Page
+- Link to both entity review pages (CTA buttons in the verdict section)
+- "Related Comparisons" section at the bottom linking to all other PUBLISHED comparison pages involving either entity
+
+### 10C. On Hub Pages
+Link to every PUBLISHED comparison page.
+
+---
+
+## SECTION 11: ALTERNATIVES PAGES
+
+For every broker and prop firm, also generate a draft alternatives page:
+
+- **URL:** `/compare/broker/{broker-slug}-alternatives` or `/compare/prop-firm/{firm-slug}-alternatives`
+- **Title:** `Best {Entity Name} Alternatives (2026) | EntryLab`
+- **Content:** Lists the top 5–7 other entities of the same type, ranked by overall_rating. For each alternative, show a mini comparison card with key data differences and a link to the full "vs" comparison page.
+- **FAQ schema:** "What is the best alternative to {Entity}?", "Is {Alternative} better than {Entity}?"
+- **These are also created as DRAFTS** and published via the admin dashboard.
+- Include these in the admin dashboard alongside comparison pages (add an `alternatives` type filter).
+
+---
+
+## SECTION 12: TECHNICAL SEO
+
+- **Canonical tags** on every published page (self-referencing)
+- **Open Graph tags:** og:title, og:description, og:image on every published page
+- **OG Image:** Auto-generate an image for each comparison showing both entity logos with "VS" between them. Use a template image with dynamic text overlay, or generate server-side.
+- **Sitemap:** Only include PUBLISHED comparison and alternatives pages. Update sitemap when pages are published or archived.
+- **301 redirects:** Non-alphabetical URLs redirect to alphabetical. If a slug changes, redirect old URLs.
+- **Breadcrumbs:** Display on every page: Home > Compare > Brokers/Prop Firms > {Entity A} vs {Entity B}
+- **"Last updated" date** visible on every published comparison page. Auto-updates when underlying data changes.
+- **Mobile responsive:** Side-by-side comparison table must scroll horizontally or stack on mobile. Test on small screens.
+- **Page speed:** Lazy load entity logos. Keep the page lightweight.
+
+---
+
+## SECTION 13: DESIGN
+
+- Match the existing EntryLab.io design system exactly — same colours, fonts, card styles, spacing, border radius
+- Winner badges: green background or green border with checkmark icon
+- Loser/neutral: grey styling
+- Comparison table: use the same card/grid component style as the existing "Broker Details" section on review pages, but adapted for side-by-side layout
+- Overall winner in hero: prominent visual treatment (coloured banner, shield icon, or similar)
+- FAQ section: accordion style matching any existing accordion components on the site
+- Hub page cards: clean grid layout with entity logos, names, winner badge, and "Compare →" link
+
+---
+
+## SECTION 14: CONTENT FRESHNESS
+
+- `dateModified` in Article schema markup must auto-update whenever either entity's data is edited
+- Display "Last compared: {month} {year}" on every published comparison page, updated automatically
+- This is critical for SEO — Google heavily rewards fresh content in the finance niche
+
+---
+
+## DELIVERABLES CHECKLIST
+
+Build these in this order:
+
+1. [ ] Database: comparisons table + additional fields on broker/prop firm schemas
+2. [ ] Admin dashboard at `/admin/comparisons` with stats, filters, bulk publish, "Generate All Missing" button
+3. [ ] Comparison page template (broker vs broker) with all 7 sections + table + FAQ + schema markup
+4. [ ] Comparison page template (prop firm vs prop firm) with all 7 sections + table + FAQ + schema markup
+5. [ ] Programmatic winner logic for all 14 categories (7 broker + 7 prop firm)
+6. [ ] Template-based editorial text for all 14 categories
+7. [ ] Auto-generation: drafts created when new entity is added
+8. [ ] Auto-update: recalculate when entity data changes, flag published pages as "updated"
+9. [ ] Auto-archive: when entity marked closed/inactive
+10. [ ] Hub pages: `/compare/`, `/compare/broker/`, `/compare/prop-firm/` — only showing published
+11. [ ] Header navigation dropdown: Compare → Brokers / Prop Firms
+12. [ ] Internal linking: review pages ↔ comparison pages ↔ hub pages (published only)
+13. [ ] Alternatives pages: draft generation for every entity
+14. [ ] Structured data: FAQ + Article + Breadcrumb JSON-LD on every published page
+15. [ ] Technical SEO: canonical, OG tags, OG image, sitemap, 301 redirects, breadcrumbs
+16. [ ] Mobile responsive comparison table
+17. [ ] "Last updated" date on published pages with auto-refresh
+
+**DO NOT skip any of these. Every item is required.**

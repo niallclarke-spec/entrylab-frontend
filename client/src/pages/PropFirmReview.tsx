@@ -7,7 +7,7 @@ import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, MessageSquare, Copy, CheckCircle2, Calendar } from "lucide-react";
+import { Loader2, Star, Shield, DollarSign, TrendingUp, Award, Globe, Headphones, CreditCard, ArrowLeft, ExternalLink, Check, X, ChevronRight, Zap, ArrowRight, Gauge, Activity, Info, ArrowUp, MessageSquare, Copy, CheckCircle2, Calendar, GitCompare, Trophy } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { processBrokerContent } from "@/lib/transforms";
 import type { Broker } from "@shared/schema";
@@ -18,6 +18,57 @@ import { BrokerAlertPopup } from "@/components/BrokerAlertPopup";
 import { ProsConsCard } from "@/components/ProsConsCard";
 import { TableOfContents } from "@/components/TableOfContents";
 import { useToast } from "@/hooks/use-toast";
+
+function RelatedComparisons({ slug, entityType, entityName }: { slug: string; entityType: string; entityName: string }) {
+  const { data: related } = useQuery<any[]>({
+    queryKey: [`/api/comparisons/related/${entityType}/${slug}`],
+    queryFn: async () => {
+      const res = await fetch(`/api/comparisons/related/${entityType}/${slug}`);
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: !!slug,
+  });
+
+  if (!related?.length) return null;
+
+  return (
+    <section className="max-w-5xl mx-auto px-4 pb-12">
+      <div className="border border-white/10 rounded-xl p-6">
+        <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          <GitCompare className="w-5 h-5 text-[#2bb32a]" />
+          Compare {entityName} with Other Prop Firms
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {related.slice(0, 6).map((c: any) => {
+            const otherName = c.entityASlug === slug ? c.entityBName : c.entityAName;
+            const winnerName = c.overallWinnerId === c.entityAId ? c.entityAName : c.overallWinnerId === c.entityBId ? c.entityBName : null;
+            return (
+              <Link
+                key={c.id}
+                href={`/compare/prop-firm/${c.slug}`}
+                className="flex items-center justify-between p-4 rounded-lg border border-white/10 hover:border-[#2bb32a]/30 hover:bg-white/3 transition-all group"
+                data-testid={`link-related-${c.id}`}
+              >
+                <div>
+                  <p className="text-sm text-white group-hover:text-[#2bb32a] transition-colors">
+                    {entityName} vs {otherName}
+                  </p>
+                  {winnerName && (
+                    <p className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1">
+                      <Trophy className="w-3 h-3 text-[#2bb32a]" /> Winner: {winnerName}
+                    </p>
+                  )}
+                </div>
+                <ArrowRight className="w-4 h-4 text-zinc-600 group-hover:text-[#2bb32a] flex-shrink-0 transition-colors" />
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function PropFirmReview() {
   const params = useParams();
@@ -833,9 +884,9 @@ export default function PropFirmReview() {
                 Start Evaluation Now <ArrowRight className="ml-2 h-4 w-4" />
               </a>
             </Button>
-            <Link href="/prop-firms">
+            <Link href="/compare/prop-firm">
               <Button variant="outline" size="lg" className="min-w-[200px] border-white/30 text-white" data-testid="button-compare-prop-firms">
-                Compare Other Prop Firms
+                <GitCompare className="w-4 h-4 mr-2" /> Compare Prop Firms
               </Button>
             </Link>
           </div>
@@ -845,6 +896,8 @@ export default function PropFirmReview() {
           </p>
         </div>
       </section>
+
+      <RelatedComparisons slug={slug!} entityType="prop_firm" entityName={propFirm.name} />
 
       <Footer />
       
