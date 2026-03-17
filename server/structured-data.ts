@@ -670,8 +670,15 @@ async function getComparisonPageSchema(entityType: 'broker' | 'prop-firm', slug:
   }
 }
 
+// In-memory cache for homepage ItemList — refreshed every 5 minutes
+let _recentArticlesCache: { data: any; ts: number } | null = null;
+const RECENT_ARTICLES_TTL = 5 * 60 * 1000; // 5 minutes
+
 // ItemList of the 8 most-recently published articles — added to homepage schema
 async function getRecentArticlesItemListSchema() {
+  if (_recentArticlesCache && Date.now() - _recentArticlesCache.ts < RECENT_ARTICLES_TTL) {
+    return _recentArticlesCache.data;
+  }
   try {
     const recent = await db
       .select({ slug: articlesTable.slug, title: articlesTable.title, category: articlesTable.category, featuredImage: articlesTable.featuredImage })
@@ -682,7 +689,7 @@ async function getRecentArticlesItemListSchema() {
 
     if (!recent.length) return null;
 
-    return {
+    const schema = {
       "@context": "https://schema.org",
       "@type": "ItemList",
       "name": "Latest Forex & Trading Articles",
@@ -694,9 +701,11 @@ async function getRecentArticlesItemListSchema() {
         "name": stripHtml(art.title || '')
       }))
     };
+    _recentArticlesCache = { data: schema, ts: Date.now() };
+    return schema;
   } catch (err) {
     console.error('[Structured Data] Recent articles ItemList error:', err);
-    return null;
+    return _recentArticlesCache?.data ?? null; // serve stale on error rather than nothing
   }
 }
 

@@ -378,6 +378,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Pings Google and Bing to notify them the sitemap has been updated.
   // Non-blocking — fires and forgets, never throws.
   function pingSitemaps(): void {
+    // Bust the in-memory sitemap cache so the next request rebuilds it fresh
+    apiCache.delete('sitemap:xml');
     const sitemapUrl = encodeURIComponent('https://entrylab.io/sitemap.xml');
     const endpoints = [
       `https://www.google.com/ping?sitemap=${sitemapUrl}`,
@@ -1953,8 +1955,15 @@ ${items}
     // Set XML headers IMMEDIATELY - this prevents Express from serving HTML
     res.setHeader('Content-Type', 'application/xml; charset=utf-8');
     res.setHeader('X-Robots-Tag', 'noindex'); // Don't index the sitemap itself
-    res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
-    
+    res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=7200');
+
+    // Serve from memory cache if fresh (< 1 hour old)
+    const cached = apiCache.get('sitemap:xml');
+    if (cached && !apiCache.isStale('sitemap:xml')) {
+      res.setHeader('X-Cache', 'HIT');
+      return res.send(cached);
+    }
+
     try {
       const [posts, brokers, propFirms, categories, comparisons] = await Promise.all([
         db.select({ slug: articlesTable.slug, category: articlesTable.category, publishedAt: articlesTable.publishedAt, updatedAt: articlesTable.updatedAt, featuredImage: articlesTable.featuredImage, title: articlesTable.title })
@@ -2115,7 +2124,9 @@ ${items}
 
       sitemap += '</urlset>';
 
-      // Headers already set at the top of route
+      // Cache for 1 hour (3600s TTL, 7200s stale-while-revalidate)
+      apiCache.set('sitemap:xml', sitemap, 3600, 7200);
+      res.setHeader('X-Cache', 'MISS');
       res.send(sitemap);
     } catch (error) {
       console.error('Error generating sitemap:', error);
@@ -3343,6 +3354,9 @@ ${items}
           injectSEO(htmlStr)
             .then(modifiedHtml => {
               console.log('[SEO] Successfully injected SEO tags');
+              if (!res.getHeader('Cache-Control')) {
+                res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+              }
               originalEnd.call(res, modifiedHtml, encoding, callback);
             })
             .catch(error => {
@@ -3369,6 +3383,9 @@ ${items}
             .then(modifiedHtml => {
               console.log('[SEO] Successfully injected SEO tags (send)');
               res.type('html');
+              if (!res.getHeader('Cache-Control')) {
+                res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+              }
               originalSend.call(res, modifiedHtml);
             })
             .catch(error => {
