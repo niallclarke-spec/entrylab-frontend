@@ -2259,6 +2259,47 @@ ${items}
             name: staticEntry.title,
             tagline: staticEntry.description,
           };
+          // Augment listing pages with entity/article data for SSR body
+          if (cleanUrl === '/brokers') {
+            const brokers = await db.select({
+              name: brokersTable.name, slug: brokersTable.slug,
+              rating: brokersTable.rating, regulation: brokersTable.regulation,
+            }).from(brokersTable).orderBy(asc(brokersTable.name));
+            pageData.entities = brokers;
+            pageData.entityPath = 'broker';
+            pageData.isListing = true;
+          } else if (cleanUrl === '/prop-firms') {
+            const firms = await db.select({
+              name: propFirmsTable.name, slug: propFirmsTable.slug,
+              rating: propFirmsTable.rating,
+            }).from(propFirmsTable).orderBy(asc(propFirmsTable.name));
+            pageData.entities = firms;
+            pageData.entityPath = 'prop-firm';
+            pageData.isListing = true;
+          } else if (['/broker-guides', '/broker-news', '/prop-firm-news', '/prop-firm-guides', '/trading-tools', '/news'].includes(cleanUrl)) {
+            const catSlug = cleanUrl.slice(1);
+            const catArticles = await db.select({
+              title: articlesTable.title, slug: articlesTable.slug,
+              category: articlesTable.category, publishedAt: articlesTable.publishedAt,
+            }).from(articlesTable)
+              .where(and(eq(articlesTable.status, 'published'), eq(articlesTable.category, catSlug)))
+              .orderBy(desc(articlesTable.publishedAt))
+              .limit(40);
+            pageData.articles = catArticles;
+            pageData.catSlug = catSlug;
+            pageData.isCategoryArchive = true;
+            if (cleanUrl.startsWith('/broker')) {
+              const brokers = await db.select({ name: brokersTable.name, slug: brokersTable.slug })
+                .from(brokersTable).orderBy(asc(brokersTable.name)).limit(15);
+              pageData.relatedEntities = brokers;
+              pageData.entityPath = 'broker';
+            } else if (cleanUrl.startsWith('/prop-firm')) {
+              const firms = await db.select({ name: propFirmsTable.name, slug: propFirmsTable.slug })
+                .from(propFirmsTable).orderBy(asc(propFirmsTable.name)).limit(15);
+              pageData.relatedEntities = firms;
+              pageData.entityPath = 'prop-firm';
+            }
+          }
         } else if (url.startsWith('/broker/')) {
           const slug = url.replace('/broker/', '').split('?')[0];
           const ssrKey = `ssr:broker:${slug}`;
@@ -2343,14 +2384,21 @@ ${items}
                 : comp.overallWinnerId === comp.entityBId
                 ? comp.entityBName
                 : null;
+              const winners = (comp.categoryWinners as any[]) || [];
               pageData = {
                 seoTitle: `${comp.entityAName} vs ${comp.entityBName} Compared (2026) | EntryLab`,
                 seoDescription: winnerName
                   ? `${comp.entityAName} vs ${comp.entityBName}: ${winnerName} comes out on top in our in-depth comparison of regulation, fees, platforms and more.`
                   : `${comp.entityAName} vs ${comp.entityBName} — an in-depth comparison of regulation, fees, platforms and more to help you choose the right account.`,
                 name: `${comp.entityAName} vs ${comp.entityBName}`,
+                entityAName: comp.entityAName,
+                entityBName: comp.entityBName,
+                winnerName,
+                overallScore: comp.overallScore,
+                categoryWinners: winners,
                 publishedAt: comp.publishedAt,
                 updatedAt: comp.updatedAt,
+                isComparison: true,
               };
               apiCache.set(ssrKey, pageData, 300, 600);
             }
@@ -2524,6 +2572,71 @@ ${items}
           }
         }
 
+        // Comparison pages
+        else if (pageData.isComparison) {
+          if (pageData.winnerName) {
+            html += `<p><strong>Overall winner: ${pageData.winnerName}</strong>${pageData.overallScore ? ` (score: ${pageData.overallScore})` : ''}</p>`;
+          }
+          const date = pageData.updatedAt
+            ? new Date(pageData.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+            : '';
+          if (date) html += `<p><small>Last updated: ${date}</small></p>`;
+
+          const winners = Array.isArray(pageData.categoryWinners) ? pageData.categoryWinners : [];
+          if (winners.length > 0) {
+            html += `<h2>Category Breakdown</h2><ul>`;
+            for (const cat of winners) {
+              if (cat.category && cat.winnerId) {
+                const winnerLabel = cat.winnerName || cat.winnerId;
+                const score = cat.scoreA !== undefined && cat.scoreB !== undefined
+                  ? ` (${pageData.entityAName} ${cat.scoreA} — ${pageData.entityBName} ${cat.scoreB})`
+                  : '';
+                html += `<li><strong>${cat.category}:</strong> ${winnerLabel} wins${score}</li>`;
+              }
+            }
+            html += `</ul>`;
+          }
+
+          if (pageData.seoDescription) {
+            html += `<p>${pageData.seoDescription}</p>`;
+          }
+        }
+
+        // Listing pages: /brokers, /prop-firms
+        else if (pageData.isListing && Array.isArray(pageData.entities)) {
+          if (pageData.tagline) html += `<p>${cleanStr(pageData.tagline)}</p>`;
+          html += `<ul>`;
+          for (const e of pageData.entities) {
+            const rating = e.rating ? ` — Rating: ${e.rating}/5` : '';
+            const reg = e.regulation ? ` — ${e.regulation}` : '';
+            html += `<li><a href="/${pageData.entityPath}/${e.slug}">${e.name}</a>${rating}${reg}</li>`;
+          }
+          html += `</ul>`;
+        }
+
+        // Category archive pages: /broker-guides, /broker-news, etc.
+        else if (pageData.isCategoryArchive) {
+          if (pageData.tagline) html += `<p>${cleanStr(pageData.tagline)}</p>`;
+          const arts = Array.isArray(pageData.articles) ? pageData.articles : [];
+          if (arts.length > 0) {
+            html += `<h2>Latest Articles</h2><ul>`;
+            for (const art of arts) {
+              const date = art.publishedAt ? ` — ${new Date(art.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}` : '';
+              html += `<li><a href="/${pageData.catSlug}/${art.slug}">${art.title}</a>${date}</li>`;
+            }
+            html += `</ul>`;
+          }
+          const rels = Array.isArray(pageData.relatedEntities) ? pageData.relatedEntities : [];
+          if (rels.length > 0) {
+            const entityLabel = pageData.entityPath === 'broker' ? 'Brokers Covered' : 'Prop Firms Covered';
+            html += `<h2>${entityLabel}</h2><ul>`;
+            for (const e of rels) {
+              html += `<li><a href="/${pageData.entityPath}/${e.slug}">${e.name}</a></li>`;
+            }
+            html += `</ul>`;
+          }
+        }
+
         // Article pages
         else {
           const author = pageData.author;
@@ -2669,10 +2782,7 @@ ${items}
           try {
             const ssrContent = buildSSRContent(pageData, url);
             if (ssrContent) {
-              modifiedHtml = modifiedHtml.replace(
-                '<div id="root"></div>',
-                `<div id="root">${ssrContent}</div>`
-              );
+              modifiedHtml = modifiedHtml.replace('<div id="root">', `<div id="root">${ssrContent}`);
             }
           } catch (err) {
             console.error('[SEO] SSR content injection error:', err);
@@ -2816,10 +2926,7 @@ ${items}
               }
               navHtml += `</ul></nav>`;
 
-              modifiedHtml = modifiedHtml.replace(
-                '<div id="root"></div>',
-                `<div id="root">${ssrHtml}${navHtml}</div>`
-              );
+              modifiedHtml = modifiedHtml.replace('<div id="root">', `<div id="root">${ssrHtml}${navHtml}`);
               console.log('[SEO] Injected homepage SSR content + nav');
             } catch (err) {
               console.error('[SEO] Homepage SSR injection error:', err);
@@ -2842,7 +2949,7 @@ ${items}
               }
               ssrHtml += `</ul></div>`;
 
-              modifiedHtml = modifiedHtml.replace('<div id="root"></div>', `<div id="root">${ssrHtml}</div>`);
+              modifiedHtml = modifiedHtml.replace('<div id="root">', `<div id="root">${ssrHtml}`);
               console.log('[SEO] Injected /brokers SSR content');
             } catch (err) {
               console.error('[SEO] /brokers SSR injection error:', err);
@@ -2865,10 +2972,74 @@ ${items}
               }
               ssrHtml += `</ul></div>`;
 
-              modifiedHtml = modifiedHtml.replace('<div id="root"></div>', `<div id="root">${ssrHtml}</div>`);
+              modifiedHtml = modifiedHtml.replace('<div id="root">', `<div id="root">${ssrHtml}`);
               console.log('[SEO] Injected /prop-firms SSR content');
             } catch (err) {
               console.error('[SEO] /prop-firms SSR injection error:', err);
+            }
+
+          } else {
+            // Category archive pages: /broker-guides, /broker-news, /prop-firm-news, etc.
+            const catArchiveMap: Record<string, { label: string; entityType: 'broker' | 'prop_firm' | null }> = {
+              '/broker-guides':    { label: 'Broker Guides',      entityType: 'broker' },
+              '/broker-news':      { label: 'Broker News',         entityType: 'broker' },
+              '/prop-firm-guides': { label: 'Prop Firm Guides',    entityType: 'prop_firm' },
+              '/prop-firm-news':   { label: 'Prop Firm News',      entityType: 'prop_firm' },
+              '/trading-tools':    { label: 'Trading Tools',       entityType: null },
+              '/news':             { label: 'Forex News',          entityType: null },
+            };
+            const catMeta = catArchiveMap[cleanUrl];
+            if (catMeta) {
+              try {
+                const catSlug = cleanUrl.replace('/', '');
+                const [catArticles, relatedEntities] = await Promise.all([
+                  db.select().from(articlesTable)
+                    .where(and(
+                      eq(articlesTable.status, 'published'),
+                      eq(articlesTable.category, catSlug)
+                    ))
+                    .orderBy(desc(articlesTable.publishedAt))
+                    .limit(40),
+                  catMeta.entityType === 'broker'
+                    ? db.select().from(brokersTable).orderBy(asc(brokersTable.name)).limit(20)
+                    : catMeta.entityType === 'prop_firm'
+                    ? db.select().from(propFirmsTable).orderBy(asc(propFirmsTable.name)).limit(20)
+                    : Promise.resolve([]),
+                ]);
+
+                const ssrStyle = `<style>#ssr-content{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:24px 16px;color:#1a1a1a}#ssr-content h1{font-size:2rem;font-weight:700;margin-bottom:16px}#ssr-content h2{font-size:1.4rem;font-weight:600;margin:24px 0 12px}#ssr-content p{margin-bottom:12px;line-height:1.7}#ssr-content ul{padding-left:20px;margin-bottom:12px}#ssr-content li{margin-bottom:4px}#ssr-content a{color:#2bb32a;text-decoration:none}</style>`;
+                let ssrHtml = `${ssrStyle}<div id="ssr-content">`;
+                ssrHtml += `<h1>${catMeta.label}</h1>`;
+
+                if (catArticles.length > 0) {
+                  ssrHtml += `<h2>Latest Articles</h2><ul>`;
+                  for (const art of catArticles) {
+                    if (art.slug && art.title) {
+                      const date = art.publishedAt ? ` — ${new Date(art.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}` : '';
+                      ssrHtml += `<li><a href="/${catSlug}/${art.slug}">${art.title}</a>${date}</li>`;
+                    }
+                  }
+                  ssrHtml += `</ul>`;
+                }
+
+                if (Array.isArray(relatedEntities) && relatedEntities.length > 0) {
+                  const entityLabel = catMeta.entityType === 'broker' ? 'Brokers Covered' : 'Prop Firms Covered';
+                  const entityPath = catMeta.entityType === 'broker' ? 'broker' : 'prop-firm';
+                  ssrHtml += `<h2>${entityLabel}</h2><ul>`;
+                  for (const e of relatedEntities as any[]) {
+                    if (e.slug && e.name) {
+                      ssrHtml += `<li><a href="/${entityPath}/${e.slug}">${e.name}</a></li>`;
+                    }
+                  }
+                  ssrHtml += `</ul>`;
+                }
+
+                ssrHtml += `</div>`;
+                modifiedHtml = modifiedHtml.replace('<div id="root">', `<div id="root">${ssrHtml}`);
+                console.log(`[SEO] Injected ${cleanUrl} category archive SSR content (${catArticles.length} articles)`);
+              } catch (err) {
+                console.error(`[SEO] Category archive SSR injection error for ${cleanUrl}:`, err);
+              }
             }
           }
         }
@@ -2876,11 +3047,18 @@ ${items}
         return modifiedHtml;
       }
       
-      // Intercept res.end (used by Vite)
+      // Intercept res.end (used by Vite — chunk can be a Buffer or string)
       res.end = function(chunk?: any, encoding?: any, callback?: any) {
-        if (typeof chunk === 'string' && (chunk.includes('<html') || chunk.includes('<!DOCTYPE'))) {
+        let htmlStr: string | null = null;
+        if (typeof chunk === 'string') {
+          htmlStr = chunk;
+        } else if (Buffer.isBuffer(chunk)) {
+          htmlStr = chunk.toString('utf8');
+        }
+
+        if (htmlStr && (htmlStr.includes('<html') || htmlStr.includes('<!DOCTYPE'))) {
           console.log('[SEO] Injecting SEO tags into HTML');
-          injectSEO(chunk)
+          injectSEO(htmlStr)
             .then(modifiedHtml => {
               console.log('[SEO] Successfully injected SEO tags');
               originalEnd.call(res, modifiedHtml, encoding, callback);
