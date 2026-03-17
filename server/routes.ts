@@ -2425,8 +2425,11 @@ ${items}
       }
       
       // Wrap res.end and res.send to intercept HTML response
+      // Use a flag to prevent double-injection: res.send (production) internally calls
+      // res.end, so without the flag injectSEO would run twice on the same response.
       const originalEnd = res.end;
       const originalSend = res.send;
+      let seoInjected = false;
       
       // Sanitize HTML for SSR injection — strips dangerous tags but keeps semantic structure
       function sanitizeForSSR(rawHtml: string): string {
@@ -3057,8 +3060,13 @@ ${items}
         return modifiedHtml;
       }
       
-      // Intercept res.end (used by Vite — chunk can be a Buffer or string)
+      // Intercept res.end (used by Vite dev — chunk can be a Buffer or string)
       res.end = function(chunk?: any, encoding?: any, callback?: any) {
+        // Skip if already injected (res.send in production calls res.end internally)
+        if (seoInjected) {
+          return originalEnd.call(res, chunk, encoding, callback);
+        }
+
         let htmlStr: string | null = null;
         if (typeof chunk === 'string') {
           htmlStr = chunk;
@@ -3067,6 +3075,7 @@ ${items}
         }
 
         if (htmlStr && (htmlStr.includes('<html') || htmlStr.includes('<!DOCTYPE'))) {
+          seoInjected = true;
           console.log('[SEO] Injecting SEO tags into HTML');
           injectSEO(htmlStr)
             .then(modifiedHtml => {
@@ -3085,7 +3094,13 @@ ${items}
       
       // Intercept res.send (used by static serving in production)
       res.send = function(data: any) {
+        // Skip if already injected
+        if (seoInjected) {
+          return originalSend.call(res, data);
+        }
+
         if (typeof data === 'string' && (data.includes('<html') || data.includes('<!DOCTYPE'))) {
+          seoInjected = true;
           console.log('[SEO] Injecting SEO tags into HTML (send)');
           injectSEO(data)
             .then(modifiedHtml => {
