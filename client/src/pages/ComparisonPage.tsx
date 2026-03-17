@@ -83,21 +83,24 @@ function FaqAccordion({ items }: { items: FaqItem[] }) {
   );
 }
 
-function EntityLogo({ name, logoUrl }: { name: string; logoUrl?: string | null }) {
+function EntityLogo({ name, logoUrl, size = "md" }: { name: string; logoUrl?: string | null; size?: "md" | "lg" | "xl" }) {
   const [imgError, setImgError] = useState(false);
+  const dims = size === "xl" ? "w-24 h-24" : size === "lg" ? "w-16 h-16" : "w-14 h-14";
+  const pad  = size === "xl" ? "p-3"      : size === "lg" ? "p-2.5"    : "p-2";
+  const text = size === "xl" ? "text-3xl" : size === "lg" ? "text-2xl" : "text-xl";
   if (logoUrl && !imgError) {
     return (
       <img
         src={logoUrl}
         alt={name}
-        className="w-14 h-14 object-contain bg-white rounded-lg p-2 border border-border/30"
+        className={`${dims} object-contain bg-white rounded-xl ${pad} border border-border/30`}
         onError={() => setImgError(true)}
         loading="lazy"
       />
     );
   }
   return (
-    <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-xl border border-primary/20">
+    <div className={`${dims} rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold ${text} border border-primary/20`}>
       {name.charAt(0)}
     </div>
   );
@@ -586,22 +589,29 @@ function VsComparisonPage({
             {/* Right: VS Battle Card */}
             <div className="order-1 lg:order-2 flex-shrink-0">
               <div
-                className="rounded-2xl p-6 flex items-center gap-5"
-                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", minWidth: 280 }}
+                className="rounded-2xl p-8 flex items-center gap-8"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", minWidth: 360 }}
               >
                 {/* Entity A */}
-                <div className="flex flex-col items-center gap-2.5 flex-1 text-center">
-                  <EntityLogo name={record.entityAName} logoUrl={entityALogo} />
-                  <span className="text-sm font-semibold text-white">{record.entityAName}</span>
-                  {entityAData?.rating && (
-                    <StarRating rating={parseFloat(String(entityAData.rating))} />
-                  )}
+                <div className="flex flex-col items-center gap-3 flex-1 text-center">
+                  <EntityLogo name={record.entityAName} logoUrl={entityALogo} size="xl" />
+                  <div>
+                    <span className="text-base font-bold text-white block">{record.entityAName}</span>
+                    {entityAData?.rating && (
+                      <div className="flex items-center justify-center gap-1 mt-1">
+                        <StarRating rating={parseFloat(String(entityAData.rating))} />
+                        <span className="text-xs ml-1" style={{ color: "rgba(255,255,255,0.45)" }}>
+                          {parseFloat(String(entityAData.rating)).toFixed(1)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                   <div
-                    className="text-xs font-bold px-2.5 py-1 rounded-full"
+                    className="text-sm font-bold px-3 py-1 rounded-full"
                     style={
                       record.overallWinnerId === record.entityAId
-                        ? { background: "rgba(43,179,42,0.2)", color: "#4ade80" }
-                        : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)" }
+                        ? { background: "rgba(43,179,42,0.25)", color: "#4ade80", border: "1px solid rgba(43,179,42,0.3)" }
+                        : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
                     }
                   >
                     {winsA} wins
@@ -609,28 +619,32 @@ function VsComparisonPage({
                 </div>
 
                 {/* VS divider */}
-                <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                  <span
-                    className="text-2xl font-black"
-                    style={{ color: "rgba(255,255,255,0.15)" }}
-                  >
+                <div className="flex flex-col items-center flex-shrink-0">
+                  <span className="text-2xl font-black tracking-wider" style={{ color: "rgba(255,255,255,0.2)" }}>
                     VS
                   </span>
                 </div>
 
                 {/* Entity B */}
-                <div className="flex flex-col items-center gap-2.5 flex-1 text-center">
-                  <EntityLogo name={record.entityBName ?? ""} logoUrl={entityBLogo} />
-                  <span className="text-sm font-semibold text-white">{record.entityBName}</span>
-                  {entityBData?.rating && (
-                    <StarRating rating={parseFloat(String(entityBData.rating))} />
-                  )}
+                <div className="flex flex-col items-center gap-3 flex-1 text-center">
+                  <EntityLogo name={record.entityBName ?? ""} logoUrl={entityBLogo} size="xl" />
+                  <div>
+                    <span className="text-base font-bold text-white block">{record.entityBName}</span>
+                    {entityBData?.rating && (
+                      <div className="flex items-center justify-center gap-1 mt-1">
+                        <StarRating rating={parseFloat(String(entityBData.rating))} />
+                        <span className="text-xs ml-1" style={{ color: "rgba(255,255,255,0.45)" }}>
+                          {parseFloat(String(entityBData.rating)).toFixed(1)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                   <div
-                    className="text-xs font-bold px-2.5 py-1 rounded-full"
+                    className="text-sm font-bold px-3 py-1 rounded-full"
                     style={
                       record.overallWinnerId === record.entityBId
-                        ? { background: "rgba(43,179,42,0.2)", color: "#4ade80" }
-                        : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)" }
+                        ? { background: "rgba(43,179,42,0.25)", color: "#4ade80", border: "1px solid rgba(43,179,42,0.3)" }
+                        : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }
                     }
                   >
                     {winsB} wins
