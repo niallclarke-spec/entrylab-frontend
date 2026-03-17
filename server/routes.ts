@@ -220,6 +220,15 @@ const JWT_SECRET = process.env.JWT_SECRET || "dev-jwt-secret-change-in-productio
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
 
 function adminAuth(req: Request, res: Response, next: NextFunction) {
+  // 1. Bearer token — for programmatic / LLM API access
+  const authHeader = req.headers["authorization"];
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const key = authHeader.slice(7);
+    if (ADMIN_PASSWORD && key === ADMIN_PASSWORD) return next();
+    return res.status(401).json({ error: "Invalid API key" });
+  }
+
+  // 2. Cookie-based JWT — for browser admin panel
   const token = req.cookies?.admin_token;
   if (!token) return res.status(401).json({ error: "Unauthorized" });
   try {
