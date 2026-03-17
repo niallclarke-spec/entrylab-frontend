@@ -10,7 +10,7 @@ const navLinks = [
 ];
 
 const compareDropdownLinks = [
-  { href: "/compare", label: "Compare Brokers (Tool)", testId: "link-compare-tool" },
+  { href: "/compare", label: "All Comparisons", testId: "link-compare-tool" },
   { href: "/compare/broker", label: "Broker vs Broker", testId: "link-compare-brokers" },
   { href: "/compare/prop-firm", label: "Prop Firm vs Prop Firm", testId: "link-compare-prop-firms" },
 ];
