@@ -2358,17 +2358,55 @@ ${items}
             }
           }
         } else if (cleanUrl === '/compare/broker') {
-          pageData = {
-            seoTitle: 'Broker Comparisons — Side-by-Side Forex Broker Analysis | EntryLab',
-            seoDescription: 'Compare forex brokers head-to-head across regulation, fees, platforms, spreads and more. In-depth broker comparisons to help you choose the right account.',
-            name: 'Broker Comparisons',
-          };
+          const ssrKey = 'ssr:comparison-hub:broker';
+          pageData = apiCache.get(ssrKey);
+          if (!pageData || apiCache.isStale(ssrKey)) {
+            const hubComps = await db.select({
+              slug: comparisonsTable.slug,
+              entityAName: comparisonsTable.entityAName,
+              entityBName: comparisonsTable.entityBName,
+            }).from(comparisonsTable)
+              .where(and(
+                eq(comparisonsTable.status, 'published'),
+                eq(comparisonsTable.entityType, 'broker')
+              ))
+              .orderBy(desc(comparisonsTable.updatedAt))
+              .limit(150);
+            pageData = {
+              seoTitle: 'Broker Comparisons — Side-by-Side Forex Broker Analysis | EntryLab',
+              seoDescription: 'Compare forex brokers head-to-head across regulation, fees, platforms, spreads and more. In-depth broker comparisons to help you choose the right account.',
+              name: 'Broker Comparisons',
+              isComparisonHub: true,
+              entityPath: 'broker',
+              comparisons: hubComps,
+            };
+            apiCache.set(ssrKey, pageData, 300, 600);
+          }
         } else if (cleanUrl === '/compare/prop-firm') {
-          pageData = {
-            seoTitle: 'Prop Firm Comparisons — Find the Best Funded Trader Programme | EntryLab',
-            seoDescription: 'Compare the top prop trading firms side by side. Challenges, profit splits, drawdown limits and payouts — all analysed so you can find the best funded account.',
-            name: 'Prop Firm Comparisons',
-          };
+          const ssrKey = 'ssr:comparison-hub:prop-firm';
+          pageData = apiCache.get(ssrKey);
+          if (!pageData || apiCache.isStale(ssrKey)) {
+            const hubComps = await db.select({
+              slug: comparisonsTable.slug,
+              entityAName: comparisonsTable.entityAName,
+              entityBName: comparisonsTable.entityBName,
+            }).from(comparisonsTable)
+              .where(and(
+                eq(comparisonsTable.status, 'published'),
+                eq(comparisonsTable.entityType, 'prop_firm')
+              ))
+              .orderBy(desc(comparisonsTable.updatedAt))
+              .limit(150);
+            pageData = {
+              seoTitle: 'Prop Firm Comparisons — Find the Best Funded Trader Programme | EntryLab',
+              seoDescription: 'Compare the top prop trading firms side by side. Challenges, profit splits, drawdown limits and payouts — all analysed so you can find the best funded account.',
+              name: 'Prop Firm Comparisons',
+              isComparisonHub: true,
+              entityPath: 'prop-firm',
+              comparisons: hubComps,
+            };
+            apiCache.set(ssrKey, pageData, 300, 600);
+          }
         } else if (url.startsWith('/compare/broker/') || url.startsWith('/compare/prop-firm/')) {
           // Comparison pages: /compare/broker/:slug or /compare/prop-firm/:slug
           const compSlug = url.replace(/^\/compare\/(broker|prop-firm)\//, '').split('?')[0];
@@ -2585,7 +2623,22 @@ ${items}
           }
         }
 
-        // Comparison pages
+        // Comparison hub pages: /compare/broker, /compare/prop-firm
+        else if (pageData.isComparisonHub) {
+          if (pageData.seoDescription) html += `<p>${pageData.seoDescription}</p>`;
+          const hubComps = Array.isArray(pageData.comparisons) ? pageData.comparisons : [];
+          if (hubComps.length > 0) {
+            html += `<h2>All ${pageData.name}</h2><ul>`;
+            for (const comp of hubComps) {
+              if (comp.slug && comp.entityAName && comp.entityBName) {
+                html += `<li><a href="/compare/${pageData.entityPath}/${comp.slug}">${comp.entityAName} vs ${comp.entityBName}</a></li>`;
+              }
+            }
+            html += `</ul>`;
+          }
+        }
+
+        // Individual comparison pages
         else if (pageData.isComparison) {
           if (pageData.winnerName) {
             html += `<p><strong>Overall winner: ${pageData.winnerName}</strong>${pageData.overallScore ? ` (score: ${pageData.overallScore})` : ''}</p>`;
