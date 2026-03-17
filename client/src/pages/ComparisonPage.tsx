@@ -824,7 +824,7 @@ function VsComparisonPage({
 
             {/* ── Sticky Sidebar ──────────────────────────────────────────── */}
             <aside className="hidden lg:block">
-              <div className="sticky top-24 space-y-6" style={{ marginTop: "72px" }}>
+              <div className="sticky top-24 space-y-6" style={{ zIndex: 9999 }}>
 
                 {/* Table of Contents */}
                 <div className="rounded-lg p-5" style={{ background: "#ffffff", border: "1px solid #e8edea" }}>
