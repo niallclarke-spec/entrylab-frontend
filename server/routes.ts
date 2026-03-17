@@ -276,18 +276,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     '/contact':         '/',
     '/what-we-do/':     '/',
     '/what-we-do':      '/',
-    // Old root-level WordPress article URL
+    // Plural popular-brokers hub pages → broker listing
+    '/popular-brokers':   '/brokers',
+    '/popular-brokers/':  '/brokers',
+    '/popular_brokers':   '/brokers',
+    '/popular_brokers/':  '/brokers',
+    // Old root-level WordPress article URLs
     '/kot4x-shuts-down-what-you-should-know/': '/broker-news/kot4x-shuts-down-what-you-should-know',
     '/kot4x-shuts-down-what-you-should-know':  '/broker-news/kot4x-shuts-down-what-you-should-know',
     // Old /article/ prefix that may be indexed
     '/article/kot4x-shuts-down-what-you-should-know': '/broker-news/kot4x-shuts-down-what-you-should-know',
   };
+
+  // Map known WordPress review slugs to their canonical EntryLab broker slug.
+  // These all follow the pattern /{broker}-broker-review-{year}/ on the old site.
+  const wpBrokerSlugMap: Record<string, string> = {
+    'xm-broker-review-2026':           'xm',
+    'xm-broker-review-2025':           'xm',
+    'ic-markets-broker-review-2026':   'ic-markets',
+    'ic-markets-broker-review-2025':   'ic-markets',
+    'pepperstone-broker-review-2026':  'pepperstone',
+    'pepperstone-broker-review-2025':  'pepperstone',
+    'cmc-markets-broker-review-2026':  'cmc-markets',
+    'cmc-markets-broker-review-2025':  'cmc-markets',
+    'ig-broker-review-2026':           'ig-group',
+    'ig-broker-review-2025':           'ig-group',
+    'saxo-bank-broker-review-2026':    'saxo-bank',
+    'saxo-bank-broker-review-2025':    'saxo-bank',
+    'avatrade-broker-review-2026':     'avatrade',
+    'avatrade-broker-review-2025':     'avatrade',
+    'fp-markets-broker-review-2026':   'fp-markets',
+    'fp-markets-broker-review-2025':   'fp-markets',
+    'octafx-broker-review-2026':       'octafx',
+    'octafx-broker-review-2025':       'octafx',
+  };
+
+  // Resolve an old WP-style broker review slug to its canonical EntryLab slug.
+  // Tries the explicit map first, then strips common review suffixes as fallback.
+  function resolveWpBrokerSlug(raw: string): string {
+    const clean = raw.replace(/\/$/, '').toLowerCase();
+    if (wpBrokerSlugMap[clean]) return wpBrokerSlugMap[clean];
+    // Generic fallback: strip -broker-review-YYYY or -review-YYYY suffixes
+    return clean
+      .replace(/-broker-review-\d{4}$/, '')
+      .replace(/-review-\d{4}$/, '') || clean;
+  }
+
   app.use((req, res, next) => {
     const dest = wpRedirects[req.path];
     if (dest) return res.redirect(301, dest);
-    // /popular-broker/:slug → /broker/:slug
-    const popularMatch = req.path.match(/^\/popular-broker\/(.+?)\/?$/);
-    if (popularMatch) return res.redirect(301, `/broker/${popularMatch[1]}`);
+
+    // /popular-broker/:slug and /popular_broker/:slug → /broker/:canonical-slug
+    // Handles both hyphen and underscore variants (WP used underscore in URLs).
+    const popularMatch = req.path.match(/^\/popular[_-]broker\/(.+?)\/?$/i);
+    if (popularMatch) {
+      const brokerSlug = resolveWpBrokerSlug(popularMatch[1]);
+      return res.redirect(301, `/broker/${brokerSlug}`);
+    }
+
     next();
   });
 
