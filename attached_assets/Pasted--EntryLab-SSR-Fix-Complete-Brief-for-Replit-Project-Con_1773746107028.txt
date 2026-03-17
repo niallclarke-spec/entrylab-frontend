@@ -1,0 +1,376 @@
+# EntryLab SSR Fix — Complete Brief for Replit
+
+---
+
+## Project Context
+
+**EntryLab** (entrylab.io) is a forex broker and prop firm review/news aggregator.
+
+### Tech Stack
+- **Frontend:** React SPA built with Vite (outputs `index.html` + hashed JS/CSS bundles in `/assets/`)
+- **Backend:** Node.js/Express server with PostgreSQL database
+- **Content API:** REST API at `/api/articles`, `/api/brokers`, etc. — returns full article content, broker data, metadata from PostgreSQL
+- **Hosting:** VPS on Hostinger
+- **NO WordPress.** All content lives in PostgreSQL and is served via the app's own REST API. There is a legacy `admin.entrylab.io` WordPress install that should be completely ignored — it is being decommissioned.
+
+### How the Server Currently Works
+
+The Express server currently does TWO things well:
+
+1. **Serves API routes** (`/api/*`) — these return JSON from PostgreSQL with full content
+2. **Serves the SPA** — for ALL non-API routes, it reads `index.html` from the Vite build, injects per-page `<title>`, `<meta>` tags, Open Graph tags, Twitter Card tags, JSON-LD structured data (Article, BreadcrumbList, Organization), and canonical URLs into the `<head>` — then serves this modified HTML
+
+The server already resolves URL slugs to database content for meta tag injection. **It just doesn't inject the actual body content.**
+
+---
+
+## The Critical Problem
+
+**The HTML body contains ZERO content.** Every page serves the same empty shell:
+
+```html
+<body>
+  <noscript><!-- GTM iframe --></noscript>
+  <div id="root">
+    <!-- Only skeleton loaders (animated placeholder blocks) -->
+    <!-- NO article text, NO headings, NO paragraphs -->
+  </div>
+</body>
+```
+
+All article content only appears AFTER JavaScript executes in the browser. This means:
+
+- **Google** partially indexes pages (sees meta tags but struggles with JS-rendered body)
+- **AI crawlers** (ClaudeBot, GPTBot, PerplexityBot, etc.) get **nothing** — the site is invisible to AI search
+- **Social previews** work (OG tags are in `<head>`) but actual content is unreachable
+- The site has ~40+ published articles across broker guides, broker news, prop firm news, trading tools — none have readable body content for any crawler
+
+### Proof
+
+```bash
+# Returns 0 — no <p> tags in the body at all
+curl -s https://entrylab.io/broker-guides/hero10x-review | grep -c "<p>"
+
+# The <head> IS correct — title, meta, OG, JSON-LD all present and per-page
+curl -s https://entrylab.io/broker-guides/hero10x-review | grep "<title>"
+# → HeroFX Funded Account (Hero10X): Trade with 10× Capital ✅
+```
+
+---
+
+## What Already Works (DO NOT BREAK)
+
+1. **Per-page `<title>` and `<meta description>`** — correctly injected server-side ✅
+2. **JSON-LD structured data** — Article, BreadcrumbList, Organization schemas per-page ✅
+3. **Open Graph / Twitter Card meta tags** — per-page with images, dates, etc. ✅
+4. **robots.txt** — clean, allows all bots ✅
+5. **sitemap.xml** — dynamically generated, ~566 lines ✅
+6. **Google Consent Mode v2 + GTM** — properly implemented ✅
+7. **CSS deferral system** — custom script that converts stylesheets to preloads (DO NOT TOUCH)
+8. **Theme detection** — dark/light mode via localStorage, runs before paint
+9. **Skeleton loaders** — animated pulse placeholders inside `#root` while React loads
+10. **The REST API itself** — returns full content from PostgreSQL, works perfectly
+
+---
+
+## The REST API (Your Data Source)
+
+The API already exists and returns everything needed. Here are the key endpoints:
+
+### Articles (all content types)
+```
+GET /api/articles
+```
+Returns an array of all published articles with: `id`, `slug`, `title`, `excerpt`, `content` (full HTML), `author`, `category`, `categoryName`, `featuredImage`, `publishedAt`, `updatedAt`, `status`, `seoTitle`, `seoDescription`, `relatedBroker`
+
+### Single article by slug
+The React app currently fetches individual articles client-side. The server-side meta injection logic already resolves slugs — extend that same logic to also grab the `content` field.
+
+### Brokers
+```
+GET /api/brokers (or similar)
+```
+Returns broker profiles with full review HTML in `content` field, plus `pros`, `cons`, `rating`, `highlights`, `features`, etc.
+
+### Article categories map to URL prefixes:
+| URL Prefix | Category |
+|---|---|
+| `/broker-guides/{slug}` | broker-guides |
+| `/broker-news/{slug}` | broker-news |
+| `/prop-firm-guides/{slug}` | prop-firm-guides |
+| `/prop-firm-news/{slug}` | prop-firm-news |
+| `/trading-tools/{slug}` | trading-tools (articles) |
+| `/article/{slug}` | general articles |
+| `/broker/{slug}` | broker review profiles |
+| `/popular_broker/{slug}` | popular broker reviews |
+
+### Example API Response (abbreviated):
+```json
+{
+  "id": "d81d38f9-ab0b-4c7d-9abe-29720ed93249",
+  "slug": "hero10x-review",
+  "title": "HeroFX Funded Account: Everything You Need to Know About the Hero10X Program",
+  "excerpt": "Looking for information about the HeroFX Funded Account?...",
+  "content": "<p><strong>Looking for information about the HeroFX Funded Account?</strong></p><h2>What Is the HeroFX Funded Account?</h2><p>The HeroFX Funded Account, officially called Hero10X...</p>...",
+  "author": "EntryLab",
+  "category": "broker-guides",
+  "categoryName": "Broker Guides",
+  "featuredImage": "https://admin.entrylab.io/wp-content/uploads/2025/10/Facebook-cover-11-1-min.jpg",
+  "publishedAt": "2025-10-18T01:21:15.000Z",
+  "updatedAt": "2026-03-12T00:27:13.240Z",
+  "seoTitle": "HeroFX Funded Account (Hero10X): Trade with 10× Capital",
+  "seoDescription": "HeroFX Funded Account (Hero10X) lets traders access 10× capital instantly...",
+  "relatedBroker": { "name": "HeroFX", "slug": "herofx-review", "rating": 4.8, "content": "...", ... }
+}
+```
+
+The `content` field contains **full article HTML** — paragraphs, headings, lists, tables, links, everything. This is what needs to be injected into the page body.
+
+---
+
+## What Needs to Happen
+
+### The Fix: Inject Full Content into `<body>` Server-Side
+
+The server already:
+1. Intercepts all non-API requests
+2. Reads the Vite-built `index.html` template
+3. Resolves the URL slug to a database record
+4. Injects `<title>`, meta tags, OG tags, JSON-LD into `<head>`
+
+**Now it also needs to:**
+
+5. **Fetch the full `content` field** from the same database query it's already making
+6. **Inject the article HTML into `<body>`** inside `<div id="root">`
+
+### Where to Inject
+
+Currently the body looks like:
+```html
+<div id="root">
+  <!-- Skeleton loaders only -->
+  <div style="min-height:100vh;...">
+    <header><!-- skeleton navbar --></header>
+    <main><!-- skeleton cards --></main>
+  </div>
+</div>
+```
+
+Change it to:
+```html
+<div id="root">
+  <!-- SSR content — visible to crawlers, replaced by React on hydration -->
+  <div id="ssr-content" class="prose" style="max-width:768px;margin:0 auto;padding:32px 24px;">
+    <h1>{article.title}</h1>
+    <p style="color:hsl(var(--muted-foreground));margin-bottom:2em;">
+      Published {formatted date} · By {article.author} · {article.categoryName}
+    </p>
+    {article.content}
+    <!-- Full HTML from the content field -->
+  </div>
+
+  <!-- Existing skeleton stays as visual fallback -->
+  <div style="min-height:100vh;...">
+    <header><!-- skeleton navbar --></header>
+    <main><!-- skeleton cards --></main>
+  </div>
+</div>
+```
+
+When React mounts, it replaces the entire `#root` innerHTML — so the SSR content naturally disappears once the app hydrates. No special cleanup needed.
+
+### For Listing Pages (category pages, homepage)
+
+For routes like `/broker-guides` (no slug), `/news`, `/prop-firm-news`, and the homepage `/`:
+
+1. Fetch recent articles for that category from the database
+2. Inject a simple HTML list of articles with titles, excerpts, dates, and links:
+
+```html
+<div id="ssr-content" style="max-width:768px;margin:0 auto;padding:32px 24px;">
+  <h1>Broker Guides</h1>
+  <article>
+    <h2><a href="/broker-guides/hero10x-review">HeroFX Funded Account: Everything You Need to Know</a></h2>
+    <p>Looking for information about the HeroFX Funded Account?...</p>
+    <time>Oct 18, 2025</time>
+  </article>
+  <article>
+    <h2><a href="/broker-guides/gatesfx-ecn-raw-spread-account">GatesFX ECN Raw Spread Account – Full Breakdown</a></h2>
+    <p>If you're an active trader who values low costs...</p>
+    <time>Nov 4, 2025</time>
+  </article>
+  <!-- etc -->
+</div>
+```
+
+### For Broker Profile Pages (`/broker/{slug}`)
+
+These have a different data structure. The broker object contains:
+- `name`, `tagline`, `content` (full review HTML), `pros`, `cons`, `rating`, `highlights`, `minDeposit`, `maxLeverage`, `platforms`, etc.
+
+Inject the broker's full `content` HTML plus a summary of key specs.
+
+---
+
+## Implementation Approach
+
+### Extend Existing Express Server
+
+The server already has the slug resolution and meta injection logic. Find the route handler that catches all non-API requests (likely something like `app.get('*', ...)`) and extend it:
+
+```javascript
+// Pseudocode — adapt to match your existing codebase
+app.get('*', async (req, res) => {
+  let html = readFileSync('dist/index.html', 'utf-8');
+  
+  const { slug, category, routeType } = parseRoute(req.path);
+  
+  if (routeType === 'article' && slug) {
+    // Fetch article from PostgreSQL (you're ALREADY doing this for meta tags)
+    const article = await getArticleBySlug(slug);
+    
+    if (article) {
+      // Inject <head> tags (ALREADY HAPPENING — keep this)
+      html = injectMetaTags(html, article);
+      
+      // NEW: Inject body content
+      const ssrContent = `
+        <div id="ssr-content" class="prose" style="max-width:768px;margin:0 auto;padding:32px 24px;">
+          <h1>${escapeHtml(article.title)}</h1>
+          <p style="color:hsl(var(--muted-foreground));margin-bottom:2em;">
+            Published ${formatDate(article.publishedAt)} · By ${article.author} · ${article.categoryName}
+          </p>
+          ${article.content}
+        </div>
+      `;
+      
+      // Insert SSR content at the beginning of #root, before skeleton
+      html = html.replace(
+        '<div id="root">',
+        `<div id="root">${ssrContent}`
+      );
+    }
+  } else if (routeType === 'broker' && slug) {
+    // Fetch broker profile from PostgreSQL
+    const broker = await getBrokerBySlug(slug);
+    
+    if (broker) {
+      html = injectMetaTags(html, broker);
+      
+      const ssrContent = `
+        <div id="ssr-content" class="prose" style="max-width:768px;margin:0 auto;padding:32px 24px;">
+          <h1>${escapeHtml(broker.name)} Review</h1>
+          <p style="color:hsl(var(--muted-foreground));margin-bottom:1em;">${escapeHtml(broker.tagline)}</p>
+          ${broker.content}
+        </div>
+      `;
+      
+      html = html.replace(
+        '<div id="root">',
+        `<div id="root">${ssrContent}`
+      );
+    }
+  } else if (routeType === 'listing') {
+    // Category listing page — inject article list with titles, excerpts, links
+    const articles = await getArticlesByCategory(category);
+    const ssrContent = buildListingHTML(articles, category);
+    html = html.replace('<div id="root">', `<div id="root">${ssrContent}`);
+  }
+  
+  res.send(html);
+});
+```
+
+### Caching
+
+Add in-memory caching (or a simple Map with TTL) to avoid hitting PostgreSQL on every page load:
+
+- Cache rendered HTML per URL path for 5-10 minutes
+- Invalidate on content update (or just let TTL expire)
+- This is especially important for listing pages that query multiple articles
+
+```javascript
+const cache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function getCached(key) {
+  const entry = cache.get(key);
+  if (entry && Date.now() - entry.time < CACHE_TTL) return entry.html;
+  return null;
+}
+
+function setCache(key, html) {
+  cache.set(key, { html, time: Date.now() });
+}
+```
+
+### HTML Safety
+
+The `content` field from PostgreSQL contains HTML that was authored in your admin tools. It should be safe to inject directly. If you want extra safety, run it through `sanitize-html` on the server, but this is optional since you control the content.
+
+### Image URLs
+
+Some `featuredImage` URLs still reference `admin.entrylab.io/wp-content/uploads/...`. These work as-is since they're absolute URLs. Long-term, migrate these to your own storage, but for now they'll render fine.
+
+---
+
+## Testing the Fix
+
+After implementing, verify with these commands:
+
+```bash
+# Test 1: Article page should now have <p> tags in the body
+curl -s https://entrylab.io/broker-guides/hero10x-review | grep -c "<p>"
+# Should return 10+ (currently returns 0)
+
+# Test 2: Should have h2 headings in the body
+curl -s https://entrylab.io/broker-guides/hero10x-review | grep "<h2" | head -5
+# Should return section headings like "What Is the HeroFX Funded Account?"
+
+# Test 3: Title meta should still work
+curl -s https://entrylab.io/broker-guides/hero10x-review | grep "<title>"
+# Should show: HeroFX Funded Account (Hero10X): Trade with 10× Capital
+
+# Test 4: JSON-LD should still be present
+curl -s https://entrylab.io/broker-guides/hero10x-review | grep "application/ld+json" | wc -l
+# Should return 3
+
+# Test 5: Bot simulation should get full content
+curl -s -A "Googlebot" https://entrylab.io/broker-guides/hero10x-review | grep -c "<p>"
+# Should match Test 1
+
+# Test 6: Listing page should have article links
+curl -s https://entrylab.io/broker-guides | grep -c "<article\|<h2"
+# Should return multiple matches
+
+# Test 7: Homepage should have content
+curl -s https://entrylab.io/ | grep -c "<article\|<h2"
+# Should return multiple matches
+
+# Test 8: API should still work (not affected by this change)
+curl -s https://entrylab.io/api/articles | python3 -c "import sys,json; print(len(json.load(sys.stdin)))"
+# Should return article count (40+)
+
+# Test 9: Broker profile page should have content
+curl -s https://entrylab.io/broker/herofx-review | grep -c "<p>"
+# Should return 10+
+
+# Test 10: React app should still work in browser
+# Visit the site in a browser — should look and function exactly the same
+# SSR content appears briefly, then React takes over seamlessly
+```
+
+---
+
+## Priority Order
+
+1. **Article/guide pages** (`/broker-guides/{slug}`, `/broker-news/{slug}`, `/prop-firm-guides/{slug}`, `/prop-firm-news/{slug}`, `/article/{slug}`, `/trading-tools/{slug}`) — these are the money pages for SEO
+2. **Broker profile pages** (`/broker/{slug}`, `/popular_broker/{slug}`) — these have full review content
+3. **Listing/category pages** (`/broker-guides`, `/broker-news`, `/prop-firm-news`, etc.) — inject article lists
+4. **Homepage** (`/`) — inject recent articles across all categories
+
+---
+
+## Summary
+
+The `<head>` is perfect. The REST API is perfect. The database has all the content. The server already resolves slugs and injects meta tags for every page. **The only thing missing is injecting `article.content` into the `<body>`.** This is a 50-100 line change in the existing Express server catch-all route handler. Once done, every page on the site will be fully readable by Google, AI crawlers, and any non-JS client — immediately unlocking proper SEO indexing and AI search visibility for all 40+ articles.
