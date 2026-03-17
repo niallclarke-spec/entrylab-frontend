@@ -1366,8 +1366,38 @@ export default function ComparisonPage() {
             bottom: "24px",
             right: "24px",
             zIndex: 9999,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            gap: "8px",
           }}
         >
+          {record.updatedAt && (
+            <div
+              style={{
+                background: "#1a1e1c",
+                border: "1px solid rgba(255,255,255,0.12)",
+                borderRadius: "8px",
+                padding: "5px 10px",
+                color: "rgba(255,255,255,0.5)",
+                fontSize: "11px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Updated:{" "}
+              <span style={{ color: "rgba(255,255,255,0.8)" }}>
+                {new Date(record.updatedAt).toLocaleDateString("en-GB", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}{" "}
+                {new Date(record.updatedAt).toLocaleTimeString("en-GB", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            </div>
+          )}
           <Button
             onClick={() => regenMutation.mutate()}
             disabled={regenMutation.isPending}
