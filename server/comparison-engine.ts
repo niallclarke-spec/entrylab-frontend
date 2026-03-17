@@ -709,6 +709,208 @@ function computePropFirmAlternatives(
   return { alternatives, faqData };
 }
 
+/**
+ * Generate the next missing vs comparison for a single entity.
+ * Returns the newly created record, plus progress counts.
+ */
+export async function generateNextForEntity(
+  entityType: "broker" | "prop_firm",
+  entityId: string
+): Promise<{
+  created: boolean;
+  comparison: typeof comparisonsTable.$inferSelect | null;
+  generated: number;
+  total: number;
+  remaining: number;
+}> {
+  if (entityType === "broker") {
+    const [main] = await db.select().from(brokersTable).where(eq(brokersTable.id, entityId));
+    if (!main) throw new Error("Entity not found");
+
+    const others = (await db.select().from(brokersTable)).filter((b) => b.id !== entityId);
+    const existing = await db
+      .select({ slug: comparisonsTable.slug })
+      .from(comparisonsTable)
+      .where(
+        and(
+          eq(comparisonsTable.entityType, "broker"),
+          eq(comparisonsTable.comparisonType, "vs")
+        )
+      );
+    const existingSlugs = new Set(existing.map((c) => c.slug));
+
+    // Sort others alphabetically so generation is deterministic
+    const sorted = [...others].sort((a, b) => a.slug.localeCompare(b.slug));
+    const total = sorted.length;
+    let generated = 0;
+    let nextOpponent: typeof brokersTable.$inferSelect | null = null;
+
+    for (const other of sorted) {
+      const slug = makeComparisonSlug(main.slug, other.slug);
+      if (existingSlugs.has(slug)) {
+        generated++;
+      } else if (!nextOpponent) {
+        nextOpponent = other;
+      }
+    }
+
+    if (!nextOpponent) {
+      return { created: false, comparison: null, generated, total, remaining: 0 };
+    }
+
+    const [a, b] = [main, nextOpponent].sort((x, y) => x.slug.localeCompare(y.slug));
+    const slug = makeComparisonSlug(a.slug, b.slug);
+    const data = computeBrokerComparison(a, b);
+
+    const [inserted] = await db
+      .insert(comparisonsTable)
+      .values({
+        entityType: "broker",
+        comparisonType: "vs",
+        entityAId: a.id,
+        entityBId: b.id,
+        entityASlug: a.slug,
+        entityBSlug: b.slug,
+        entityAName: a.name,
+        entityBName: b.name,
+        slug,
+        status: "draft",
+        categoryWinners: data.categoryWinners as any,
+        overallWinnerId: data.overallWinnerId,
+        overallScore: data.overallScore,
+        faqData: data.faqData as any,
+        publishedAt: null,
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    return {
+      created: true,
+      comparison: inserted,
+      generated: generated + 1,
+      total,
+      remaining: total - generated - 1,
+    };
+  } else {
+    const [main] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.id, entityId));
+    if (!main) throw new Error("Entity not found");
+
+    const others = (await db.select().from(propFirmsTable)).filter((f) => f.id !== entityId);
+    const existing = await db
+      .select({ slug: comparisonsTable.slug })
+      .from(comparisonsTable)
+      .where(
+        and(
+          eq(comparisonsTable.entityType, "prop_firm"),
+          eq(comparisonsTable.comparisonType, "vs")
+        )
+      );
+    const existingSlugs = new Set(existing.map((c) => c.slug));
+
+    const sorted = [...others].sort((a, b) => a.slug.localeCompare(b.slug));
+    const total = sorted.length;
+    let generated = 0;
+    let nextOpponent: typeof propFirmsTable.$inferSelect | null = null;
+
+    for (const other of sorted) {
+      const slug = makeComparisonSlug(main.slug, other.slug);
+      if (existingSlugs.has(slug)) {
+        generated++;
+      } else if (!nextOpponent) {
+        nextOpponent = other;
+      }
+    }
+
+    if (!nextOpponent) {
+      return { created: false, comparison: null, generated, total, remaining: 0 };
+    }
+
+    const [a, b] = [main, nextOpponent].sort((x, y) => x.slug.localeCompare(y.slug));
+    const slug = makeComparisonSlug(a.slug, b.slug);
+    const data = computePropFirmComparison(a, b);
+
+    const [inserted] = await db
+      .insert(comparisonsTable)
+      .values({
+        entityType: "prop_firm",
+        comparisonType: "vs",
+        entityAId: a.id,
+        entityBId: b.id,
+        entityASlug: a.slug,
+        entityBSlug: b.slug,
+        entityAName: a.name,
+        entityBName: b.name,
+        slug,
+        status: "draft",
+        categoryWinners: data.categoryWinners as any,
+        overallWinnerId: data.overallWinnerId,
+        overallScore: data.overallScore,
+        faqData: data.faqData as any,
+        publishedAt: null,
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    return {
+      created: true,
+      comparison: inserted,
+      generated: generated + 1,
+      total,
+      remaining: total - generated - 1,
+    };
+  }
+}
+
+/**
+ * Get per-entity comparison progress stats for all entities of a given type.
+ */
+export async function getEntityComparisonStats(
+  entityType: "broker" | "prop_firm"
+): Promise<
+  Array<{
+    entityId: string;
+    entitySlug: string;
+    entityName: string;
+    generated: number;
+    published: number;
+    total: number;
+  }>
+> {
+  const entities =
+    entityType === "broker"
+      ? await db.select().from(brokersTable)
+      : await db.select().from(propFirmsTable);
+
+  const allComparisons = await db
+    .select()
+    .from(comparisonsTable)
+    .where(
+      and(
+        eq(comparisonsTable.entityType, entityType),
+        eq(comparisonsTable.comparisonType, "vs")
+      )
+    );
+
+  const total = entities.length - 1;
+
+  return entities
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((entity) => {
+      const entityComparisons = allComparisons.filter(
+        (c) => c.entityAId === entity.id || c.entityBId === entity.id
+      );
+      const published = entityComparisons.filter((c) => c.status === "published").length;
+      return {
+        entityId: entity.id,
+        entitySlug: entity.slug,
+        entityName: entity.name,
+        generated: entityComparisons.length,
+        published,
+        total,
+      };
+    });
+}
+
 export async function generateAllAlternatives(): Promise<{ brokers: number; propFirms: number }> {
   const [brokers, propFirms] = await Promise.all([
     db.select().from(brokersTable),

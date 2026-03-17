@@ -12,7 +12,7 @@ import { addInternalLinks, invalidateInternalLinksCache } from "./internal-links
 import { generateStructuredData } from "./structured-data";
 import { getUncachableStripeClient } from "./stripeClient";
 import { eq, asc, ilike, desc, sql, and, or, ne, inArray } from "drizzle-orm";
-import { generateAllMissingPairs, generateAllAlternatives, regenerateComparisons, onEntityUpdated, onEntityCreated, makeComparisonSlug } from "./comparison-engine";
+import { generateAllMissingPairs, generateAllAlternatives, generateNextForEntity, getEntityComparisonStats, regenerateComparisons, onEntityUpdated, onEntityCreated, makeComparisonSlug } from "./comparison-engine";
 import { getWelcomeEmailHtml, getCancellationEmailHtml, getFreeChannelEmailHtml } from "./emailTemplates";
 import { getUncachableResendClient } from "./resendClient";
 import jwt from "jsonwebtoken";
@@ -754,6 +754,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
         brokerAlternatives: alts.brokers,
         propFirmAlternatives: alts.propFirms,
       });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Per-entity progress stats (for the entity-centric admin view)
+  app.get("/api/admin/comparisons/entity-stats/:entityType", adminAuth, async (req, res) => {
+    try {
+      const { entityType } = req.params as { entityType: string };
+      if (entityType !== "broker" && entityType !== "prop_firm") {
+        return res.status(400).json({ error: "Invalid entityType" });
+      }
+      const stats = await getEntityComparisonStats(entityType);
+      return res.json(stats);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Generate the next missing comparison for a specific entity (one at a time)
+  app.post("/api/admin/comparisons/generate-next/:entityType/:entityId", adminAuth, async (req, res) => {
+    try {
+      const { entityType, entityId } = req.params as { entityType: string; entityId: string };
+      if (entityType !== "broker" && entityType !== "prop_firm") {
+        return res.status(400).json({ error: "Invalid entityType" });
+      }
+      const result = await generateNextForEntity(entityType, entityId);
+      return res.json(result);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Get all vs comparisons for a specific entity (for accordion expansion)
+  app.get("/api/admin/comparisons/for-entity/:entityType/:entityId", adminAuth, async (req, res) => {
+    try {
+      const { entityType, entityId } = req.params as { entityType: string; entityId: string };
+      const rows = await db
+        .select()
+        .from(comparisonsTable)
+        .where(
+          and(
+            eq(comparisonsTable.entityType, entityType),
+            eq(comparisonsTable.comparisonType, "vs"),
+            or(
+              eq(comparisonsTable.entityAId, entityId),
+              eq(comparisonsTable.entityBId as any, entityId)
+            )
+          )
+        )
+        .orderBy(asc(comparisonsTable.slug));
+      return res.json(rows);
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
     }
