@@ -59,23 +59,23 @@ interface AlternativeEntry {
 function FaqAccordion({ items }: { items: FaqItem[] }) {
   const [open, setOpen] = useState<number | null>(0);
   return (
-    <div className="divide-y divide-border/50">
+    <div style={{ borderTop: "1px solid #e8edea" }}>
       {items.map((item, i) => (
-        <div key={i}>
+        <div key={i} style={{ borderBottom: "1px solid #e8edea" }}>
           <button
-            className="w-full flex items-center justify-between py-4 text-left transition-colors hover:text-foreground"
+            className="w-full flex items-center justify-between py-4 text-left transition-colors"
             onClick={() => setOpen(open === i ? null : i)}
             data-testid={`faq-toggle-${i}`}
           >
-            <span className="font-medium text-foreground pr-4">{item.q}</span>
+            <span className="font-semibold text-sm pr-4" style={{ color: "#111827" }}>{item.q}</span>
             {open === i ? (
-              <ChevronUp className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <ChevronUp className="w-4 h-4 flex-shrink-0" style={{ color: "#6b7280" }} />
             ) : (
-              <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: "#6b7280" }} />
             )}
           </button>
           {open === i && (
-            <div className="pb-4 text-muted-foreground text-sm leading-relaxed">{item.a}</div>
+            <div className="pb-4 text-sm leading-relaxed" style={{ color: "#4b5563" }}>{item.a}</div>
           )}
         </div>
       ))}
@@ -204,7 +204,7 @@ function CategorySection({
       style={{ background: "#ffffff", border: "1px solid #e8edea" }}
     >
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-        <h3 className="text-base font-semibold" style={{ color: "#111827" }}>
+        <h3 className="text-lg font-bold" style={{ color: "#111827" }}>
           {result.label}
         </h3>
         {winnerName ? (
