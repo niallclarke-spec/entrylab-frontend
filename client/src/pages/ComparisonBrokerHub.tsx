@@ -78,7 +78,6 @@ export default function ComparisonBrokerHub() {
       <SEO
         title="Broker Comparisons — Find the Best Forex Broker | EntryLab"
         description="Compare the top forex brokers side by side. Regulation, spreads, platforms, commissions and more — all analysed across 14 key categories."
-        canonical="https://entrylab.io/compare/broker"
       />
       <Navigation />
 

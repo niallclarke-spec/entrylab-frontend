@@ -23,7 +23,6 @@ export default function ComparisonPropFirmHub() {
       <SEO
         title="Prop Firm Comparisons — Find the Best Funded Trader Programme | EntryLab"
         description="Compare the top prop trading firms side by side. Challenges, payouts, drawdown rules and more — all analysed so you can choose the best funded account."
-        canonical="https://entrylab.io/compare/prop-firm"
       />
       <Navigation />
 
