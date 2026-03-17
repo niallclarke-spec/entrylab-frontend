@@ -69,7 +69,8 @@ export function Navigation() {
                   onMouseEnter={() => setCompareOpen(true)}
                   onMouseLeave={() => setCompareOpen(false)}
                 >
-                  <button
+                  <Link
+                    href="/compare"
                     data-testid="link-compare"
                     className={`flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                       isCompareActive
@@ -80,7 +81,7 @@ export function Navigation() {
                     <GitCompare className="h-4 w-4" />
                     Compare
                     <ChevronDown className={`h-3 w-3 transition-transform ${compareOpen ? "rotate-180" : ""}`} />
-                  </button>
+                  </Link>
 
                   {/* Dropdown — visibility toggled (no layout shift) */}
                   <div
