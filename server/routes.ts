@@ -322,6 +322,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/brokers/:slug", adminAuth, async (req, res) => {
+    try {
+      const [broker] = await db.select().from(brokersTable).where(eq(brokersTable.slug, req.params.slug));
+      if (!broker) return res.status(404).json({ error: "Broker not found" });
+      return res.json(broker);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || "Failed to fetch broker" });
+    }
+  });
+
+  app.put("/api/admin/brokers/:slug", adminAuth, async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const { id, createdAt, slug: _slug, ...updates } = req.body;
+      const [broker] = await db
+        .update(brokersTable)
+        .set({ ...updates, lastUpdated: new Date() })
+        .where(eq(brokersTable.slug, slug))
+        .returning();
+      if (!broker) return res.status(404).json({ error: "Broker not found" });
+      apiCache.delete(`broker:${slug}`);
+      apiCache.delete('brokers:list');
+      invalidateInternalLinksCache();
+      return res.json(broker);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || "Failed to update broker" });
+    }
+  });
+
   app.delete("/api/admin/brokers/:slug", adminAuth, async (req, res) => {
     try {
       const { slug } = req.params;
@@ -353,6 +382,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (err: any) {
       console.error("[Admin] Error creating prop firm:", err);
       return res.status(500).json({ error: err.message || "Failed to create prop firm" });
+    }
+  });
+
+  app.get("/api/admin/prop-firms/:slug", adminAuth, async (req, res) => {
+    try {
+      const [firm] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, req.params.slug));
+      if (!firm) return res.status(404).json({ error: "Prop firm not found" });
+      return res.json(firm);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || "Failed to fetch prop firm" });
+    }
+  });
+
+  app.put("/api/admin/prop-firms/:slug", adminAuth, async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const { id, createdAt, slug: _slug, ...updates } = req.body;
+      const [firm] = await db
+        .update(propFirmsTable)
+        .set({ ...updates, lastUpdated: new Date() })
+        .where(eq(propFirmsTable.slug, slug))
+        .returning();
+      if (!firm) return res.status(404).json({ error: "Prop firm not found" });
+      apiCache.delete(`prop-firm:${slug}`);
+      apiCache.delete('prop-firms:list');
+      invalidateInternalLinksCache();
+      return res.json(firm);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || "Failed to update prop firm" });
     }
   });
 
