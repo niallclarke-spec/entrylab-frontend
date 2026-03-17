@@ -1,6 +1,7 @@
 import { Clock, User, BookOpen, Wrench, Newspaper, BookMarked } from "lucide-react";
 import { Link } from "wouter";
 import { OptimizedImage } from "@/components/OptimizedImage";
+import { prefetchArticle } from "@/lib/prefetch";
 
 interface ArticleCardProps {
   title: string;
@@ -53,6 +54,7 @@ export function ArticleCard({ title, excerpt, author, date, category, link, imag
           (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.20)";
           (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(0,0,0,0.13), inset 0 1px 0 rgba(255,255,255,0.7)";
           (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)";
+          prefetchArticle(slug);
         }}
         onMouseLeave={e => {
           (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.12)";

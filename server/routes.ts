@@ -1348,7 +1348,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let cached = apiCache.get(cacheKey);
       if (!cached || apiCache.isStale(cacheKey)) {
         const rows = await db.select().from(brokersTable).orderBy(asc(brokersTable.name));
-        cached = rows.map(brokerDbToApi);
+        // Strip heavy fields not needed by any list or comparison view — saves ~90KB per response
+        cached = rows.map(row => {
+          const { content, seoTitle, seoDescription, ...slim } = brokerDbToApi(row) as any;
+          return slim;
+        });
         apiCache.set(cacheKey, cached, 300, 600);
       }
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
@@ -1416,7 +1420,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (!catMap.has(r.propFirmId)) catMap.set(r.propFirmId, []);
           catMap.get(r.propFirmId)!.push(publicId);
         }
-        cached = rows.map(row => ({ ...propFirmDbToApi(row), categoryIds: catMap.get(row.id) || [] }));
+        // Strip heavy fields not needed by list/comparison views
+        cached = rows.map(row => {
+          const { content, seoTitle, seoDescription, ...slim } = propFirmDbToApi(row) as any;
+          return { ...slim, categoryIds: catMap.get(row.id) || [] };
+        });
         apiCache.set(cacheKey, cached, 300, 600);
       }
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
