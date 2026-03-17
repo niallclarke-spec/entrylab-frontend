@@ -157,13 +157,13 @@ function QuickCompareTable({
 }) {
   const rows = entityType === "broker" ? BROKER_TABLE_ROWS : PROP_TABLE_ROWS;
   return (
-    <div className="overflow-x-auto rounded-xl border border-border/50">
+    <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid #e8edea" }}>
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-border/50 bg-muted/30">
-            <th className="p-4 text-left text-muted-foreground font-medium w-1/3">Feature</th>
-            <th className="p-4 text-left text-foreground font-semibold">{nameA}</th>
-            <th className="p-4 text-left text-foreground font-semibold">{nameB}</th>
+          <tr style={{ borderBottom: "1px solid #e8edea", background: "#f9fafb" }}>
+            <th className="p-4 text-left font-medium w-1/3" style={{ color: "#6b7280" }}>Feature</th>
+            <th className="p-4 text-left font-semibold" style={{ color: "#111827" }}>{nameA}</th>
+            <th className="p-4 text-left font-semibold" style={{ color: "#111827" }}>{nameB}</th>
           </tr>
         </thead>
         <tbody>
@@ -171,10 +171,10 @@ function QuickCompareTable({
             const valA = entityAData?.[key] ?? "—";
             const valB = entityBData?.[key] ?? "—";
             return (
-              <tr key={i} className={`border-b border-border/30 ${i % 2 === 0 ? "bg-muted/10" : ""}`}>
-                <td className="p-4 text-muted-foreground">{label}</td>
-                <td className="p-4 text-foreground">{String(valA)}</td>
-                <td className="p-4 text-foreground">{String(valB)}</td>
+              <tr key={i} style={{ borderBottom: "1px solid #f3f4f6", background: i % 2 === 0 ? "#ffffff" : "#fafafa" }}>
+                <td className="p-4" style={{ color: "#6b7280" }}>{label}</td>
+                <td className="p-4" style={{ color: "#111827" }}>{String(valA)}</td>
+                <td className="p-4" style={{ color: "#111827" }}>{String(valB)}</td>
               </tr>
             );
           })}
@@ -187,8 +187,6 @@ function QuickCompareTable({
 function CategorySection({
   result,
   record,
-  entityALogo,
-  entityBLogo,
 }: {
   result: CategoryResult;
   record: ComparisonRecord;
@@ -201,46 +199,76 @@ function CategorySection({
   const winnerName = winnerIsA ? record.entityAName : winnerIsB ? record.entityBName : null;
 
   return (
-    <Card className="bg-background/60 backdrop-blur-sm border-border/50 p-5">
+    <div
+      className="rounded-lg p-5"
+      style={{ background: "#ffffff", border: "1px solid #e8edea" }}
+    >
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-        <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-primary" />
+        <h3 className="text-base font-semibold" style={{ color: "#111827" }}>
           {result.label}
         </h3>
         {winnerName ? (
-          <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs flex items-center gap-1">
+          <span
+            className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full"
+            style={{ background: "#dcfce7", color: "#15803d" }}
+          >
             <CheckCircle className="w-3 h-3" /> {winnerName} Wins
-          </Badge>
+          </span>
         ) : (
-          <Badge variant="secondary" className="text-xs">Tie</Badge>
+          <span
+            className="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full"
+            style={{ background: "#f3f4f6", color: "#6b7280" }}
+          >
+            Tie
+          </span>
         )}
       </div>
-      <p className="text-muted-foreground text-sm leading-relaxed mb-4">{result.text}</p>
+      <p className="text-sm leading-relaxed mb-4" style={{ color: "#4b5563" }}>{result.text}</p>
       <div className="grid grid-cols-2 gap-3">
-        <div className={`p-3 rounded-lg border ${winnerIsA ? "border-emerald-500/30 bg-emerald-500/5" : "border-border/30 bg-muted/20"}`}>
+        <div
+          className="p-3 rounded-lg"
+          style={
+            winnerIsA
+              ? { background: "#f0fdf4", border: "1px solid #bbf7d0" }
+              : { background: "#f9fafb", border: "1px solid #e5e7eb" }
+          }
+        >
           <div className="flex items-center gap-2 mb-1">
-            {winnerIsA && <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />}
-            {winnerIsB && <XCircle className="w-3.5 h-3.5 text-muted-foreground/40" />}
-            {isTie && <CheckCircle className="w-3.5 h-3.5 text-muted-foreground/40" />}
-            <span className={`font-medium text-sm ${winnerIsA ? "text-emerald-400" : "text-muted-foreground"}`}>
+            {winnerIsA && <CheckCircle className="w-3.5 h-3.5" style={{ color: "#16a34a" }} />}
+            {winnerIsB && <XCircle className="w-3.5 h-3.5" style={{ color: "#d1d5db" }} />}
+            {isTie && <CheckCircle className="w-3.5 h-3.5" style={{ color: "#d1d5db" }} />}
+            <span
+              className="font-medium text-sm"
+              style={{ color: winnerIsA ? "#15803d" : "#374151" }}
+            >
               {record.entityAName}
             </span>
           </div>
-          <p className="text-xs text-muted-foreground">Score: {result.scoreA}</p>
+          <p className="text-xs" style={{ color: "#9ca3af" }}>Score: {result.scoreA}</p>
         </div>
-        <div className={`p-3 rounded-lg border ${winnerIsB ? "border-emerald-500/30 bg-emerald-500/5" : "border-border/30 bg-muted/20"}`}>
+        <div
+          className="p-3 rounded-lg"
+          style={
+            winnerIsB
+              ? { background: "#f0fdf4", border: "1px solid #bbf7d0" }
+              : { background: "#f9fafb", border: "1px solid #e5e7eb" }
+          }
+        >
           <div className="flex items-center gap-2 mb-1">
-            {winnerIsB && <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />}
-            {winnerIsA && <XCircle className="w-3.5 h-3.5 text-muted-foreground/40" />}
-            {isTie && <CheckCircle className="w-3.5 h-3.5 text-muted-foreground/40" />}
-            <span className={`font-medium text-sm ${winnerIsB ? "text-emerald-400" : "text-muted-foreground"}`}>
+            {winnerIsB && <CheckCircle className="w-3.5 h-3.5" style={{ color: "#16a34a" }} />}
+            {winnerIsA && <XCircle className="w-3.5 h-3.5" style={{ color: "#d1d5db" }} />}
+            {isTie && <CheckCircle className="w-3.5 h-3.5" style={{ color: "#d1d5db" }} />}
+            <span
+              className="font-medium text-sm"
+              style={{ color: winnerIsB ? "#15803d" : "#374151" }}
+            >
               {record.entityBName}
             </span>
           </div>
-          <p className="text-xs text-muted-foreground">Score: {result.scoreB}</p>
+          <p className="text-xs" style={{ color: "#9ca3af" }}>Score: {result.scoreB}</p>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -311,6 +339,14 @@ function VsComparisonPage({
   const loserName = record.overallWinnerId === record.entityAId ? record.entityBName : record.entityAName;
   const relatedOthers = (relatedComparisons || []).filter((c) => c.slug !== slug).slice(0, 6);
 
+  const tocItems = [
+    { id: "quick-compare", label: "Quick Comparison" },
+    { id: "category-breakdown", label: "Category Breakdown" },
+    { id: "verdict", label: "Our Verdict" },
+    ...(faqData.length > 0 ? [{ id: "faq", label: "FAQ" }] : []),
+    ...(relatedOthers.length > 0 ? [{ id: "related", label: "Related Comparisons" }] : []),
+  ];
+
   return (
     <>
       <SEO
@@ -320,14 +356,25 @@ function VsComparisonPage({
         type="article"
       />
 
-      {/* ── Dark hero banner ─────────────────────────────────────────────── */}
-      <div
-        className="relative overflow-hidden"
-        style={{ background: "#1a1e1c", borderBottom: "1px solid rgba(43,179,42,0.12)" }}
-      >
-        <div className="max-w-5xl mx-auto px-4 py-8">
+      {/* ── Dark hero ──────────────────────────────────────────────────────── */}
+      <div className="relative overflow-hidden" style={{ background: "#1a1e1c" }}>
+        {/* Dot pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.025] pointer-events-none"
+          style={{
+            backgroundImage: "radial-gradient(circle, #2bb32a 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+        {/* Green glow orb */}
+        <div
+          className="absolute -top-32 -right-32 w-96 h-96 rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(43,179,42,0.08) 0%, transparent 70%)" }}
+        />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-10 md:py-14">
           {/* Breadcrumbs */}
-          <nav className="flex items-center gap-2 text-xs text-white/40 mb-6 flex-wrap" aria-label="Breadcrumb">
+          <nav className="flex items-center gap-2 text-xs mb-7 flex-wrap" style={{ color: "rgba(255,255,255,0.35)" }} aria-label="Breadcrumb">
             <Link href="/" className="hover:text-white/70 flex items-center gap-1 transition-colors">
               <Home className="w-3 h-3" /> Home
             </Link>
@@ -336,229 +383,392 @@ function VsComparisonPage({
             <ChevronRight className="w-3 h-3" />
             <Link href={hubPath} className="hover:text-white/70 transition-colors">{hubLabel}</Link>
             <ChevronRight className="w-3 h-3" />
-            <span className="text-white/70">{record.entityAName} vs {record.entityBName}</span>
+            <span style={{ color: "rgba(255,255,255,0.65)" }}>{record.entityAName} vs {record.entityBName}</span>
           </nav>
 
-          <div className="flex flex-wrap items-start gap-6">
-            {/* Entity A */}
-            <div className="flex flex-col items-center gap-2 text-center min-w-[80px]">
-              <EntityLogo name={record.entityAName} logoUrl={entityALogo} />
-              <span className="text-sm font-semibold text-white">{record.entityAName}</span>
-              {entityAData?.rating && <StarRating rating={parseFloat(String(entityAData.rating))} />}
-            </div>
+          <div className="grid lg:grid-cols-[1fr_auto] gap-8 items-center">
+            {/* Left: Title + Meta + Score */}
+            <div className="space-y-4 text-white order-2 lg:order-1">
+              {/* Category badge */}
+              <div
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                style={{ background: "rgba(43,179,42,0.15)", border: "1px solid rgba(43,179,42,0.3)", color: "#2bb32a" }}
+              >
+                <GitCompare className="w-3 h-3" />
+                {entityType === "broker" ? "Broker Comparison" : "Prop Firm Comparison"}
+              </div>
 
-            <div className="flex flex-col items-center justify-center gap-2 px-3 py-2">
-              <span className="text-2xl font-black text-white/20">VS</span>
-              {overallWinnerName && (
-                <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs flex items-center gap-1">
-                  <Trophy className="w-3 h-3" /> {overallWinnerName} wins {record.overallScore}
-                </Badge>
-              )}
-              {!overallWinnerName && record.overallScore && (
-                <Badge className="bg-white/10 text-white/60 text-xs">{record.overallScore} Tie</Badge>
-              )}
-            </div>
-
-            {/* Entity B */}
-            <div className="flex flex-col items-center gap-2 text-center min-w-[80px]">
-              <EntityLogo name={record.entityBName ?? ""} logoUrl={entityBLogo} />
-              <span className="text-sm font-semibold text-white">{record.entityBName}</span>
-              {entityBData?.rating && <StarRating rating={parseFloat(String(entityBData.rating))} />}
-            </div>
-
-            {/* Heading */}
-            <div className="flex-1 min-w-[200px]">
-              <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
                 {record.entityAName} vs {record.entityBName}
               </h1>
-              <p className="text-white/50 text-sm mb-3">
-                Compared across {categoryList.length} key categories
-              </p>
-              <p className="text-white/40 text-xs">
-                Last updated:{" "}
-                {record.updatedAt
-                  ? new Date(record.updatedAt).toLocaleDateString("en-GB", { year: "numeric", month: "long" })
-                  : "—"}
-              </p>
-            </div>
-          </div>
 
-          {/* Score strip */}
-          <div className="mt-6 flex items-center gap-6 pt-5 border-t border-white/10">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-white">{winsA}</p>
-              <p className="text-white/40 text-xs">{record.entityAName}</p>
+              <p className="text-base md:text-lg leading-relaxed max-w-xl" style={{ color: "rgba(255,255,255,0.7)" }}>
+                Compared across {categoryList.length} key categories — find out which {entityType === "broker" ? "broker" : "prop firm"} is right for your trading style.
+              </p>
+
+              {/* Score strip */}
+              <div className="flex items-center gap-5 pt-2 flex-wrap">
+                <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                  <div className="text-center">
+                    <p className="text-2xl font-black text-white leading-tight">{winsA}</p>
+                    <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>{record.entityAName}</p>
+                  </div>
+                  <span className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.25)" }}>vs</span>
+                  <div className="text-center">
+                    <p className="text-2xl font-black text-white leading-tight">{winsB}</p>
+                    <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>{record.entityBName}</p>
+                  </div>
+                </div>
+                {overallWinnerName && (
+                  <span
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
+                    style={{ background: "rgba(43,179,42,0.2)", border: "1px solid rgba(43,179,42,0.35)", color: "#4ade80" }}
+                  >
+                    <Trophy className="w-3 h-3" /> {overallWinnerName} wins {record.overallScore}
+                  </span>
+                )}
+              </div>
+
+              {/* Updated date + review CTAs */}
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  Updated:{" "}
+                  {record.updatedAt
+                    ? new Date(record.updatedAt).toLocaleDateString("en-GB", { year: "numeric", month: "long" })
+                    : "—"}
+                </span>
+                <span style={{ color: "rgba(255,255,255,0.15)" }}>·</span>
+                <Link href={entityAReviewPath}>
+                  <Button variant="outline" size="sm" className="border-white/20 text-white/70 hover:text-white text-xs h-7">
+                    {record.entityAName} Review
+                  </Button>
+                </Link>
+                <Link href={entityBReviewPath}>
+                  <Button variant="outline" size="sm" className="border-white/20 text-white/70 hover:text-white text-xs h-7">
+                    {record.entityBName} Review
+                  </Button>
+                </Link>
+              </div>
             </div>
-            <div className="text-white/20 text-sm font-medium">wins</div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-white">{winsB}</p>
-              <p className="text-white/40 text-xs">{record.entityBName}</p>
-            </div>
-            <div className="ml-4 flex gap-2 flex-wrap">
-              <Link href={entityAReviewPath}>
-                <Button variant="outline" size="sm" className="border-white/20 text-white/70 hover:text-white">
-                  {record.entityAName} Review
-                </Button>
-              </Link>
-              <Link href={entityBReviewPath}>
-                <Button variant="outline" size="sm" className="border-white/20 text-white/70 hover:text-white">
-                  {record.entityBName} Review
-                </Button>
-              </Link>
+
+            {/* Right: VS Battle Card */}
+            <div className="order-1 lg:order-2 flex-shrink-0">
+              <div
+                className="rounded-2xl p-6 flex items-center gap-5"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", minWidth: 280 }}
+              >
+                {/* Entity A */}
+                <div className="flex flex-col items-center gap-2.5 flex-1 text-center">
+                  <EntityLogo name={record.entityAName} logoUrl={entityALogo} />
+                  <span className="text-sm font-semibold text-white">{record.entityAName}</span>
+                  {entityAData?.rating && (
+                    <StarRating rating={parseFloat(String(entityAData.rating))} />
+                  )}
+                  <div
+                    className="text-xs font-bold px-2.5 py-1 rounded-full"
+                    style={
+                      record.overallWinnerId === record.entityAId
+                        ? { background: "rgba(43,179,42,0.2)", color: "#4ade80" }
+                        : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)" }
+                    }
+                  >
+                    {winsA} wins
+                  </div>
+                </div>
+
+                {/* VS divider */}
+                <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                  <span
+                    className="text-2xl font-black"
+                    style={{ color: "rgba(255,255,255,0.15)" }}
+                  >
+                    VS
+                  </span>
+                </div>
+
+                {/* Entity B */}
+                <div className="flex flex-col items-center gap-2.5 flex-1 text-center">
+                  <EntityLogo name={record.entityBName ?? ""} logoUrl={entityBLogo} />
+                  <span className="text-sm font-semibold text-white">{record.entityBName}</span>
+                  {entityBData?.rating && (
+                    <StarRating rating={parseFloat(String(entityBData.rating))} />
+                  )}
+                  <div
+                    className="text-xs font-bold px-2.5 py-1 rounded-full"
+                    style={
+                      record.overallWinnerId === record.entityBId
+                        ? { background: "rgba(43,179,42,0.2)", color: "#4ade80" }
+                        : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)" }
+                    }
+                  >
+                    {winsB} wins
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Page body ─────────────────────────────────────────────────────── */}
-      <div
-        className="min-h-screen"
-        style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}
-      >
-        <div className="max-w-5xl mx-auto px-4 py-10 space-y-8">
+      {/* ── Page body ──────────────────────────────────────────────────────── */}
+      <main className="flex-1" style={{ background: "#f5f7f6" }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+          <div className="grid lg:grid-cols-[1fr_320px] gap-8 xl:gap-12">
 
-          {/* Quick Comparison Table */}
-          <section>
-            <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-              <GitCompare className="w-5 h-5 text-primary" />
-              Quick Comparison: {record.entityAName} vs {record.entityBName}
-            </h2>
-            <QuickCompareTable
-              entityType={record.entityType}
-              entityAData={entityAData || {}}
-              entityBData={entityBData || {}}
-              nameA={record.entityAName}
-              nameB={record.entityBName ?? ""}
-            />
-          </section>
+            {/* ── Main column ─────────────────────────────────────────────── */}
+            <div className="min-w-0 space-y-6">
 
-          {/* Category Breakdown */}
-          {categoryList.length > 0 && (
-            <section>
-              <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-primary" />
-                Category Breakdown
-              </h2>
-              <div className="space-y-3">
-                {categoryList.map((result) => (
-                  <CategorySection
-                    key={result.category}
-                    result={result}
-                    record={record}
-                    entityALogo={entityALogo}
-                    entityBLogo={entityBLogo}
+              {/* Quick Comparison Table */}
+              <section id="quick-compare">
+                <div className="rounded-lg p-6 md:p-7" style={{ background: "#ffffff", border: "1px solid #e8edea" }}>
+                  <h2 className="text-xl font-bold mb-5 flex items-center gap-2" style={{ color: "#111827" }}>
+                    <GitCompare className="w-5 h-5" style={{ color: "#2bb32a" }} />
+                    Quick Comparison: {record.entityAName} vs {record.entityBName}
+                  </h2>
+                  <QuickCompareTable
+                    entityType={record.entityType}
+                    entityAData={entityAData || {}}
+                    entityBData={entityBData || {}}
+                    nameA={record.entityAName}
+                    nameB={record.entityBName ?? ""}
                   />
-                ))}
-              </div>
-            </section>
-          )}
+                </div>
+              </section>
 
-          {/* Verdict */}
-          <Card className="bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border-2 border-emerald-500/20 p-6">
-            <h2 className="text-xl font-bold text-foreground mb-3 flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-emerald-500" />
-              The Verdict: {record.entityAName} or {record.entityBName}?
-            </h2>
-            {overallWinnerName ? (
-              <>
-                <p className="text-foreground mb-3">
-                  Based on our analysis across {categoryList.length} categories,{" "}
-                  <strong>{overallWinnerName}</strong> wins with a score of {record.overallScore}. It
-                  outperforms in{" "}
-                  {categoryList
-                    .filter((c) => c.winnerId === record.overallWinnerId)
-                    .map((c) => c.label)
-                    .slice(0, 3)
-                    .join(", ")}
-                  .
-                </p>
-                <p className="text-muted-foreground text-sm mb-5">
-                  Choose <strong className="text-foreground">{overallWinnerName}</strong> for the
-                  overall stronger option. Choose{" "}
-                  <strong className="text-foreground">{loserName}</strong> if{" "}
-                  {categoryList
-                    .filter((c) => c.winnerId === loserId)
-                    .map((c) => c.label.toLowerCase())
-                    .slice(0, 2)
-                    .join(" or ")}{" "}
-                  matter most.
-                </p>
-              </>
-            ) : (
-              <p className="text-foreground mb-5">
-                {record.entityAName} and {record.entityBName} are evenly matched with a score of{" "}
-                {record.overallScore}. Your choice depends on which features matter most to your
-                trading style.
-              </p>
-            )}
-            <div className="flex flex-wrap gap-3">
-              <Link href={entityAReviewPath}>
-                <Button className="bg-primary text-white" data-testid="button-review-a">
-                  Full {record.entityAName} Review <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
-              <Link href={entityBReviewPath}>
-                <Button variant="outline" data-testid="button-review-b">
-                  Full {record.entityBName} Review <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
-            </div>
-          </Card>
+              {/* Category Breakdown */}
+              {categoryList.length > 0 && (
+                <section id="category-breakdown">
+                  <div className="rounded-lg p-6 md:p-7" style={{ background: "#ffffff", border: "1px solid #e8edea" }}>
+                    <h2 className="text-xl font-bold mb-5 flex items-center gap-2" style={{ color: "#111827" }}>
+                      <BarChart3 className="w-5 h-5" style={{ color: "#2bb32a" }} />
+                      Category Breakdown
+                    </h2>
+                    <div className="space-y-3">
+                      {categoryList.map((result) => (
+                        <CategorySection
+                          key={result.category}
+                          result={result}
+                          record={record}
+                          entityALogo={entityALogo}
+                          entityBLogo={entityBLogo}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              )}
 
-          {/* FAQ */}
-          {faqData.length > 0 && (
-            <Card className="bg-background/60 backdrop-blur-sm border-border/50 p-6">
-              <h2 className="text-xl font-bold text-foreground mb-4">Frequently Asked Questions</h2>
-              <FaqAccordion items={faqData} />
-            </Card>
-          )}
-
-          {/* Related Comparisons */}
-          {relatedOthers.length > 0 && (
-            <section>
-              <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                <GitCompare className="w-5 h-5 text-primary" />
-                Other {record.entityAName} Comparisons
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {relatedOthers.map((c) => {
-                  const otherName = c.entityASlug === record.entityASlug ? c.entityBName : c.entityAName;
-                  const winnerName =
-                    c.overallWinnerId === c.entityAId
-                      ? c.entityAName
-                      : c.overallWinnerId === c.entityBId
-                      ? c.entityBName
-                      : null;
-                  return (
-                    <Link
-                      key={c.id}
-                      href={`/compare/${entityType}/${c.slug}`}
-                      className="group"
-                      data-testid={`link-related-${c.id}`}
-                    >
-                      <Card className="p-4 border-border/50 hover:border-primary/30 transition-all group-hover:bg-primary/5">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-                              {record.entityAName} vs {otherName}
-                            </p>
-                            {winnerName && (
-                              <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                                <Trophy className="w-3 h-3 text-emerald-500" /> Winner: {winnerName}
-                              </p>
-                            )}
-                          </div>
-                          <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary flex-shrink-0 transition-colors" />
-                        </div>
-                      </Card>
+              {/* Verdict */}
+              <section id="verdict">
+                <div
+                  className="rounded-lg p-6 md:p-7"
+                  style={{ background: "#f0fdf4", border: "2px solid #bbf7d0" }}
+                >
+                  <h2 className="text-xl font-bold mb-3 flex items-center gap-2" style={{ color: "#111827" }}>
+                    <Trophy className="w-5 h-5" style={{ color: "#16a34a" }} />
+                    The Verdict: {record.entityAName} or {record.entityBName}?
+                  </h2>
+                  {overallWinnerName ? (
+                    <>
+                      <p className="mb-3" style={{ color: "#111827" }}>
+                        Based on our analysis across {categoryList.length} categories,{" "}
+                        <strong>{overallWinnerName}</strong> wins with a score of {record.overallScore}. It
+                        outperforms in{" "}
+                        {categoryList
+                          .filter((c) => c.winnerId === record.overallWinnerId)
+                          .map((c) => c.label)
+                          .slice(0, 3)
+                          .join(", ")}
+                        .
+                      </p>
+                      <p className="text-sm mb-5" style={{ color: "#4b5563" }}>
+                        Choose <strong style={{ color: "#111827" }}>{overallWinnerName}</strong> for the
+                        overall stronger option. Choose{" "}
+                        <strong style={{ color: "#111827" }}>{loserName}</strong> if{" "}
+                        {categoryList
+                          .filter((c) => c.winnerId === loserId)
+                          .map((c) => c.label.toLowerCase())
+                          .slice(0, 2)
+                          .join(" or ")}{" "}
+                        matter most.
+                      </p>
+                    </>
+                  ) : (
+                    <p className="mb-5" style={{ color: "#111827" }}>
+                      {record.entityAName} and {record.entityBName} are evenly matched with a score of{" "}
+                      {record.overallScore}. Your choice depends on which features matter most to your
+                      trading style.
+                    </p>
+                  )}
+                  <div className="flex flex-wrap gap-3">
+                    <Link href={entityAReviewPath}>
+                      <Button className="bg-primary text-white" data-testid="button-review-a">
+                        Full {record.entityAName} Review <ArrowRight className="w-4 h-4 ml-1" />
+                      </Button>
                     </Link>
-                  );
-                })}
+                    <Link href={entityBReviewPath}>
+                      <Button variant="outline" data-testid="button-review-b">
+                        Full {record.entityBName} Review <ArrowRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </section>
+
+              {/* FAQ */}
+              {faqData.length > 0 && (
+                <section id="faq">
+                  <div className="rounded-lg p-6 md:p-7" style={{ background: "#ffffff", border: "1px solid #e8edea" }}>
+                    <h2 className="text-xl font-bold mb-4" style={{ color: "#111827" }}>Frequently Asked Questions</h2>
+                    <FaqAccordion items={faqData} />
+                  </div>
+                </section>
+              )}
+
+              {/* Related Comparisons */}
+              {relatedOthers.length > 0 && (
+                <section id="related">
+                  <div className="rounded-lg p-6 md:p-7" style={{ background: "#ffffff", border: "1px solid #e8edea" }}>
+                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2" style={{ color: "#111827" }}>
+                      <GitCompare className="w-5 h-5" style={{ color: "#2bb32a" }} />
+                      Other {record.entityAName} Comparisons
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {relatedOthers.map((c) => {
+                        const otherName = c.entityASlug === record.entityASlug ? c.entityBName : c.entityAName;
+                        const winnerName =
+                          c.overallWinnerId === c.entityAId
+                            ? c.entityAName
+                            : c.overallWinnerId === c.entityBId
+                            ? c.entityBName
+                            : null;
+                        return (
+                          <Link
+                            key={c.id}
+                            href={`/compare/${entityType}/${c.slug}`}
+                            className="group"
+                            data-testid={`link-related-${c.id}`}
+                          >
+                            <div
+                              className="p-4 rounded-lg transition-all group-hover:border-[#2bb32a]/40"
+                              style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-sm font-medium transition-colors group-hover:text-[#15803d]" style={{ color: "#111827" }}>
+                                    {record.entityAName} vs {otherName}
+                                  </p>
+                                  {winnerName && (
+                                    <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: "#6b7280" }}>
+                                      <Trophy className="w-3 h-3" style={{ color: "#16a34a" }} /> Winner: {winnerName}
+                                    </p>
+                                  )}
+                                </div>
+                                <ArrowRight className="w-4 h-4 flex-shrink-0 transition-colors group-hover:text-[#16a34a]" style={{ color: "#9ca3af" }} />
+                              </div>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </section>
+              )}
+            </div>
+
+            {/* ── Sticky Sidebar ──────────────────────────────────────────── */}
+            <aside className="hidden lg:block">
+              <div className="sticky top-24 space-y-6">
+
+                {/* Table of Contents */}
+                <div className="rounded-lg p-5" style={{ background: "#ffffff", border: "1px solid #e8edea" }}>
+                  <h3 className="text-sm font-bold uppercase tracking-wide mb-3" style={{ color: "#6b7280" }}>Contents</h3>
+                  <nav className="space-y-1">
+                    {tocItems.map((item) => (
+                      <a
+                        key={item.id}
+                        href={`#${item.id}`}
+                        className="flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors hover:bg-[#f0fdf4] hover:text-[#15803d]"
+                        style={{ color: "#374151" }}
+                      >
+                        <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#2bb32a" }} />
+                        {item.label}
+                      </a>
+                    ))}
+                  </nav>
+                </div>
+
+                {/* Winner Summary Card */}
+                {overallWinnerName && (
+                  <div className="rounded-lg p-5" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Trophy className="w-4 h-4" style={{ color: "#16a34a" }} />
+                      <span className="text-sm font-bold" style={{ color: "#15803d" }}>Overall Winner</span>
+                    </div>
+                    <p className="text-2xl font-black mb-1" style={{ color: "#111827" }}>{overallWinnerName}</p>
+                    <p className="text-xs mb-4" style={{ color: "#6b7280" }}>
+                      Score: {record.overallScore} · {winsA > winsB ? winsA : winsB} category wins
+                    </p>
+                    <Link href={overallWinnerName === record.entityAName ? entityAReviewPath : entityBReviewPath}>
+                      <Button size="sm" className="w-full bg-[#2bb32a] hover:bg-[#24a023] text-white border-0">
+                        Full Review <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+
+                {/* Runner-up */}
+                <div className="rounded-lg p-5" style={{ background: "#ffffff", border: "1px solid #e8edea" }}>
+                  <h3 className="text-sm font-semibold mb-3" style={{ color: "#374151" }}>Compare Both</h3>
+                  <div className="space-y-2">
+                    <Link href={entityAReviewPath}>
+                      <div className="flex items-center gap-3 p-3 rounded-md transition-colors hover:bg-[#f9fafb]" style={{ border: "1px solid #e5e7eb" }}>
+                        <EntityLogo name={record.entityAName} logoUrl={entityALogo} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate" style={{ color: "#111827" }}>{record.entityAName}</p>
+                          {entityAData?.rating && (
+                            <StarRating rating={parseFloat(String(entityAData.rating))} />
+                          )}
+                        </div>
+                        <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: "#9ca3af" }} />
+                      </div>
+                    </Link>
+                    <Link href={entityBReviewPath}>
+                      <div className="flex items-center gap-3 p-3 rounded-md transition-colors hover:bg-[#f9fafb]" style={{ border: "1px solid #e5e7eb" }}>
+                        <EntityLogo name={record.entityBName ?? ""} logoUrl={entityBLogo} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate" style={{ color: "#111827" }}>{record.entityBName}</p>
+                          {entityBData?.rating && (
+                            <StarRating rating={parseFloat(String(entityBData.rating))} />
+                          )}
+                        </div>
+                        <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: "#9ca3af" }} />
+                      </div>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Hub link */}
+                <Link href={hubPath}>
+                  <div
+                    className="rounded-lg p-4 flex items-center gap-3 transition-colors hover:border-[#2bb32a]/40 cursor-pointer"
+                    style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}
+                  >
+                    <GitCompare className="w-5 h-5 flex-shrink-0" style={{ color: "#2bb32a" }} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold" style={{ color: "#111827" }}>More Comparisons</p>
+                      <p className="text-xs" style={{ color: "#6b7280" }}>Browse all {hubLabel.toLowerCase()}</p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: "#9ca3af" }} />
+                  </div>
+                </Link>
+
               </div>
-            </section>
-          )}
+            </aside>
+
+          </div>
         </div>
-      </div>
+      </main>
 
       {/* JSON-LD */}
       <script
@@ -705,7 +915,7 @@ function AlternativesPage({
       {/* ── Page body ─────────────────────────────────────────────────────── */}
       <div
         className="min-h-screen"
-        style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}
+        style={{ background: "#f5f7f6" }}
       >
         <div className="max-w-5xl mx-auto px-4 py-10 space-y-8">
 
@@ -732,9 +942,10 @@ function AlternativesPage({
                 const vsPath = `/compare/${entityType}/${vsSlug}`;
 
                 return (
-                  <Card
+                  <div
                     key={alt.entityId}
-                    className="bg-background/60 backdrop-blur-sm border-border/50 overflow-hidden"
+                    className="rounded-lg overflow-hidden"
+                    style={{ background: "#ffffff", border: "1px solid #e8edea" }}
                     data-testid={`card-alternative-${idx}`}
                   >
                     <div className="p-5">
@@ -796,7 +1007,7 @@ function AlternativesPage({
                         </div>
                       </div>
                     </div>
-                  </Card>
+                  </div>
                 );
               })}
             </div>
@@ -804,18 +1015,18 @@ function AlternativesPage({
 
           {/* FAQ */}
           {faqData.length > 0 && (
-            <Card className="bg-background/60 backdrop-blur-sm border-border/50 p-6">
-              <h2 className="text-xl font-bold text-foreground mb-4">Frequently Asked Questions</h2>
+            <div className="rounded-lg p-6" style={{ background: "#ffffff", border: "1px solid #e8edea" }}>
+              <h2 className="text-xl font-bold mb-4" style={{ color: "#111827" }}>Frequently Asked Questions</h2>
               <FaqAccordion items={faqData} />
-            </Card>
+            </div>
           )}
 
           {/* CTA to full review */}
-          <Card className="bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border-2 border-emerald-500/20 p-6">
-            <h2 className="text-lg font-bold text-foreground mb-2">
+          <div className="rounded-lg p-6" style={{ background: "#f0fdf4", border: "2px solid #bbf7d0" }}>
+            <h2 className="text-lg font-bold mb-2" style={{ color: "#111827" }}>
               Not sure? Read the full {record.entityAName} review first
             </h2>
-            <p className="text-muted-foreground text-sm mb-4">
+            <p className="text-sm mb-4" style={{ color: "#4b5563" }}>
               Our in-depth review covers fees, regulation, platforms, and everything you need to know
               about {record.entityAName} before choosing an alternative.
             </p>
@@ -824,7 +1035,7 @@ function AlternativesPage({
                 Read {record.entityAName} Review <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
-          </Card>
+          </div>
         </div>
       </div>
 
@@ -878,6 +1089,16 @@ export default function ComparisonPage() {
     },
     retry: false,
   });
+
+  // Set light body background (comparison pages use light theme body)
+  useEffect(() => {
+    document.body.style.setProperty("background", "#f5f7f6", "important");
+    document.documentElement.style.setProperty("background", "#f5f7f6", "important");
+    return () => {
+      document.body.style.removeProperty("background");
+      document.documentElement.style.removeProperty("background");
+    };
+  }, []);
 
   // Canonical redirect for vs pages (alphabetical slug enforcement)
   useEffect(() => {
