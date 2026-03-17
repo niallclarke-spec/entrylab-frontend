@@ -2448,6 +2448,9 @@ ${items}
           .replace(/\s+on\w+="[^"]*"/gi, '')
           // Keep only safe tags — strip everything else not in whitelist
           .replace(/<(?!\/?(?:h[1-6]|p|ul|ol|li|strong|em|b|i|a|br|table|thead|tbody|tr|th|td|blockquote|figure|figcaption|dl|dt|dd)\b)[^>]+>/gi, '')
+          // Rewrite old WordPress URL paths to current EntryLab routes
+          .replace(/href="https?:\/\/(?:entrylab\.io)?\/popular-broker\//gi, 'href="/broker/')
+          .replace(/href="\/popular-broker\//gi, 'href="/broker/')
           // Clean up multiple blank lines
           .replace(/\n{3,}/g, '\n\n')
           .trim();
@@ -2475,7 +2478,14 @@ ${items}
         }
 
         const cleanStr = (val: any): string =>
-          val ? String(val).replace(/<[^>]+>/g, '').trim() : '';
+          val ? String(val)
+            .replace(/<[^>]+>/g, '')
+            .replace(/\*\*(.*?)\*\*/g, '$1')
+            .replace(/\*(.*?)\*/g, '$1')
+            .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+            .replace(/^#{1,6}\s+/gm, '')
+            .trim()
+          : '';
 
         // Broker-specific fields
         if (cleanUrl.startsWith('/broker/')) {
@@ -2521,7 +2531,7 @@ ${items}
           }
 
           if (pageData.content) {
-            const bodyHtml = sanitizeForSSR(pageData.content).substring(0, 10000);
+            const bodyHtml = sanitizeForSSR(pageData.content).substring(0, 60000);
             html += bodyHtml;
           }
         }
@@ -2567,7 +2577,7 @@ ${items}
           }
 
           if (pageData.content) {
-            const bodyHtml = sanitizeForSSR(pageData.content).substring(0, 10000);
+            const bodyHtml = sanitizeForSSR(pageData.content).substring(0, 60000);
             html += bodyHtml;
           }
         }
