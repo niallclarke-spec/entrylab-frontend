@@ -337,6 +337,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
 
+  // ─── Content quality utilities ────────────────────────────────────────────
+
+  // Scrubs legacy WordPress /popular_broker/ and /popular-broker/ URLs from
+  // article HTML content, replacing them with canonical /broker/:slug paths.
+  // Called automatically on every article create/update so no broken links
+  // ever reach the DB.
+  const wpBrokerSlugMapInline: Record<string, string> = {
+    'xm-broker-review-2026': 'xm', 'xm-broker-review-2025': 'xm',
+    'ic-markets-broker-review-2026': 'ic-markets', 'ic-markets-broker-review-2025': 'ic-markets',
+    'pepperstone-broker-review-2026': 'pepperstone', 'pepperstone-broker-review-2025': 'pepperstone',
+    'cmc-markets-broker-review-2026': 'cmc-markets', 'cmc-markets-broker-review-2025': 'cmc-markets',
+    'ig-broker-review-2026': 'ig-group', 'ig-broker-review-2025': 'ig-group',
+    'saxo-bank-broker-review-2026': 'saxo-bank', 'saxo-bank-broker-review-2025': 'saxo-bank',
+    'avatrade-broker-review-2026': 'avatrade', 'avatrade-broker-review-2025': 'avatrade',
+    'fp-markets-broker-review-2026': 'fp-markets', 'fp-markets-broker-review-2025': 'fp-markets',
+    'octafx-broker-review-2026': 'octafx', 'octafx-broker-review-2025': 'octafx',
+  };
+  function sanitiseArticleContent(content: string): string {
+    if (!content) return content;
+    return content.replace(
+      /https?:\/\/(?:entrylab\.io)?\/popular[_-]broker\/([^/"'\s<>]+?)\/?(?=["'\s<>]|$)/gi,
+      (_match, rawSlug) => {
+        const clean = rawSlug.replace(/\/$/, '').toLowerCase();
+        const mapped = wpBrokerSlugMapInline[clean] ||
+          clean.replace(/-broker-review-\d{4}$/, '').replace(/-review-\d{4}$/, '') || clean;
+        return `https://entrylab.io/broker/${mapped}`;
+      }
+    ).replace(
+      /href="\/popular[_-]broker\/([^"]+?)\/?">/gi,
+      (_match, rawSlug) => {
+        const clean = rawSlug.replace(/\/$/, '').toLowerCase();
+        const mapped = wpBrokerSlugMapInline[clean] ||
+          clean.replace(/-broker-review-\d{4}$/, '').replace(/-review-\d{4}$/, '') || clean;
+        return `href="/broker/${mapped}">`;
+      }
+    );
+  }
+
+  // Pings Google and Bing to notify them the sitemap has been updated.
+  // Non-blocking — fires and forgets, never throws.
+  function pingSitemaps(): void {
+    const sitemapUrl = encodeURIComponent('https://entrylab.io/sitemap.xml');
+    const endpoints = [
+      `https://www.google.com/ping?sitemap=${sitemapUrl}`,
+      `https://www.bing.com/ping?sitemap=${sitemapUrl}`,
+    ];
+    for (const url of endpoints) {
+      import('https').then(({ get }) => {
+        const req = get(url, (res) => { res.resume(); });
+        req.on('error', () => {});
+        req.setTimeout(5000, () => req.destroy());
+      }).catch(() => {});
+    }
+  }
+
   // ─── Admin auth endpoints ──────────────────────────────────────────────────
 
   app.post("/api/admin/login", loginLimiter, async (req, res) => {
@@ -381,8 +436,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .values({ ...body, lastUpdated: new Date() })
         .returning();
       apiCache.delete('brokers:list');
+      // Clear comparison hub SSR caches so new broker appears immediately
+      apiCache.delete('ssr:comparison-hub:broker');
       invalidateInternalLinksCache();
+      // Auto-generate all vs-pair comparisons (published immediately)
       onEntityCreated("broker", broker.id).catch(() => {});
+      pingSitemaps();
       return res.status(201).json(broker);
     } catch (err: any) {
       console.error("[Admin] Error creating broker:", err);
@@ -444,8 +503,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .values({ ...body, lastUpdated: new Date() })
         .returning();
       apiCache.delete('prop-firms:list');
+      // Clear comparison hub SSR caches so new firm appears immediately
+      apiCache.delete('ssr:comparison-hub:prop-firm');
       invalidateInternalLinksCache();
+      // Auto-generate all vs-pair comparisons (published immediately)
       onEntityCreated("prop_firm", firm.id).catch(() => {});
+      pingSitemaps();
       return res.status(201).json(firm);
     } catch (err: any) {
       console.error("[Admin] Error creating prop firm:", err);
@@ -640,6 +703,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (body.status === "published" && !body.publishedAt) {
         body.publishedAt = new Date();
       }
+      // Scrub any legacy WordPress broker links before persisting
+      if (body.content) body.content = sanitiseArticleContent(body.content);
       const [article] = await db
         .insert(articlesTable)
         .values({
@@ -648,6 +713,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updatedAt: new Date(),
         })
         .returning();
+      // Ping search engines when a new article is published
+      if (article.status === "published") pingSitemaps();
       return res.status(201).json(article);
     } catch (err: any) {
       if (err.code === "23505") return res.status(409).json({ error: "Slug already exists" });
@@ -665,15 +732,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         body.publishedAt = new Date();
       }
       body.updatedAt = new Date();
+      // Scrub any legacy WordPress broker links before persisting
+      if (body.content) body.content = sanitiseArticleContent(body.content);
       const [article] = await db
         .update(articlesTable)
         .set(body)
         .where(eq(articlesTable.id, req.params.id))
         .returning();
       if (!article) return res.status(404).json({ error: "Not found" });
+      // Clear both API cache and SSR cache for this article
       apiCache.delete(`article:${article.slug}`);
+      apiCache.delete(`ssr:article:${article.slug}`);
       apiCache.delete('articles:list:all');
       if (article.category) apiCache.delete(`articles:list:${article.category}`);
+      // Ping search engines when an article is published/updated
+      if (article.status === "published") pingSitemaps();
       return res.json(article);
     } catch (err: any) {
       if (err.code === "23505") return res.status(409).json({ error: "Slug already exists" });
@@ -1315,7 +1388,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await db.update(brokersTable).set({ ...updates, lastUpdated: new Date() }).where(eq(brokersTable.slug, slug));
       const rows = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
       apiCache.delete(`broker:${slug}`);
+      apiCache.delete(`ssr:broker:${slug}`);
       apiCache.delete('brokers:list');
+      apiCache.delete('ssr:comparison-hub:broker');
       if (rows[0]) onEntityUpdated("broker", rows[0].id).catch(() => {});
       res.json(rows[0] ? brokerDbToApi(rows[0]) : { success: true });
     } catch (error: any) {
@@ -1380,7 +1455,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await db.update(propFirmsTable).set({ ...updates, lastUpdated: new Date() }).where(eq(propFirmsTable.slug, slug));
       const rows = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
       apiCache.delete(`prop-firm:${slug}`);
+      apiCache.delete(`ssr:prop-firm:${slug}`);
       apiCache.delete('prop-firms:list');
+      apiCache.delete('ssr:comparison-hub:prop-firm');
       if (rows[0]) onEntityUpdated("prop_firm", rows[0].id).catch(() => {});
       res.json(rows[0] ? propFirmDbToApi(rows[0]) : { success: true });
     } catch (error: any) {

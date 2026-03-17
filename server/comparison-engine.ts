@@ -1154,12 +1154,12 @@ export async function onEntityCreated(entityType: "broker" | "prop_firm", entity
         entityAId: a.id, entityBId: b.id,
         entityASlug: a.slug, entityBSlug: b.slug,
         entityAName: a.name, entityBName: b.name,
-        slug, status: "draft",
+        slug, status: "published",
         categoryWinners: data.categoryWinners as any,
         overallWinnerId: data.overallWinnerId,
         overallScore: data.overallScore,
         faqData: data.faqData as any,
-        publishedAt: null, updatedAt: new Date(),
+        publishedAt: new Date(), updatedAt: new Date(),
       });
     }
   } else {
@@ -1177,12 +1177,12 @@ export async function onEntityCreated(entityType: "broker" | "prop_firm", entity
         entityAId: a.id, entityBId: b.id,
         entityASlug: a.slug, entityBSlug: b.slug,
         entityAName: a.name, entityBName: b.name,
-        slug, status: "draft",
+        slug, status: "published",
         categoryWinners: data.categoryWinners as any,
         overallWinnerId: data.overallWinnerId,
         overallScore: data.overallScore,
         faqData: data.faqData as any,
-        publishedAt: null, updatedAt: new Date(),
+        publishedAt: new Date(), updatedAt: new Date(),
       });
     }
   }
