@@ -846,6 +846,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/admin/comparisons/:id/regenerate", adminAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await regenerateComparisons([id]);
+      const [updated] = await db.select().from(comparisonsTable).where(eq(comparisonsTable.id, id));
+      return res.json(updated ?? { ok: true });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
   // ─── Public article endpoints ──────────────────────────────────────────────
 
   app.get("/api/articles", async (req, res) => {

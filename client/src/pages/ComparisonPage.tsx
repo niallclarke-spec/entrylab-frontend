@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useLocation, Link } from "wouter";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -22,6 +22,8 @@ import {
   Award,
   ChevronRight,
   BarChart3,
+  RefreshCw,
+  CheckCircle2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { ComparisonRecord } from "@shared/schema";
@@ -1233,6 +1235,7 @@ export default function ComparisonPage() {
   const params = useParams<{ slug: string }>();
   const { slug } = params;
   const entityType = location.startsWith("/compare/prop-firm") ? "prop_firm" : "broker";
+  const qc = useQueryClient();
 
   const { data: record, isLoading, error } = useQuery<ComparisonRecord>({
     queryKey: ["/api/comparisons", entityType, slug],
@@ -1242,6 +1245,36 @@ export default function ComparisonPage() {
       return res.json();
     },
     retry: false,
+  });
+
+  const { data: adminMe } = useQuery<{ ok: boolean }>({
+    queryKey: ["/api/admin/me"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/me", { credentials: "include" });
+      if (!res.ok) return null as any;
+      return res.json();
+    },
+    retry: false,
+    staleTime: 60_000,
+  });
+  const isAdmin = !!adminMe?.ok;
+
+  const [regenDone, setRegenDone] = useState(false);
+  const regenMutation = useMutation({
+    mutationFn: async () => {
+      if (!record?.id) throw new Error("No record id");
+      const res = await fetch(`/api/admin/comparisons/${record.id}/regenerate`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Regeneration failed");
+      return res.json();
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["/api/comparisons", entityType, slug] });
+      setRegenDone(true);
+      setTimeout(() => setRegenDone(false), 3000);
+    },
   });
 
   // Set light body background (comparison pages use light theme body)
@@ -1324,6 +1357,44 @@ export default function ComparisonPage() {
         <VsComparisonPage record={record} entityType={entityType} slug={slug ?? ""} />
       )}
       <Footer />
+
+      {/* Admin-only floating regenerate button */}
+      {isAdmin && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "24px",
+            right: "24px",
+            zIndex: 9999,
+          }}
+        >
+          <Button
+            onClick={() => regenMutation.mutate()}
+            disabled={regenMutation.isPending}
+            data-testid="button-admin-regenerate"
+            style={{
+              background: regenDone ? "#16a34a" : "#1a1e1c",
+              border: "1px solid rgba(255,255,255,0.15)",
+              color: "#fff",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
+              gap: "8px",
+            }}
+          >
+            {regenMutation.isPending ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : regenDone ? (
+              <CheckCircle2 className="h-4 w-4" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            {regenMutation.isPending
+              ? "Regenerating…"
+              : regenDone
+              ? "Up to date"
+              : "Regenerate"}
+          </Button>
+        </div>
+      )}
     </>
   );
 }
