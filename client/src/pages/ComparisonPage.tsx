@@ -598,11 +598,8 @@ function VsComparisonPage({
                   <div>
                     <span className="text-base font-bold text-white block">{record.entityAName}</span>
                     {entityAData?.rating && (
-                      <div className="flex items-center justify-center gap-1 mt-1">
+                      <div className="flex items-center justify-center mt-1">
                         <StarRating rating={parseFloat(String(entityAData.rating))} />
-                        <span className="text-xs ml-1" style={{ color: "rgba(255,255,255,0.45)" }}>
-                          {parseFloat(String(entityAData.rating)).toFixed(1)}
-                        </span>
                       </div>
                     )}
                   </div>
@@ -631,11 +628,8 @@ function VsComparisonPage({
                   <div>
                     <span className="text-base font-bold text-white block">{record.entityBName}</span>
                     {entityBData?.rating && (
-                      <div className="flex items-center justify-center gap-1 mt-1">
+                      <div className="flex items-center justify-center mt-1">
                         <StarRating rating={parseFloat(String(entityBData.rating))} />
-                        <span className="text-xs ml-1" style={{ color: "rgba(255,255,255,0.45)" }}>
-                          {parseFloat(String(entityBData.rating)).toFixed(1)}
-                        </span>
                       </div>
                     )}
                   </div>
