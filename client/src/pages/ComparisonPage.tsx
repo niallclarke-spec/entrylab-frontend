@@ -467,8 +467,16 @@ function VsComparisonPage({
   const hubLabel = entityType === "broker" ? "Broker Comparisons" : "Prop Firm Comparisons";
   const entityAReviewPath = entityType === "broker" ? `/broker/${record.entityASlug}` : `/prop-firm/${record.entityASlug}`;
   const entityBReviewPath = entityType === "broker" ? `/broker/${record.entityBSlug}` : `/prop-firm/${record.entityBSlug}`;
+  const winnerName = record.overallWinnerId === record.entityAId
+    ? record.entityAName
+    : record.overallWinnerId === record.entityBId
+    ? record.entityBName
+    : null;
+  const entityKindLabel = entityType === "broker" ? "broker" : "prop firm";
   const pageTitle = `${record.entityAName} vs ${record.entityBName} Compared (2026)`;
-  const pageDesc = `${record.entityAName} vs ${record.entityBName} — which is better? We compare across ${categoryList.length} key categories to help you decide.`;
+  const pageDesc = winnerName
+    ? `${record.entityAName} vs ${record.entityBName}: ${winnerName} comes out on top in our ${categoryList.length}-category analysis of regulation, fees, platforms and more. Full ${entityKindLabel} comparison.`
+    : `${record.entityAName} vs ${record.entityBName}: an in-depth ${categoryList.length}-category comparison covering regulation, fees, platforms and more — find the right ${entityKindLabel} for you.`;
 
   const loserId = record.overallWinnerId === record.entityAId ? record.entityBId : record.entityAId;
   const loserName = record.overallWinnerId === record.entityAId ? record.entityBName : record.entityAName;

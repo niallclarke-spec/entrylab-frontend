@@ -1725,13 +1725,15 @@ ${items}
     res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
     
     try {
-      const [posts, brokers, propFirms, categories] = await Promise.all([
+      const [posts, brokers, propFirms, categories, comparisons] = await Promise.all([
         db.select({ slug: articlesTable.slug, category: articlesTable.category, publishedAt: articlesTable.publishedAt, updatedAt: articlesTable.updatedAt })
           .from(articlesTable).where(eq(articlesTable.status, "published")).orderBy(desc(articlesTable.publishedAt)),
         db.select({ slug: brokersTable.slug, lastUpdated: brokersTable.lastUpdated }).from(brokersTable),
         db.select({ slug: propFirmsTable.slug, lastUpdated: propFirmsTable.lastUpdated }).from(propFirmsTable),
         db.select({ slug: categoriesTable.slug, name: categoriesTable.name }).from(categoriesTable)
           .where(eq(categoriesTable.type, "article")),
+        db.select({ slug: comparisonsTable.slug, entityType: comparisonsTable.entityType, publishedAt: comparisonsTable.publishedAt, updatedAt: comparisonsTable.updatedAt })
+          .from(comparisonsTable).where(inArray(comparisonsTable.status, ["published", "updated"])),
       ]);
 
       const baseUrl = 'https://entrylab.io';
@@ -1794,13 +1796,41 @@ ${items}
       sitemap += `    <priority>0.8</priority>\n`;
       sitemap += `  </url>\n`;
 
-      // Compare page
+      // Compare hub pages
       sitemap += `  <url>\n`;
       sitemap += `    <loc>${baseUrl}/compare</loc>\n`;
       sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
       sitemap += `    <changefreq>weekly</changefreq>\n`;
-      sitemap += `    <priority>0.7</priority>\n`;
+      sitemap += `    <priority>0.8</priority>\n`;
       sitemap += `  </url>\n`;
+      sitemap += `  <url>\n`;
+      sitemap += `    <loc>${baseUrl}/compare/broker</loc>\n`;
+      sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
+      sitemap += `    <changefreq>weekly</changefreq>\n`;
+      sitemap += `    <priority>0.8</priority>\n`;
+      sitemap += `  </url>\n`;
+      sitemap += `  <url>\n`;
+      sitemap += `    <loc>${baseUrl}/compare/prop-firm</loc>\n`;
+      sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
+      sitemap += `    <changefreq>weekly</changefreq>\n`;
+      sitemap += `    <priority>0.8</priority>\n`;
+      sitemap += `  </url>\n`;
+
+      // Individual comparison pages (published/updated only)
+      comparisons.forEach((comp) => {
+        const urlSegment = comp.entityType === 'broker' ? 'broker' : 'prop-firm';
+        const modifiedDate = comp.updatedAt
+          ? new Date(comp.updatedAt).toISOString()
+          : comp.publishedAt
+          ? new Date(comp.publishedAt).toISOString()
+          : currentDate;
+        sitemap += `  <url>\n`;
+        sitemap += `    <loc>${baseUrl}/compare/${urlSegment}/${comp.slug}</loc>\n`;
+        sitemap += `    <lastmod>${modifiedDate}</lastmod>\n`;
+        sitemap += `    <changefreq>monthly</changefreq>\n`;
+        sitemap += `    <priority>0.7</priority>\n`;
+        sitemap += `  </url>\n`;
+      });
 
       // Articles - Use /:category/:slug format from DB
       posts.forEach((post) => {
@@ -2208,6 +2238,18 @@ ${items}
               apiCache.set(ssrKey, pageData, 300, 600);
             }
           }
+        } else if (cleanUrl === '/compare/broker') {
+          pageData = {
+            seoTitle: 'Broker Comparisons — Side-by-Side Forex Broker Analysis | EntryLab',
+            seoDescription: 'Compare forex brokers head-to-head across regulation, fees, platforms, spreads and more. In-depth broker comparisons to help you choose the right account.',
+            name: 'Broker Comparisons',
+          };
+        } else if (cleanUrl === '/compare/prop-firm') {
+          pageData = {
+            seoTitle: 'Prop Firm Comparisons — Find the Best Funded Trader Programme | EntryLab',
+            seoDescription: 'Compare the top prop trading firms side by side. Challenges, profit splits, drawdown limits and payouts — all analysed so you can find the best funded account.',
+            name: 'Prop Firm Comparisons',
+          };
         } else if (url.startsWith('/compare/broker/') || url.startsWith('/compare/prop-firm/')) {
           // Comparison pages: /compare/broker/:slug or /compare/prop-firm/:slug
           const compSlug = url.replace(/^\/compare\/(broker|prop-firm)\//, '').split('?')[0];
@@ -2225,7 +2267,9 @@ ${items}
                 : null;
               pageData = {
                 seoTitle: `${comp.entityAName} vs ${comp.entityBName} Compared (2026) | EntryLab`,
-                seoDescription: `${comp.entityAName} vs ${comp.entityBName} — which is better? We compare regulation, costs, platforms and more across 7 categories.${winnerName ? ` Winner: ${winnerName}.` : ''}`,
+                seoDescription: winnerName
+                  ? `${comp.entityAName} vs ${comp.entityBName}: ${winnerName} comes out on top in our in-depth comparison of regulation, fees, platforms and more.`
+                  : `${comp.entityAName} vs ${comp.entityBName} — an in-depth comparison of regulation, fees, platforms and more to help you choose the right account.`,
                 name: `${comp.entityAName} vs ${comp.entityBName}`,
                 publishedAt: comp.publishedAt,
                 updatedAt: comp.updatedAt,
