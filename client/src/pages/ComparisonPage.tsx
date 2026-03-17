@@ -175,67 +175,78 @@ function QuickCompareTable({
     <div className="overflow-x-auto rounded-xl" style={{ border: "1px solid #e8edea" }}>
       <table className="w-full text-sm border-collapse">
         <thead>
-          <tr style={{ background: "#1a1e1c" }}>
-            <th className="p-4 text-left w-1/3" style={{ color: "rgba(255,255,255,0.4)", fontWeight: 500, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
+          <tr style={{ borderBottom: "2px solid #e8edea" }}>
+            {/* Feature label col */}
+            <th className="px-5 py-4 text-left w-1/3" style={{
+              color: "#9ca3af",
+              fontWeight: 500,
+              fontSize: "0.7rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.07em",
+              borderRight: "1px solid #f0f4f2",
+              background: "#fafcfa",
+            }}>
               Feature
             </th>
             {/* Entity A header */}
-            <th className="p-4 text-left" style={{
-              borderRight: "1px solid rgba(255,255,255,0.08)",
-              borderBottom: aWins ? "3px solid #2bb32a" : "3px solid transparent",
+            <th className="px-5 py-4 text-left" style={{
+              borderRight: "1px solid #f0f4f2",
+              borderTop: aWins ? "3px solid #2bb32a" : "3px solid transparent",
+              background: aWins ? "#f0fdf4" : "#ffffff",
             }}>
               <div className="flex items-center gap-2.5">
                 {logoA ? (
-                  <div className="w-7 h-7 rounded-md bg-white flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    <img src={logoA} alt={nameA} className="w-5 h-5 object-contain" />
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ border: "1px solid #e8edea", background: "#fff" }}>
+                    <img src={logoA} alt={nameA} className="w-6 h-6 object-contain" />
                   </div>
                 ) : (
-                  <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 text-xs font-bold text-white" style={{ background: "#2bb32a" }}>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-bold text-white" style={{ background: "#2bb32a" }}>
                     {nameA.charAt(0)}
                   </div>
                 )}
-                <div>
-                  <p className="font-semibold text-white text-sm leading-tight">{nameA}</p>
+                <div className="min-w-0">
+                  <p className="font-bold text-sm leading-tight truncate" style={{ color: "#111827" }}>{nameA}</p>
                   {ratingA != null && ratingA > 0 && (
                     <div className="flex items-center gap-1 mt-0.5">
                       <Star className="w-3 h-3 fill-[#f59e0b] text-[#f59e0b]" />
-                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>{ratingA.toFixed(1)}</span>
+                      <span className="text-xs font-medium" style={{ color: "#6b7280" }}>{ratingA.toFixed(1)}</span>
                     </div>
                   )}
                 </div>
                 {aWins && (
-                  <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(43,179,42,0.2)", color: "#2bb32a" }}>
-                    WINNER
+                  <span className="ml-auto flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#dcfce7", color: "#15803d" }}>
+                    Winner
                   </span>
                 )}
               </div>
             </th>
             {/* Entity B header */}
-            <th className="p-4 text-left" style={{
-              borderBottom: bWins ? "3px solid #2bb32a" : "3px solid transparent",
+            <th className="px-5 py-4 text-left" style={{
+              borderTop: bWins ? "3px solid #2bb32a" : "3px solid transparent",
+              background: bWins ? "#f0fdf4" : "#ffffff",
             }}>
               <div className="flex items-center gap-2.5">
                 {logoB ? (
-                  <div className="w-7 h-7 rounded-md bg-white flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    <img src={logoB} alt={nameB} className="w-5 h-5 object-contain" />
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ border: "1px solid #e8edea", background: "#fff" }}>
+                    <img src={logoB} alt={nameB} className="w-6 h-6 object-contain" />
                   </div>
                 ) : (
-                  <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 text-xs font-bold text-white" style={{ background: "#374151" }}>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-bold text-white" style={{ background: "#6b7280" }}>
                     {nameB.charAt(0)}
                   </div>
                 )}
-                <div>
-                  <p className="font-semibold text-white text-sm leading-tight">{nameB}</p>
+                <div className="min-w-0">
+                  <p className="font-bold text-sm leading-tight truncate" style={{ color: "#111827" }}>{nameB}</p>
                   {ratingB != null && ratingB > 0 && (
                     <div className="flex items-center gap-1 mt-0.5">
                       <Star className="w-3 h-3 fill-[#f59e0b] text-[#f59e0b]" />
-                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>{ratingB.toFixed(1)}</span>
+                      <span className="text-xs font-medium" style={{ color: "#6b7280" }}>{ratingB.toFixed(1)}</span>
                     </div>
                   )}
                 </div>
                 {bWins && (
-                  <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(43,179,42,0.2)", color: "#2bb32a" }}>
-                    WINNER
+                  <span className="ml-auto flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#dcfce7", color: "#15803d" }}>
+                    Winner
                   </span>
                 )}
               </div>
