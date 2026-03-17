@@ -2400,7 +2400,7 @@ ${items}
               entityBName: comparisonsTable.entityBName,
             }).from(comparisonsTable)
               .where(and(
-                eq(comparisonsTable.status, 'published'),
+                inArray(comparisonsTable.status, ['published', 'updated']),
                 eq(comparisonsTable.entityType, 'broker')
               ))
               .orderBy(desc(comparisonsTable.updatedAt))
@@ -2425,7 +2425,7 @@ ${items}
               entityBName: comparisonsTable.entityBName,
             }).from(comparisonsTable)
               .where(and(
-                eq(comparisonsTable.status, 'published'),
+                inArray(comparisonsTable.status, ['published', 'updated']),
                 eq(comparisonsTable.entityType, 'prop_firm')
               ))
               .orderBy(desc(comparisonsTable.updatedAt))
@@ -2990,11 +2990,24 @@ ${items}
           if (cleanUrl === '/') {
             try {
               const homepageDesc = 'EntryLab provides expert forex broker reviews, prop firm analysis, and trading news. Compare brokers by regulation, spreads, leverage, and platforms.';
-              // Inject og:description for homepage
-              if (!modifiedHtml.includes('og:description')) {
+              const homepageOgImage = 'https://entrylab.io/assets/entrylab-logo-green.png';
+              // Inject full OG + Twitter + meta description for homepage
+              if (!modifiedHtml.includes('og:title')) {
                 modifiedHtml = modifiedHtml.replace(
                   '</head>',
-                  `  <meta property="og:description" content="${homepageDesc}">\n  <meta name="description" content="${homepageDesc}">\n  </head>`
+                  `  <meta property="og:title" content="EntryLab \u2014 Forex Broker Reviews &amp; Trading News">
+  <meta property="og:description" content="${homepageDesc}">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="${homepageOgImage}">
+  <meta property="og:url" content="https://entrylab.io/">
+  <meta property="og:site_name" content="EntryLab">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@entrylabio">
+  <meta name="twitter:title" content="EntryLab \u2014 Forex Broker Reviews &amp; Trading News">
+  <meta name="twitter:description" content="${homepageDesc}">
+  <meta name="twitter:image" content="${homepageOgImage}">
+  <meta name="description" content="${homepageDesc}">
+\n  </head>`
                 );
               }
 
