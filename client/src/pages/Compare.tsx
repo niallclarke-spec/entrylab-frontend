@@ -1,118 +1,53 @@
-import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Broker } from "@shared/schema";
-import type { ComparisonRecord } from "@shared/schema";
-import { Star, X, Plus, ExternalLink, Shield, DollarSign, TrendingUp, Monitor, CreditCard, Headphones, Check, Minus, Trophy, ArrowRight, GitCompare, Flame } from "lucide-react";
 import { Link } from "wouter";
+import { useEffect, useState } from "react";
+import { Home, GitCompare, Trophy, Star, ArrowRight, Shield, Flame } from "lucide-react";
+import type { ComparisonRecord } from "@shared/schema";
 
-const COMPARISON_ROWS: { label: string; key: keyof Broker; icon: any }[] = [
-  { label: "Rating", key: "rating", icon: Star },
-  { label: "Regulation", key: "regulation", icon: Shield },
-  { label: "Min Deposit", key: "minDeposit", icon: DollarSign },
-  { label: "Max Leverage", key: "maxLeverage", icon: TrendingUp },
-  { label: "Spread From", key: "spreadFrom", icon: TrendingUp },
-  { label: "Platforms", key: "platforms", icon: Monitor },
-  { label: "Payment Methods", key: "paymentMethods", icon: CreditCard },
-  { label: "Headquarters", key: "headquarters", icon: Headphones },
-];
-
-function StarRating({ rating }: { rating: number }) {
+function BrokerLogo({ name, logoUrl }: { name: string; logoUrl?: string | null }) {
+  const [err, setErr] = useState(false);
+  if (logoUrl && !err) {
+    return (
+      <img
+        src={logoUrl}
+        alt={name}
+        onError={() => setErr(true)}
+        className="w-16 h-16 object-contain rounded-xl bg-white p-2 flex-shrink-0"
+        style={{ border: "1px solid #e8edea" }}
+      />
+    );
+  }
   return (
-    <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <Star
-          key={i}
-          className={`w-4 h-4 ${i <= Math.round(rating) ? "text-[#2bb32a] fill-[#2bb32a]" : "text-gray-300"}`}
-        />
-      ))}
-      <span className="ml-1 text-sm font-semibold text-gray-700">{rating.toFixed(1)}</span>
+    <div
+      className="w-16 h-16 rounded-xl flex items-center justify-center text-xl font-black text-white flex-shrink-0"
+      style={{ background: "#2bb32a" }}
+    >
+      {name.charAt(0)}
     </div>
   );
 }
 
-function BrokerSearchDropdown({
-  brokers,
-  selectedIds,
-  onSelect,
-  placeholder,
-}: {
-  brokers: Broker[];
-  selectedIds: string[];
-  onSelect: (broker: Broker) => void;
-  placeholder: string;
-}) {
-  const [query, setQuery] = useState("");
-  const [open, setOpen] = useState(false);
-
-  const filtered = useMemo(
-    () =>
-      brokers
-        .filter(
-          (b) =>
-            !selectedIds.includes(b.id) &&
-            b.name.toLowerCase().includes(query.toLowerCase())
-        )
-        .slice(0, 8),
-    [brokers, selectedIds, query]
-  );
-
+function StarRating({ rating }: { rating: number }) {
+  const stars = Math.round(rating * 2) / 2;
   return (
-    <div className="relative w-64">
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setOpen(true);
-        }}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
-        placeholder={placeholder}
-        className="w-full px-4 py-2.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2bb32a]/30 focus:border-[#2bb32a]/60 transition-all"
-        data-testid="input-broker-search"
-      />
-      {open && filtered.length > 0 && (
-        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
-          {filtered.map((b) => (
-            <button
-              key={b.id}
-              onMouseDown={() => {
-                onSelect(b);
-                setQuery("");
-                setOpen(false);
-              }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left"
-              data-testid={`option-broker-${b.slug}`}
-            >
-              {b.logo && (
-                <img src={b.logo} alt={b.name} className="w-8 h-5 object-contain rounded" />
-              )}
-              <span className="font-medium">{b.name}</span>
-              {b.rating && (
-                <span className="ml-auto text-xs text-gray-400">{b.rating}/5</span>
-              )}
-            </button>
-          ))}
-        </div>
-      )}
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((s) => (
+        <Star
+          key={s}
+          className={`w-3 h-3 ${s <= stars ? "fill-[#f59e0b] text-[#f59e0b]" : "fill-gray-200 text-gray-200"}`}
+        />
+      ))}
+      <span className="text-xs font-medium ml-1" style={{ color: "#6b7280" }}>{rating.toFixed(1)}</span>
     </div>
   );
 }
 
 export default function Compare() {
-  const [selectedBrokers, setSelectedBrokers] = useState<Broker[]>([]);
-
-  const { data: rawBrokers, isLoading } = useQuery<any[]>({
-    queryKey: ["/api/brokers"],
-  });
-
-  const { data: popularComparisons } = useQuery<ComparisonRecord[]>({
+  const { data: comparisons, isLoading: loadingComparisons } = useQuery<ComparisonRecord[]>({
     queryKey: ["/api/comparisons/hub/broker"],
     queryFn: async () => {
       const res = await fetch("/api/comparisons/hub/broker");
@@ -121,412 +56,258 @@ export default function Compare() {
     },
   });
 
-  const brokers: Broker[] = useMemo(
-    () => (rawBrokers || []) as Broker[],
-    [rawBrokers]
-  );
+  const { data: brokers } = useQuery<any[]>({
+    queryKey: ["/api/brokers"],
+  });
 
-  const brokerMap = useMemo(() => {
-    const map = new Map<string, Broker>();
-    brokers.forEach((b) => { map.set(b.slug, b); map.set(b.id, b); });
-    return map;
-  }, [brokers]);
+  useEffect(() => {
+    document.body.style.setProperty("background", "#f5f7f6", "important");
+    return () => { document.body.style.removeProperty("background"); };
+  }, []);
 
-  const addBroker = (broker: Broker) => {
-    if (selectedBrokers.length < 4 && !selectedBrokers.find((b) => b.id === broker.id)) {
-      setSelectedBrokers((prev) => [...prev, broker]);
-    }
-  };
-
-  const removeBroker = (id: string) => {
-    setSelectedBrokers((prev) => prev.filter((b) => b.id !== id));
-  };
-
-  const selectedIds = selectedBrokers.map((b) => b.id);
-
-  const canAddMore = selectedBrokers.length < 4;
-
-  function renderCell(broker: Broker, key: keyof Broker) {
-    const value = broker[key];
-    if (key === "rating") return <StarRating rating={broker.rating} />;
-    if (!value) return <span className="text-gray-300 text-sm">—</span>;
-    if (Array.isArray(value)) {
-      return (
-        <ul className="space-y-1">
-          {(value as string[]).map((v, i) => (
-            <li key={i} className="flex items-start gap-1.5 text-sm text-gray-600">
-              <Check className="w-3.5 h-3.5 text-[#2bb32a] mt-0.5 flex-shrink-0" />
-              {v}
-            </li>
-          ))}
-        </ul>
-      );
-    }
-    return <span className="text-sm text-gray-700">{String(value)}</span>;
-  }
+  const brokerMap = new Map<string, any>();
+  brokers?.forEach((b) => {
+    brokerMap.set(b.slug, b);
+    brokerMap.set(b.id, b);
+  });
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}>
+    <>
       <SEO
         title="Compare Forex Brokers Side by Side | EntryLab"
-        description="Compare forex brokers on regulation, min deposit, leverage, platforms and spreads. Find the best broker for your trading style."
+        description="Browse our most popular forex broker comparisons. Head-to-head analysis across regulation, fees, platforms, leverage and more."
+        canonical="https://entrylab.io/compare"
       />
       <Navigation />
 
-      {/* Hero */}
-      <div style={{ background: "#1a1e1c" }} className="px-4 sm:px-6 py-12">
-        <div className="max-w-7xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-4"
-            style={{ background: "rgba(43,179,42,0.12)", color: "#2bb32a", border: "1px solid rgba(43,179,42,0.2)" }}>
-            <TrendingUp className="w-3 h-3" />
-            Broker Comparison Tool
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">Compare Forex Brokers</h1>
-          <p className="text-gray-400 text-base max-w-2xl">
-            Select up to 4 brokers to compare side by side on regulation, fees, leverage, platforms and more.
-          </p>
-        </div>
-      </div>
+      <main style={{ background: "#f5f7f6", minHeight: "100vh" }}>
+        {/* Hero */}
+        <div style={{ background: "#1a1e1c" }}>
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 md:py-16">
+            <nav className="flex items-center gap-2 text-xs mb-6 flex-wrap" style={{ color: "rgba(255,255,255,0.35)" }}>
+              <Link href="/" className="hover:text-white/70 flex items-center gap-1 transition-colors">
+                <Home className="w-3 h-3" /> Home
+              </Link>
+              <span>/</span>
+              <span style={{ color: "rgba(255,255,255,0.6)" }}>Compare Brokers</span>
+            </nav>
 
-      {/* Selector bar */}
-      <div className="sticky top-16 z-40 border-b" style={{ background: "rgba(248,250,248,0.95)", backdropFilter: "blur(12px)", borderColor: "rgba(0,0,0,0.08)" }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-sm font-semibold text-gray-600 mr-1">Add broker:</span>
-            {isLoading ? (
-              <Skeleton className="h-10 w-64 rounded-lg" />
-            ) : (
-              canAddMore && (
-                <BrokerSearchDropdown
-                  brokers={brokers}
-                  selectedIds={selectedIds}
-                  onSelect={addBroker}
-                  placeholder="Search brokers..."
-                />
-              )
-            )}
-            {selectedBrokers.map((b) => (
-              <div key={b.id} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-white border border-gray-200 text-gray-700">
-                {b.name}
-                <button
-                  onClick={() => removeBroker(b.id)}
-                  className="text-gray-400 hover:text-red-500 transition-colors"
-                  data-testid={`button-remove-${b.slug}`}
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ))}
-            {selectedBrokers.length > 0 && (
-              <button
-                onClick={() => setSelectedBrokers([])}
-                className="text-xs text-gray-400 hover:text-gray-600 transition-colors ml-auto"
-                data-testid="button-clear-all"
+            <div className="flex items-start gap-4">
+              <div
+                className="p-3 rounded-xl flex-shrink-0"
+                style={{ background: "rgba(43,179,42,0.15)", border: "1px solid rgba(43,179,42,0.25)" }}
               >
-                Clear all
-              </button>
-            )}
+                <GitCompare className="w-6 h-6" style={{ color: "#2bb32a" }} />
+              </div>
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Compare Forex Brokers</h1>
+                <p className="text-base max-w-2xl" style={{ color: "rgba(255,255,255,0.55)" }}>
+                  In-depth head-to-head analysis across 14 categories — regulation, fees, platforms, leverage, and more — so you can choose with confidence.
+                </p>
+                {comparisons && (
+                  <p className="text-sm mt-3 font-medium" style={{ color: "#2bb32a" }}>
+                    {comparisons.length} comparisons published
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <main className="flex-1 py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          {selectedBrokers.length === 0 ? (
-            /* Popular Comparisons discovery section */
-            <div className="py-6">
-              {/* Section header */}
-              <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg" style={{ background: "rgba(43,179,42,0.1)" }}>
-                    <Flame className="w-4 h-4" style={{ color: "#2bb32a" }} />
-                  </div>
-                  <h2 className="text-lg font-bold" style={{ color: "#111827" }}>Popular Broker Comparisons</h2>
-                </div>
-                <Link href="/compare/broker" className="text-sm font-semibold flex items-center gap-1 hover:underline" style={{ color: "#15803d" }}>
-                  View all <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
+        {/* Listings */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+          {/* Section label */}
+          <div className="flex items-center gap-2 mb-6">
+            <div className="p-1.5 rounded-lg" style={{ background: "rgba(43,179,42,0.1)" }}>
+              <Flame className="w-4 h-4" style={{ color: "#2bb32a" }} />
+            </div>
+            <h2 className="text-lg font-bold" style={{ color: "#111827" }}>Popular Broker Comparisons</h2>
+          </div>
 
-              {!popularComparisons ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
-                </div>
-              ) : popularComparisons.length === 0 ? (
-                <div className="text-center py-16 rounded-2xl" style={{ background: "#ffffff", border: "1px solid #e8edea" }}>
-                  <GitCompare className="w-10 h-10 mx-auto mb-3 opacity-20" style={{ color: "#374151" }} />
-                  <p className="font-medium" style={{ color: "#374151" }}>No comparisons published yet</p>
-                  <p className="text-sm mt-1" style={{ color: "#9ca3af" }}>Use the search above to build a custom comparison</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {popularComparisons.slice(0, 9).map((c) => {
-                    const bA = brokerMap.get(c.entityASlug) || brokerMap.get(c.entityAId);
-                    const bB = brokerMap.get(c.entityBSlug ?? "") || brokerMap.get(c.entityBId ?? "");
-                    const logoA = bA?.logoUrl;
-                    const logoB = bB?.logoUrl;
-                    const winnerIsA = c.overallWinnerId === c.entityAId;
-                    const winnerIsB = c.overallWinnerId === c.entityBId;
-                    const winnerName = winnerIsA ? c.entityAName : winnerIsB ? c.entityBName : null;
-
-                    return (
-                      <Link
-                        key={c.id}
-                        href={`/compare/broker/${c.slug}`}
-                        className="group block"
-                        data-testid={`link-popular-${c.id}`}
-                      >
-                        <div
-                          className="rounded-2xl p-4 transition-all duration-200 group-hover:shadow-md"
-                          style={{ background: "#ffffff", border: "1px solid #e8edea" }}
-                        >
-                          {/* Broker pair row */}
-                          <div className="flex items-center gap-2 mb-3">
-                            {/* Logo A */}
-                            <div className="flex-shrink-0">
-                              {logoA ? (
-                                <img src={logoA} alt={c.entityAName} className="w-9 h-9 rounded-lg object-contain bg-white p-1" style={{ border: "1px solid #e8edea" }} />
-                              ) : (
-                                <div className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-black text-white" style={{ background: "#2bb32a" }}>
-                                  {c.entityAName.charAt(0)}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Names */}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-bold leading-tight truncate group-hover:text-[#15803d] transition-colors" style={{ color: "#111827" }}>
-                                {c.entityAName}
-                              </p>
-                            </div>
-
-                            {/* VS pill */}
-                            <span className="flex-shrink-0 text-xs font-black px-2 py-0.5 rounded-full" style={{ background: "#f0fdf4", color: "#2bb32a", border: "1px solid #bbf7d0" }}>
-                              VS
-                            </span>
-
-                            {/* Names B */}
-                            <div className="flex-1 min-w-0 text-right">
-                              <p className="text-sm font-bold leading-tight truncate group-hover:text-[#15803d] transition-colors" style={{ color: "#111827" }}>
-                                {c.entityBName}
-                              </p>
-                            </div>
-
-                            {/* Logo B */}
-                            <div className="flex-shrink-0">
-                              {logoB ? (
-                                <img src={logoB} alt={c.entityBName ?? ""} className="w-9 h-9 rounded-lg object-contain bg-white p-1" style={{ border: "1px solid #e8edea" }} />
-                              ) : (
-                                <div className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-black text-white" style={{ background: "#2bb32a" }}>
-                                  {(c.entityBName ?? "?").charAt(0)}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Footer */}
-                          <div className="flex items-center justify-between">
-                            {winnerName ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "#dcfce7", color: "#15803d" }}>
-                                <Trophy className="w-3 h-3" /> {winnerName}
-                              </span>
-                            ) : (
-                              <span className="text-[11px] font-medium" style={{ color: "#9ca3af" }}>No overall winner</span>
-                            )}
-                            <span className="text-[11px] font-semibold flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "#2bb32a" }}>
-                              Read analysis <ArrowRight className="w-3 h-3" />
-                            </span>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Separator before custom tool hint */}
-              <div className="mt-10 mb-2 flex items-center gap-4">
-                <div className="flex-1 h-px" style={{ background: "#e8edea" }} />
-                <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "#9ca3af" }}>or build your own</span>
-                <div className="flex-1 h-px" style={{ background: "#e8edea" }} />
-              </div>
-              <p className="text-center text-sm" style={{ color: "#6b7280" }}>
-                Use the search bar above to select up to 4 brokers and create a custom side-by-side comparison.
-              </p>
+          {loadingComparisons ? (
+            <div className="space-y-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-40 w-full rounded-2xl" />
+              ))}
+            </div>
+          ) : !comparisons?.length ? (
+            <div className="text-center py-20" style={{ color: "#6b7280" }}>
+              <GitCompare className="w-12 h-12 mx-auto mb-4 opacity-30" />
+              <p className="text-lg font-medium" style={{ color: "#374151" }}>No broker comparisons published yet.</p>
+              <p className="text-sm mt-1">Check back soon — comparisons are being prepared.</p>
             </div>
           ) : (
-            /* Comparison table */
-            <div className="overflow-x-auto">
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: `200px repeat(${selectedBrokers.length}, minmax(200px, 1fr))`,
-                }}
-                className="min-w-fit"
-              >
-                {/* Header row — broker cards */}
-                <div className="bg-transparent" />
-                {selectedBrokers.map((broker) => (
-                  <div
-                    key={broker.id}
-                    className="p-5 flex flex-col items-center text-center gap-3 bg-white rounded-t-2xl border border-b-0 border-gray-200 mx-1"
-                    data-testid={`column-broker-${broker.slug}`}
-                  >
-                    <div className="relative w-full flex justify-end">
-                      <button
-                        onClick={() => removeBroker(broker.id)}
-                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
-                        data-testid={`button-remove-col-${broker.slug}`}
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                    <img
-                      src={broker.logo}
-                      alt={broker.name}
-                      className="h-10 max-w-[120px] object-contain"
-                    />
-                    <div>
-                      <p className="font-semibold text-gray-800 text-sm">{broker.name}</p>
-                      {broker.featured && (
-                        <Badge className="mt-1 text-[10px]" style={{ background: "rgba(43,179,42,0.1)", color: "#2bb32a", border: "1px solid rgba(43,179,42,0.2)" }}>
-                          Featured
-                        </Badge>
-                      )}
-                    </div>
-                    <StarRating rating={broker.rating} />
-                    <a
-                      href={broker.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full py-2 text-xs font-semibold text-white rounded-lg flex items-center justify-center gap-1 transition-colors"
-                      style={{ background: "#2bb32a" }}
-                      data-testid={`link-visit-${broker.slug}`}
-                    >
-                      Visit Broker <ExternalLink className="w-3 h-3" />
-                    </a>
-                    <Link
-                      href={`/broker/${broker.slug}`}
-                      className="text-xs text-[#2bb32a] hover:underline"
-                      data-testid={`link-review-${broker.slug}`}
-                    >
-                      Full Review
-                    </Link>
-                  </div>
-                ))}
+            <div className="space-y-4">
+              {comparisons.map((c) => {
+                const brokerA = brokerMap.get(c.entityASlug) || brokerMap.get(c.entityAId);
+                const brokerB = brokerMap.get(c.entityBSlug ?? "") || brokerMap.get(c.entityBId ?? "");
+                const logoA = brokerA?.logoUrl || brokerA?.logo;
+                const logoB = brokerB?.logoUrl || brokerB?.logo;
+                const ratingA = brokerA?.rating ? parseFloat(String(brokerA.rating)) : null;
+                const ratingB = brokerB?.rating ? parseFloat(String(brokerB.rating)) : null;
+                const regulationA = brokerA?.regulation || brokerA?.regulators;
+                const regulationB = brokerB?.regulation || brokerB?.regulators;
+                const winsA = c.overallScore ? parseInt(c.overallScore.split("-")[0]) : 0;
+                const winsB = c.overallScore ? parseInt(c.overallScore.split("-")[1]) : 0;
+                const winnerIsA = c.overallWinnerId === c.entityAId;
+                const winnerIsB = c.overallWinnerId === c.entityBId;
+                const winnerName = winnerIsA ? c.entityAName : winnerIsB ? c.entityBName : null;
 
-                {/* Data rows */}
-                {COMPARISON_ROWS.map(({ label, key, icon: Icon }, rowIdx) => (
-                  <>
-                    {/* Label cell */}
+                return (
+                  <Link
+                    key={c.id}
+                    href={`/compare/broker/${c.slug}`}
+                    className="group block"
+                    data-testid={`link-comparison-${c.id}`}
+                  >
                     <div
-                      key={`label-${key}`}
-                      className={`flex items-center gap-2 px-4 py-4 ${rowIdx % 2 === 0 ? "bg-white/60" : "bg-transparent"}`}
+                      className="rounded-2xl transition-all duration-200 group-hover:shadow-md"
+                      style={{ background: "#ffffff", border: "1px solid #e8edea" }}
                     >
-                      <Icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                      <span className="text-sm font-medium text-gray-600">{label}</span>
-                    </div>
-
-                    {/* Value cells */}
-                    {selectedBrokers.map((broker) => (
-                      <div
-                        key={`${broker.id}-${key}`}
-                        className={`px-5 py-4 mx-1 border-x border-gray-200 ${rowIdx % 2 === 0 ? "bg-white/60" : "bg-white"}`}
-                      >
-                        {renderCell(broker, key)}
-                      </div>
-                    ))}
-                  </>
-                ))}
-
-                {/* Pros row */}
-                <div className="flex items-start gap-2 px-4 py-4 bg-white/60">
-                  <Check className="w-4 h-4 text-[#2bb32a] flex-shrink-0 mt-0.5" />
-                  <span className="text-sm font-medium text-gray-600">Pros</span>
-                </div>
-                {selectedBrokers.map((broker) => (
-                  <div key={`${broker.id}-pros`} className="px-5 py-4 mx-1 border-x border-gray-200 bg-white/60">
-                    <ul className="space-y-1.5">
-                      {(broker.pros || []).map((p, i) => (
-                        <li key={i} className="flex items-start gap-1.5 text-sm text-gray-600">
-                          <Check className="w-3.5 h-3.5 text-[#2bb32a] mt-0.5 flex-shrink-0" />
-                          {p}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-
-                {/* Cons row */}
-                <div className="flex items-start gap-2 px-4 py-4">
-                  <Minus className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm font-medium text-gray-600">Cons</span>
-                </div>
-                {selectedBrokers.map((broker) => (
-                  <div key={`${broker.id}-cons`} className="px-5 py-4 mx-1 border-x border-gray-200">
-                    <ul className="space-y-1.5">
-                      {(broker.cons || []).length > 0 ? (
-                        (broker.cons as string[]).map((c, i) => (
-                          <li key={i} className="flex items-start gap-1.5 text-sm text-gray-500">
-                            <Minus className="w-3.5 h-3.5 text-red-400 mt-0.5 flex-shrink-0" />
-                            {c}
-                          </li>
-                        ))
-                      ) : (
-                        <span className="text-gray-300 text-sm">—</span>
+                      {/* Winner bar */}
+                      {winnerName && (
+                        <div
+                          className="px-6 py-2 rounded-t-2xl flex items-center gap-2"
+                          style={{ background: "#f0fdf4", borderBottom: "1px solid #bbf7d0" }}
+                        >
+                          <Trophy className="w-3.5 h-3.5" style={{ color: "#16a34a" }} />
+                          <span className="text-xs font-semibold" style={{ color: "#15803d" }}>
+                            {winnerName} wins this comparison
+                          </span>
+                          {c.overallScore && (
+                            <span
+                              className="ml-auto text-xs font-bold px-2 py-0.5 rounded-full"
+                              style={{ background: "#dcfce7", color: "#15803d" }}
+                            >
+                              {c.overallScore}
+                            </span>
+                          )}
+                        </div>
                       )}
-                    </ul>
-                  </div>
-                ))}
 
-                {/* Bottom CTA row */}
-                <div className="bg-transparent" />
-                {selectedBrokers.map((broker) => (
-                  <div
-                    key={`${broker.id}-cta`}
-                    className="p-5 flex flex-col items-center gap-3 bg-white rounded-b-2xl border border-t-0 border-gray-200 mx-1"
-                  >
-                    <a
-                      href={broker.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full py-2.5 text-sm font-semibold text-white rounded-lg flex items-center justify-center gap-1.5 transition-colors"
-                      style={{ background: "#2bb32a" }}
-                      data-testid={`link-cta-${broker.slug}`}
-                    >
-                      Open Account <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+                      <div className="p-6 flex items-center gap-4">
+                        {/* Entity A */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2">
+                            <BrokerLogo name={c.entityAName} logoUrl={logoA} />
+                            <div className="min-w-0">
+                              <p
+                                className="font-bold text-base leading-tight truncate group-hover:text-[#15803d] transition-colors"
+                                style={{ color: "#111827" }}
+                              >
+                                {c.entityAName}
+                              </p>
+                              {ratingA != null && ratingA > 0 && (
+                                <div className="mt-1">
+                                  <StarRating rating={ratingA} />
+                                </div>
+                              )}
+                              {winnerIsA && (
+                                <span
+                                  className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full mt-1"
+                                  style={{ background: "#dcfce7", color: "#15803d" }}
+                                >
+                                  <Trophy className="w-2.5 h-2.5" /> Winner
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          {regulationA && (
+                            <p className="text-xs flex items-center gap-1 truncate" style={{ color: "#6b7280" }}>
+                              <Shield className="w-3 h-3 flex-shrink-0" style={{ color: "#9ca3af" }} />
+                              {String(regulationA).split(",").slice(0, 2).join(", ")}
+                            </p>
+                          )}
+                          {winsA > 0 && (
+                            <p className="text-xs font-semibold mt-1" style={{ color: winnerIsA ? "#15803d" : "#9ca3af" }}>
+                              {winsA} categor{winsA === 1 ? "y" : "ies"} won
+                            </p>
+                          )}
+                        </div>
 
-          {/* Broker grid for discovery */}
-          {selectedBrokers.length === 0 && !isLoading && brokers.length > 0 && (
-            <div className="mt-16">
-              <h2 className="text-xl font-semibold text-gray-700 mb-6">All Brokers</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                {brokers.map((b) => (
-                  <button
-                    key={b.id}
-                    onClick={() => addBroker(b)}
-                    className="group flex flex-col items-center gap-2 p-4 rounded-xl bg-white border border-gray-200 hover-elevate transition-all text-center"
-                    data-testid={`button-add-broker-${b.slug}`}
-                  >
-                    <img src={b.logo} alt={b.name} className="h-8 max-w-[100px] object-contain" />
-                    <span className="text-xs font-medium text-gray-600">{b.name}</span>
-                    <span className="text-xs text-gray-400">{b.rating}/5</span>
-                    <span className="text-[10px] text-[#2bb32a] opacity-0 group-hover:opacity-100 transition-opacity">+ Compare</span>
-                  </button>
-                ))}
-              </div>
+                        {/* VS */}
+                        <div className="flex-shrink-0 flex flex-col items-center gap-1 px-4">
+                          <span
+                            className="text-3xl font-black tracking-tighter leading-none select-none"
+                            style={{ color: "#d1fae5", WebkitTextStroke: "1.5px #2bb32a" }}
+                          >
+                            VS
+                          </span>
+                          <ArrowRight
+                            className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                            style={{ color: "#2bb32a" }}
+                          />
+                        </div>
+
+                        {/* Entity B */}
+                        <div className="flex-1 min-w-0 text-right">
+                          <div className="flex items-center gap-3 mb-2 justify-end">
+                            <div className="min-w-0">
+                              <p
+                                className="font-bold text-base leading-tight truncate group-hover:text-[#15803d] transition-colors"
+                                style={{ color: "#111827" }}
+                              >
+                                {c.entityBName}
+                              </p>
+                              {ratingB != null && ratingB > 0 && (
+                                <div className="mt-1 flex justify-end">
+                                  <StarRating rating={ratingB} />
+                                </div>
+                              )}
+                              {winnerIsB && (
+                                <div className="flex justify-end mt-1">
+                                  <span
+                                    className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                                    style={{ background: "#dcfce7", color: "#15803d" }}
+                                  >
+                                    <Trophy className="w-2.5 h-2.5" /> Winner
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <BrokerLogo name={c.entityBName ?? ""} logoUrl={logoB} />
+                          </div>
+                          {regulationB && (
+                            <p className="text-xs flex items-center gap-1 justify-end truncate" style={{ color: "#6b7280" }}>
+                              {String(regulationB).split(",").slice(0, 2).join(", ")}
+                              <Shield className="w-3 h-3 flex-shrink-0" style={{ color: "#9ca3af" }} />
+                            </p>
+                          )}
+                          {winsB > 0 && (
+                            <p className="text-xs font-semibold mt-1" style={{ color: winnerIsB ? "#15803d" : "#9ca3af" }}>
+                              {winsB} categor{winsB === 1 ? "y" : "ies"} won
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Footer bar */}
+                      <div
+                        className="px-6 py-2.5 rounded-b-2xl flex items-center justify-between"
+                        style={{ background: "#fafcfa", borderTop: "1px solid #f0f4f2" }}
+                      >
+                        <span className="text-xs" style={{ color: "#9ca3af" }}>
+                          {c.publishedAt
+                            ? new Date(c.publishedAt).toLocaleDateString("en-GB", { month: "long", year: "numeric" })
+                            : "EntryLab Analysis"}
+                        </span>
+                        <span
+                          className="text-xs font-semibold flex items-center gap-1 group-hover:text-[#15803d] transition-colors"
+                          style={{ color: "#374151" }}
+                        >
+                          View comparison <ArrowRight className="w-3.5 h-3.5" />
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>
       </main>
 
       <Footer />
-    </div>
+    </>
   );
 }
