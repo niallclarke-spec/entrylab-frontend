@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Navigation } from "@/components/Navigation";
@@ -23,7 +23,7 @@ export default function Archive() {
     trackPageView("/news", "News & Articles | EntryLab");
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.body.style.setProperty("background", "#f8faf8", "important");
     document.documentElement.style.setProperty("background", "#f8faf8", "important");
     return () => {

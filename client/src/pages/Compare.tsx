@@ -4,7 +4,7 @@ import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { Home, GitCompare, Trophy, Star, ArrowRight, Shield, Building2, TrendingUp } from "lucide-react";
 import type { ComparisonRecord } from "@shared/schema";
 
@@ -299,7 +299,7 @@ export default function Compare() {
   const { data: brokers } = useQuery<any[]>({ queryKey: ["/api/brokers"] });
   const { data: propFirms } = useQuery<any[]>({ queryKey: ["/api/prop-firms"] });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.body.style.setProperty("background", "#f5f7f6", "important");
     return () => { document.body.style.removeProperty("background"); };
   }, []);

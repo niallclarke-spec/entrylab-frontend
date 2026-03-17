@@ -7,7 +7,7 @@ import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Shield, Star, CheckCircle2, ArrowRight, Newspaper } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { trackPageView } from "@/lib/gtm";
 import type { Broker } from "@shared/schema";
 
@@ -29,7 +29,7 @@ export default function BrokerCategoryArchive() {
     trackPageView(`/${slug}`, `${slug} | EntryLab`);
   }, [slug]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const prevBody = document.body.style.background;
     const prevHtml = document.documentElement.style.background;
     document.body.style.setProperty("background", "#f8faf8", "important");

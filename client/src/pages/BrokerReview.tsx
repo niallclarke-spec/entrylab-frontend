@@ -1,6 +1,6 @@
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState, lazy, Suspense } from "react";
+import { useEffect, useLayoutEffect, useState, lazy, Suspense } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
@@ -115,7 +115,7 @@ export default function BrokerReview() {
     return div.textContent || div.innerText || "";
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.body.style.setProperty("background", "#f8faf8", "important");
     document.documentElement.style.setProperty("background", "#f8faf8", "important");
     return () => {

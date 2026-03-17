@@ -5,7 +5,7 @@ import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Home, GitCompare, Trophy, Star, ArrowRight, Shield } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import type { ComparisonRecord } from "@shared/schema";
 
 function BrokerLogo({ name, logoUrl }: { name: string; logoUrl?: string | null }) {
@@ -60,7 +60,7 @@ export default function ComparisonBrokerHub() {
     queryKey: ["/api/brokers"],
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.body.style.setProperty("background", "#f5f7f6", "important");
     return () => { document.body.style.removeProperty("background"); };
   }, []);

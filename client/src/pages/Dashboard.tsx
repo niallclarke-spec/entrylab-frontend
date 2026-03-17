@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ export default function Dashboard() {
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionStatus | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.body.style.setProperty("background", "#f8faf8", "important");
     document.documentElement.style.setProperty("background", "#f8faf8", "important");
     return () => {

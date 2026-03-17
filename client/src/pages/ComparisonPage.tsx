@@ -25,7 +25,7 @@ import {
   RefreshCw,
   CheckCircle2,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import type { ComparisonRecord } from "@shared/schema";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -1278,7 +1278,7 @@ export default function ComparisonPage() {
   });
 
   // Set light body background (comparison pages use light theme body)
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.body.style.setProperty("background", "#f5f7f6", "important");
     document.documentElement.style.setProperty("background", "#f5f7f6", "important");
     return () => {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { useParams, Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
@@ -45,7 +45,7 @@ export default function CategoryArchive() {
     }
   }, [category, selectedCategory, isAllPosts]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.body.style.setProperty("background", "#f8faf8", "important");
     document.documentElement.style.setProperty("background", "#f8faf8", "important");
     return () => {

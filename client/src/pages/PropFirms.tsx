@@ -5,7 +5,7 @@ import { SEO } from "@/components/SEO";
 import { PropFirmRow } from "@/components/PropFirmRow";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Shield, Star, TrendingUp, Zap, DollarSign, Target, CheckCircle2, ShieldCheck } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { trackPageView, trackCategoryFilter } from "@/lib/gtm";
 import type { Broker } from "@shared/schema";
@@ -66,7 +66,7 @@ export default function PropFirms() {
     : "0.0";
   const totalVerified = propFirms.filter(p => p.verified).length;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.body.style.setProperty("background", "#f8faf8", "important");
     document.documentElement.style.setProperty("background", "#f8faf8", "important");
     return () => {

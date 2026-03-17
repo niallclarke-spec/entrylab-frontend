@@ -5,7 +5,7 @@ import { SEO } from "@/components/SEO";
 import { BrokerCardEnhanced } from "@/components/BrokerCardEnhanced";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Shield, Star, TrendingUp, Zap, DollarSign, Headphones, FileText, CheckCircle2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { trackPageView, trackCategoryFilter } from "@/lib/gtm";
 import type { Broker } from "@shared/schema";
 
@@ -31,7 +31,7 @@ export default function Brokers() {
     trackPageView("/brokers", "Broker Reviews | EntryLab");
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.body.style.setProperty("background", "#f8faf8", "important");
     document.documentElement.style.setProperty("background", "#f8faf8", "important");
     return () => {
