@@ -269,6 +269,28 @@ function decodeHtmlEntities(str: string): string {
 
 export async function registerRoutes(app: Express): Promise<Server> {
 
+  // ─── Legacy WordPress URL redirects ───────────────────────────────────────
+  // 301 permanent redirects for old WordPress routes still indexed by Google.
+  const wpRedirects: Record<string, string> = {
+    '/contact/':        '/',
+    '/contact':         '/',
+    '/what-we-do/':     '/',
+    '/what-we-do':      '/',
+    // Old root-level WordPress article URL
+    '/kot4x-shuts-down-what-you-should-know/': '/broker-news/kot4x-shuts-down-what-you-should-know',
+    '/kot4x-shuts-down-what-you-should-know':  '/broker-news/kot4x-shuts-down-what-you-should-know',
+    // Old /article/ prefix that may be indexed
+    '/article/kot4x-shuts-down-what-you-should-know': '/broker-news/kot4x-shuts-down-what-you-should-know',
+  };
+  app.use((req, res, next) => {
+    const dest = wpRedirects[req.path];
+    if (dest) return res.redirect(301, dest);
+    // /popular-broker/:slug → /broker/:slug
+    const popularMatch = req.path.match(/^\/popular-broker\/(.+?)\/?$/);
+    if (popularMatch) return res.redirect(301, `/broker/${popularMatch[1]}`);
+    next();
+  });
+
   // ─── Admin auth endpoints ──────────────────────────────────────────────────
 
   app.post("/api/admin/login", loginLimiter, async (req, res) => {
@@ -2348,6 +2370,17 @@ ${items}
                 evaluationFee: (dbFirm as any).evaluationFee || "",
                 maxDrawdown: (dbFirm as any).maxDrawdown || "",
                 headquarters: (dbFirm as any).headquarters || "",
+                payoutMethods: Array.isArray((dbFirm as any).payoutMethods)
+                  ? ((dbFirm as any).payoutMethods as string[]).join(', ')
+                  : (dbFirm as any).payoutMethods || "",
+                platformsList: Array.isArray((dbFirm as any).platformsList)
+                  ? ((dbFirm as any).platformsList as string[]).join(', ')
+                  : (dbFirm as any).platformsList || "",
+                instruments: Array.isArray((dbFirm as any).instruments)
+                  ? ((dbFirm as any).instruments as string[]).join(', ')
+                  : (dbFirm as any).instruments || "",
+                support: (dbFirm as any).support || "",
+                totalUsers: (dbFirm as any).totalUsers || "",
                 highlights: ((dbFirm as any).highlights || []).join(", "),
                 pros: (dbFirm as any).pros || [],
                 cons: (dbFirm as any).cons || [],
@@ -2422,7 +2455,14 @@ ${items}
                 : comp.overallWinnerId === comp.entityBId
                 ? comp.entityBName
                 : null;
-              const winners = (comp.categoryWinners as any[]) || [];
+              // categoryWinners is stored as an object keyed by category, convert to array
+              const rawWinners = comp.categoryWinners as Record<string, any> | any[] | null;
+              const winnersArr: any[] = Array.isArray(rawWinners)
+                ? rawWinners
+                : rawWinners && typeof rawWinners === 'object'
+                ? Object.values(rawWinners)
+                : [];
+              const faqArr: any[] = Array.isArray(comp.faqData) ? comp.faqData : [];
               pageData = {
                 seoTitle: `${comp.entityAName} vs ${comp.entityBName} Compared (2026) | EntryLab`,
                 seoDescription: winnerName
@@ -2433,7 +2473,8 @@ ${items}
                 entityBName: comp.entityBName,
                 winnerName,
                 overallScore: comp.overallScore,
-                categoryWinners: winners,
+                categoryWinners: winnersArr,
+                faqData: faqArr,
                 publishedAt: comp.publishedAt,
                 updatedAt: comp.updatedAt,
                 isComparison: true,
@@ -2582,9 +2623,14 @@ ${items}
           const fields: [string, any][] = [
             ['Rating', pageData.rating],
             ['Profit Split', pageData.profitSplit],
-            ['Max Funding', pageData.maxFundingSize],
-            ['Maximum Drawdown', pageData.maxDrawdown],
+            ['Max Funding Size', pageData.maxFundingSize],
             ['Evaluation Fee', pageData.evaluationFee],
+            ['Maximum Drawdown', pageData.maxDrawdown],
+            ['Trading Platforms', pageData.platformsList],
+            ['Tradable Instruments', pageData.instruments],
+            ['Payout Methods', pageData.payoutMethods],
+            ['Customer Support', pageData.support],
+            ['Total Users', pageData.totalUsers],
             ['Headquarters', pageData.headquarters],
           ].filter(([, v]) => v);
 
@@ -2641,30 +2687,42 @@ ${items}
         // Individual comparison pages
         else if (pageData.isComparison) {
           if (pageData.winnerName) {
-            html += `<p><strong>Overall winner: ${pageData.winnerName}</strong>${pageData.overallScore ? ` (score: ${pageData.overallScore})` : ''}</p>`;
+            html += `<p><strong>Overall winner: ${pageData.winnerName}</strong>${pageData.overallScore ? ` — score: ${pageData.overallScore}` : ''}</p>`;
           }
           const date = pageData.updatedAt
             ? new Date(pageData.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
             : '';
-          if (date) html += `<p><small>Last updated: ${date}</small></p>`;
+          if (date) html += `<p>Last updated: ${date}</p>`;
 
+          if (pageData.seoDescription) html += `<p>${pageData.seoDescription}</p>`;
+
+          // Category-by-category breakdown (categoryWinners is an array after conversion)
           const winners = Array.isArray(pageData.categoryWinners) ? pageData.categoryWinners : [];
           if (winners.length > 0) {
-            html += `<h2>Category Breakdown</h2><ul>`;
+            html += `<h2>Head-to-Head Category Breakdown</h2><ul>`;
             for (const cat of winners) {
-              if (cat.category && cat.winnerId) {
-                const winnerLabel = cat.winnerName || cat.winnerId;
-                const score = cat.scoreA !== undefined && cat.scoreB !== undefined
-                  ? ` (${pageData.entityAName} ${cat.scoreA} — ${pageData.entityBName} ${cat.scoreB})`
-                  : '';
-                html += `<li><strong>${cat.category}:</strong> ${winnerLabel} wins${score}</li>`;
-              }
+              const label = cat.label || cat.category || '';
+              const winnerName = cat.winnerName || cat.winnerSlug || '';
+              const scoreA = cat.scoreA !== undefined ? cat.scoreA : '';
+              const scoreB = cat.scoreB !== undefined ? cat.scoreB : '';
+              const scoreStr = scoreA !== '' && scoreB !== ''
+                ? ` (${pageData.entityAName}: ${scoreA} — ${pageData.entityBName}: ${scoreB})`
+                : '';
+              if (label) html += `<li><strong>${label}:</strong> ${winnerName} wins${scoreStr}</li>`;
+              if (cat.text) html += `<li style="list-style:none;padding-left:1em;color:#555;font-size:0.9em">${cleanStr(cat.text)}</li>`;
             }
             html += `</ul>`;
           }
 
-          if (pageData.seoDescription) {
-            html += `<p>${pageData.seoDescription}</p>`;
+          // FAQ section
+          const faqs = Array.isArray(pageData.faqData) ? pageData.faqData : [];
+          if (faqs.length > 0) {
+            html += `<h2>Frequently Asked Questions</h2>`;
+            for (const faq of faqs) {
+              if (faq.q && faq.a) {
+                html += `<h3>${cleanStr(faq.q)}</h3><p>${cleanStr(faq.a)}</p>`;
+              }
+            }
           }
         }
 

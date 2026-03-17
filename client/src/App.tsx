@@ -168,6 +168,11 @@ function Router() {
 
 function App() {
   useEffect(() => {
+    // Remove SSR-injected crawler content once React has hydrated — prevents
+    // the content appearing twice (once in #ssr-content, once from React render)
+    const ssrEl = document.getElementById('ssr-content');
+    if (ssrEl) ssrEl.remove();
+
     captureUTMParams();
     autoPrefetchRoutes(2000);
   }, []);
