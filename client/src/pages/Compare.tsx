@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Broker } from "@shared/schema";
-import { Star, X, Plus, ExternalLink, Shield, DollarSign, TrendingUp, Monitor, CreditCard, Headphones, Check, Minus } from "lucide-react";
+import type { ComparisonRecord } from "@shared/schema";
+import { Star, X, Plus, ExternalLink, Shield, DollarSign, TrendingUp, Monitor, CreditCard, Headphones, Check, Minus, Trophy, ArrowRight, GitCompare, Flame } from "lucide-react";
 import { Link } from "wouter";
 
 const COMPARISON_ROWS: { label: string; key: keyof Broker; icon: any }[] = [
@@ -111,10 +112,25 @@ export default function Compare() {
     queryKey: ["/api/brokers"],
   });
 
+  const { data: popularComparisons } = useQuery<ComparisonRecord[]>({
+    queryKey: ["/api/comparisons/hub/broker"],
+    queryFn: async () => {
+      const res = await fetch("/api/comparisons/hub/broker");
+      if (!res.ok) return [];
+      return res.json();
+    },
+  });
+
   const brokers: Broker[] = useMemo(
     () => (rawBrokers || []) as Broker[],
     [rawBrokers]
   );
+
+  const brokerMap = useMemo(() => {
+    const map = new Map<string, Broker>();
+    brokers.forEach((b) => { map.set(b.slug, b); map.set(b.id, b); });
+    return map;
+  }, [brokers]);
 
   const addBroker = (broker: Broker) => {
     if (selectedBrokers.length < 4 && !selectedBrokers.find((b) => b.id === broker.id)) {
@@ -217,33 +233,126 @@ export default function Compare() {
       <main className="flex-1 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {selectedBrokers.length === 0 ? (
-            /* Empty state */
-            <div className="text-center py-24">
-              <div className="w-16 h-16 rounded-2xl bg-[#2bb32a]/10 flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="w-8 h-8 text-[#2bb32a]" />
+            /* Popular Comparisons discovery section */
+            <div className="py-6">
+              {/* Section header */}
+              <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg" style={{ background: "rgba(43,179,42,0.1)" }}>
+                    <Flame className="w-4 h-4" style={{ color: "#2bb32a" }} />
+                  </div>
+                  <h2 className="text-lg font-bold" style={{ color: "#111827" }}>Popular Broker Comparisons</h2>
+                </div>
+                <Link href="/compare/broker" className="text-sm font-semibold flex items-center gap-1 hover:underline" style={{ color: "#15803d" }}>
+                  View all <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
-              <h2 className="text-xl font-semibold text-gray-700 mb-2">No brokers selected yet</h2>
-              <p className="text-gray-400 text-sm mb-6">Search for brokers above to start comparing</p>
-              {isLoading ? (
-                <div className="flex flex-wrap justify-center gap-3 max-w-lg mx-auto">
-                  {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-9 w-28 rounded-lg" />)}
+
+              {!popularComparisons ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
+                </div>
+              ) : popularComparisons.length === 0 ? (
+                <div className="text-center py-16 rounded-2xl" style={{ background: "#ffffff", border: "1px solid #e8edea" }}>
+                  <GitCompare className="w-10 h-10 mx-auto mb-3 opacity-20" style={{ color: "#374151" }} />
+                  <p className="font-medium" style={{ color: "#374151" }}>No comparisons published yet</p>
+                  <p className="text-sm mt-1" style={{ color: "#9ca3af" }}>Use the search above to build a custom comparison</p>
                 </div>
               ) : (
-                <div className="flex flex-wrap justify-center gap-3 max-w-lg mx-auto">
-                  {brokers.filter(b => b.featured).slice(0, 4).map((b) => (
-                    <Button
-                      key={b.id}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => addBroker(b)}
-                      data-testid={`button-quick-add-${b.slug}`}
-                    >
-                      <Plus className="w-3.5 h-3.5 mr-1" />
-                      {b.name}
-                    </Button>
-                  ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {popularComparisons.slice(0, 9).map((c) => {
+                    const bA = brokerMap.get(c.entityASlug) || brokerMap.get(c.entityAId);
+                    const bB = brokerMap.get(c.entityBSlug ?? "") || brokerMap.get(c.entityBId ?? "");
+                    const logoA = bA?.logoUrl;
+                    const logoB = bB?.logoUrl;
+                    const winnerIsA = c.overallWinnerId === c.entityAId;
+                    const winnerIsB = c.overallWinnerId === c.entityBId;
+                    const winnerName = winnerIsA ? c.entityAName : winnerIsB ? c.entityBName : null;
+
+                    return (
+                      <Link
+                        key={c.id}
+                        href={`/compare/broker/${c.slug}`}
+                        className="group block"
+                        data-testid={`link-popular-${c.id}`}
+                      >
+                        <div
+                          className="rounded-2xl p-4 transition-all duration-200 group-hover:shadow-md"
+                          style={{ background: "#ffffff", border: "1px solid #e8edea" }}
+                        >
+                          {/* Broker pair row */}
+                          <div className="flex items-center gap-2 mb-3">
+                            {/* Logo A */}
+                            <div className="flex-shrink-0">
+                              {logoA ? (
+                                <img src={logoA} alt={c.entityAName} className="w-9 h-9 rounded-lg object-contain bg-white p-1" style={{ border: "1px solid #e8edea" }} />
+                              ) : (
+                                <div className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-black text-white" style={{ background: "#2bb32a" }}>
+                                  {c.entityAName.charAt(0)}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Names */}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold leading-tight truncate group-hover:text-[#15803d] transition-colors" style={{ color: "#111827" }}>
+                                {c.entityAName}
+                              </p>
+                            </div>
+
+                            {/* VS pill */}
+                            <span className="flex-shrink-0 text-xs font-black px-2 py-0.5 rounded-full" style={{ background: "#f0fdf4", color: "#2bb32a", border: "1px solid #bbf7d0" }}>
+                              VS
+                            </span>
+
+                            {/* Names B */}
+                            <div className="flex-1 min-w-0 text-right">
+                              <p className="text-sm font-bold leading-tight truncate group-hover:text-[#15803d] transition-colors" style={{ color: "#111827" }}>
+                                {c.entityBName}
+                              </p>
+                            </div>
+
+                            {/* Logo B */}
+                            <div className="flex-shrink-0">
+                              {logoB ? (
+                                <img src={logoB} alt={c.entityBName ?? ""} className="w-9 h-9 rounded-lg object-contain bg-white p-1" style={{ border: "1px solid #e8edea" }} />
+                              ) : (
+                                <div className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-black text-white" style={{ background: "#2bb32a" }}>
+                                  {(c.entityBName ?? "?").charAt(0)}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Footer */}
+                          <div className="flex items-center justify-between">
+                            {winnerName ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "#dcfce7", color: "#15803d" }}>
+                                <Trophy className="w-3 h-3" /> {winnerName}
+                              </span>
+                            ) : (
+                              <span className="text-[11px] font-medium" style={{ color: "#9ca3af" }}>No overall winner</span>
+                            )}
+                            <span className="text-[11px] font-semibold flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "#2bb32a" }}>
+                              Read analysis <ArrowRight className="w-3 h-3" />
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
+
+              {/* Separator before custom tool hint */}
+              <div className="mt-10 mb-2 flex items-center gap-4">
+                <div className="flex-1 h-px" style={{ background: "#e8edea" }} />
+                <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "#9ca3af" }}>or build your own</span>
+                <div className="flex-1 h-px" style={{ background: "#e8edea" }} />
+              </div>
+              <p className="text-center text-sm" style={{ color: "#6b7280" }}>
+                Use the search bar above to select up to 4 brokers and create a custom side-by-side comparison.
+              </p>
             </div>
           ) : (
             /* Comparison table */
