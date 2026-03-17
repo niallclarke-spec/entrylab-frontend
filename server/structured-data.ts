@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { brokersTable, propFirmsTable, articlesTable, reviewsTable } from "@shared/schema";
-import { eq, and, count, avg } from "drizzle-orm";
+import { eq, and, count, avg, desc } from "drizzle-orm";
 
 // Helper to strip HTML tags
 function stripHtml(html: string): string {
@@ -285,6 +285,12 @@ export async function getArticleSchema(slug: string) {
 
     const schemas = [];
 
+    // Use Person type for named human authors; fall back to Organization for the editorial team
+    const isEditorialTeam = !authorName || authorName.toLowerCase().includes('team') || authorName.toLowerCase().includes('entrylab');
+    const authorSchema = isEditorialTeam
+      ? { "@type": "Organization", "name": "EntryLab Editorial Team", "url": "https://entrylab.io" }
+      : { "@type": "Person", "name": authorName, "url": "https://entrylab.io" };
+
     // Article schema (NewsArticle for news content, Article for guides/educational)
     schemas.push({
       "@context": "https://schema.org",
@@ -294,11 +300,7 @@ export async function getArticleSchema(slug: string) {
       "image": image,
       "datePublished": datePublished,
       "dateModified": dateModified,
-      "author": {
-        "@type": "Organization",
-        "name": authorName,
-        "url": "https://entrylab.io"
-      },
+      "author": authorSchema,
       "publisher": {
         "@type": "Organization",
         "name": "EntryLab",
@@ -621,6 +623,83 @@ export async function getPropFirmSchema(slug: string) {
   }
 }
 
+// Comparison page schema — WebPage + BreadcrumbList for /compare/broker/:slug and /compare/prop-firm/:slug
+async function getComparisonPageSchema(entityType: 'broker' | 'prop-firm', slug: string) {
+  try {
+    const table = entityType === 'broker' ? brokersTable : propFirmsTable;
+    const [a, b] = slug.split('-vs-');
+    if (!a || !b) return null;
+
+    const canonicalUrl = `https://entrylab.io/compare/${entityType}/${slug}`;
+    const hubLabel = entityType === 'broker' ? 'Broker Comparisons' : 'Prop Firm Comparisons';
+    const hubUrl = `https://entrylab.io/compare/${entityType}`;
+
+    // Look up display names for both entities so the breadcrumb label is human-readable
+    const [rowA] = await db.select({ name: table.name }).from(table).where(eq(table.slug, a)).limit(1);
+    const [rowB] = await db.select({ name: table.name }).from(table).where(eq(table.slug, b)).limit(1);
+    const nameA = rowA?.name || a;
+    const nameB = rowB?.name || b;
+    const pageTitle = `${nameA} vs ${nameB}`;
+
+    return [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": pageTitle,
+        "description": `Compare ${nameA} vs ${nameB} side-by-side. In-depth analysis of fees, regulation, trading conditions, and more.`,
+        "url": canonicalUrl,
+        "publisher": {
+          "@type": "Organization",
+          "name": "EntryLab",
+          "url": "https://entrylab.io"
+        }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://entrylab.io" },
+          { "@type": "ListItem", "position": 2, "name": hubLabel, "item": hubUrl },
+          { "@type": "ListItem", "position": 3, "name": pageTitle, "item": canonicalUrl }
+        ]
+      }
+    ];
+  } catch (err) {
+    console.error('[Structured Data] Comparison schema error:', err);
+    return null;
+  }
+}
+
+// ItemList of the 8 most-recently published articles — added to homepage schema
+async function getRecentArticlesItemListSchema() {
+  try {
+    const recent = await db
+      .select({ slug: articlesTable.slug, title: articlesTable.title, category: articlesTable.category, featuredImage: articlesTable.featuredImage })
+      .from(articlesTable)
+      .where(eq(articlesTable.status, 'published'))
+      .orderBy(desc(articlesTable.publishedAt))
+      .limit(8);
+
+    if (!recent.length) return null;
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "Latest Forex & Trading Articles",
+      "url": "https://entrylab.io",
+      "itemListElement": recent.map((art, idx) => ({
+        "@type": "ListItem",
+        "position": idx + 1,
+        "url": `https://entrylab.io/${art.category || 'news'}/${art.slug}`,
+        "name": stripHtml(art.title || '')
+      }))
+    };
+  } catch (err) {
+    console.error('[Structured Data] Recent articles ItemList error:', err);
+    return null;
+  }
+}
+
 // Generate structured data based on URL path
 export async function generateStructuredData(url: string): Promise<string> {
   const schemas: any[] = [];
@@ -630,9 +709,10 @@ export async function generateStructuredData(url: string): Promise<string> {
   
   // Determine if this is a broker/prop-firm detail page (they have their own entity schemas)
   const isBrokerOrPropFirm = (urlParts[0] === 'broker' || urlParts[0] === 'prop-firm') && urlParts[1];
+  const isComparisonPage = urlParts[0] === 'compare' && urlParts.length === 3;
   
   // Only include organization schema on non-broker/prop-firm detail pages
-  if (!isBrokerOrPropFirm) {
+  if (!isBrokerOrPropFirm && !isComparisonPage) {
     schemas.push(getOrganizationSchema());
   }
 
@@ -640,41 +720,34 @@ export async function generateStructuredData(url: string): Promise<string> {
   const isHomePage = urlParts.length === 0;
   if (isHomePage) {
     schemas.push(getWebSiteSchema());
+    const recentArticles = await getRecentArticlesItemListSchema();
+    if (recentArticles) schemas.push(recentArticles);
   }
   
   if (urlParts[0] === 'article' && urlParts[1]) {
     const articleSchemas = await getArticleSchema(urlParts[1]);
-    if (articleSchemas) {
-      schemas.push(...articleSchemas);
-    }
+    if (articleSchemas) schemas.push(...articleSchemas);
   } else if (urlParts[0] === 'broker' && urlParts[1]) {
     const brokerSchemas = await getBrokerSchema(urlParts[1]);
-    if (brokerSchemas) {
-      schemas.push(...brokerSchemas);
-    }
+    if (brokerSchemas) schemas.push(...brokerSchemas);
   } else if (urlParts[0] === 'prop-firm' && urlParts[1]) {
     const propFirmSchemas = await getPropFirmSchema(urlParts[1]);
-    if (propFirmSchemas) {
-      schemas.push(...propFirmSchemas);
-    }
+    if (propFirmSchemas) schemas.push(...propFirmSchemas);
   } else if (urlParts[0] === 'brokers' && !urlParts[1]) {
-    // Brokers listing page — inject ItemList schema
     const brokersListSchema = await getBrokersListSchema();
-    if (brokersListSchema) {
-      schemas.push(brokersListSchema);
-    }
+    if (brokersListSchema) schemas.push(brokersListSchema);
   } else if (urlParts[0] === 'prop-firms' && !urlParts[1]) {
-    // Prop firms listing page — inject ItemList schema
     const propFirmsListSchema = await getPropFirmsListSchema();
-    if (propFirmsListSchema) {
-      schemas.push(propFirmsListSchema);
-    }
+    if (propFirmsListSchema) schemas.push(propFirmsListSchema);
   } else if (urlParts.length === 2 && ['news', 'broker-news', 'broker-guides', 'prop-firm-news', 'prop-firm-guides', 'trading-tools'].includes(urlParts[0])) {
     // Handle /:category/:slug article format (e.g., /broker-news/zarafx-gets-raided)
     const articleSchemas = await getArticleSchema(urlParts[1]);
-    if (articleSchemas) {
-      schemas.push(...articleSchemas);
-    }
+    if (articleSchemas) schemas.push(...articleSchemas);
+  } else if (urlParts[0] === 'compare' && urlParts.length === 3 && (urlParts[1] === 'broker' || urlParts[1] === 'prop-firm')) {
+    // Comparison pages: /compare/broker/:slug and /compare/prop-firm/:slug
+    const entityType = urlParts[1] as 'broker' | 'prop-firm';
+    const compSchemas = await getComparisonPageSchema(entityType, urlParts[2]);
+    if (compSchemas) schemas.push(...compSchemas);
   }
 
   // Generate script tags for each schema

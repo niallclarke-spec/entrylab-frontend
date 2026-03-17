@@ -1957,7 +1957,7 @@ ${items}
     
     try {
       const [posts, brokers, propFirms, categories, comparisons] = await Promise.all([
-        db.select({ slug: articlesTable.slug, category: articlesTable.category, publishedAt: articlesTable.publishedAt, updatedAt: articlesTable.updatedAt })
+        db.select({ slug: articlesTable.slug, category: articlesTable.category, publishedAt: articlesTable.publishedAt, updatedAt: articlesTable.updatedAt, featuredImage: articlesTable.featuredImage, title: articlesTable.title })
           .from(articlesTable).where(eq(articlesTable.status, "published")).orderBy(desc(articlesTable.publishedAt)),
         db.select({ slug: brokersTable.slug, lastUpdated: brokersTable.lastUpdated }).from(brokersTable),
         db.select({ slug: propFirmsTable.slug, lastUpdated: propFirmsTable.lastUpdated }).from(propFirmsTable),
@@ -1970,9 +1970,10 @@ ${items}
       const baseUrl = 'https://entrylab.io';
       const currentDate = new Date().toISOString();
 
-      // Build sitemap XML
+      // Build sitemap XML — with image extension for faster Google image indexing
       let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n';
-      sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+      sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n';
+      sitemap += '        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n';
 
       // Homepage
       sitemap += `  <url>\n`;
@@ -2063,15 +2064,22 @@ ${items}
         sitemap += `  </url>\n`;
       });
 
-      // Articles - Use /:category/:slug format from DB
+      // Articles — include image:image for featured images so Google indexes them faster
       posts.forEach((post) => {
         const modifiedDate = (post.updatedAt || post.publishedAt) ? new Date(post.updatedAt || post.publishedAt!).toISOString() : currentDate;
         const categorySlug = post.category || 'uncategorized';
+        const cleanTitle = (post.title || '').replace(/<[^>]*>/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         sitemap += `  <url>\n`;
         sitemap += `    <loc>${baseUrl}/${categorySlug}/${post.slug}</loc>\n`;
         sitemap += `    <lastmod>${modifiedDate}</lastmod>\n`;
         sitemap += `    <changefreq>monthly</changefreq>\n`;
         sitemap += `    <priority>0.8</priority>\n`;
+        if (post.featuredImage) {
+          sitemap += `    <image:image>\n`;
+          sitemap += `      <image:loc>${post.featuredImage}</image:loc>\n`;
+          if (cleanTitle) sitemap += `      <image:title>${cleanTitle}</image:title>\n`;
+          sitemap += `    </image:image>\n`;
+        }
         sitemap += `  </url>\n`;
       });
 
