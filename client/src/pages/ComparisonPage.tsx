@@ -677,16 +677,16 @@ function VsComparisonPage({
             </div>
 
             {/* ── Sticky Sidebar ──────────────────────────────────────────── */}
-            <aside
-              className="hidden lg:block sticky overflow-y-auto"
-              style={{
-                top: "6rem",
-                alignSelf: "start",
-                maxHeight: "calc(100vh - 6rem)",
-                paddingBottom: "1.5rem",
-              }}
-            >
-              <div className="space-y-6">
+            <aside className="hidden lg:block">
+              <div
+                className="sticky space-y-6"
+                style={{
+                  top: "6rem",
+                  maxHeight: "calc(100vh - 7rem)",
+                  overflowY: "auto",
+                  paddingBottom: "1rem",
+                }}
+              >
 
                 {/* Table of Contents */}
                 <div className="rounded-lg p-5" style={{ background: "#ffffff", border: "1px solid #e8edea" }}>
