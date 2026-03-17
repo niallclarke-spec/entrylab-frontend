@@ -171,7 +171,7 @@ export default function BrokerCategoryArchive() {
                         border: isSelected ? "1px solid rgba(43,179,42,0.15)" : "1px solid rgba(255,255,255,0.70)",
                         color: isSelected ? "#14531a" : "#374151",
                       }}
-                      onClick={() => setLocation(`/${cat.slug}`)}
+                      onClick={() => setLocation(`/broker-categories/${cat.slug}`)}
                       data-testid={`badge-category-${cat.slug}`}
                     >
                       {cat.name}
