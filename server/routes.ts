@@ -3004,7 +3004,9 @@ ${items}
           // Inject Open Graph tags + canonical
           const ogTitle = seoTitle.replace(/"/g, '&quot;');
           const ogDesc = seoDescription.replace(/"/g, '&quot;');
-          const ogImage = pageData.featuredImage || pageData.logoUrl || 'https://entrylab.io/assets/entrylab-logo-green.png';
+          // Ensure OG image is always an absolute URL — relative paths break social sharing
+          const rawOgImage = pageData.featuredImage || pageData.logoUrl || 'https://entrylab.io/assets/entrylab-logo-green.png';
+          const ogImage = rawOgImage.startsWith('/') ? `https://entrylab.io${rawOgImage}` : rawOgImage;
           const ogUrl = `https://entrylab.io${cleanUrl}`;
           
           const ogType = cleanUrl.match(/^\/[^/]+\/[^/]+$/) && !cleanUrl.startsWith('/broker/') && !cleanUrl.startsWith('/prop-firm/')
@@ -3116,6 +3118,85 @@ ${items}
               }
             } catch (err) {
               console.error('[SEO] FAQ schema injection error:', err);
+            }
+          }
+
+          // FAQ JSON-LD for prop-firm review pages
+          if (cleanUrl.startsWith('/prop-firm/') && pageData.name) {
+            try {
+              const firmName = pageData.name.replace(/<[^>]+>/g, '');
+              const faqItems: Array<{ q: string; a: string }> = [];
+
+              if (pageData.profitSplit) faqItems.push({
+                q: `What is ${firmName}'s profit split?`,
+                a: `${firmName} offers a profit split of ${pageData.profitSplit}.`
+              });
+              if (pageData.evaluationFee) faqItems.push({
+                q: `How much does the ${firmName} evaluation cost?`,
+                a: `The ${firmName} evaluation fee starts from ${pageData.evaluationFee}.`
+              });
+              if (pageData.maxFundingSize) faqItems.push({
+                q: `What is the maximum funding ${firmName} provides?`,
+                a: `${firmName} provides a maximum funded account size of ${pageData.maxFundingSize}.`
+              });
+              if (pageData.platformsList) faqItems.push({
+                q: `What trading platforms does ${firmName} support?`,
+                a: `${firmName} supports: ${Array.isArray(pageData.platformsList) ? pageData.platformsList.join(', ') : pageData.platformsList}.`
+              });
+              if (pageData.rating) faqItems.push({
+                q: `What is ${firmName}'s rating on EntryLab?`,
+                a: `${firmName} has an overall rating of ${pageData.rating} out of 5 on EntryLab.`
+              });
+              if (pageData.countries && Array.isArray(pageData.countries) && pageData.countries.length > 0) faqItems.push({
+                q: `Is ${firmName} available in my country?`,
+                a: `${firmName} is available in: ${pageData.countries.slice(0, 8).join(', ')}${pageData.countries.length > 8 ? ', and more' : ''}.`
+              });
+
+              if (faqItems.length >= 2) {
+                const faqSchema = {
+                  "@context": "https://schema.org",
+                  "@type": "FAQPage",
+                  "mainEntity": faqItems.map(item => ({
+                    "@type": "Question",
+                    "name": item.q,
+                    "acceptedAnswer": { "@type": "Answer", "text": item.a }
+                  }))
+                };
+                modifiedHtml = modifiedHtml.replace(
+                  '</head>',
+                  `  <script type="application/ld+json">${JSON.stringify(faqSchema)}</script>\n  </head>`
+                );
+              }
+            } catch (err) {
+              console.error('[SEO] Prop-firm FAQ schema injection error:', err);
+            }
+          }
+
+          // FAQ JSON-LD for comparison pages — uses pre-generated faqData from the comparison engine
+          if (cleanUrl.startsWith('/compare/') && cleanUrl.split('/').length === 4 && pageData.faqData) {
+            try {
+              const rawFaq = Array.isArray(pageData.faqData)
+                ? pageData.faqData
+                : (typeof pageData.faqData === 'string' ? JSON.parse(pageData.faqData) : []);
+              const faqItems = rawFaq.filter((f: any) => f.q && f.a);
+
+              if (faqItems.length >= 2) {
+                const faqSchema = {
+                  "@context": "https://schema.org",
+                  "@type": "FAQPage",
+                  "mainEntity": faqItems.map((item: any) => ({
+                    "@type": "Question",
+                    "name": item.q,
+                    "acceptedAnswer": { "@type": "Answer", "text": item.a }
+                  }))
+                };
+                modifiedHtml = modifiedHtml.replace(
+                  '</head>',
+                  `  <script type="application/ld+json">${JSON.stringify(faqSchema)}</script>\n  </head>`
+                );
+              }
+            } catch (err) {
+              console.error('[SEO] Comparison FAQ schema injection error:', err);
             }
           }
 

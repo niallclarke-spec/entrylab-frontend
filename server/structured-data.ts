@@ -670,6 +670,119 @@ async function getComparisonPageSchema(entityType: 'broker' | 'prop-firm', slug:
   }
 }
 
+// Static hub and archive page schemas — WebPage + BreadcrumbList for pages that had no schema
+function getStaticPageSchemas(urlParts: string[]): any[] {
+  const BASE = 'https://entrylab.io';
+
+  const categoryMeta: Record<string, { label: string; desc: string }> = {
+    'broker-news':       { label: 'Broker News',       desc: 'Latest forex broker news, regulatory updates, and industry announcements.' },
+    'prop-firm-news':    { label: 'Prop Firm News',    desc: 'Latest prop trading firm news, rule changes, and payout updates.' },
+    'broker-guides':     { label: 'Broker Guides',     desc: 'In-depth broker guides, platform walkthroughs, and trading condition breakdowns.' },
+    'prop-firm-guides':  { label: 'Prop Firm Guides',  desc: 'Prop firm guides, evaluation tips, and challenge strategy breakdowns.' },
+    'trading-tools':     { label: 'Trading Tools',     desc: 'Trading tools, calculators, and platform feature guides for forex traders.' },
+    'news':              { label: 'News',              desc: 'Financial market news and forex industry updates from EntryLab.' },
+  };
+
+  // Category archive pages: /broker-news, /prop-firm-news, etc.
+  if (urlParts.length === 1 && categoryMeta[urlParts[0]]) {
+    const { label, desc } = categoryMeta[urlParts[0]];
+    const pageUrl = `${BASE}/${urlParts[0]}`;
+    return [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": `${label} | EntryLab`,
+        "description": desc,
+        "url": pageUrl,
+        "publisher": { "@type": "Organization", "name": "EntryLab", "url": BASE }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": BASE },
+          { "@type": "ListItem", "position": 2, "name": label, "item": pageUrl }
+        ]
+      }
+    ];
+  }
+
+  // /signals hub
+  if (urlParts.length === 1 && urlParts[0] === 'signals') {
+    return [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Premium Forex Signals | EntryLab",
+        "description": "Daily forex trading signals with entry, stop-loss, and take-profit levels. Subscribe for premium access via Telegram.",
+        "url": `${BASE}/signals`,
+        "publisher": { "@type": "Organization", "name": "EntryLab", "url": BASE }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": BASE },
+          { "@type": "ListItem", "position": 2, "name": "Forex Signals", "item": `${BASE}/signals` }
+        ]
+      }
+    ];
+  }
+
+  // /compare top-level hub
+  if (urlParts.length === 1 && urlParts[0] === 'compare') {
+    return [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Compare Forex Brokers & Prop Firms | EntryLab",
+        "description": "Side-by-side comparisons of forex brokers and prop trading firms. Compare fees, regulation, platforms, and more.",
+        "url": `${BASE}/compare`,
+        "publisher": { "@type": "Organization", "name": "EntryLab", "url": BASE }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": BASE },
+          { "@type": "ListItem", "position": 2, "name": "Compare", "item": `${BASE}/compare` }
+        ]
+      }
+    ];
+  }
+
+  // /compare/broker and /compare/prop-firm hub pages
+  if (urlParts.length === 2 && urlParts[0] === 'compare' && (urlParts[1] === 'broker' || urlParts[1] === 'prop-firm')) {
+    const isPropFirm = urlParts[1] === 'prop-firm';
+    const label = isPropFirm ? 'Prop Firm Comparisons' : 'Broker Comparisons';
+    const desc = isPropFirm
+      ? 'Compare prop trading firms side-by-side. Evaluation fees, profit splits, max funding, and platform breakdowns.'
+      : 'Compare forex brokers side-by-side. Regulation, spreads, leverage, platforms, and minimum deposits.';
+    const pageUrl = `${BASE}/compare/${urlParts[1]}`;
+    return [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": `${label} | EntryLab`,
+        "description": desc,
+        "url": pageUrl,
+        "publisher": { "@type": "Organization", "name": "EntryLab", "url": BASE }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": BASE },
+          { "@type": "ListItem", "position": 2, "name": "Compare", "item": `${BASE}/compare` },
+          { "@type": "ListItem", "position": 3, "name": label, "item": pageUrl }
+        ]
+      }
+    ];
+  }
+
+  return [];
+}
+
 // In-memory cache for homepage ItemList — refreshed every 5 minutes
 let _recentArticlesCache: { data: any; ts: number } | null = null;
 const RECENT_ARTICLES_TTL = 5 * 60 * 1000; // 5 minutes
@@ -752,7 +865,13 @@ export async function generateStructuredData(url: string): Promise<string> {
     // Handle /:category/:slug article format (e.g., /broker-news/zarafx-gets-raided)
     const articleSchemas = await getArticleSchema(urlParts[1]);
     if (articleSchemas) schemas.push(...articleSchemas);
-  } else if (urlParts[0] === 'compare' && urlParts.length === 3 && (urlParts[1] === 'broker' || urlParts[1] === 'prop-firm')) {
+  } else {
+    // Hub and archive pages: /compare, /compare/broker, /compare/prop-firm, /broker-news, /signals, etc.
+    const staticSchemas = getStaticPageSchemas(urlParts);
+    if (staticSchemas.length) schemas.push(...staticSchemas);
+  }
+
+  if (urlParts[0] === 'compare' && urlParts.length === 3 && (urlParts[1] === 'broker' || urlParts[1] === 'prop-firm')) {
     // Comparison pages: /compare/broker/:slug and /compare/prop-firm/:slug
     const entityType = urlParts[1] as 'broker' | 'prop-firm';
     const compSchemas = await getComparisonPageSchema(entityType, urlParts[2]);
