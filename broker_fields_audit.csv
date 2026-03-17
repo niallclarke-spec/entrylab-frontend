@@ -1,0 +1,47 @@
+Admin Label,DB Field Name,API Field Name,Used in Broker Review Page,Notes
+FIRM NAME,name,name,YES,Shown in hero + throughout page
+SLUG,slug,slug,YES,Used in URL
+LOGO,logoUrl,logo,YES,Shown in hero + comparison section
+WEBSITE / AFFILIATE URL,affiliateLink,link,YES,All CTA buttons
+SHORT DESCRIPTION,tagline,tagline,YES,Shown in hero subheading
+RATING,rating,rating,YES,Star rating displayed prominently
+VERIFIED (toggle),isVerified,verified,YES,Trust badge shown in hero
+FEATURED (toggle),isFeatured,featured,YES,Controls homepage featured placement
+MIN. DEPOSIT,minDeposit,minDeposit,YES,Shown in Quick Stats section
+MAX LEVERAGE,maxLeverage,maxLeverage,YES,Shown in Quick Stats section
+MIN. WITHDRAWAL,minWithdrawal,minWithdrawal,YES,Shown in Quick Stats section
+PAYMENT METHODS,paymentMethods,paymentMethods,YES,Shown in Quick Stats section
+PLATFORMS,platforms,platforms,YES,Shown in Quick Stats section
+HEADQUARTERS,headquarters,headquarters,YES,Shown in Quick Stats section
+SUPPORT HOURS,support,support,YES,Shown in Quick Stats section
+FOUNDED YEAR,yearFounded,yearFounded,YES,Shown in Quick Stats section
+PROS,pros,pros,YES,Pros section on review page
+CONS,cons,cons,YES,Cons section on review page
+HIGHLIGHTS,highlights,highlights,YES,Highlights/awards strip
+PROMO / BONUS,bonusOffer,bonusOffer,YES,Shown in bonus offer block
+FULL REVIEW,content,content,YES,Main body HTML content
+POPULARITY,popularity,totalUsers,YES,Shown as community size stat
+LAST UPDATED,lastUpdated,lastUpdated,YES,Shown as review date stamp
+ACCOUNT TYPES,accountTypes,accountTypes,YES,Shown in account types section
+SEO TITLE,seoTitle,—,NO (meta only),Used for <title> tag only — not visible on page
+META DESCRIPTION,seoDescription,—,NO (meta only),Used for meta description only — not visible on page
+SPREAD FROM,spreadFrom,spreadFrom,NO,Saved to DB but NOT rendered anywhere on broker review
+COMMISSION,commission,commission,NO,In DB but not exposed in admin form and not shown on review page
+COUNTRIES,countries,countries,NO,Saved to DB but not displayed on broker review page
+PLATFORMS LIST (array),platformsList,platformsList,NO,Separate from platforms text field — not shown on review
+INSTRUMENTS,instruments,instruments,NO,Saved to DB but not displayed on broker review page
+DISCOUNT CODE,discountCode,—,NO,In DB but not displayed on review page (no field in broker form either)
+DISCOUNT AMOUNT,discountAmount,—,NO,In DB but not displayed on review page
+AFFILIATE LINK (SEO tab),affiliateLink,link,YES,Same as Website field — used for CTA buttons
+PROMO CODE (affiliate tab),discountCode,—,NO,Mapped to discountCode in DB — not shown on review
+——— ADMIN FORM FIELDS NOT SAVED TO DB ———,,,,
+TRUSTPILOT RATING,NOT IN DB,—,NO,Admin form has this field but it is not saved to the database
+PUBLICLY TRADED (toggle),NOT IN DB,—,NO,Admin form toggle — not saved to database
+PARENT COMPANY,NOT IN DB,—,NO,Admin form field — not saved to database
+CEO / FOUNDER,NOT IN DB,—,NO,Admin form field — not saved to database
+CHALLENGE PLANS (detailed),NOT IN DB,—,NO,Detailed plan table in admin UI — UI only placeholder not yet saved
+REGULATION DETAILS (tier/licence),NOT IN DB,—,NO,Detailed regulation breakdown tab — UI only not yet saved
+——— FIELDS USED ON REVIEW PAGE BUT MISSING FROM DB ———,,,,
+BEST FOR,NOT IN DB,bestFor,PARTIALLY,Shown in review UI but field does not exist in the database — always empty
+WITHDRAWAL TIME,NOT IN DB,withdrawalTime,PARTIALLY,Shown in review UI but field does not exist in the database — always empty
+AWARDS,NOT IN DB,awards,PARTIALLY,Shown in review UI but field does not exist in the database — always empty

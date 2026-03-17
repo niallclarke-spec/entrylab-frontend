@@ -6,3 +6,9 @@ id = "cZfN45eCevN4Glmm4Gw8w"
 uri = "file://entrylab-seo-audit.xlsx"
 type = "table"
 title = "EntryLab SEO Audit – All Pages"
+
+[[outputs]]
+id = "agq-V6Y7It5pGtPCQQG9V"
+uri = "file://broker_fields_audit.csv"
+type = "table"
+title = "Broker Fields Audit — Used vs Not Used"
