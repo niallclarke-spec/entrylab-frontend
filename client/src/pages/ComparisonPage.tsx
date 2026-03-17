@@ -148,33 +148,154 @@ function QuickCompareTable({
   entityBData,
   nameA,
   nameB,
+  logoA,
+  logoB,
+  ratingA,
+  ratingB,
+  winsA,
+  winsB,
 }: {
   entityType: string;
   entityAData: Record<string, any>;
   entityBData: Record<string, any>;
   nameA: string;
   nameB: string;
+  logoA?: string | null;
+  logoB?: string | null;
+  ratingA?: number;
+  ratingB?: number;
+  winsA?: number;
+  winsB?: number;
 }) {
   const rows = entityType === "broker" ? BROKER_TABLE_ROWS : PROP_TABLE_ROWS;
+  const aWins = (winsA ?? 0) > (winsB ?? 0);
+  const bWins = (winsB ?? 0) > (winsA ?? 0);
+
   return (
-    <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid #e8edea" }}>
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto rounded-xl" style={{ border: "1px solid #e8edea" }}>
+      <table className="w-full text-sm border-collapse">
         <thead>
-          <tr style={{ borderBottom: "1px solid #e8edea", background: "#f9fafb" }}>
-            <th className="p-4 text-left font-medium w-1/3" style={{ color: "#6b7280" }}>Feature</th>
-            <th className="p-4 text-left font-semibold" style={{ color: "#111827" }}>{nameA}</th>
-            <th className="p-4 text-left font-semibold" style={{ color: "#111827" }}>{nameB}</th>
+          <tr style={{ background: "#1a1e1c" }}>
+            <th className="p-4 text-left w-1/3" style={{ color: "rgba(255,255,255,0.4)", fontWeight: 500, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
+              Feature
+            </th>
+            {/* Entity A header */}
+            <th className="p-4 text-left" style={{
+              borderRight: "1px solid rgba(255,255,255,0.08)",
+              borderBottom: aWins ? "3px solid #2bb32a" : "3px solid transparent",
+            }}>
+              <div className="flex items-center gap-2.5">
+                {logoA ? (
+                  <div className="w-7 h-7 rounded-md bg-white flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    <img src={logoA} alt={nameA} className="w-5 h-5 object-contain" />
+                  </div>
+                ) : (
+                  <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 text-xs font-bold text-white" style={{ background: "#2bb32a" }}>
+                    {nameA.charAt(0)}
+                  </div>
+                )}
+                <div>
+                  <p className="font-semibold text-white text-sm leading-tight">{nameA}</p>
+                  {ratingA != null && ratingA > 0 && (
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <Star className="w-3 h-3 fill-[#f59e0b] text-[#f59e0b]" />
+                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>{ratingA.toFixed(1)}</span>
+                    </div>
+                  )}
+                </div>
+                {aWins && (
+                  <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(43,179,42,0.2)", color: "#2bb32a" }}>
+                    WINNER
+                  </span>
+                )}
+              </div>
+            </th>
+            {/* Entity B header */}
+            <th className="p-4 text-left" style={{
+              borderBottom: bWins ? "3px solid #2bb32a" : "3px solid transparent",
+            }}>
+              <div className="flex items-center gap-2.5">
+                {logoB ? (
+                  <div className="w-7 h-7 rounded-md bg-white flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    <img src={logoB} alt={nameB} className="w-5 h-5 object-contain" />
+                  </div>
+                ) : (
+                  <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 text-xs font-bold text-white" style={{ background: "#374151" }}>
+                    {nameB.charAt(0)}
+                  </div>
+                )}
+                <div>
+                  <p className="font-semibold text-white text-sm leading-tight">{nameB}</p>
+                  {ratingB != null && ratingB > 0 && (
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <Star className="w-3 h-3 fill-[#f59e0b] text-[#f59e0b]" />
+                      <span className="text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>{ratingB.toFixed(1)}</span>
+                    </div>
+                  )}
+                </div>
+                {bWins && (
+                  <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: "rgba(43,179,42,0.2)", color: "#2bb32a" }}>
+                    WINNER
+                  </span>
+                )}
+              </div>
+            </th>
           </tr>
         </thead>
         <tbody>
           {rows.map(({ label, key }, i) => {
             const valA = entityAData?.[key] ?? "—";
             const valB = entityBData?.[key] ?? "—";
+            const isRating = key === "rating";
+            const isLast = i === rows.length - 1;
             return (
-              <tr key={i} style={{ borderBottom: "1px solid #f3f4f6", background: i % 2 === 0 ? "#ffffff" : "#fafafa" }}>
-                <td className="p-4" style={{ color: "#6b7280" }}>{label}</td>
-                <td className="p-4" style={{ color: "#111827" }}>{String(valA)}</td>
-                <td className="p-4" style={{ color: "#111827" }}>{String(valB)}</td>
+              <tr
+                key={i}
+                style={{
+                  borderBottom: isLast ? "none" : "1px solid #f0f4f2",
+                  background: i % 2 === 0 ? "#ffffff" : "#fafcfa",
+                }}
+              >
+                <td className="p-4 font-medium" style={{ color: "#6b7280", borderRight: "1px solid #f0f4f2", fontSize: "0.8125rem" }}>
+                  {label}
+                </td>
+                <td className="p-4" style={{
+                  color: "#111827",
+                  borderRight: "1px solid #f0f4f2",
+                  fontWeight: aWins ? 500 : 400,
+                  background: aWins ? "rgba(43,179,42,0.025)" : undefined,
+                }}>
+                  {isRating && typeof valA === "number" && valA > 0 ? (
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold" style={{ color: "#111827" }}>{Number(valA).toFixed(1)}</span>
+                      <div className="flex gap-0.5">
+                        {[1,2,3,4,5].map(s => (
+                          <Star key={s} className={`w-3 h-3 ${Number(valA) >= s ? "fill-[#f59e0b] text-[#f59e0b]" : "text-gray-200 fill-gray-200"}`} />
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-sm">{String(valA)}</span>
+                  )}
+                </td>
+                <td className="p-4" style={{
+                  color: "#111827",
+                  fontWeight: bWins ? 500 : 400,
+                  background: bWins ? "rgba(43,179,42,0.025)" : undefined,
+                }}>
+                  {isRating && typeof valB === "number" && valB > 0 ? (
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold" style={{ color: "#111827" }}>{Number(valB).toFixed(1)}</span>
+                      <div className="flex gap-0.5">
+                        {[1,2,3,4,5].map(s => (
+                          <Star key={s} className={`w-3 h-3 ${Number(valB) >= s ? "fill-[#f59e0b] text-[#f59e0b]" : "text-gray-200 fill-gray-200"}`} />
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-sm">{String(valB)}</span>
+                  )}
+                </td>
               </tr>
             );
           })}
@@ -531,6 +652,12 @@ function VsComparisonPage({
                     entityBData={entityBData || {}}
                     nameA={record.entityAName}
                     nameB={record.entityBName ?? ""}
+                    logoA={entityALogo}
+                    logoB={entityBLogo}
+                    ratingA={entityAData ? parseFloat(String(entityAData.rating ?? 0)) : undefined}
+                    ratingB={entityBData ? parseFloat(String(entityBData.rating ?? 0)) : undefined}
+                    winsA={winsA}
+                    winsB={winsB}
                   />
                 </div>
               </section>
