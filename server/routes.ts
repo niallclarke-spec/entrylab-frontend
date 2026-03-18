@@ -2556,7 +2556,7 @@ ${items}
               .orderBy(desc(comparisonsTable.updatedAt))
               .limit(150);
             pageData = {
-              seoTitle: 'Broker Comparisons — Side-by-Side Forex Broker Analysis | EntryLab',
+              seoTitle: 'Broker Comparisons: Side-by-Side Analysis | EntryLab',
               seoDescription: 'Compare forex brokers head-to-head across regulation, fees, platforms, spreads and more. In-depth broker comparisons to help you choose the right account.',
               name: 'Broker Comparisons',
               isComparisonHub: true,
@@ -2581,7 +2581,7 @@ ${items}
               .orderBy(desc(comparisonsTable.updatedAt))
               .limit(150);
             pageData = {
-              seoTitle: 'Prop Firm Comparisons — Find the Best Funded Trader Programme | EntryLab',
+              seoTitle: 'Prop Firm Comparisons: Best Funded Accounts | EntryLab',
               seoDescription: 'Compare the top prop trading firms side by side. Challenges, profit splits, drawdown limits and payouts — all analysed so you can find the best funded account.',
               name: 'Prop Firm Comparisons',
               isComparisonHub: true,
@@ -2680,6 +2680,9 @@ ${items}
           .replace(/\s+on\w+="[^"]*"/gi, '')
           // Keep only safe tags — strip everything else not in whitelist
           .replace(/<(?!\/?(?:h[1-6]|p|ul|ol|li|strong|em|b|i|a|br|table|thead|tbody|tr|th|td|blockquote|figure|figcaption|dl|dt|dd)\b)[^>]+>/gi, '')
+          // Demote <h1> inside content body to <h2> to prevent duplicate H1 (the SSR wrapper already injects a top-level H1)
+          .replace(/<h1(\s[^>]*)?>/gi, '<h2$1>')
+          .replace(/<\/h1>/gi, '</h2>')
           // Rewrite old WordPress URL paths to current EntryLab routes
           .replace(/href="https?:\/\/(?:entrylab\.io)?\/popular-broker\//gi, 'href="/broker/')
           .replace(/href="\/popular-broker\//gi, 'href="/broker/')
@@ -2930,9 +2933,20 @@ ${items}
         return html;
       }
 
-      const injectSEO = async (html: string): Promise<string> => {
+      const injectSEO = async (html: string): Promise<{ html: string; status: number }> => {
         let modifiedHtml = html;
         const cleanUrl = url.split('?')[0];
+
+        // Detect missing entities and return 404 status so Google doesn't index ghost pages
+        let httpStatus = 200;
+        const urlSegments = cleanUrl.split('/').filter(Boolean);
+        const isEntityUrl =
+          (urlSegments[0] === 'broker' && urlSegments[1]) ||
+          (urlSegments[0] === 'prop-firm' && urlSegments[1]) ||
+          (urlSegments[0] === 'compare' && urlSegments.length === 3);
+        if (isEntityUrl && !pageData) {
+          httpStatus = 404;
+        }
         
         // Inject structured data
         try {
@@ -3412,7 +3426,7 @@ ${items}
           }
         }
         
-        return modifiedHtml;
+        return { html: modifiedHtml, status: httpStatus };
       }
       
       // Intercept res.end (used by Vite dev — chunk can be a Buffer or string)
@@ -3433,10 +3447,14 @@ ${items}
           seoInjected = true;
           console.log('[SEO] Injecting SEO tags into HTML');
           injectSEO(htmlStr)
-            .then(modifiedHtml => {
+            .then(({ html: modifiedHtml, status }) => {
               console.log('[SEO] Successfully injected SEO tags');
+              if (status !== 200) res.statusCode = status;
               if (!res.getHeader('Cache-Control')) {
-                res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+                const cc = status === 404
+                  ? 'no-store'
+                  : 'public, max-age=3600, stale-while-revalidate=86400';
+                res.setHeader('Cache-Control', cc);
               }
               originalEnd.call(res, modifiedHtml, encoding, callback);
             })
@@ -3461,11 +3479,15 @@ ${items}
           seoInjected = true;
           console.log('[SEO] Injecting SEO tags into HTML (send)');
           injectSEO(data)
-            .then(modifiedHtml => {
+            .then(({ html: modifiedHtml, status }) => {
               console.log('[SEO] Successfully injected SEO tags (send)');
+              if (status !== 200) res.statusCode = status;
               res.type('html');
               if (!res.getHeader('Cache-Control')) {
-                res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+                const cc = status === 404
+                  ? 'no-store'
+                  : 'public, max-age=3600, stale-while-revalidate=86400';
+                res.setHeader('Cache-Control', cc);
               }
               originalSend.call(res, modifiedHtml);
             })

@@ -729,6 +729,28 @@ function getStaticPageSchemas(urlParts: string[]): any[] {
     ];
   }
 
+  // /subscribe page
+  if (urlParts.length === 1 && urlParts[0] === 'subscribe') {
+    return [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Subscribe to Premium Forex Signals | EntryLab",
+        "description": "Subscribe to EntryLab's premium forex signals. Get daily trade ideas with entry, stop-loss, and take-profit levels delivered to Telegram.",
+        "url": `${BASE}/subscribe`,
+        "publisher": { "@type": "Organization", "name": "EntryLab", "url": BASE }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": BASE },
+          { "@type": "ListItem", "position": 2, "name": "Subscribe", "item": `${BASE}/subscribe` }
+        ]
+      }
+    ];
+  }
+
   // /compare top-level hub
   if (urlParts.length === 1 && urlParts[0] === 'compare') {
     return [
@@ -858,9 +880,25 @@ export async function generateStructuredData(url: string): Promise<string> {
   } else if (urlParts[0] === 'brokers' && !urlParts[1]) {
     const brokersListSchema = await getBrokersListSchema();
     if (brokersListSchema) schemas.push(brokersListSchema);
+    schemas.push({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://entrylab.io" },
+        { "@type": "ListItem", "position": 2, "name": "Forex Broker Reviews", "item": "https://entrylab.io/brokers" }
+      ]
+    });
   } else if (urlParts[0] === 'prop-firms' && !urlParts[1]) {
     const propFirmsListSchema = await getPropFirmsListSchema();
     if (propFirmsListSchema) schemas.push(propFirmsListSchema);
+    schemas.push({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://entrylab.io" },
+        { "@type": "ListItem", "position": 2, "name": "Prop Firm Reviews", "item": "https://entrylab.io/prop-firms" }
+      ]
+    });
   } else if (urlParts.length === 2 && ['news', 'broker-news', 'broker-guides', 'prop-firm-news', 'prop-firm-guides', 'trading-tools'].includes(urlParts[0])) {
     // Handle /:category/:slug article format (e.g., /broker-news/zarafx-gets-raided)
     const articleSchemas = await getArticleSchema(urlParts[1]);
