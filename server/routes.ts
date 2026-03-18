@@ -4215,16 +4215,19 @@ ${items}
 
   app.get("/api/admin/gsc/stats", adminAuth, async (req, res) => {
     const days = parseInt(String(req.query.days || "28"), 10);
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+    const sinceStr = since.toISOString().split("T")[0]; // YYYY-MM-DD string
     try {
       const { rows: totals } = await db.execute(
         sql`SELECT
               COALESCE(SUM(impressions), 0)::int AS total_impressions,
               COALESCE(SUM(clicks), 0)::int AS total_clicks,
-              COALESCE(ROUND(AVG(position::numeric), 1), 0) AS avg_position,
+              COALESCE(ROUND(AVG(position), 1), 0) AS avg_position,
               COUNT(DISTINCT url)::int AS url_count,
               MAX(synced_at) AS last_synced_at
             FROM gsc_performance
-            WHERE date >= (CURRENT_DATE - (${days} || ' days')::interval)`
+            WHERE date >= ${sinceStr}`
       );
       const { rows: topPages } = await db.execute(
         sql`SELECT
@@ -4232,9 +4235,9 @@ ${items}
               SUM(impressions)::int AS impressions,
               SUM(clicks)::int AS clicks,
               ROUND((SUM(clicks)::numeric / NULLIF(SUM(impressions), 0)) * 100, 2) AS ctr_pct,
-              ROUND(AVG(position::numeric), 1) AS position
+              ROUND(AVG(position), 1) AS position
             FROM gsc_performance
-            WHERE date >= (CURRENT_DATE - (${days} || ' days')::interval)
+            WHERE date >= ${sinceStr}
             GROUP BY url
             ORDER BY SUM(clicks) DESC
             LIMIT 20`
@@ -4247,18 +4250,21 @@ ${items}
 
   app.get("/api/admin/gsc/insights", adminAuth, async (req, res) => {
     const days = parseInt(String(req.query.days || "28"), 10);
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+    const sinceStr = since.toISOString().split("T")[0];
     try {
       const { rows: quickWins } = await db.execute(
         sql`SELECT
               url,
               SUM(impressions)::int AS impressions,
               SUM(clicks)::int AS clicks,
-              ROUND(AVG(position::numeric), 1) AS position,
+              ROUND(AVG(position), 1) AS position,
               ROUND((SUM(clicks)::numeric / NULLIF(SUM(impressions), 0)) * 100, 2) AS ctr_pct
             FROM gsc_performance
-            WHERE date >= (CURRENT_DATE - (${days} || ' days')::interval)
+            WHERE date >= ${sinceStr}
             GROUP BY url
-            HAVING AVG(position::numeric) BETWEEN 4 AND 15
+            HAVING AVG(position) BETWEEN 4 AND 15
               AND SUM(impressions) >= 50
             ORDER BY SUM(impressions) DESC
             LIMIT 20`
@@ -4269,9 +4275,9 @@ ${items}
               SUM(impressions)::int AS impressions,
               SUM(clicks)::int AS clicks,
               ROUND((SUM(clicks)::numeric / NULLIF(SUM(impressions), 0)) * 100, 2) AS ctr_pct,
-              ROUND(AVG(position::numeric), 1) AS position
+              ROUND(AVG(position), 1) AS position
             FROM gsc_performance
-            WHERE date >= (CURRENT_DATE - (${days} || ' days')::interval)
+            WHERE date >= ${sinceStr}
             GROUP BY url
             HAVING SUM(impressions) >= 100
               AND (SUM(clicks)::numeric / NULLIF(SUM(impressions), 0)) < 0.02
