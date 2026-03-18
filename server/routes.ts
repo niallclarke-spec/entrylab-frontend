@@ -5,7 +5,8 @@ import fs from "fs";
 import multer from "multer";
 import { storage } from "./storage";
 import { db } from "./db";
-import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures, subscriptions, brokersTable, propFirmsTable, articlesTable, insertArticleSchema, pageViewsTable, categoriesTable, brokerCategoriesTable, propFirmCategoriesTable, reviewsTable, insertReviewSchema, staticPageSeoTable, comparisonsTable } from "../shared/schema";
+import { brokerAlerts, insertBrokerAlertSchema, signalUsers, emailCaptures, subscriptions, brokersTable, propFirmsTable, articlesTable, insertArticleSchema, pageViewsTable, categoriesTable, brokerCategoriesTable, propFirmCategoriesTable, reviewsTable, insertReviewSchema, staticPageSeoTable, comparisonsTable, gscIndexingLog, gscPerformance, gscQueries } from "../shared/schema";
+import { scheduleIndexingSubmission, submitSingleUrl, syncGscData, startDailyGscSync, gscEnabled } from "./gsc";
 import { apiCache } from "./cache";
 import { sendReviewNotification, sendTelegramMessage, getTelegramBot } from "./telegram";
 import { addInternalLinks, invalidateInternalLinksCache } from "./internal-links";
@@ -444,6 +445,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Auto-generate all vs-pair comparisons (published immediately)
       onEntityCreated("broker", broker.id).catch(() => {});
       pingSitemaps();
+      scheduleIndexingSubmission([`/broker/${broker.slug}`]);
       return res.status(201).json(broker);
     } catch (err: any) {
       console.error("[Admin] Error creating broker:", err);
@@ -511,6 +513,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Auto-generate all vs-pair comparisons (published immediately)
       onEntityCreated("prop_firm", firm.id).catch(() => {});
       pingSitemaps();
+      scheduleIndexingSubmission([`/prop-firm/${firm.slug}`]);
       return res.status(201).json(firm);
     } catch (err: any) {
       console.error("[Admin] Error creating prop firm:", err);
@@ -715,8 +718,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updatedAt: new Date(),
         })
         .returning();
-      // Ping search engines when a new article is published
-      if (article.status === "published") pingSitemaps();
+      // Ping search engines and submit to Indexing API when a new article is published
+      if (article.status === "published") {
+        pingSitemaps();
+        if (article.category && article.slug) {
+          scheduleIndexingSubmission([`/${article.category}/${article.slug}`]);
+        }
+      }
       return res.status(201).json(article);
     } catch (err: any) {
       if (err.code === "23505") return res.status(409).json({ error: "Slug already exists" });
@@ -747,8 +755,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       apiCache.delete(`ssr:article:${article.slug}`);
       apiCache.delete('articles:list:all');
       if (article.category) apiCache.delete(`articles:list:${article.category}`);
-      // Ping search engines when an article is published/updated
-      if (article.status === "published") pingSitemaps();
+      // Ping search engines and submit to Indexing API when an article is published/updated
+      if (article.status === "published") {
+        pingSitemaps();
+        if (article.category && article.slug) {
+          scheduleIndexingSubmission([`/${article.category}/${article.slug}`]);
+        }
+      }
       return res.json(article);
     } catch (err: any) {
       if (err.code === "23505") return res.status(409).json({ error: "Slug already exists" });
@@ -1035,6 +1048,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (action === "publish") upd.publishedAt = now;
           await db.update(comparisonsTable).set(upd).where(eq(comparisonsTable.id, id));
         }
+        if (action === "publish") {
+          const published = await db
+            .select({ slug: comparisonsTable.slug, entityType: comparisonsTable.entityType })
+            .from(comparisonsTable)
+            .where(inArray(comparisonsTable.id, ids));
+          const urls = published.map((c) => `/compare/${c.entityType.replace("_", "-")}/${c.slug}`);
+          scheduleIndexingSubmission(urls);
+        }
       }
       return res.json({ ok: true });
     } catch (err: any) {
@@ -1050,6 +1071,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const upd: any = { status: action === "publish" ? "published" : action, updatedAt: now };
       if (action === "publish") upd.publishedAt = now;
       await db.update(comparisonsTable).set(upd).where(eq(comparisonsTable.id, id));
+      if (action === "publish") {
+        const [comp] = await db
+          .select({ slug: comparisonsTable.slug, entityType: comparisonsTable.entityType })
+          .from(comparisonsTable)
+          .where(eq(comparisonsTable.id, id));
+        if (comp) {
+          scheduleIndexingSubmission([`/compare/${comp.entityType.replace("_", "-")}/${comp.slug}`]);
+        }
+      }
       return res.json({ ok: true });
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
@@ -4140,6 +4170,122 @@ ${items}
       return res.status(500).json({ error: "Failed to fetch stats" });
     }
   });
+
+  // ─── GSC Admin Routes ────────────────────────────────────────────────────────
+
+  app.get("/api/admin/gsc/status", adminAuth, (_req, res) => {
+    return res.json({ enabled: gscEnabled(), property: process.env.GSC_PROPERTY || "sc-domain:entrylab.io" });
+  });
+
+  app.post("/api/admin/gsc/sync", adminAuth, async (req, res) => {
+    const days = parseInt(String(req.query.days || "28"), 10);
+    try {
+      const result = await syncGscData(days);
+      return res.json(result);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || "Sync failed" });
+    }
+  });
+
+  app.post("/api/admin/gsc/submit", adminAuth, async (req, res) => {
+    const { path: urlPath } = req.body;
+    if (!urlPath) return res.status(400).json({ error: "path required" });
+    try {
+      const result = await submitSingleUrl(urlPath);
+      return res.json(result);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get("/api/admin/gsc/log", adminAuth, async (req, res) => {
+    const limit = parseInt(String(req.query.limit || "50"), 10);
+    try {
+      const { rows } = await db.execute(
+        sql`SELECT url, status, submitted_at, http_code, error_message, created_at
+            FROM gsc_indexing_log
+            ORDER BY created_at DESC
+            LIMIT ${limit}`
+      );
+      return res.json(rows);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get("/api/admin/gsc/stats", adminAuth, async (req, res) => {
+    const days = parseInt(String(req.query.days || "28"), 10);
+    try {
+      const { rows: totals } = await db.execute(
+        sql`SELECT
+              COALESCE(SUM(impressions), 0)::int AS total_impressions,
+              COALESCE(SUM(clicks), 0)::int AS total_clicks,
+              COALESCE(ROUND(AVG(position::numeric), 1), 0) AS avg_position,
+              COUNT(DISTINCT url)::int AS url_count,
+              MAX(synced_at) AS last_synced_at
+            FROM gsc_performance
+            WHERE date >= (CURRENT_DATE - (${days} || ' days')::interval)`
+      );
+      const { rows: topPages } = await db.execute(
+        sql`SELECT
+              url,
+              SUM(impressions)::int AS impressions,
+              SUM(clicks)::int AS clicks,
+              ROUND((SUM(clicks)::numeric / NULLIF(SUM(impressions), 0)) * 100, 2) AS ctr_pct,
+              ROUND(AVG(position::numeric), 1) AS position
+            FROM gsc_performance
+            WHERE date >= (CURRENT_DATE - (${days} || ' days')::interval)
+            GROUP BY url
+            ORDER BY SUM(clicks) DESC
+            LIMIT 20`
+      );
+      return res.json({ totals: totals[0] || {}, topPages });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get("/api/admin/gsc/insights", adminAuth, async (req, res) => {
+    const days = parseInt(String(req.query.days || "28"), 10);
+    try {
+      const { rows: quickWins } = await db.execute(
+        sql`SELECT
+              url,
+              SUM(impressions)::int AS impressions,
+              SUM(clicks)::int AS clicks,
+              ROUND(AVG(position::numeric), 1) AS position,
+              ROUND((SUM(clicks)::numeric / NULLIF(SUM(impressions), 0)) * 100, 2) AS ctr_pct
+            FROM gsc_performance
+            WHERE date >= (CURRENT_DATE - (${days} || ' days')::interval)
+            GROUP BY url
+            HAVING AVG(position::numeric) BETWEEN 4 AND 15
+              AND SUM(impressions) >= 50
+            ORDER BY SUM(impressions) DESC
+            LIMIT 20`
+      );
+      const { rows: ctrIssues } = await db.execute(
+        sql`SELECT
+              url,
+              SUM(impressions)::int AS impressions,
+              SUM(clicks)::int AS clicks,
+              ROUND((SUM(clicks)::numeric / NULLIF(SUM(impressions), 0)) * 100, 2) AS ctr_pct,
+              ROUND(AVG(position::numeric), 1) AS position
+            FROM gsc_performance
+            WHERE date >= (CURRENT_DATE - (${days} || ' days')::interval)
+            GROUP BY url
+            HAVING SUM(impressions) >= 100
+              AND (SUM(clicks)::numeric / NULLIF(SUM(impressions), 0)) < 0.02
+            ORDER BY SUM(impressions) DESC
+            LIMIT 20`
+      );
+      return res.json({ quickWins, ctrIssues });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ─── Start daily GSC sync ─────────────────────────────────────────────────
+  startDailyGscSync();
 
   const httpServer = createServer(app);
 

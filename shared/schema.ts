@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, boolean, jsonb, numeric, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, boolean, jsonb, numeric, primaryKey, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -373,6 +373,41 @@ export const insertComparisonSchema = createInsertSchema(comparisonsTable).omit(
 
 export type InsertComparison = z.infer<typeof insertComparisonSchema>;
 export type ComparisonRecord = typeof comparisonsTable.$inferSelect;
+
+// ─── GSC Indexing Log ─────────────────────────────────────────────────────────
+export const gscIndexingLog = pgTable("gsc_indexing_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  url: text("url").notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("queued"), // queued | submitted | error
+  submittedAt: timestamp("submitted_at"),
+  httpCode: integer("http_code"),
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// ─── GSC Page Performance ─────────────────────────────────────────────────────
+export const gscPerformance = pgTable("gsc_performance", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  url: text("url").notNull(),
+  date: varchar("date", { length: 10 }).notNull(), // YYYY-MM-DD
+  impressions: integer("impressions").notNull().default(0),
+  clicks: integer("clicks").notNull().default(0),
+  ctr: numeric("ctr", { precision: 10, scale: 6 }),
+  position: numeric("position", { precision: 8, scale: 2 }),
+  syncedAt: timestamp("synced_at").notNull().defaultNow(),
+}, (t) => [uniqueIndex("gsc_perf_url_date_idx").on(t.url, t.date)]);
+
+// ─── GSC Query Stats ──────────────────────────────────────────────────────────
+export const gscQueries = pgTable("gsc_queries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  query: text("query").notNull(),
+  url: text("url").notNull(),
+  date: varchar("date", { length: 10 }).notNull(), // YYYY-MM-DD
+  impressions: integer("impressions").notNull().default(0),
+  clicks: integer("clicks").notNull().default(0),
+  ctr: numeric("ctr", { precision: 10, scale: 6 }),
+  position: numeric("position", { precision: 8, scale: 2 }),
+}, (t) => [uniqueIndex("gsc_query_url_date_idx").on(t.query, t.url, t.date)]);
 
 export interface Article {
   id: string;

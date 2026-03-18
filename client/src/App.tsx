@@ -44,6 +44,7 @@ const AdminPlaceholder = lazy(() => import("@/pages/admin/AdminPlaceholder"));
 const AdminCategories = lazy(() => import("@/pages/admin/AdminCategories"));
 const AdminEmailLeads = lazy(() => import("@/pages/admin/AdminEmailLeads"));
 const AdminComparisons = lazy(() => import("@/pages/admin/AdminComparisons"));
+const AdminSEO = lazy(() => import("@/pages/admin/AdminSEO"));
 const ComparisonPage = lazy(() => import("@/pages/ComparisonPage"));
 const ComparisonBrokerHub = lazy(() => import("@/pages/ComparisonBrokerHub"));
 const ComparisonPropFirmHub = lazy(() => import("@/pages/ComparisonPropFirmHub"));
@@ -130,9 +131,7 @@ function Router() {
       <Route path="/admin/affiliates">
         <S><AdminPlaceholder title="Affiliate Links" description="Manage affiliate URLs, discount codes, and click tracking for all brokers and prop firms." /></S>
       </Route>
-      <Route path="/admin/seo">
-        <S><AdminPlaceholder title="SEO Settings" description="Global SEO configuration, sitemap settings, and schema markup management for the entire site." /></S>
-      </Route>
+      <Route path="/admin/seo"><S><AdminSEO /></S></Route>
       <Route path="/admin/users">
         <S><AdminPlaceholder title="Team / Users" description="Manage admin users, roles, and access permissions for the EntryLab content team." /></S>
       </Route>
