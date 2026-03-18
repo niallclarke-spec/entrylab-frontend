@@ -5,6 +5,25 @@
     <script>
       (function(){try{var t=localStorage.getItem("theme")||"dark";document.documentElement.classList.add(t);}catch(e){document.documentElement.classList.add("dark");}})();
     </script>
+    <!-- Service worker: bypasses browser's immutable HTTP cache for Vite dep
+         chunks. Without this, stale react-dom at an old ?v= hash is served
+         from browser cache while React loads fresh, causing a null dispatcher
+         crash. The SW intercepts dep requests and forces a network fetch. -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(function(reg) {
+          // If the SW was just installed (first ever activation), reload so it
+          // can claim this page and intercept requests on the next load.
+          if (reg.installing) {
+            reg.installing.addEventListener('statechange', function() {
+              if (this.state === 'activated') {
+                window.location.reload();
+              }
+            });
+          }
+        }).catch(function(){});
+      }
+    </script>
 
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5" />

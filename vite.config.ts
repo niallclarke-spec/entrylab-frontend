@@ -7,6 +7,34 @@ export default defineConfig({
   plugins: [
     react(),
     runtimeErrorOverlay(),
+    // In dev mode, prevent the browser from permanently caching pre-bundled
+    // dep chunks. Vite sets Cache-Control: max-age=31536000,immutable on these
+    // files. When dep hashes change (re-optimisation), source files cached at
+    // old hashes still reference old dep URLs — creating a React/react-dom
+    // version mismatch that crashes the app. Stripping immutable caching in
+    // development ensures every dep is always fetched fresh.
+    ...(process.env.NODE_ENV !== "production"
+      ? [
+          {
+            name: "no-immutable-cache-in-dev",
+            configureServer(server: any) {
+              server.middlewares.use((_req: any, res: any, next: any) => {
+                const orig = res.setHeader.bind(res);
+                res.setHeader = (name: string, value: any) => {
+                  if (
+                    name.toLowerCase() === "cache-control" &&
+                    String(value).includes("immutable")
+                  ) {
+                    return orig(name, "no-store");
+                  }
+                  return orig(name, value);
+                };
+                next();
+              });
+            },
+          },
+        ]
+      : []),
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
       ? [
