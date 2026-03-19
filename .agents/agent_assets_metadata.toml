@@ -12,3 +12,9 @@ id = "agq-V6Y7It5pGtPCQQG9V"
 uri = "file://broker_fields_audit.csv"
 type = "table"
 title = "Broker Fields Audit — Used vs Not Used"
+
+[[outputs]]
+id = "NmUKcf4w_pzT12pJBm5B5"
+uri = "file://docs/agent-knowledge-base.md"
+type = "text"
+title = "EntryLab — Agent Knowledge Base"
