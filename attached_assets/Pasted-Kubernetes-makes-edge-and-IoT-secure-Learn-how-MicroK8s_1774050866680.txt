@@ -1,0 +1,224 @@
+Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+Expanded Security Maintenance for Applications is not enabled.
+
+61 updates can be applied immediately.
+To see these additional updates run: apt list --upgradable
+
+Enable ESM Apps to receive additional future security updates.
+See https://ubuntu.com/esm or run: sudo pro status
+
+
+1 updates could not be installed automatically. For more details,
+see /var/log/unattended-upgrades/unattended-upgrades.log
+
+*** System restart required ***
+Last login: Fri Mar 20 12:44:07 2026 from 169.254.0.1
+root@srv1049571:~# pm2 logs entrylab --lines 100
+[TAILING] Tailing last 100 lines for [entrylab] process (change the value with --lines option)
+/root/.pm2/logs/entrylab-error.log last 100 lines:
+0|entrylab |     at Receiver._write (/var/www/entrylab/node_modules/ws/lib/receiver.js:94:10)
+0|entrylab |     at writeOrBuffer (node:internal/streams/writable:572:12)
+0|entrylab |     at _write (node:internal/streams/writable:501:10)
+0|entrylab |     at Writable.write (node:internal/streams/writable:510:10)
+0|entrylab |     at TLSSocket.socketOnData (/var/www/entrylab/node_modules/ws/lib/websocket.js:1355:35)
+0|entrylab |     at TLSSocket.emit (node:events:524:28)
+0|entrylab |     at addChunk (node:internal/streams/readable:561:12)
+0|entrylab |     at readableAddChunkPushByteMode (node:internal/streams/readable:512:3) {
+0|entrylab |   length: 116,
+0|entrylab |   severity: 'FATAL',
+0|entrylab |   code: '57P01',
+0|entrylab |   detail: undefined,
+0|entrylab |   hint: undefined,
+0|entrylab |   position: undefined,
+0|entrylab |   internalPosition: undefined,
+0|entrylab |   internalQuery: undefined,
+0|entrylab |   where: undefined,
+0|entrylab |   schema: undefined,
+0|entrylab |   table: undefined,
+0|entrylab |   column: undefined,
+0|entrylab |   dataType: undefined,
+0|entrylab |   constraint: undefined,
+0|entrylab |   file: 'postgres.c',
+0|entrylab |   line: '3289',
+0|entrylab |   routine: 'ProcessInterrupts',
+0|entrylab |   client: NeonClient {
+0|entrylab |     _events: [Object: null prototype] { error: [Function (anonymous)] },
+0|entrylab |     _eventsCount: 1,
+0|entrylab |     _maxListeners: undefined,
+0|entrylab |     connectionParameters: ConnectionParameters {
+0|entrylab |       user: 'neondb_owner',
+0|entrylab |       database: 'neondb',
+0|entrylab |       port: 5432,
+0|entrylab |       host: 'ep-crimson-voice-af3hvva2.c-2.us-west-2.aws.neon.tech',
+0|entrylab |       binary: false,
+0|entrylab |       options: undefined,
+0|entrylab |       ssl: {},
+0|entrylab |       client_encoding: '',
+0|entrylab |       replication: undefined,
+0|entrylab |       isDomainSocket: false,
+0|entrylab |       application_name: undefined,
+0|entrylab |       fallback_application_name: undefined,
+0|entrylab |       statement_timeout: false,
+0|entrylab |       lock_timeout: false,
+0|entrylab |       idle_in_transaction_session_timeout: false,
+0|entrylab |       query_timeout: false,
+0|entrylab |       connect_timeout: 0
+0|entrylab |     },
+0|entrylab |     user: 'neondb_owner',
+0|entrylab |     database: 'neondb',
+0|entrylab |     port: 5432,
+0|entrylab |     host: 'ep-crimson-voice-af3hvva2.c-2.us-west-2.aws.neon.tech',
+0|entrylab |     replication: undefined,
+0|entrylab |     _Promise: [Function: Promise],
+0|entrylab |     _types: TypeOverrides { _types: [Object], text: {}, binary: {} },
+0|entrylab |     _ending: true,
+0|entrylab |     _connecting: false,
+0|entrylab |     _connected: true,
+0|entrylab |     _connectionError: false,
+0|entrylab |     _queryable: false,
+0|entrylab |     connection: Connection {
+0|entrylab |       _events: [Object: null prototype],
+0|entrylab |       _eventsCount: 22,
+0|entrylab |       _maxListeners: undefined,
+0|entrylab |       stream: [Socket],
+0|entrylab |       _keepAlive: false,
+0|entrylab |       _keepAliveInitialDelayMillis: 0,
+0|entrylab |       lastBuffer: false,
+0|entrylab |       parsedStatements: {},
+0|entrylab |       ssl: false,
+0|entrylab |       _ending: false,
+0|entrylab |       _emitMessage: false,
+0|entrylab |       _connecting: true
+0|entrylab |     },
+0|entrylab |     queryQueue: [],
+0|entrylab |     binary: false,
+0|entrylab |     processID: 285930986,
+0|entrylab |     secretKey: 639580913,
+0|entrylab |     ssl: false,
+0|entrylab |     _connectionTimeoutMillis: 0,
+0|entrylab |     config: {
+0|entrylab |       connectionString: 'postgresql://neondb_owner:npg_FN8BgHsb1Gep@ep-crimson-voice-af3hvva2.c-2.us-west-2.aws.neon.tech/neondb?sslmode=require',
+0|entrylab |       max: 10,
+0|entrylab |       maxUses: Infinity,
+0|entrylab |       allowExitOnIdle: false,
+0|entrylab |       maxLifetimeSeconds: 0,
+0|entrylab |       idleTimeoutMillis: 10000
+0|entrylab |     },
+0|entrylab |     _connectionCallback: null,
+0|entrylab |     release: [Function (anonymous)],
+0|entrylab |     activeQuery: null,
+0|entrylab |     readyForQuery: true,
+0|entrylab |     hasExecuted: true,
+0|entrylab |     _poolUseCount: 1
+0|entrylab |   }
+0|entrylab | }
+0|entrylab | Error fetch brokers from DB: column "popularity" does not exist
+0|entrylab | Error fetch prop firms from DB: column "popularity" does not exist
+0|entrylab | Error fetch category content: column brokers_data.popularity does not exist
+0|entrylab | Error fetch category content: column brokers_data.popularity does not exist
+
+/root/.pm2/logs/entrylab-out.log last 100 lines:
+0|entrylab | 10:07:48 PM [express] POST /api/admin/gsc/submit-url 200 in 1ms
+0|entrylab | 10:08:00 PM [express] GET /api/admin/gsc/indexing-log 200 in 2ms
+0|entrylab | 10:08:03 PM [express] GET /api/admin/gsc/indexing-log 200 in 2ms
+0|entrylab | 10:08:23 PM [express] GET /api/admin/brokers/herofx-review 200 in 382ms :: {"id":"228eb7a2-36fb-4363-…
+0|entrylab | 10:08:54 PM [express] GET /api/admin/me 401 in 0ms :: {"error":"Unauthorized"}
+0|entrylab | 10:08:54 PM [express] GET /api/brokers 200 in 544ms :: [{"id":"01dd79bf-6339-4d16-a7a3-89b268dd2f2a",…
+0|entrylab | 10:09:05 PM [express] GET /api/admin/me 401 in 0ms :: {"error":"Unauthorized"}
+0|entrylab | 10:09:05 PM [express] GET /api/admin/categories 401 in 1ms :: {"error":"Unauthorized"}
+0|entrylab | 10:09:05 PM [express] GET /api/admin/brokers/gatesfx-review/categories 401 in 1ms :: {"error":"Unauth…
+0|entrylab | 10:09:05 PM [express] GET /api/admin/used-platforms 401 in 0ms :: {"error":"Unauthorized"}
+0|entrylab | 10:09:05 PM [express] GET /api/admin/used-instruments 401 in 0ms :: {"error":"Unauthorized"}
+0|entrylab | 10:09:05 PM [express] GET /api/brokers/gatesfx-review 200 in 369ms :: {"id":"b2433caf-d73e-4e72-be04-…
+0|entrylab | 10:09:07 PM [express] GET /api/articles 304 in 379ms :: [{"id":"fdeb7790-ec76-4346-8ad0-b44473f44317"…
+0|entrylab | 10:09:07 PM [express] GET /api/prop-firms 304 in 544ms :: [{"id":"1a1e3f8a-6d93-46d9-b272-74f4644ea7b…
+0|entrylab | 10:09:07 PM [express] GET /api/categories 304 in 72ms :: [{"id":43,"name":"Broker Guides","slug":"bro…
+0|entrylab | 10:09:10 PM [express] GET /api/admin/me 401 in 1ms :: {"error":"Unauthorized"}
+0|entrylab | 10:09:17 PM [express] POST /api/admin/login 200 in 5ms :: {"ok":true}
+0|entrylab | 10:09:17 PM [express] GET /api/admin/me 304 in 2ms :: {"ok":true}
+0|entrylab | 10:09:17 PM [express] GET /api/admin/stats/top-pages 304 in 94ms :: []
+0|entrylab | 10:09:17 PM [express] GET /api/admin/stats/top-firms 200 in 94ms :: [{"slug":"moneta-markets","name":…
+0|entrylab | 10:09:23 PM [express] GET /api/admin/brokers/gatesfx-review/categories 200 in 219ms :: [{"id":"b565d1…
+0|entrylab | 10:09:24 PM [express] GET /api/admin/used-instruments 200 in 299ms :: ["Bonds","Commodities","Crypto"…
+0|entrylab | 10:09:24 PM [express] GET /api/admin/categories 304 in 301ms :: [{"id":"b565d14e-7140-4ccb-987d-257d2…
+0|entrylab | 10:09:24 PM [express] GET /api/admin/used-platforms 200 in 314ms :: ["MetaTrader 4","MetaTrader 5","M…
+0|entrylab | 10:10:32 PM [express] GET /api/admin/me 304 in 2ms :: {"ok":true}
+0|entrylab | 10:10:32 PM [express] GET /api/admin/categories 304 in 298ms :: [{"id":"b565d14e-7140-4ccb-987d-257d2…
+0|entrylab | 10:10:32 PM [express] GET /api/admin/used-platforms 304 in 306ms :: ["MetaTrader 4","MetaTrader 5","M…
+0|entrylab | 10:10:32 PM [express] GET /api/admin/used-instruments 304 in 313ms :: ["Bonds","Commodities","Crypto"…
+0|entrylab | 10:10:32 PM [express] GET /api/admin/brokers/gatesfx-review/categories 304 in 440ms :: [{"id":"b565d1…
+0|entrylab | 10:10:59 PM [express] GET /api/brokers/herofx-review 304 in 368ms :: {"id":"228eb7a2-36fb-4363-b3f1-6…
+0|entrylab | 10:10:59 PM [express] GET /api/admin/brokers/herofx-review/categories 200 in 448ms :: [{"id":"b565d14…
+0|entrylab | [SEO] Injecting SEO tags into HTML (send)
+0|entrylab | [SEO] Successfully injected SEO tags (send)
+0|entrylab | 10:12:14 PM [express] GET /api/admin/brokers/gatesfx-review 200 in 369ms :: {"id":"b2433caf-d73e-4e72…
+0|entrylab | 10:12:40 PM [express] GET /api/broker-categories 304 in 302ms :: [{"id":62,"name":"Top 3 CFD Brokers"…
+0|entrylab | 10:12:40 PM [express] GET /api/category-content 200 in 595ms :: {"articles":[],"brokers":[{"id":"df27…
+0|entrylab | 10:12:47 PM [express] POST /api/views/track 200 in 85ms :: {"ok":true}
+0|entrylab | 10:12:47 PM [express] GET /api/reviews/b2433caf-d73e-4e72-be04-09bb54d02262 304 in 86ms :: []
+0|entrylab | 10:12:48 PM [express] GET /api/comparisons/related/broker/gatesfx-review 200 in 317ms :: [{"id":"71c7…
+0|entrylab | 10:17:39 PM [express] GET /api/admin/me 304 in 2ms :: {"ok":true}
+0|entrylab | 10:17:40 PM [express] GET /api/admin/used-instruments 304 in 915ms :: ["Bonds","Commodities","Crypto"…
+0|entrylab | 10:17:40 PM [express] GET /api/admin/brokers/gatesfx-review/categories 304 in 1039ms :: [{"id":"b565d…
+0|entrylab | 10:17:40 PM [express] GET /api/admin/categories 304 in 1278ms :: [{"id":"b565d14e-7140-4ccb-987d-257d…
+0|entrylab | 10:17:40 PM [express] GET /api/admin/used-platforms 304 in 1416ms :: ["MetaTrader 4","MetaTrader 5","…
+0|entrylab | 10:23:27 PM [express] PUT /api/admin/brokers/gatesfx-review 200 in 1099ms :: {"id":"b2433caf-d73e-4e7…
+0|entrylab | 10:23:50 PM [express] GET /api/admin/brokers/herofx-review 200 in 382ms :: {"id":"228eb7a2-36fb-4363-…
+0|entrylab | [SEO] Injecting SEO tags into HTML (send)
+0|entrylab | [SEO] Successfully injected SEO tags (send)
+0|entrylab | [SEO] Injecting SEO tags into HTML (send)
+0|entrylab | [SEO] Successfully injected SEO tags (send)
+0|entrylab | [SEO] Injecting SEO tags into HTML (send)
+0|entrylab | [SEO] Successfully injected SEO tags (send)
+0|entrylab | [SEO] Injecting SEO tags into HTML (send)
+0|entrylab | [SEO] Successfully injected SEO tags (send)
+0|entrylab | [SEO] Injecting SEO tags into HTML (send)
+0|entrylab | [SEO] Successfully injected SEO tags (send)
+0|entrylab | 11:15:08 PM [express] PUT /api/admin/brokers/herofx-review 200 in 455ms :: {"id":"228eb7a2-36fb-4363-…
+0|entrylab | [SEO] Injecting SEO tags into HTML (send)
+0|entrylab | [SEO] Successfully injected SEO tags (send)
+0|entrylab | 11:15:38 PM [express] GET /api/prop-firms 304 in 523ms :: [{"id":"1a1e3f8a-6d93-46d9-b272-74f4644ea7b…
+0|entrylab | 11:15:38 PM [express] GET /api/brokers 200 in 535ms :: [{"id":"01dd79bf-6339-4d16-a7a3-89b268dd2f2a",…
+0|entrylab | 11:15:38 PM [express] GET /api/articles 304 in 570ms :: [{"id":"fdeb7790-ec76-4346-8ad0-b44473f44317"…
+0|entrylab | 11:15:38 PM [express] GET /api/categories 304 in 73ms :: [{"id":43,"name":"Broker Guides","slug":"bro…
+0|entrylab | 11:15:40 PM [express] GET /api/broker-categories 304 in 71ms :: [{"id":62,"name":"Top 3 CFD Brokers",…
+0|entrylab | 11:15:40 PM [express] GET /api/category-content 200 in 373ms :: {"articles":[],"brokers":[{"id":"df27…
+0|entrylab | 11:15:45 PM [express] GET /api/brokers/herofx-review 200 in 144ms :: {"id":"228eb7a2-36fb-4363-b3f1-6…
+0|entrylab | 11:15:45 PM [express] GET /api/reviews/228eb7a2-36fb-4363-b3f1-6fd0d4d133f2 304 in 72ms :: []
+0|entrylab | 11:15:45 PM [express] POST /api/views/track 200 in 80ms :: {"ok":true}
+0|entrylab | 11:15:45 PM [express] GET /api/comparisons/related/broker/herofx-review 200 in 297ms :: [{"id":"2402b…
+0|entrylab | [SEO] Injecting SEO tags into HTML (send)
+0|entrylab | [SEO] Successfully injected SEO tags (send)
+0|entrylab | [SEO] Injecting SEO tags into HTML (send)
+0|entrylab | [SEO] Successfully injected SEO tags (send)
+0|entrylab | 11:46:56 PM [express] GET /api/brokers 500 in 297ms :: {"error":"Failed to fetch brokers from DB"}
+0|entrylab | 11:46:57 PM [express] GET /api/prop-firms 500 in 301ms :: {"error":"Failed to fetch prop firms from D…
+0|entrylab | 11:46:57 PM [express] GET /api/articles 304 in 574ms :: [{"id":"fdeb7790-ec76-4346-8ad0-b44473f44317"…
+0|entrylab | 11:46:57 PM [express] GET /api/categories 304 in 74ms :: [{"id":43,"name":"Broker Guides","slug":"bro…
+0|entrylab | 11:46:58 PM [express] GET /api/broker-categories 304 in 302ms :: [{"id":62,"name":"Top 3 CFD Brokers"…
+0|entrylab | 11:46:58 PM [express] GET /api/category-content 500 in 379ms :: {"error":"Failed to fetch category co…
+0|entrylab | 11:47:08 PM [express] GET /api/prop-firm-categories 304 in 73ms :: [{"id":60,"name":"Best Verified Pr…
+0|entrylab | 11:47:16 PM [express] GET /api/articles/herofx-vs-gatesfx-crypto-broker-comparison-2026 200 in 387ms …
+0|entrylab | 11:47:24 PM [express] GET /api/category-content 500 in 149ms :: {"error":"Failed to fetch category co…
+0|entrylab | 11:47:29 PM [express] GET /api/articles/gatesfx-deposit-bonus-rules-limits-how-to-claim-2026 304 in 1…
+0|entrylab | 11:47:30 PM [express] GET /api/articles/top-regulated-brokers-eu-edition-xm-vs-ic-markets-vs-pepperst…
+0|entrylab | [SEO] Injecting SEO tags into HTML (send)
+0|entrylab | [SEO] Successfully injected SEO tags (send)
+0|entrylab | 11:47:53 PM [express] GET /api/admin/me 304 in 2ms :: {"ok":true}
+0|entrylab | 11:47:53 PM [express] GET /api/admin/stats/top-pages 304 in 304ms :: []
+0|entrylab | 11:47:53 PM [express] GET /api/admin/stats/top-firms 200 in 308ms :: [{"slug":"moneta-markets","name"…
+0|entrylab | [SEO] Injecting SEO tags into HTML (send)
+0|entrylab | [SEO] Successfully injected SEO tags (send)
+0|entrylab | 11:51:36 PM [express] GET /api/admin/me 304 in 2ms :: {"ok":true}
+0|entrylab | 11:51:38 PM [express] GET /api/admin/me 304 in 2ms :: {"ok":true}
+0|entrylab | 11:51:41 PM [express] GET /api/admin/me 304 in 2ms :: {"ok":true}
+0|entrylab | [SEO] Injecting SEO tags into HTML (send)
+0|entrylab | [SEO] Successfully injected SEO tags (send)
+0|entrylab | 11:51:49 PM [express] GET /api/brokers/herofx-review 200 in 75ms :: {"id":"228eb7a2-36fb-4363-b3f1-6f…
+0|entrylab | 11:51:49 PM [express] POST /api/views/track 200 in 77ms :: {"ok":true}
+0|entrylab | 11:51:49 PM [express] GET /api/reviews/228eb7a2-36fb-4363-b3f1-6fd0d4d133f2 304 in 72ms :: []
+0|entrylab | 11:51:50 PM [express] GET /api/comparisons/related/broker/herofx-review 304 in 507ms :: [{"id":"2402b…
