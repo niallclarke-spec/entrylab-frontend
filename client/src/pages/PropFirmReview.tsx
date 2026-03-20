@@ -498,7 +498,7 @@ export default function PropFirmReview() {
           </div>
 
           {/* Bottom Stats Bar */}
-          {(propFirm.minDeposit || propFirm.maxLeverage || propFirm.spreadFrom || propFirm.regulation) && (
+          {(propFirm.minDeposit || propFirm.maxLeverage || propFirm.profitSplit || propFirm.regulation) && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {propFirm.minDeposit && (
                 <Card className="bg-background/40 backdrop-blur-sm border-border/50" data-testid="stat-min-deposit">
@@ -511,13 +511,13 @@ export default function PropFirmReview() {
                   </div>
                 </Card>
               )}
-              {propFirm.spreadFrom && (
+              {propFirm.profitSplit && (
                 <Card className="bg-background/40 backdrop-blur-sm border-border/50" data-testid="stat-profit-split">
                   <div className="p-4 text-center">
                     <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500/10 mx-auto mb-2">
                       <Activity className="h-5 w-5 text-blue-500" />
                     </div>
-                    <div className="font-bold text-foreground text-lg">{propFirm.spreadFrom}</div>
+                    <div className="font-bold text-foreground text-lg">{propFirm.profitSplit}</div>
                     <div className="text-xs text-muted-foreground">Profit Split</div>
                   </div>
                 </Card>
@@ -593,13 +593,13 @@ export default function PropFirmReview() {
                       <p className="text-sm text-muted-foreground">{propFirm.platforms}</p>
                     </div>
                   )}
-                  {propFirm.accountTypes && (
+                  {propFirm.challengeTypes && (
                     <div className="p-4 rounded-lg bg-muted/50" data-testid="detail-account-types">
                       <div className="flex items-center gap-2 mb-2">
                         <Award className="h-5 w-5 text-primary" />
                         <span className="font-semibold">Challenge Types</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">{propFirm.accountTypes}</p>
+                      <p className="text-sm text-muted-foreground">{propFirm.challengeTypes}</p>
                     </div>
                   )}
                   {propFirm.maxLeverage && (
@@ -620,13 +620,13 @@ export default function PropFirmReview() {
                       <p className="text-sm text-muted-foreground">{propFirm.paymentMethods}</p>
                     </div>
                   )}
-                  {propFirm.withdrawalTime && (
+                  {propFirm.payoutMethods && (
                     <div className="p-4 rounded-lg bg-muted/50" data-testid="detail-withdrawal">
                       <div className="flex items-center gap-2 mb-2">
                         <CreditCard className="h-5 w-5 text-primary" />
                         <span className="font-semibold">Payout Methods</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">{propFirm.withdrawalTime}</p>
+                      <p className="text-sm text-muted-foreground">{propFirm.payoutMethods}</p>
                     </div>
                   )}
                   {propFirm.yearFounded && (

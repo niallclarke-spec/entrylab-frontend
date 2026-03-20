@@ -348,14 +348,17 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
   const [customInstruments, setCustomInstruments] = useState<string[]>([]);
 
   const [form, setForm] = useState({
-    name: "", slug: "", website: "", foundedYear: "", hqCity: "", hqCountry: "",
-    parentCompany: "", ceo: "", description: "", rating: "", trustpilot: "",
+    name: "", slug: "", yearFounded: "", headquarters: "",
+    parentCompany: "", ceo: "", rating: "", trustpilot: "",
     isVerified: false, isFeatured: false, isPubliclyTraded: false,
-    promoCode: "", discountAmount: "", content: "", pros: ["", ""], cons: ["", ""],
+    discountCode: "", discountAmount: "", bonusOffer: "",
+    content: "", pros: ["", ""], cons: ["", ""], highlights: [] as string[],
     affiliateLink: "", seoTitle: "", seoDescription: "", tagline: "",
     profitSplit: "", maxFundingSize: "", evaluationFee: "",
-    support: "", headquarters: "", paymentMethods: "", payoutMethods: "",
+    support: "", paymentMethods: "", payoutMethods: "",
     minDeposit: "", maxLeverage: "", spreadFrom: "", regulation: "", platforms: "",
+    minWithdrawal: "", accountTypes: "", popularity: "",
+    challengeTypes: "", propFirmUsp: "",
   });
   const [slugTouched, setSlugTouched] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -424,29 +427,38 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
         ...f,
         name: existing.name || "",
         slug: existing.slug || "",
-        website: existing.website || existing.affiliateLink || "",
         rating: existing.rating ? String(existing.rating) : "",
         tagline: existing.tagline || "",
         content: existing.content || "",
         pros: existing.pros?.length ? existing.pros : ["", ""],
         cons: existing.cons?.length ? existing.cons : ["", ""],
+        highlights: existing.highlights?.length ? existing.highlights : [],
         affiliateLink: existing.affiliateLink || existing.link || "",
         seoTitle: existing.seoTitle || existing.seo_title || "",
         seoDescription: existing.seoDescription || existing.seo_description || "",
         isFeatured: existing.isFeatured || existing.featured || false,
         isVerified: existing.isVerified || existing.verified || false,
+        yearFounded: existing.yearFounded || "",
+        headquarters: existing.headquarters || "",
         minDeposit: existing.minDeposit || "",
+        minWithdrawal: existing.minWithdrawal || "",
         maxLeverage: existing.maxLeverage || "",
         spreadFrom: existing.spreadFrom || "",
         regulation: existing.regulation || "",
         platforms: existing.platforms || "",
-        profitSplit: existing.profitSplit || existing.profit_split || "",
-        maxFundingSize: existing.maxFundingSize || existing.max_funding_size || "",
-        evaluationFee: existing.evaluationFee || existing.evaluation_fee || "",
         support: existing.support || "",
-        headquarters: existing.headquarters || "",
         paymentMethods: existing.paymentMethods || "",
         payoutMethods: existing.payoutMethods || "",
+        bonusOffer: existing.bonusOffer || "",
+        discountCode: existing.discountCode || "",
+        discountAmount: existing.discountAmount || "",
+        popularity: existing.popularity || existing.totalUsers || "",
+        accountTypes: Array.isArray(existing.accountTypes) ? existing.accountTypes.join(", ") : (existing.accountTypes || ""),
+        profitSplit: existing.profitSplit || "",
+        maxFundingSize: existing.maxFundingSize || "",
+        evaluationFee: existing.evaluationFee || "",
+        challengeTypes: existing.challengeTypes || "",
+        propFirmUsp: existing.propFirmUsp || "",
       }));
       setSlugTouched(true);
       const existingLogo = existing.logoUrl || existing.logo || "";
@@ -478,12 +490,13 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
       const payload = {
         name: form.name,
         slug: form.slug,
-        tagline: form.description || form.tagline,
+        tagline: form.tagline,
         content: form.content,
-        affiliateLink: form.affiliateLink || form.website,
+        affiliateLink: form.affiliateLink,
         rating: form.rating,
         pros: form.pros.filter(Boolean),
         cons: form.cons.filter(Boolean),
+        highlights: form.highlights.filter(Boolean),
         isFeatured: form.isFeatured,
         isVerified: form.isVerified,
         seoTitle: form.seoTitle,
@@ -492,21 +505,33 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
         countries: selectedCountries,
         platformsList: selectedPlatforms,
         instruments: selectedInstruments,
+        yearFounded: form.yearFounded,
+        headquarters: form.headquarters,
+        support: form.support,
+        bonusOffer: form.bonusOffer,
+        popularity: form.popularity,
         ...(isProp ? {
           profitSplit: form.profitSplit,
           maxFundingSize: form.maxFundingSize,
           evaluationFee: form.evaluationFee,
-          support: form.support,
-          headquarters: form.headquarters,
           paymentMethods: form.paymentMethods,
           payoutMethods: form.payoutMethods,
+          discountCode: form.discountCode,
+          discountAmount: form.discountAmount,
+          challengeTypes: form.challengeTypes,
+          propFirmUsp: form.propFirmUsp,
+          regulation: form.regulation,
+          minDeposit: form.minDeposit,
+          maxLeverage: form.maxLeverage,
         } : {
           minDeposit: form.minDeposit,
+          minWithdrawal: form.minWithdrawal,
           maxLeverage: form.maxLeverage,
           spreadFrom: form.spreadFrom,
           regulation: form.regulation,
           platforms: form.platforms,
           paymentMethods: form.paymentMethods,
+          accountTypes: form.accountTypes ? form.accountTypes.split(",").map((s: string) => s.trim()).filter(Boolean) : [],
         }),
       };
       if (isNew) {
@@ -600,16 +625,13 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
                 <DInput placeholder="e.g. ftmo" value={form.slug} onChange={(v) => { setSlugTouched(true); setFormField("slug", v); }} />
               </FormGroup>
               <FormGroup label="WEBSITE / AFFILIATE URL">
-                <DInput placeholder="https://" value={form.affiliateLink || form.website} onChange={(v) => setFormField("affiliateLink", v)} />
+                <DInput placeholder="https://" value={form.affiliateLink} onChange={(v) => setFormField("affiliateLink", v)} />
               </FormGroup>
               <FormGroup label="FOUNDED YEAR">
-                <DInput placeholder="2018" type="number" value={form.foundedYear} onChange={(v) => setFormField("foundedYear", v)} />
+                <DInput placeholder="2018" type="number" value={form.yearFounded} onChange={(v) => setFormField("yearFounded", v)} />
               </FormGroup>
               <FormGroup label="HEADQUARTERS">
-                <div style={{ display: "flex", gap: 10 }}>
-                  <DInput placeholder="City" value={form.hqCity} onChange={(v) => setFormField("hqCity", v)} />
-                  <DInput placeholder="Country" value={form.hqCountry} onChange={(v) => setFormField("hqCountry", v)} />
-                </div>
+                <DInput placeholder="e.g. London, UK" value={form.headquarters} onChange={(v) => setFormField("headquarters", v)} />
               </FormGroup>
               <FormGroup label="PARENT COMPANY">
                 <DInput placeholder="Optional" value={form.parentCompany} onChange={(v) => setFormField("parentCompany", v)} />
@@ -632,8 +654,17 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
                   <FormGroup label="EVALUATION FEE (from)">
                     <DInput placeholder="e.g. $99" value={form.evaluationFee} onChange={(v) => setFormField("evaluationFee", v)} />
                   </FormGroup>
-                  <FormGroup label="HEADQUARTERS">
-                    <DInput placeholder="e.g. Dubai, UAE" value={form.headquarters} onChange={(v) => setFormField("headquarters", v)} />
+                  <FormGroup label="MIN. ACCOUNT SIZE">
+                    <DInput placeholder="e.g. $5,000" value={form.minDeposit} onChange={(v) => setFormField("minDeposit", v)} />
+                  </FormGroup>
+                  <FormGroup label="MAX LEVERAGE">
+                    <DInput placeholder="e.g. 1:100" value={form.maxLeverage} onChange={(v) => setFormField("maxLeverage", v)} />
+                  </FormGroup>
+                  <FormGroup label="REGULATION">
+                    <DInput placeholder="e.g. FSA, FSCA" value={form.regulation} onChange={(v) => setFormField("regulation", v)} />
+                  </FormGroup>
+                  <FormGroup label="CHALLENGE TYPES">
+                    <DInput placeholder="e.g. 1-Step, 2-Step, Instant Funding" value={form.challengeTypes} onChange={(v) => setFormField("challengeTypes", v)} />
                   </FormGroup>
                   <FormGroup label="SUPPORT HOURS">
                     <DInput placeholder="e.g. 24/7 Live Chat" value={form.support} onChange={(v) => setFormField("support", v)} />
@@ -644,6 +675,9 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
                   <FormGroup label="PAYOUT METHODS">
                     <DInput placeholder="e.g. Bank Transfer, PayPal" value={form.payoutMethods} onChange={(v) => setFormField("payoutMethods", v)} />
                   </FormGroup>
+                  <FormGroup label="UNIQUE SELLING POINT (USP)" span={2}>
+                    <DInput placeholder="e.g. No time limits, instant payouts" value={form.propFirmUsp} onChange={(v) => setFormField("propFirmUsp", v)} />
+                  </FormGroup>
                 </>
               )}
 
@@ -651,6 +685,9 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
                 <>
                   <FormGroup label="MIN. DEPOSIT">
                     <DInput placeholder="e.g. $200" value={form.minDeposit} onChange={(v) => setFormField("minDeposit", v)} />
+                  </FormGroup>
+                  <FormGroup label="MIN. WITHDRAWAL">
+                    <DInput placeholder="e.g. $10" value={form.minWithdrawal} onChange={(v) => setFormField("minWithdrawal", v)} />
                   </FormGroup>
                   <FormGroup label="MAX LEVERAGE">
                     <DInput placeholder="e.g. 1:500" value={form.maxLeverage} onChange={(v) => setFormField("maxLeverage", v)} />
@@ -660,6 +697,12 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
                   </FormGroup>
                   <FormGroup label="REGULATION">
                     <DInput placeholder="e.g. FCA, ASIC, CySEC" value={form.regulation} onChange={(v) => setFormField("regulation", v)} />
+                  </FormGroup>
+                  <FormGroup label="SUPPORT / CONTACT">
+                    <DInput placeholder="e.g. support@broker.com or +44 20 1234 5678" value={form.support} onChange={(v) => setFormField("support", v)} />
+                  </FormGroup>
+                  <FormGroup label="ACCOUNT TYPES" hint="Comma-separated: Standard, ECN, VIP">
+                    <DInput placeholder="e.g. Standard, ECN, VIP" value={form.accountTypes} onChange={(v) => setFormField("accountTypes", v)} />
                   </FormGroup>
                 </>
               )}
@@ -682,10 +725,10 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
                 </div>
               </FormGroup>
 
-              <FormGroup label="PROMO / DISCOUNT" span={1}>
+              <FormGroup label="DISCOUNT CODE" span={1}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  <DInput placeholder="Promo code" value={form.promoCode} onChange={(v) => setFormField("promoCode", v)} />
-                  <DInput placeholder="Discount %" type="number" value={form.discountAmount} onChange={(v) => setFormField("discountAmount", v)} />
+                  <DInput placeholder="e.g. ENTRYLAB10" value={form.discountCode} onChange={(v) => setFormField("discountCode", v)} />
+                  <DInput placeholder="Discount % or amount" type="number" value={form.discountAmount} onChange={(v) => setFormField("discountAmount", v)} />
                 </div>
               </FormGroup>
             </div>
@@ -795,6 +838,22 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
                   + Add another con
                 </button>
               </FormGroup>
+
+              <FormGroup label="HIGHLIGHTS" hint="Shown as 'At a Glance' bullets on review page">
+                {(form.highlights.length === 0 ? [""] : form.highlights).map((h, i) => (
+                  <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                    <span style={{ color: C.accent, fontWeight: 700, lineHeight: "38px", flexShrink: 0 }}>★</span>
+                    <DInput placeholder="Add a highlight..." value={h} onChange={(v) => {
+                      const next = form.highlights.length === 0 ? [""] : [...form.highlights];
+                      next[i] = v;
+                      setFormField("highlights", next);
+                    }} />
+                  </div>
+                ))}
+                <button onClick={() => setFormField("highlights", [...(form.highlights.length === 0 ? [""] : form.highlights), ""])} style={{ background: "none", border: "none", color: C.accent, fontSize: 12, cursor: "pointer", fontFamily: font, padding: "4px 0" }}>
+                  + Add another highlight
+                </button>
+              </FormGroup>
             </div>
           )}
 
@@ -842,11 +901,17 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
               <FormGroup label="AFFILIATE LINK" span={2}>
                 <DInput placeholder="https://track.example.com/..." value={form.affiliateLink} onChange={(v) => setFormField("affiliateLink", v)} />
               </FormGroup>
-              <FormGroup label="PROMO CODE">
-                <DInput placeholder="e.g. ENTRYLAB10" value={form.promoCode} onChange={(v) => setFormField("promoCode", v)} />
+              <FormGroup label="DISCOUNT CODE">
+                <DInput placeholder="e.g. ENTRYLAB10" value={form.discountCode} onChange={(v) => setFormField("discountCode", v)} />
               </FormGroup>
               <FormGroup label="DISCOUNT AMOUNT">
-                <DInput placeholder="10" type="number" value={form.discountAmount} onChange={(v) => setFormField("discountAmount", v)} />
+                <DInput placeholder="e.g. 10 or $10 off" value={form.discountAmount} onChange={(v) => setFormField("discountAmount", v)} />
+              </FormGroup>
+              <FormGroup label="BONUS OFFER" span={2} hint="Displayed prominently on review page (e.g. 'Get 10% off your first challenge')">
+                <DInput placeholder="e.g. 10% off first challenge" value={form.bonusOffer} onChange={(v) => setFormField("bonusOffer", v)} />
+              </FormGroup>
+              <FormGroup label="POPULARITY / USER COUNT">
+                <DInput placeholder="e.g. 50,000+ traders" value={form.popularity} onChange={(v) => setFormField("popularity", v)} />
               </FormGroup>
             </div>
           )}
