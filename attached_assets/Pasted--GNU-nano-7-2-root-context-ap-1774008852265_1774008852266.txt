@@ -1,0 +1,45 @@
+  GNU nano 7.2                                                                      /root/context/api-access.md                                                                               
+Optional: slug, excerpt, content, category, status, featuredImage, seoTitle, seoDescription, author, relatedBroker, relatedPropFirm, publishedAt
+
+### Update article (partial update)
+PUT /api/admin/articles/:id
+Send only fields to change. Publishing auto-pings Google/Bing sitemaps.
+
+### Delete article
+DELETE /api/admin/articles/:id
+
+## Valid Categories
+broker-guides, broker-news, prop-firm-guides, prop-firm-news, trading-tools, top-cfd-brokers, top-3-cfd-brokers, best-verified-propfirms, new-prop-firms
+
+## Agent Workflow
+1. ALWAYS create as draft first (status: "draft")
+2. NEVER publish without Niall's approval
+3. After creating a draft, send Niall a summary on Telegram with the title, category, and excerpt
+4. Wait for approval before updating status to "published"
+
+## Field Notes
+- slug: auto-generated from title if omitted. Never change after publishing
+- excerpt: 140-160 chars, used in cards and meta previews
+- content: full HTML body
+- seoTitle: max 60 characters
+- seoDescription: 140-160 characters
+- author: always set to "Max Powell"
+- featuredImage: WebP, 1200x630 recommended
+- relatedBroker: broker slug e.g. "gatesfx-review"
+- relatedPropFirm: prop firm slug e.g. "ftmo"
+
+## Example: Create a draft broker review
+curl -X POST https://entrylab.io/api/admin/articles \
+  -H "Authorization: Bearer clarko2k9!" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "BrokerX Review (2026): Is BrokerX Legit?",
+    "slug": "brokerx-review",
+    "category": "top-cfd-brokers",
+    "status": "draft",
+    "author": "Max Powell",
+    "seoTitle": "BrokerX Review 2026 — Is BrokerX Legit?",
+    "seoDescription": "Read our BrokerX review. We cover spreads, regulation, and whether BrokerX is safe for traders.",
+    "content": "<h2>Is BrokerX Legit?</h2><p>...</p>",
+    "relatedBroker": "brokerx-review"
+  }'
