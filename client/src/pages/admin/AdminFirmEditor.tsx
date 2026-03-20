@@ -357,7 +357,9 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
     profitSplit: "", maxFundingSize: "", evaluationFee: "",
     support: "", paymentMethods: "", payoutMethods: "",
     minDeposit: "", maxLeverage: "", spreadFrom: "", regulation: "", platforms: "",
-    minWithdrawal: "", accountTypes: "", popularity: "",
+    minWithdrawal: "", accountTypes: "",
+    withdrawalTime: "", awards: [] as string[], bestFor: "", commission: "",
+    profitTarget: "", dailyDrawdown: "", maxDrawdown: "", payoutFrequency: "",
     challengeTypes: "", propFirmUsp: "",
   });
   const [slugTouched, setSlugTouched] = useState(false);
@@ -452,12 +454,19 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
         bonusOffer: existing.bonusOffer || "",
         discountCode: existing.discountCode || "",
         discountAmount: existing.discountAmount || "",
-        popularity: existing.popularity || existing.totalUsers || "",
         accountTypes: Array.isArray(existing.accountTypes) ? existing.accountTypes.join(", ") : (existing.accountTypes || ""),
+        withdrawalTime: existing.withdrawalTime || "",
+        awards: existing.awards?.length ? existing.awards : [],
+        bestFor: existing.bestFor || "",
+        commission: existing.commission || "",
         profitSplit: existing.profitSplit || "",
         maxFundingSize: existing.maxFundingSize || "",
         evaluationFee: existing.evaluationFee || "",
         challengeTypes: existing.challengeTypes || "",
+        profitTarget: existing.profitTarget || "",
+        dailyDrawdown: existing.dailyDrawdown || "",
+        maxDrawdown: existing.maxDrawdown || "",
+        payoutFrequency: existing.payoutFrequency || "",
         propFirmUsp: existing.propFirmUsp || "",
       }));
       setSlugTouched(true);
@@ -508,8 +517,8 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
         yearFounded: form.yearFounded,
         headquarters: form.headquarters,
         support: form.support,
-        bonusOffer: form.bonusOffer,
-        popularity: form.popularity,
+        bestFor: form.bestFor,
+        withdrawalTime: form.withdrawalTime,
         ...(isProp ? {
           profitSplit: form.profitSplit,
           maxFundingSize: form.maxFundingSize,
@@ -523,7 +532,14 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
           regulation: form.regulation,
           minDeposit: form.minDeposit,
           maxLeverage: form.maxLeverage,
+          profitTarget: form.profitTarget,
+          dailyDrawdown: form.dailyDrawdown,
+          maxDrawdown: form.maxDrawdown,
+          payoutFrequency: form.payoutFrequency,
         } : {
+          bonusOffer: form.bonusOffer,
+          commission: form.commission,
+          awards: form.awards.filter(Boolean),
           minDeposit: form.minDeposit,
           minWithdrawal: form.minWithdrawal,
           maxLeverage: form.maxLeverage,
@@ -678,6 +694,18 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
                   <FormGroup label="UNIQUE SELLING POINT (USP)" span={2}>
                     <DInput placeholder="e.g. No time limits, instant payouts" value={form.propFirmUsp} onChange={(v) => setFormField("propFirmUsp", v)} />
                   </FormGroup>
+                  <FormGroup label="PROFIT TARGET">
+                    <DInput placeholder="e.g. Phase 1: 8%, Phase 2: 5%" value={form.profitTarget} onChange={(v) => setFormField("profitTarget", v)} />
+                  </FormGroup>
+                  <FormGroup label="DAILY DRAWDOWN LIMIT">
+                    <DInput placeholder="e.g. 5%" value={form.dailyDrawdown} onChange={(v) => setFormField("dailyDrawdown", v)} />
+                  </FormGroup>
+                  <FormGroup label="MAX DRAWDOWN LIMIT">
+                    <DInput placeholder="e.g. 10%" value={form.maxDrawdown} onChange={(v) => setFormField("maxDrawdown", v)} />
+                  </FormGroup>
+                  <FormGroup label="PAYOUT FREQUENCY">
+                    <DInput placeholder="e.g. Bi-weekly, Monthly, On Demand" value={form.payoutFrequency} onChange={(v) => setFormField("payoutFrequency", v)} />
+                  </FormGroup>
                 </>
               )}
 
@@ -700,6 +728,15 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
                   </FormGroup>
                   <FormGroup label="SUPPORT / CONTACT">
                     <DInput placeholder="e.g. support@broker.com or +44 20 1234 5678" value={form.support} onChange={(v) => setFormField("support", v)} />
+                  </FormGroup>
+                  <FormGroup label="WITHDRAWAL TIME">
+                    <DInput placeholder="e.g. 1–3 business days" value={form.withdrawalTime} onChange={(v) => setFormField("withdrawalTime", v)} />
+                  </FormGroup>
+                  <FormGroup label="COMMISSION">
+                    <DInput placeholder="e.g. $7 per lot round-turn" value={form.commission} onChange={(v) => setFormField("commission", v)} />
+                  </FormGroup>
+                  <FormGroup label="BEST FOR" hint="Short description of ideal trader type">
+                    <DInput placeholder="e.g. Scalpers & day traders" value={form.bestFor} onChange={(v) => setFormField("bestFor", v)} />
                   </FormGroup>
                   <FormGroup label="ACCOUNT TYPES" hint="Comma-separated: Standard, ECN, VIP">
                     <DInput placeholder="e.g. Standard, ECN, VIP" value={form.accountTypes} onChange={(v) => setFormField("accountTypes", v)} />
@@ -725,12 +762,6 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
                 </div>
               </FormGroup>
 
-              <FormGroup label="DISCOUNT CODE" span={1}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  <DInput placeholder="e.g. ENTRYLAB10" value={form.discountCode} onChange={(v) => setFormField("discountCode", v)} />
-                  <DInput placeholder="Discount % or amount" type="number" value={form.discountAmount} onChange={(v) => setFormField("discountAmount", v)} />
-                </div>
-              </FormGroup>
             </div>
           )}
 
@@ -854,6 +885,24 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
                   + Add another highlight
                 </button>
               </FormGroup>
+
+              {!isProp && (
+                <FormGroup label="AWARDS" hint="Shown in the broker sidebar Awards section">
+                  {(form.awards.length === 0 ? [""] : form.awards).map((a, i) => (
+                    <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                      <span style={{ color: "#f59e0b", fontWeight: 700, lineHeight: "38px", flexShrink: 0 }}>🏆</span>
+                      <DInput placeholder="e.g. Best Forex Broker 2024 — Finance Magnates" value={a} onChange={(v) => {
+                        const next = form.awards.length === 0 ? [""] : [...form.awards];
+                        next[i] = v;
+                        setFormField("awards", next);
+                      }} />
+                    </div>
+                  ))}
+                  <button onClick={() => setFormField("awards", [...(form.awards.length === 0 ? [""] : form.awards), ""])} style={{ background: "none", border: "none", color: C.accent, fontSize: 12, cursor: "pointer", fontFamily: font, padding: "4px 0" }}>
+                    + Add another award
+                  </button>
+                </FormGroup>
+              )}
             </div>
           )}
 
@@ -901,18 +950,20 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
               <FormGroup label="AFFILIATE LINK" span={2}>
                 <DInput placeholder="https://track.example.com/..." value={form.affiliateLink} onChange={(v) => setFormField("affiliateLink", v)} />
               </FormGroup>
-              <FormGroup label="DISCOUNT CODE">
-                <DInput placeholder="e.g. ENTRYLAB10" value={form.discountCode} onChange={(v) => setFormField("discountCode", v)} />
-              </FormGroup>
-              <FormGroup label="DISCOUNT AMOUNT">
-                <DInput placeholder="e.g. 10 or $10 off" value={form.discountAmount} onChange={(v) => setFormField("discountAmount", v)} />
-              </FormGroup>
-              <FormGroup label="BONUS OFFER" span={2} hint="Displayed prominently on review page (e.g. 'Get 10% off your first challenge')">
-                <DInput placeholder="e.g. 10% off first challenge" value={form.bonusOffer} onChange={(v) => setFormField("bonusOffer", v)} />
-              </FormGroup>
-              <FormGroup label="POPULARITY / USER COUNT">
-                <DInput placeholder="e.g. 50,000+ traders" value={form.popularity} onChange={(v) => setFormField("popularity", v)} />
-              </FormGroup>
+              {isProp ? (
+                <>
+                  <FormGroup label="DISCOUNT CODE" hint="Exclusive code shown on review page for visitors to copy">
+                    <DInput placeholder="e.g. ENTRYLAB10" value={form.discountCode} onChange={(v) => setFormField("discountCode", v)} />
+                  </FormGroup>
+                  <FormGroup label="DISCOUNT AMOUNT" hint="Shown as badge next to code (e.g. 10% OFF)">
+                    <DInput placeholder="e.g. 10% OFF" value={form.discountAmount} onChange={(v) => setFormField("discountAmount", v)} />
+                  </FormGroup>
+                </>
+              ) : (
+                <FormGroup label="BONUS OFFER" span={2} hint="Displayed as badge on broker review page (e.g. 'Welcome bonus up to $500')">
+                  <DInput placeholder="e.g. Welcome bonus up to $500" value={form.bonusOffer} onChange={(v) => setFormField("bonusOffer", v)} />
+                </FormGroup>
+              )}
             </div>
           )}
 

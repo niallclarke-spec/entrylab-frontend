@@ -371,7 +371,7 @@ export default function PropFirmReview() {
               </div>
 
               {/* Discount Code - If Available */}
-              {propFirm.bonusOffer && (
+              {propFirm.discountCode && (
                 <Card className="bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border-2 border-emerald-500/30 overflow-visible">
                   <div className="p-5">
                     <div className="flex items-center justify-between mb-3">
@@ -384,7 +384,7 @@ export default function PropFirmReview() {
                       </div>
                       {propFirm.discountAmount && (
                         <Badge className="bg-yellow-500 text-black hover:bg-yellow-400 font-bold text-sm px-4 py-1.5 border-2 border-yellow-600/50" data-testid="badge-discount-amount">
-                          🎉 {propFirm.discountAmount}
+                          {propFirm.discountAmount}
                         </Badge>
                       )}
                     </div>
@@ -392,7 +392,7 @@ export default function PropFirmReview() {
                       <div className="flex-1 flex flex-col gap-2">
                         <div className="bg-background/95 rounded-lg px-4 py-3 border border-border/50">
                           <code className="text-xl font-bold text-foreground tracking-wider block text-center" data-testid="text-discount-code">
-                            {propFirm.bonusOffer}
+                            {propFirm.discountCode}
                           </code>
                         </div>
                         <p className="text-xs text-center text-muted-foreground">
@@ -402,7 +402,7 @@ export default function PropFirmReview() {
                       <Button
                         size="lg"
                         className="bg-emerald-600 hover:bg-emerald-700 px-6"
-                        onClick={() => copyDiscountCode(propFirm.bonusOffer!)}
+                        onClick={() => copyDiscountCode(propFirm.discountCode!)}
                         data-testid="button-copy-discount"
                       >
                         {copiedCode ? (
@@ -492,14 +492,20 @@ export default function PropFirmReview() {
                       <div className="font-semibold text-sm text-foreground break-words">{propFirm.headquarters}</div>
                     </div>
                   )}
+                  {propFirm.propFirmUsp && (
+                    <div className="p-3 rounded-lg bg-muted/30" data-testid="intel-usp">
+                      <div className="text-xs text-muted-foreground mb-1">Why Choose Them</div>
+                      <div className="font-semibold text-sm text-foreground">{propFirm.propFirmUsp}</div>
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>
           </div>
 
           {/* Bottom Stats Bar */}
-          {(propFirm.minDeposit || propFirm.maxLeverage || propFirm.profitSplit || propFirm.regulation) && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {(propFirm.minDeposit || propFirm.maxFundingSize || propFirm.evaluationFee || propFirm.profitSplit || propFirm.maxLeverage || propFirm.regulation) && (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {propFirm.minDeposit && (
                 <Card className="bg-background/40 backdrop-blur-sm border-border/50" data-testid="stat-min-deposit">
                   <div className="p-4 text-center">
@@ -508,6 +514,28 @@ export default function PropFirmReview() {
                     </div>
                     <div className="font-bold text-foreground text-lg">{propFirm.minDeposit}</div>
                     <div className="text-xs text-muted-foreground">Starting Capital</div>
+                  </div>
+                </Card>
+              )}
+              {propFirm.maxFundingSize && (
+                <Card className="bg-background/40 backdrop-blur-sm border-border/50" data-testid="stat-max-funding">
+                  <div className="p-4 text-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-purple-500/10 mx-auto mb-2">
+                      <TrendingUp className="h-5 w-5 text-purple-500" />
+                    </div>
+                    <div className="font-bold text-foreground text-lg">{propFirm.maxFundingSize}</div>
+                    <div className="text-xs text-muted-foreground">Max Funding</div>
+                  </div>
+                </Card>
+              )}
+              {propFirm.evaluationFee && (
+                <Card className="bg-background/40 backdrop-blur-sm border-border/50" data-testid="stat-evaluation-fee">
+                  <div className="p-4 text-center">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-orange-500/10 mx-auto mb-2">
+                      <CreditCard className="h-5 w-5 text-orange-500" />
+                    </div>
+                    <div className="font-bold text-foreground text-lg">{propFirm.evaluationFee}</div>
+                    <div className="text-xs text-muted-foreground">Evaluation Fee</div>
                   </div>
                 </Card>
               )}

@@ -586,6 +586,24 @@ export default function BrokerReview() {
                       <p className="text-sm text-muted-foreground">{broker.maxLeverage}</p>
                     </div>
                   )}
+                  {broker.spreadFrom && (
+                    <div className="p-4 rounded-lg bg-muted/50" data-testid="detail-spread">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Activity className="h-5 w-5 text-blue-500" />
+                        <span className="font-semibold">Spread From</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{broker.spreadFrom}</p>
+                    </div>
+                  )}
+                  {broker.commission && (
+                    <div className="p-4 rounded-lg bg-muted/50" data-testid="detail-commission">
+                      <div className="flex items-center gap-2 mb-2">
+                        <DollarSign className="h-5 w-5 text-emerald-500" />
+                        <span className="font-semibold">Commission</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{broker.commission}</p>
+                    </div>
+                  )}
                   {broker.paymentMethods && (
                     <div className="p-4 rounded-lg bg-muted/50" data-testid="detail-payment">
                       <div className="flex items-center gap-2 mb-2">
@@ -665,23 +683,6 @@ export default function BrokerReview() {
                     <div className="flex justify-between" data-testid="info-support">
                       <span className="text-muted-foreground">Support:</span>
                       <span className="font-medium break-all">{broker.support}</span>
-                    </div>
-                  )}
-                  {broker.totalUsers && (
-                    <div className="flex justify-between" data-testid="info-popularity">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="text-muted-foreground flex items-center gap-1 cursor-help">
-                              Popularity: <Info className="h-3 w-3 text-blue-500" />
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-xs text-center">
-                            <p className="text-xs">We base this on website traffic according to SimilarWeb tool, social media engagement and affiliates promoting them</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <span className="font-medium">{broker.totalUsers}</span>
                     </div>
                   )}
                 </div>
