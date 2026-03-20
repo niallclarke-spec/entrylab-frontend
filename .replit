@@ -47,3 +47,4 @@ integrations = ["javascript_mem_db:1.0.0", "javascript_database:1.0.0", "stripe:
 [userenv.shared]
 VITE_STRIPE_PRICE_MONTHLY = "price_1SXQrUCdjkOcXxTVNP5FaYbi"
 VITE_STRIPE_PRICE_YEARLY = "price_1SXQrVCdjkOcXxTVn9LQWzWV"
+GSC_PROPERTY = "sc-domain:entrylab.io"
