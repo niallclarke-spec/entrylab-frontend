@@ -159,7 +159,6 @@ export const brokersTable = pgTable("brokers_data", {
   withdrawalTime: text("withdrawal_time"),
   awards: text("awards").array(),
   bestFor: text("best_for"),
-  commission: text("commission"),
   countries: text("countries").array(),
   platformsList: text("platforms_arr").array(),
   instruments: text("instruments").array(),
@@ -431,6 +430,7 @@ export interface Article {
   seoTitle?: string | null;
   seoDescription?: string | null;
   relatedBroker?: any;
+  relatedPropFirm?: any;
 }
 
 export interface Broker {
