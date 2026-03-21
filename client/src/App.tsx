@@ -140,8 +140,10 @@ function Router() {
       {/* ── Public routes ── */}
       <Route path="/brokers"><S><Brokers /></S></Route>
       <Route path="/broker-categories/:slug"><S><BrokerCategoryArchive /></S></Route>
+      <Route path="/broker/:brokerSlug/:articleSlug"><S><Article /></S></Route>
       <Route path="/broker/:slug"><S><BrokerReview /></S></Route>
       <Route path="/prop-firms/:category?"><S><PropFirms /></S></Route>
+      <Route path="/prop-firm/:propFirmSlug/:articleSlug"><S><Article /></S></Route>
       <Route path="/prop-firm/:slug"><S><PropFirmReview /></S></Route>
       <Route path="/signals"><S><SignalsLanding /></S></Route>
       <Route path="/subscribe"><S><Subscribe /></S></Route>

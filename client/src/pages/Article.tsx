@@ -24,8 +24,11 @@ import { trackPageView, trackArticleView } from "@/lib/gtm";
 const BrokerAlertPopup = lazy(() => import("@/components/BrokerAlertPopup").then(m => ({ default: m.BrokerAlertPopup })));
 
 export default function Article() {
-  const params = useParams();
-  const slug = params.slug;
+  const params = useParams<{ slug?: string; articleSlug?: string; brokerSlug?: string; propFirmSlug?: string }>();
+  // Support both /:category/:slug and /broker/:brokerSlug/:articleSlug patterns
+  const slug = params.articleSlug || params.slug;
+  const parentEntitySlug = params.brokerSlug || params.propFirmSlug || null;
+  const parentEntityType = params.brokerSlug ? "broker" : params.propFirmSlug ? "prop-firm" : null;
 
   const { data: post, isLoading } = useQuery<Article>({
     queryKey: ["/api/articles", slug],
@@ -490,12 +493,30 @@ export default function Article() {
 
   const categorySlug = post.category || "news";
   const categoryName = getCategoryName(post);
-  
-  const breadcrumbs = [
-    { name: "Home", url: "https://entrylab.io" },
-    { name: categoryName, url: `https://entrylab.io/${categorySlug}` },
-    { name: stripHtml(post.title), url: seoUrl }
-  ];
+
+  // Build breadcrumbs — use parent entity hierarchy for nested articles
+  let breadcrumbs: { name: string; url: string }[];
+  if (relatedBroker && typeof relatedBroker === "object" && relatedBroker.slug) {
+    breadcrumbs = [
+      { name: "Home", url: "https://entrylab.io" },
+      { name: "Brokers", url: "https://entrylab.io/brokers" },
+      { name: relatedBroker.name, url: `https://entrylab.io/broker/${relatedBroker.slug}` },
+      { name: stripHtml(post.title), url: seoUrl },
+    ];
+  } else if (relatedPropFirm && typeof relatedPropFirm === "object" && relatedPropFirm.slug) {
+    breadcrumbs = [
+      { name: "Home", url: "https://entrylab.io" },
+      { name: "Prop Firms", url: "https://entrylab.io/prop-firms" },
+      { name: relatedPropFirm.name, url: `https://entrylab.io/prop-firm/${relatedPropFirm.slug}` },
+      { name: stripHtml(post.title), url: seoUrl },
+    ];
+  } else {
+    breadcrumbs = [
+      { name: "Home", url: "https://entrylab.io" },
+      { name: categoryName, url: `https://entrylab.io/${categorySlug}` },
+      { name: stripHtml(post.title), url: seoUrl },
+    ];
+  }
 
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">

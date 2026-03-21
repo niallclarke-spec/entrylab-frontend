@@ -19,6 +19,50 @@ const ReviewModal = lazy(() => import("@/components/ReviewModalSimple").then(m =
 const BrokerAlertPopup = lazy(() => import("@/components/BrokerAlertPopup").then(m => ({ default: m.BrokerAlertPopup })));
 import { TableOfContents } from "@/components/TableOfContents";
 
+function RelatedGuides({ slug, entityName }: { slug: string; entityName: string }) {
+  const { data: guides = [] } = useQuery<any[]>({
+    queryKey: [`/api/articles/by-parent/broker/${slug}`],
+    queryFn: async () => {
+      const res = await fetch(`/api/articles/by-parent/broker/${slug}`);
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: !!slug,
+  });
+
+  if (!guides.length) return null;
+
+  return (
+    <section className="max-w-5xl mx-auto px-4 pb-12">
+      <div className="border border-white/10 rounded-xl p-6">
+        <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          <BookOpen className="w-5 h-5 text-[#2bb32a]" />
+          {entityName} Guides &amp; Resources
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {guides.map((guide: any) => (
+            <Link
+              key={guide.id}
+              href={`/broker/${slug}/${guide.slug}`}
+              className="flex items-center justify-between p-4 rounded-lg border border-white/10 hover:border-[#2bb32a]/30 hover:bg-white/3 transition-all group"
+              data-testid={`link-guide-${guide.id}`}
+            >
+              <div className="min-w-0">
+                <p className="text-sm text-white group-hover:text-[#2bb32a] transition-colors truncate"
+                  dangerouslySetInnerHTML={{ __html: guide.title }} />
+                {guide.excerpt && (
+                  <p className="text-xs text-zinc-500 mt-0.5 truncate">{guide.excerpt}</p>
+                )}
+              </div>
+              <ArrowRight className="w-4 h-4 text-zinc-600 group-hover:text-[#2bb32a] flex-shrink-0 ml-3 transition-colors" />
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function RelatedComparisons({ slug, entityType, entityName }: { slug: string; entityType: string; entityName: string }) {
   const { data: related } = useQuery<any[]>({
     queryKey: [`/api/comparisons/related/${entityType}/${slug}`],
@@ -926,6 +970,7 @@ export default function BrokerReview() {
         </div>
       </section>
 
+      <RelatedGuides slug={slug!} entityName={broker.name} />
       <RelatedComparisons slug={slug!} entityType="broker" entityName={broker.name} />
 
       <Footer />

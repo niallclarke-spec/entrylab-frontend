@@ -341,10 +341,16 @@ export default function AdminArticleEditor() {
                 <label style={{ fontSize: 12, fontWeight: 600, color: C.textMuted, marginBottom: 6, display: "block", letterSpacing: "0.3px" }}>SLUG</label>
                 <div style={{ display: "flex", alignItems: "center" }}>
                   <span style={{ padding: "10px 12px", background: C.bg, border: `1px solid ${C.border}`, borderRight: "none", borderRadius: "7px 0 0 7px", color: C.textDim, fontSize: 13, whiteSpace: "nowrap" }}>
-                    entrylab.io/
+                    {form.relatedBroker
+                      ? `entrylab.io/broker/${form.relatedBroker}/`
+                      : form.relatedPropFirm
+                      ? `entrylab.io/prop-firm/${form.relatedPropFirm}/`
+                      : form.category
+                      ? `entrylab.io/${form.category}/`
+                      : "entrylab.io/"}
                   </span>
                   <input
-                    placeholder="best-prop-firms-2026"
+                    placeholder="article-slug"
                     value={form.slug}
                     onChange={(e) => { setSlugTouched(true); setField("slug", e.target.value); }}
                     style={{ flex: 1, padding: "10px 14px", border: `1px solid ${C.border}`, borderRadius: "0 7px 7px 0", background: C.bg, color: C.text, fontSize: 13, fontFamily: font, outline: "none", boxSizing: "border-box" }}

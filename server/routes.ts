@@ -1138,6 +1138,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/articles/by-parent/:entityType/:entitySlug", async (req, res) => {
+    try {
+      const { entityType, entitySlug } = req.params;
+      if (!["broker", "prop-firm"].includes(entityType)) {
+        return res.status(400).json({ error: "entityType must be broker or prop-firm" });
+      }
+      const isbroker = entityType === "broker";
+      const rows = await db
+        .select({
+          id: articlesTable.id,
+          title: articlesTable.title,
+          slug: articlesTable.slug,
+          excerpt: articlesTable.excerpt,
+          featuredImage: articlesTable.featuredImage,
+          publishedAt: articlesTable.publishedAt,
+        })
+        .from(articlesTable)
+        .where(
+          and(
+            eq(articlesTable.status, "published"),
+            isbroker
+              ? eq(articlesTable.relatedBroker, entitySlug)
+              : eq(articlesTable.relatedPropFirm, entitySlug)
+          )
+        )
+        .orderBy(desc(articlesTable.publishedAt));
+      return res.json(rows);
+    } catch (err) {
+      return res.status(500).json({ error: "Failed to fetch guides" });
+    }
+  });
+
   app.get("/api/articles/:slug", async (req, res) => {
     try {
       const cacheKey = `article:${req.params.slug}`;
@@ -1575,6 +1607,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
 
+  // 301 redirect: old flat /:category/:articleSlug → nested /broker/:slug/:articleSlug
+  // or /prop-firm/:slug/:articleSlug when the article has a parent entity set.
+  // Only fires for known article category paths to avoid interfering with other routes.
+  app.get("/:category/:articleSlug", async (req, res, next) => {
+    const { category, articleSlug } = req.params;
+    const articleCategories = [
+      "broker-guides", "prop-firm-guides", "broker-news", "prop-firm-news",
+      "trading-tools", "news", "analysis", "guide",
+    ];
+    if (!articleCategories.includes(category)) return next();
+    try {
+      const [row] = await db
+        .select({ relatedBroker: articlesTable.relatedBroker, relatedPropFirm: articlesTable.relatedPropFirm })
+        .from(articlesTable)
+        .where(and(eq(articlesTable.slug, articleSlug), eq(articlesTable.status, "published")))
+        .limit(1);
+      if (!row) return next();
+      if (row.relatedBroker) {
+        return res.redirect(301, `/broker/${row.relatedBroker}/${articleSlug}`);
+      }
+      if (row.relatedPropFirm) {
+        return res.redirect(301, `/prop-firm/${row.relatedPropFirm}/${articleSlug}`);
+      }
+      return next();
+    } catch (_) {
+      return next();
+    }
+  });
+
   // Redirect old /article/:slug URLs to new /:category/:slug URLs (301 permanent redirect)
   app.get("/article/:slug", async (req, res) => {
     try {
@@ -2008,7 +2069,7 @@ ${items}
 
     try {
       const [posts, brokers, propFirms, categories, comparisons] = await Promise.all([
-        db.select({ slug: articlesTable.slug, category: articlesTable.category, publishedAt: articlesTable.publishedAt, updatedAt: articlesTable.updatedAt, featuredImage: articlesTable.featuredImage, title: articlesTable.title })
+        db.select({ slug: articlesTable.slug, category: articlesTable.category, publishedAt: articlesTable.publishedAt, updatedAt: articlesTable.updatedAt, featuredImage: articlesTable.featuredImage, title: articlesTable.title, relatedBroker: articlesTable.relatedBroker, relatedPropFirm: articlesTable.relatedPropFirm })
           .from(articlesTable).where(eq(articlesTable.status, "published")).orderBy(desc(articlesTable.publishedAt)),
         db.select({ slug: brokersTable.slug, lastUpdated: brokersTable.lastUpdated }).from(brokersTable),
         db.select({ slug: propFirmsTable.slug, lastUpdated: propFirmsTable.lastUpdated }).from(propFirmsTable),
@@ -2118,10 +2179,15 @@ ${items}
       // Articles — include image:image for featured images so Google indexes them faster
       posts.forEach((post) => {
         const modifiedDate = (post.updatedAt || post.publishedAt) ? new Date(post.updatedAt || post.publishedAt!).toISOString() : currentDate;
-        const categorySlug = post.category || 'uncategorized';
         const cleanTitle = (post.title || '').replace(/<[^>]*>/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        // Use nested URL when article has a parent entity
+        const articleLoc = post.relatedBroker
+          ? `${baseUrl}/broker/${post.relatedBroker}/${post.slug}`
+          : post.relatedPropFirm
+          ? `${baseUrl}/prop-firm/${post.relatedPropFirm}/${post.slug}`
+          : `${baseUrl}/${post.category || 'uncategorized'}/${post.slug}`;
         sitemap += `  <url>\n`;
-        sitemap += `    <loc>${baseUrl}/${categorySlug}/${post.slug}</loc>\n`;
+        sitemap += `    <loc>${articleLoc}</loc>\n`;
         sitemap += `    <lastmod>${modifiedDate}</lastmod>\n`;
         sitemap += `    <changefreq>monthly</changefreq>\n`;
         sitemap += `    <priority>0.8</priority>\n`;
@@ -2515,71 +2581,127 @@ ${items}
             }
           }
         } else if (url.startsWith('/broker/')) {
-          const slug = url.replace('/broker/', '').split('?')[0];
-          const ssrKey = `ssr:broker:${slug}`;
-          pageData = apiCache.get(ssrKey);
-          if (!pageData || apiCache.isStale(ssrKey)) {
-            const [dbBroker] = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
-            if (dbBroker) {
-              pageData = {
-                seoTitle: (dbBroker as any).seoTitle || null,
-                seoDescription: (dbBroker as any).seoDescription || null,
-                name: dbBroker.name,
-                tagline: dbBroker.tagline || "",
-                rating: dbBroker.rating?.toString() || "",
-                regulation: dbBroker.regulation || "",
-                minDeposit: (dbBroker as any).minDeposit || "",
-                maxLeverage: (dbBroker as any).maxLeverage || "",
-                spreadFrom: (dbBroker as any).spreadFrom || "",
-                platforms: (dbBroker as any).platforms || "",
-                paymentMethods: (dbBroker as any).paymentMethods || "",
-                headquarters: (dbBroker as any).headquarters || "",
-                yearFounded: (dbBroker as any).yearFounded || "",
-                highlights: ((dbBroker as any).highlights || []).join(", "),
-                pros: (dbBroker as any).pros || [],
-                cons: (dbBroker as any).cons || [],
-                content: (dbBroker as any).content || "",
-                logoUrl: dbBroker.logoUrl || "",
-              };
-              apiCache.set(ssrKey, pageData, 300, 600);
+          const parts = url.replace('/broker/', '').split('?')[0].split('/').filter(Boolean);
+          if (parts.length >= 2) {
+            // Nested article: /broker/:brokerSlug/:articleSlug
+            const articleSlug = parts[1];
+            const ssrKey = `ssr:nested-article:${articleSlug}`;
+            pageData = apiCache.get(ssrKey);
+            if (!pageData || apiCache.isStale(ssrKey)) {
+              const [dbArticle] = await db.select({
+                title: articlesTable.title, seoTitle: articlesTable.seoTitle,
+                seoDescription: articlesTable.seoDescription, excerpt: articlesTable.excerpt,
+                featuredImage: articlesTable.featuredImage, publishedAt: articlesTable.publishedAt,
+                updatedAt: articlesTable.updatedAt, author: articlesTable.author,
+              }).from(articlesTable)
+                .where(and(eq(articlesTable.slug, articleSlug), eq(articlesTable.status, 'published')));
+              if (dbArticle) {
+                const rawTitle = (dbArticle.title || '').replace(/<[^>]*>/g, '');
+                pageData = {
+                  seoTitle: dbArticle.seoTitle || `${rawTitle} | EntryLab`,
+                  seoDescription: dbArticle.seoDescription || (dbArticle.excerpt || '').replace(/<[^>]*>/g, '').substring(0, 155),
+                  name: rawTitle,
+                  tagline: (dbArticle.excerpt || '').replace(/<[^>]*>/g, '').substring(0, 100),
+                  logoUrl: dbArticle.featuredImage || "",
+                };
+                apiCache.set(ssrKey, pageData, 300, 600);
+              }
+            }
+          } else {
+            // Broker review: /broker/:slug
+            const slug = parts[0] || '';
+            const ssrKey = `ssr:broker:${slug}`;
+            pageData = apiCache.get(ssrKey);
+            if (!pageData || apiCache.isStale(ssrKey)) {
+              const [dbBroker] = await db.select().from(brokersTable).where(eq(brokersTable.slug, slug));
+              if (dbBroker) {
+                pageData = {
+                  seoTitle: (dbBroker as any).seoTitle || null,
+                  seoDescription: (dbBroker as any).seoDescription || null,
+                  name: dbBroker.name,
+                  tagline: dbBroker.tagline || "",
+                  rating: dbBroker.rating?.toString() || "",
+                  regulation: dbBroker.regulation || "",
+                  minDeposit: (dbBroker as any).minDeposit || "",
+                  maxLeverage: (dbBroker as any).maxLeverage || "",
+                  spreadFrom: (dbBroker as any).spreadFrom || "",
+                  platforms: (dbBroker as any).platforms || "",
+                  paymentMethods: (dbBroker as any).paymentMethods || "",
+                  headquarters: (dbBroker as any).headquarters || "",
+                  yearFounded: (dbBroker as any).yearFounded || "",
+                  highlights: ((dbBroker as any).highlights || []).join(", "),
+                  pros: (dbBroker as any).pros || [],
+                  cons: (dbBroker as any).cons || [],
+                  content: (dbBroker as any).content || "",
+                  logoUrl: dbBroker.logoUrl || "",
+                };
+                apiCache.set(ssrKey, pageData, 300, 600);
+              }
             }
           }
         } else if (url.startsWith('/prop-firm/')) {
-          const slug = url.replace('/prop-firm/', '').split('?')[0];
-          const ssrKey = `ssr:prop-firm:${slug}`;
-          pageData = apiCache.get(ssrKey);
-          if (!pageData || apiCache.isStale(ssrKey)) {
-            const [dbFirm] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
-            if (dbFirm) {
-              pageData = {
-                seoTitle: (dbFirm as any).seoTitle || null,
-                seoDescription: (dbFirm as any).seoDescription || null,
-                name: dbFirm.name,
-                tagline: dbFirm.tagline || "",
-                rating: dbFirm.rating?.toString() || "",
-                profitSplit: (dbFirm as any).profitSplit || "",
-                maxFundingSize: (dbFirm as any).maxFundingSize || "",
-                evaluationFee: (dbFirm as any).evaluationFee || "",
-                maxDrawdown: (dbFirm as any).maxDrawdown || "",
-                headquarters: (dbFirm as any).headquarters || "",
-                payoutMethods: Array.isArray((dbFirm as any).payoutMethods)
-                  ? ((dbFirm as any).payoutMethods as string[]).join(', ')
-                  : (dbFirm as any).payoutMethods || "",
-                platformsList: Array.isArray((dbFirm as any).platformsList)
-                  ? ((dbFirm as any).platformsList as string[]).join(', ')
-                  : (dbFirm as any).platformsList || "",
-                instruments: Array.isArray((dbFirm as any).instruments)
-                  ? ((dbFirm as any).instruments as string[]).join(', ')
-                  : (dbFirm as any).instruments || "",
-                support: (dbFirm as any).support || "",
-                totalUsers: (dbFirm as any).totalUsers || "",
-                highlights: ((dbFirm as any).highlights || []).join(", "),
-                pros: (dbFirm as any).pros || [],
-                cons: (dbFirm as any).cons || [],
-                content: (dbFirm as any).content || "",
-                logoUrl: dbFirm.logoUrl || "",
-              };
-              apiCache.set(ssrKey, pageData, 300, 600);
+          const propParts = url.replace('/prop-firm/', '').split('?')[0].split('/').filter(Boolean);
+          if (propParts.length >= 2) {
+            // Nested article: /prop-firm/:propFirmSlug/:articleSlug
+            const articleSlug = propParts[1];
+            const ssrKey = `ssr:nested-article:${articleSlug}`;
+            pageData = apiCache.get(ssrKey);
+            if (!pageData || apiCache.isStale(ssrKey)) {
+              const [dbArticle] = await db.select({
+                title: articlesTable.title, seoTitle: articlesTable.seoTitle,
+                seoDescription: articlesTable.seoDescription, excerpt: articlesTable.excerpt,
+                featuredImage: articlesTable.featuredImage,
+              }).from(articlesTable)
+                .where(and(eq(articlesTable.slug, articleSlug), eq(articlesTable.status, 'published')));
+              if (dbArticle) {
+                const rawTitle = (dbArticle.title || '').replace(/<[^>]*>/g, '');
+                pageData = {
+                  seoTitle: dbArticle.seoTitle || `${rawTitle} | EntryLab`,
+                  seoDescription: dbArticle.seoDescription || (dbArticle.excerpt || '').replace(/<[^>]*>/g, '').substring(0, 155),
+                  name: rawTitle,
+                  tagline: (dbArticle.excerpt || '').replace(/<[^>]*>/g, '').substring(0, 100),
+                  logoUrl: dbArticle.featuredImage || "",
+                };
+                apiCache.set(ssrKey, pageData, 300, 600);
+              }
+            }
+          } else {
+            const slug = propParts[0] || '';
+            const ssrKey = `ssr:prop-firm:${slug}`;
+            pageData = apiCache.get(ssrKey);
+            if (!pageData || apiCache.isStale(ssrKey)) {
+              const [dbFirm] = await db.select().from(propFirmsTable).where(eq(propFirmsTable.slug, slug));
+              if (dbFirm) {
+                pageData = {
+                  seoTitle: (dbFirm as any).seoTitle || null,
+                  seoDescription: (dbFirm as any).seoDescription || null,
+                  name: dbFirm.name,
+                  tagline: dbFirm.tagline || "",
+                  rating: dbFirm.rating?.toString() || "",
+                  profitSplit: (dbFirm as any).profitSplit || "",
+                  maxFundingSize: (dbFirm as any).maxFundingSize || "",
+                  evaluationFee: (dbFirm as any).evaluationFee || "",
+                  maxDrawdown: (dbFirm as any).maxDrawdown || "",
+                  headquarters: (dbFirm as any).headquarters || "",
+                  payoutMethods: Array.isArray((dbFirm as any).payoutMethods)
+                    ? ((dbFirm as any).payoutMethods as string[]).join(', ')
+                    : (dbFirm as any).payoutMethods || "",
+                  platformsList: Array.isArray((dbFirm as any).platformsList)
+                    ? ((dbFirm as any).platformsList as string[]).join(', ')
+                    : (dbFirm as any).platformsList || "",
+                  instruments: Array.isArray((dbFirm as any).instruments)
+                    ? ((dbFirm as any).instruments as string[]).join(', ')
+                    : (dbFirm as any).instruments || "",
+                  support: (dbFirm as any).support || "",
+                  totalUsers: (dbFirm as any).totalUsers || "",
+                  highlights: ((dbFirm as any).highlights || []).join(", "),
+                  pros: (dbFirm as any).pros || [],
+                  cons: (dbFirm as any).cons || [],
+                  content: (dbFirm as any).content || "",
+                  logoUrl: dbFirm.logoUrl || "",
+                };
+                apiCache.set(ssrKey, pageData, 300, 600);
+              }
             }
           }
         } else if (cleanUrl === '/compare/broker') {
