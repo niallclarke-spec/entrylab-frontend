@@ -4453,6 +4453,24 @@ ${items}
     }
   });
 
+  // POST /api/admin/gsc/submit-url — accepts full URL (used by external agents / GSC tools)
+  app.post("/api/admin/gsc/submit-url", adminAuth, async (req, res) => {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ success: false, error: "url required" });
+    try {
+      const result = await submitSingleUrl(url);
+      return res.json({
+        success: result.ok,
+        url: result.url,
+        message: result.ok
+          ? "URL submitted to Google Indexing API — crawl expected within 24 hours"
+          : result.error || "Submission failed",
+      });
+    } catch (err: any) {
+      return res.status(500).json({ success: false, url, error: err.message });
+    }
+  });
+
   app.get("/api/admin/gsc/log", adminAuth, async (req, res) => {
     const limit = parseInt(String(req.query.limit || "50"), 10);
     try {
