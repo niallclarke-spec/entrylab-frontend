@@ -1,0 +1,39 @@
+what kinda content can you pull from entrylab.io as an LLM, I wanna know what other LLMs see when people search for content I have on my site, please confirm if my site crawlable by doing an actual crawl
+
+01:42
+Good question — let me crawl your site right now and see what I can actually pull.
+
+
+Searched the web
+Searched the web
+Here's what I found. There are several serious issues:
+
+1. Homepage is still lorem ipsum
+
+The homepage Google has indexed shows: "Minim ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." This is placeholder text. This is the single biggest problem — Google sees your homepage as incomplete/spam, which suppresses your entire domain's authority.
+
+2. Old WordPress pages still indexed
+
+Google is showing old WordPress URLs like /contact/ with "Your Attractive Heading" and /what-we-do/ with lorem ipsum text. These are damaging your site's quality signals.
+
+3. GatesFX review page returns almost no content to crawlers
+
+When I fetched /broker/gatesfx-review, all I got back was "GatesFX | EntryLab" — no body content at all. This is the SSR bug we identified earlier. Google can't see the review content. This page ranks at position 3.3 with 29 impressions and ZERO clicks — and now we know why. There's literally nothing for Google to show in the snippet.
+
+4. Article pages DO render properly
+
+The OspreyFX article came through perfectly — full HTML content, headings, structured data. So the news articles work, but the broker review entity pages don't.
+
+5. Very few pages indexed
+
+The site:entrylab.io search only returned about 8 results. You have 41 articles plus 18 broker pages plus 14 prop firm pages — that's 70+ pages that should be indexed but aren't.
+
+6. Duplicate URLs
+
+KOT4X article appears at both /article/kot4x-shuts-down-what-you-should-know and /kot4x-shuts-down-what-you-should-know/ — Google doesn't know which is canonical.
+
+The priority fix list for Replit:
+
+Fix the homepage — replace lorem ipsum with real content immediately
+Fix SSR on broker/prop firm entity pages — /broker/gatesfx-review returns empty body to crawlers
+Remove or redirect old WordPress pages — /contact/, /what-we-do/ with placeholder text
