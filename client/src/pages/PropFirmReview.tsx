@@ -542,6 +542,30 @@ export default function PropFirmReview() {
                       <div className="font-semibold text-sm text-foreground">{propFirm.propFirmUsp}</div>
                     </div>
                   )}
+                  {propFirm.parentCompany && (
+                    <div className="p-3 rounded-lg bg-muted/30" data-testid="intel-parent-company">
+                      <div className="text-xs text-muted-foreground mb-1">Parent Company</div>
+                      <div className="font-semibold text-sm text-foreground break-words">{propFirm.parentCompany}</div>
+                    </div>
+                  )}
+                  {propFirm.ceo && (
+                    <div className="p-3 rounded-lg bg-muted/30" data-testid="intel-ceo">
+                      <div className="text-xs text-muted-foreground mb-1">CEO</div>
+                      <div className="font-semibold text-sm text-foreground break-words">{propFirm.ceo}</div>
+                    </div>
+                  )}
+                  {propFirm.trustpilot && (
+                    <div className="p-3 rounded-lg bg-muted/30" data-testid="intel-trustpilot">
+                      <div className="text-xs text-muted-foreground mb-1">Trustpilot</div>
+                      <div className="font-semibold text-sm text-foreground">{propFirm.trustpilot}</div>
+                    </div>
+                  )}
+                  {propFirm.isPubliclyTraded === true && (
+                    <div className="p-3 rounded-lg bg-muted/30" data-testid="intel-publicly-traded">
+                      <div className="text-xs text-muted-foreground mb-1">Publicly Traded</div>
+                      <div className="font-semibold text-sm text-foreground">Yes</div>
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>

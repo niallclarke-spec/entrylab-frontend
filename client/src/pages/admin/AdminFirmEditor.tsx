@@ -519,6 +519,10 @@ export default function AdminFirmEditor({ type }: AdminFirmEditorProps) {
         support: form.support,
         bestFor: form.bestFor,
         withdrawalTime: form.withdrawalTime,
+        parentCompany: form.parentCompany || null,
+        ceo: form.ceo || null,
+        trustpilot: form.trustpilot || null,
+        isPubliclyTraded: form.isPubliclyTraded,
         ...(isProp ? {
           profitSplit: form.profitSplit,
           maxFundingSize: form.maxFundingSize,

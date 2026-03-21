@@ -729,6 +729,30 @@ export default function BrokerReview() {
                       <span className="font-medium break-all">{broker.support}</span>
                     </div>
                   )}
+                  {broker.parentCompany && (
+                    <div className="flex justify-between gap-3" data-testid="info-parent-company">
+                      <span className="text-muted-foreground flex-shrink-0">Parent Company:</span>
+                      <span className="font-medium text-right break-words">{broker.parentCompany}</span>
+                    </div>
+                  )}
+                  {broker.ceo && (
+                    <div className="flex justify-between gap-3" data-testid="info-ceo">
+                      <span className="text-muted-foreground flex-shrink-0">CEO:</span>
+                      <span className="font-medium text-right break-words">{broker.ceo}</span>
+                    </div>
+                  )}
+                  {broker.trustpilot && (
+                    <div className="flex justify-between gap-3" data-testid="info-trustpilot">
+                      <span className="text-muted-foreground flex-shrink-0">Trustpilot:</span>
+                      <span className="font-medium text-right">{broker.trustpilot}</span>
+                    </div>
+                  )}
+                  {broker.isPubliclyTraded === true && (
+                    <div className="flex justify-between gap-3" data-testid="info-publicly-traded">
+                      <span className="text-muted-foreground flex-shrink-0">Publicly Traded:</span>
+                      <span className="font-medium text-right">Yes</span>
+                    </div>
+                  )}
                 </div>
 
                 {broker.awards && broker.awards.length > 0 && (

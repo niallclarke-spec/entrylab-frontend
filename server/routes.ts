@@ -66,6 +66,10 @@ function brokerDbToApi(row: any) {
     platformsList,
     instruments: row.instruments || [],
     accountTypes: row.accountTypes || [],
+    parentCompany: row.parentCompany || null,
+    ceo: row.ceo || null,
+    trustpilot: row.trustpilot || null,
+    isPubliclyTraded: row.isPubliclyTraded || false,
   };
 }
 
@@ -114,6 +118,10 @@ function propFirmDbToApi(row: any) {
     countries: row.countries || [],
     platformsList: row.platformsList || [],
     instruments: row.instruments || [],
+    parentCompany: row.parentCompany || null,
+    ceo: row.ceo || null,
+    trustpilot: row.trustpilot || null,
+    isPubliclyTraded: row.isPubliclyTraded || false,
   };
 }
 
