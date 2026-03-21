@@ -140,6 +140,7 @@ function articleToApi(article: any): any {
     seoTitle: article.seoTitle || article.title || null,
     seoDescription: article.seoDescription || article.excerpt || null,
     relatedBroker: null,
+    relatedPropFirm: null,
   };
 }
 
@@ -162,7 +163,8 @@ function articleToListApi(article: any): any {
     publishedAt: article.publishedAt?.toISOString?.() || article.createdAt?.toISOString?.() || new Date().toISOString(),
     updatedAt: article.updatedAt?.toISOString?.() || new Date().toISOString(),
     status: article.status,
-    relatedBroker: null,
+    relatedBroker: article.relatedBroker || null,
+    relatedPropFirm: article.relatedPropFirm || null,
   };
 }
 
@@ -1614,7 +1616,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const { category, articleSlug } = req.params;
     const articleCategories = [
       "broker-guides", "prop-firm-guides", "broker-news", "prop-firm-news",
-      "trading-tools", "news", "analysis", "guide",
+      "trading-tools", "news", "analysis", "guide", "comparison",
+      "brokers", "prop-firms",
     ];
     if (!articleCategories.includes(category)) return next();
     try {

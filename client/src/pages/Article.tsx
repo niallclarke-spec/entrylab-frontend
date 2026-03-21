@@ -27,8 +27,6 @@ export default function Article() {
   const params = useParams<{ slug?: string; articleSlug?: string; brokerSlug?: string; propFirmSlug?: string }>();
   // Support both /:category/:slug and /broker/:brokerSlug/:articleSlug patterns
   const slug = params.articleSlug || params.slug;
-  const parentEntitySlug = params.brokerSlug || params.propFirmSlug || null;
-  const parentEntityType = params.brokerSlug ? "broker" : params.propFirmSlug ? "prop-firm" : null;
 
   const { data: post, isLoading } = useQuery<Article>({
     queryKey: ["/api/articles", slug],
