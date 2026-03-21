@@ -18,3 +18,9 @@ id = "NmUKcf4w_pzT12pJBm5B5"
 uri = "file://docs/agent-knowledge-base.md"
 type = "text"
 title = "EntryLab — Agent Knowledge Base"
+
+[[outputs]]
+id = "OZpURa_dnOKk8190YMNfe"
+uri = "file://AGENT_OPS.md"
+type = "text"
+title = "EntryLab — Agent Operations Guide"
