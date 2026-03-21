@@ -299,11 +299,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     '/contact':         '/',
     '/what-we-do/':     '/',
     '/what-we-do':      '/',
+    // WordPress blog root
+    '/blog':            '/',
+    '/blog/':           '/',
+    // WordPress RSS feed → our feed endpoint
+    '/feed':            '/feed.xml',
+    '/feed/':           '/feed.xml',
+    // WordPress admin/login pages
+    '/wp-admin':        '/',
+    '/wp-admin/':       '/',
+    '/wp-login.php':    '/',
     // Plural popular-brokers hub pages → broker listing
     '/popular-brokers':   '/brokers',
     '/popular-brokers/':  '/brokers',
     '/popular_brokers':   '/brokers',
     '/popular_brokers/':  '/brokers',
+    // WordPress category archive URLs → our category archive pages
+    '/category/broker-news':       '/broker-news',
+    '/category/broker-news/':      '/broker-news',
+    '/category/broker-guides':     '/broker-guides',
+    '/category/broker-guides/':    '/broker-guides',
+    '/category/prop-firm-news':    '/prop-firm-news',
+    '/category/prop-firm-news/':   '/prop-firm-news',
+    '/category/prop-firm-guides':  '/prop-firm-guides',
+    '/category/prop-firm-guides/': '/prop-firm-guides',
+    '/category/trading-tools':     '/trading-tools',
+    '/category/trading-tools/':    '/trading-tools',
+    '/category/news':              '/news',
+    '/category/news/':             '/news',
+    '/category/forex-news':        '/news',
+    '/category/forex-news/':       '/news',
+    '/category/forex-brokers':     '/brokers',
+    '/category/forex-brokers/':    '/brokers',
+    '/category/prop-firms':        '/prop-firms',
+    '/category/prop-firms/':       '/prop-firms',
     // Old root-level WordPress article URLs
     '/kot4x-shuts-down-what-you-should-know/': '/broker-news/kot4x-shuts-down-what-you-should-know',
     '/kot4x-shuts-down-what-you-should-know':  '/broker-news/kot4x-shuts-down-what-you-should-know',
@@ -355,6 +384,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (popularMatch) {
       const brokerSlug = resolveWpBrokerSlug(popularMatch[1]);
       return res.redirect(301, `/broker/${brokerSlug}`);
+    }
+
+    // WordPress tag, author, and category archive URLs → homepage
+    if (/^\/(tag|author)\/[^/]+\/?$/.test(req.path)) {
+      return res.redirect(301, '/');
+    }
+
+    // WordPress /category/:slug → our matching category archive (generic fallback)
+    const catMatch = req.path.match(/^\/category\/([^/]+)\/?$/);
+    if (catMatch) {
+      return res.redirect(301, `/${catMatch[1]}`);
+    }
+
+    // WordPress pagination: /page/2/, /broker-news/page/3/ etc. → strip to base URL
+    const pageMatch = req.path.match(/^(.*?)\/page\/\d+\/?$/);
+    if (pageMatch) {
+      return res.redirect(301, pageMatch[1] || '/');
+    }
+
+    // WordPress .php files and wp-content → homepage
+    if (/\.(php)$/i.test(req.path) || req.path.startsWith('/wp-content/') || req.path.startsWith('/wp-includes/')) {
+      return res.redirect(301, '/');
     }
 
     next();
