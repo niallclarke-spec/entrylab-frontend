@@ -1,0 +1,41 @@
+We're restructuring EntryLab's URL architecture to follow SEO best practices (modelled on BrokerChooser.com's nested approach). Here's what we need:
+
+CURRENT STATE:
+- Broker pillar pages: /broker/[slug] (e.g. /broker/moneta-markets)
+- Prop firm pillar pages: /prop-firm/[slug] (e.g. /prop-firm/crypto-fund-trader)
+- Cluster articles (guides about a specific broker): currently at FLAT URLs like /broker-guides/gatesfx-withdrawal-guide — disconnected from the parent broker page
+
+PROBLEM:
+Google sees cluster articles as unrelated to the pillar review because the URLs are flat and in a different path. We need cluster articles nested under their parent broker or prop firm.
+
+NEW URL STRUCTURE:
+- Broker pillar: /broker/[slug] (NO CHANGE)
+- Broker cluster articles: /broker/[slug]/[article-slug] (e.g. /broker/gatesfx/withdrawal-guide)
+- Prop firm pillar: /prop-firm/[slug] (NO CHANGE)
+- Prop firm cluster articles: /prop-firm/[slug]/[article-slug] (e.g. /prop-firm/crypto-fund-trader/payout-guide)
+- Hub/listing pages: /best-brokers/[category-slug] (e.g. /best-brokers/uk, /best-brokers/ecn)
+- Prop firm hub pages: /best-prop-firms/[category-slug] (e.g. /best-prop-firms/no-challenge)
+
+WHAT NEEDS TO CHANGE:
+
+1. ROUTING: Add nested routes so /broker/gatesfx/withdrawal-guide resolves to an article linked to the gatesfx broker entity.
+
+2. DATABASE: Articles need a field to link them to a parent broker or prop firm. Suggest adding parentEntityType (broker/prop-firm) and parentEntitySlug fields to the articles table. When these are set, the article URL becomes nested.
+
+3. ADMIN UI: When creating/editing an article, add a dropdown to optionally select a parent broker or prop firm. If selected, the article's public URL becomes /broker/[parent-slug]/[article-slug] instead of /[category]/[article-slug].
+
+4. API: POST/PUT /api/admin/articles must accept parentEntityType and parentEntitySlug. GET must return them. Also need a new endpoint: GET /api/admin/articles/by-parent/:entityType/:entitySlug to list all cluster articles for a given broker or prop firm.
+
+5. EXISTING CONTENT MIGRATION: The ~30 existing broker guides and prop firm guides need remapping to their parent entity. Old URLs must 301 redirect to the new nested URLs so we don't lose any existing Google rankings.
+
+6. BREADCRUMBS: Update breadcrumb schema to reflect hierarchy: Home > Brokers > GatesFX > Withdrawal Guide
+
+7. AUTO-LISTING ON PILLAR PAGES: On each broker/prop firm page, automatically show a "Related Guides" section listing all cluster articles nested under that entity.
+
+8. SITEMAP: Update sitemap.xml generation to include the new nested URLs.
+
+9. HUB PAGES: Add routing for /best-brokers/[slug] and /best-prop-firms/[slug] — these are listing pages that link to multiple broker/prop firm pillar pages.
+
+The AI agent creates articles via the API and needs to set the parent entity when creating cluster content. This is critical for our automated content pipeline.
+
+Can you implement this? What questions do you have before starting?
