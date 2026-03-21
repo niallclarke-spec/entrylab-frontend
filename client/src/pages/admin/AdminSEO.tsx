@@ -267,6 +267,9 @@ export default function AdminSEO() {
       qc.invalidateQueries({ queryKey: ["/api/admin/gsc/insights"] });
       qc.invalidateQueries({ queryKey: ["/api/admin/gsc/log"] });
     },
+    onError: (err: any) => {
+      console.error("[GSC] Sync failed:", err?.message || err);
+    },
   });
 
   const submitMutation = useMutation({
@@ -274,6 +277,9 @@ export default function AdminSEO() {
     onSuccess: (data: any) => {
       setSubmitResult(data);
       qc.invalidateQueries({ queryKey: ["/api/admin/gsc/log"] });
+    },
+    onError: (err: any) => {
+      setSubmitResult({ ok: false, url: submitPath.trim(), error: err?.message || "Request failed — check network or server logs" });
     },
   });
 
@@ -600,7 +606,7 @@ export default function AdminSEO() {
                   onClick={() => {
                     if (submitPath.trim()) submitMutation.mutate(submitPath.trim());
                   }}
-                  disabled={!submitPath.trim() || submitMutation.isPending || !status?.enabled}
+                  disabled={!submitPath.trim() || submitMutation.isPending || status?.enabled === false}
                 />
               </div>
               {submitResult && (

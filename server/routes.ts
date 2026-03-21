@@ -2928,9 +2928,29 @@ ${items}
         let html = `<style>#ssr-content{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:24px 16px;color:#1a1a1a}#ssr-content h1{font-size:2rem;font-weight:700;margin-bottom:16px}#ssr-content h2{font-size:1.4rem;font-weight:600;margin:24px 0 12px}#ssr-content p{margin-bottom:12px;line-height:1.7}#ssr-content dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}#ssr-content dt{font-weight:600;color:#555}#ssr-content dd{color:#222}#ssr-content ul{padding-left:20px;margin-bottom:12px}#ssr-content li{margin-bottom:4px}#ssr-nav{padding:16px;border-top:1px solid #eee;margin-top:24px}#ssr-nav ul{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:8px}#ssr-nav a{color:#2bb32a;text-decoration:none;font-size:0.9rem}</style>`;
         html += `<div id="ssr-content">`;
 
-        // H1 title
+        // H1 title — descriptive, matches search intent for entity pages
         if (title) {
-          html += `<h1>${title}</h1>`;
+          let h1 = title;
+          if (cleanUrl.startsWith('/broker/') && !cleanUrl.split('/').filter(Boolean)[1]?.includes('/')) {
+            // Broker review page: "GatesFX Review — Spreads, Regulation & Trading Conditions"
+            const reg0 = (pageData.regulation || '').split(',')[0].trim();
+            const regLabel = reg0 && reg0.toLowerCase() !== 'no regulation' ? `Regulated: ${reg0}` : (reg0.toLowerCase().includes('no') ? 'Unregulated' : '');
+            const extras = [
+              regLabel,
+              pageData.minDeposit ? `Min Deposit: ${pageData.minDeposit}` : '',
+              pageData.rating ? `Rating: ${pageData.rating}/5` : '',
+            ].filter(Boolean).join(' · ');
+            h1 = `${title} Review${extras ? ` — ${extras}` : ''}`;
+          } else if (cleanUrl.startsWith('/prop-firm/') && cleanUrl.split('/').filter(Boolean).length === 2) {
+            // Prop firm review page: "FTMO Review — 90% Profit Split · $200K Funding"
+            const extras = [
+              pageData.profitSplit ? `Profit Split: ${pageData.profitSplit}` : '',
+              pageData.maxFundingSize ? `Max Funding: ${pageData.maxFundingSize}` : '',
+              pageData.rating ? `Rating: ${pageData.rating}/5` : '',
+            ].filter(Boolean).join(' · ');
+            h1 = `${title} Review${extras ? ` — ${extras}` : ''}`;
+          }
+          html += `<h1>${h1}</h1>`;
         }
 
         // Excerpt / description
@@ -3457,6 +3477,45 @@ ${items}
             );
           }
 
+          // OG tags for all static + archive pages that don't have pageData
+          if (!modifiedHtml.includes('og:title')) {
+            const ogImage = 'https://entrylab.io/assets/entrylab-logo-green.png';
+            const staticOgMap: Record<string, { title: string; desc: string }> = {
+              '/brokers':          { title: 'Forex Broker Reviews 2026 | EntryLab', desc: 'Compare 17+ regulated forex brokers by spreads, leverage, platforms and regulation. Expert unbiased reviews updated for 2026.' },
+              '/prop-firms':       { title: 'Prop Firm Reviews 2026 | EntryLab', desc: 'Compare the best proprietary trading firms — FTMO, FundedNext, Funding Pips and more. Evaluation rules, profit splits and payouts reviewed.' },
+              '/compare':          { title: 'Broker & Prop Firm Comparison Tool | EntryLab', desc: 'Side-by-side comparisons of forex brokers and prop trading firms. Find the right fit for your trading style and budget.' },
+              '/compare/broker':   { title: 'All Forex Broker Comparisons | EntryLab', desc: 'Every broker vs broker comparison on EntryLab — spreads, fees, regulation and platforms compared head to head.' },
+              '/compare/prop-firm':{ title: 'All Prop Firm Comparisons | EntryLab', desc: 'Every prop firm vs prop firm comparison on EntryLab — evaluation rules, profit splits and max drawdown compared.' },
+              '/signals':          { title: 'Premium Forex Signals | EntryLab', desc: 'Professional forex trading signals delivered via Telegram. Real-time alerts with entry, stop-loss and take-profit levels.' },
+              '/subscribe':        { title: 'Subscribe to Premium Forex Signals | EntryLab', desc: 'Get full access to EntryLab premium signals. Monthly and annual plans available. Cancel any time.' },
+              '/broker-news':      { title: 'Forex Broker News 2026 | EntryLab', desc: 'Latest news from the forex broker industry — regulatory updates, new brokers, promotions and trading conditions.' },
+              '/broker-guides':    { title: 'Forex Broker Guides | EntryLab', desc: 'In-depth guides on forex brokers — account types, deposit methods, platforms and trading conditions explained.' },
+              '/prop-firm-news':   { title: 'Prop Firm News 2026 | EntryLab', desc: 'Latest news and updates from the proprietary trading industry — new firms, rule changes and payout updates.' },
+              '/prop-firm-guides': { title: 'Prop Firm Guides | EntryLab', desc: 'In-depth guides on prop trading firms — evaluation rules, profit splits, drawdown limits and payout processes explained.' },
+              '/trading-tools':    { title: 'Forex Trading Tools & Resources | EntryLab', desc: 'Free forex trading tools, calculators and resources for retail and professional traders.' },
+              '/news':             { title: 'Forex News & Market Analysis | EntryLab', desc: 'Daily forex market news, economic events and analysis for retail traders and investors.' },
+            };
+            const ogMeta = staticOgMap[cleanUrl];
+            if (ogMeta) {
+              modifiedHtml = modifiedHtml.replace(
+                '</head>',
+                `  <meta property="og:title" content="${ogMeta.title}">
+  <meta property="og:description" content="${ogMeta.desc}">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="${ogImage}">
+  <meta property="og:url" content="${canonicalUrl}">
+  <meta property="og:site_name" content="EntryLab">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@entrylabio">
+  <meta name="twitter:title" content="${ogMeta.title}">
+  <meta name="twitter:description" content="${ogMeta.desc}">
+  <meta name="twitter:image" content="${ogImage}">
+  <meta name="description" content="${ogMeta.desc}">
+\n  </head>`
+              );
+            }
+          }
+
           // Homepage, /brokers, /prop-firms: inject SSR content + internal links for crawlers
           if (cleanUrl === '/') {
             try {
@@ -3546,7 +3605,7 @@ ${items}
 
               const ssrStyle = `<style>#ssr-content{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:24px 16px;color:#1a1a1a}#ssr-content h1{font-size:2rem;font-weight:700;margin-bottom:16px}#ssr-content h2{font-size:1.4rem;font-weight:600;margin:24px 0 12px}#ssr-content p{margin-bottom:12px;line-height:1.7}#ssr-content ul{padding-left:20px;margin-bottom:12px}#ssr-content li{margin-bottom:4px}</style>`;
               let ssrHtml = `${ssrStyle}<div id="ssr-content">`;
-              ssrHtml += `<h1>Forex Broker Reviews</h1>`;
+              ssrHtml += `<h1>Forex Broker Reviews 2026 — Compare Regulated Brokers</h1>`;
               ssrHtml += `<p>EntryLab reviews forex brokers across regulation, spreads, leverage, platforms, and deposit methods. Compare top regulated and offshore brokers side by side.</p>`;
               ssrHtml += `<ul>`;
               for (const b of brokers) {
@@ -3569,7 +3628,7 @@ ${items}
 
               const ssrStyle = `<style>#ssr-content{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:24px 16px;color:#1a1a1a}#ssr-content h1{font-size:2rem;font-weight:700;margin-bottom:16px}#ssr-content h2{font-size:1.4rem;font-weight:600;margin:24px 0 12px}#ssr-content p{margin-bottom:12px;line-height:1.7}#ssr-content ul{padding-left:20px;margin-bottom:12px}#ssr-content li{margin-bottom:4px}</style>`;
               let ssrHtml = `${ssrStyle}<div id="ssr-content">`;
-              ssrHtml += `<h1>Prop Firm Reviews</h1>`;
+              ssrHtml += `<h1>Best Prop Firm Reviews 2026 — Evaluation, Profit Splits &amp; Payouts</h1>`;
               ssrHtml += `<p>Compare the best proprietary trading firms. EntryLab reviews evaluation processes, profit splits, drawdown rules, payout speeds, and account sizes for every major prop firm.</p>`;
               ssrHtml += `<ul>`;
               for (const f of firms) {
@@ -3589,12 +3648,12 @@ ${items}
           } else {
             // Category archive pages: /broker-guides, /broker-news, /prop-firm-news, etc.
             const catArchiveMap: Record<string, { label: string; entityType: 'broker' | 'prop_firm' | null }> = {
-              '/broker-guides':    { label: 'Broker Guides',      entityType: 'broker' },
-              '/broker-news':      { label: 'Broker News',         entityType: 'broker' },
-              '/prop-firm-guides': { label: 'Prop Firm Guides',    entityType: 'prop_firm' },
-              '/prop-firm-news':   { label: 'Prop Firm News',      entityType: 'prop_firm' },
-              '/trading-tools':    { label: 'Trading Tools',       entityType: null },
-              '/news':             { label: 'Forex News',          entityType: null },
+              '/broker-guides':    { label: 'Forex Broker Guides 2026 — Account Types, Fees &amp; Platforms Explained', entityType: 'broker' },
+              '/broker-news':      { label: 'Forex Broker News 2026 — Regulatory Updates &amp; Industry Developments',  entityType: 'broker' },
+              '/prop-firm-guides': { label: 'Prop Firm Guides 2026 — Evaluation Rules, Profit Splits &amp; Payouts',    entityType: 'prop_firm' },
+              '/prop-firm-news':   { label: 'Prop Firm News 2026 — Industry Updates &amp; Rule Changes',                entityType: 'prop_firm' },
+              '/trading-tools':    { label: 'Forex Trading Tools &amp; Resources for Retail Traders',                   entityType: null },
+              '/news':             { label: 'Forex Market News &amp; Analysis 2026',                                    entityType: null },
             };
             const catMeta = catArchiveMap[cleanUrl];
             if (catMeta) {
