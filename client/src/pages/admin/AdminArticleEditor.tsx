@@ -412,13 +412,22 @@ export default function AdminArticleEditor() {
               />
             </SidePanel>
 
-            {/* Featured Firm — Broker or Prop Firm logo appears in article */}
+            {/* Parent entity — controls nested URL + inline card in article */}
             <SidePanel>
+              <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 4 }}>PARENT ENTITY</div>
+              <p style={{ fontSize: 11, color: C.textDim, marginBottom: 14, lineHeight: 1.5 }}>
+                Linking to a broker or prop firm nests this article under their URL
+                (e.g. <span style={{ color: C.accent, fontFamily: "monospace" }}>/broker/[slug]/[article]</span>)
+                and embeds their card inside the content. Pick one or neither.
+              </p>
               <div style={{ marginBottom: 16 }}>
                 <FirmPickerPanel
-                  label="FEATURED BROKER"
+                  label="PARENT BROKER"
                   value={form.relatedBroker}
-                  onChange={(v) => setField("relatedBroker", v)}
+                  onChange={(v) => {
+                    setField("relatedBroker", v);
+                    if (v) setField("relatedPropFirm", "");
+                  }}
                   items={brokers}
                   getLogoUrl={(b) => b.logoUrl || b.logo || ""}
                   getSlug={(b) => b.slug}
@@ -427,18 +436,28 @@ export default function AdminArticleEditor() {
                 />
               </div>
               <FirmPickerPanel
-                label="FEATURED PROP FIRM"
+                label="PARENT PROP FIRM"
                 value={form.relatedPropFirm}
-                onChange={(v) => setField("relatedPropFirm", v)}
+                onChange={(v) => {
+                  setField("relatedPropFirm", v);
+                  if (v) setField("relatedBroker", "");
+                }}
                 items={propFirms}
                 getLogoUrl={(p) => p.logoUrl || p.logo || ""}
                 getSlug={(p) => p.slug}
                 getName={(p) => p.name}
                 placeholder="Search prop firms..."
               />
-              <p style={{ fontSize: 11, color: C.textDim, marginTop: 10, lineHeight: 1.5 }}>
-                The selected firm's logo will appear as a branded card within the article.
-              </p>
+              {(form.relatedBroker || form.relatedPropFirm) && (
+                <div style={{ marginTop: 12, padding: "8px 10px", background: C.accent + "15", border: `1px solid ${C.accent}40`, borderRadius: 7 }}>
+                  <div style={{ fontSize: 11, color: C.accent, fontWeight: 600, marginBottom: 2 }}>URL PREVIEW</div>
+                  <div style={{ fontSize: 11, color: C.text, fontFamily: "monospace", wordBreak: "break-all" }}>
+                    {form.relatedBroker
+                      ? `entrylab.io/broker/${form.relatedBroker}/${form.slug || "[slug]"}`
+                      : `entrylab.io/prop-firm/${form.relatedPropFirm}/${form.slug || "[slug]"}`}
+                  </div>
+                </div>
+              )}
             </SidePanel>
 
             <SidePanel>
