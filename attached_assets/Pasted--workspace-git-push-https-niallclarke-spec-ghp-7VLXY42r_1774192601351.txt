@@ -1,11 +1,11 @@
 ~/workspace$ git push https://niallclarke-spec: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@github.com/niallclarke-spec/entrylab-frontend.git main
-Enumerating objects: 42, done.
-Counting objects: 100% (42/42), done.
+Enumerating objects: 50, done.
+Counting objects: 100% (50/50), done.
 Delta compression using up to 8 threads
-Compressing objects: 100% (40/40), done.
-Writing objects: 100% (40/40), 193.49 KiB | 27.64 MiB/s, done.
-Total 40 (delta 30), reused 0 (delta 0), pack-reused 0 (from 0)
-remote: Resolving deltas: 100% (30/30), completed with 2 local objects.
+Compressing objects: 100% (48/48), done.
+Writing objects: 100% (48/48), 480.69 KiB | 26.70 MiB/s, done.
+Total 48 (delta 35), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (35/35), completed with 2 local objects.
 remote: error: GH013: Repository rule violations found for refs/heads/main.
 remote: 
 remote: - GITHUB PUSH PROTECTION
@@ -22,24 +22,13 @@ remote:      (?) This repository does not have Secret Scanning enabled, but is e
 remote:      Visit the repository settings page, https://github.com/niallclarke-spec/entrylab-frontend/settings/security_analysis
 remote:     
 remote:     
-remote:       —— Google Cloud Service Account Credentials ——————————
+remote:       —— GitHub Personal Access Token ——————————————————————
 remote:        locations:
-remote:          - commit: fd613faf774f7cd4d753e1d184443afa46ad31bd
-remote:            path: attached_assets/Pasted--RECAPTCHA-SECRET-KEY-6LddruQrAAAAAA8GJX-pkShcLf-JmkV12_1774191460529.txt:3
-remote:          - commit: 170aa22aaafbe25d89da9bc17ef58f9ce8edd7bb
-remote:            path: attached_assets/Pasted--SyntaxError-Invalid-or-unexpected-token-at-wrapSafe-no_1774192004253.txt:18
+remote:          - commit: 0272a9bd79e4c319cc8d4d3c7746a423a24e6ea7
+remote:            path: attached_assets/Pasted--workspace-git-push-https-niallclarke-spec-ghp-7VLXY42r_1774192196683.txt:1
 remote:     
 remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.
-remote:        https://github.com/niallclarke-spec/entrylab-frontend/security/secret-scanning/unblock-secret/3BJ15m3eMoBbKYHPbYw71SbaTCO
-remote:     
-remote:     
-remote:       —— Google Cloud Service Account Credentials ——————————
-remote:        locations:
-remote:          - commit: 230aeb5ba0d792be4c6282605ab2bae1f7477e98
-remote:            path: attached_assets/Pasted--root-srv1049571-var-www-entrylab-cd-var-www-entrylab-p_1774192124425.txt:5
-remote:     
-remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.
-remote:        https://github.com/niallclarke-spec/entrylab-frontend/security/secret-scanning/unblock-secret/3BJ15lDxNTCfFozHJrq1K8dyZmi
+remote:        https://github.com/niallclarke-spec/entrylab-frontend/security/secret-scanning/unblock-secret/3BJ1sng6eJ5NPx7beS2hWdZHvAG
 remote:     
 remote: 
 remote: 
