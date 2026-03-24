@@ -496,6 +496,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const body = req.body;
       if (!body.name) return res.status(400).json({ error: "Name required" });
       if (!body.slug) body.slug = slugify(body.name);
+      // Auto-generate SEO fields if missing
+      const rawName = (body.name || '').replace(/<[^>]+>/g, '');
+      if (!body.seoTitle) body.seoTitle = `${rawName} Review ${new Date().getFullYear()} | EntryLab`.substring(0, 70);
+      if (!body.seoDescription && body.tagline) body.seoDescription = body.tagline.substring(0, 160);
+      if (body.seoTitle && body.seoTitle.length > 70) body.seoTitle = body.seoTitle.substring(0, 70);
+      if (body.seoDescription && body.seoDescription.length > 160) body.seoDescription = body.seoDescription.substring(0, 160);
       const [broker] = await db
         .insert(brokersTable)
         .values({ ...body, lastUpdated: new Date() })
@@ -529,6 +535,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { slug } = req.params;
       const { id, createdAt, slug: _slug, ...updates } = req.body;
+      // Enforce SEO field max lengths on update
+      if (updates.seoTitle && updates.seoTitle.length > 70) updates.seoTitle = updates.seoTitle.substring(0, 70);
+      if (updates.seoDescription && updates.seoDescription.length > 160) updates.seoDescription = updates.seoDescription.substring(0, 160);
       const [broker] = await db
         .update(brokersTable)
         .set({ ...updates, lastUpdated: new Date() })
@@ -536,6 +545,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .returning();
       if (!broker) return res.status(404).json({ error: "Broker not found" });
       apiCache.delete(`broker:${slug}`);
+      apiCache.delete(`ssr:broker:${slug}`);
       apiCache.delete('brokers:list');
       invalidateInternalLinksCache();
       return res.json(broker);
@@ -564,6 +574,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const body = req.body;
       if (!body.name) return res.status(400).json({ error: "Name required" });
       if (!body.slug) body.slug = slugify(body.name);
+      // Auto-generate SEO fields if missing
+      const rawName = (body.name || '').replace(/<[^>]+>/g, '');
+      if (!body.seoTitle) body.seoTitle = `${rawName} Review ${new Date().getFullYear()} | EntryLab`.substring(0, 70);
+      if (!body.seoDescription && body.tagline) body.seoDescription = body.tagline.substring(0, 160);
+      if (body.seoTitle && body.seoTitle.length > 70) body.seoTitle = body.seoTitle.substring(0, 70);
+      if (body.seoDescription && body.seoDescription.length > 160) body.seoDescription = body.seoDescription.substring(0, 160);
       const [firm] = await db
         .insert(propFirmsTable)
         .values({ ...body, lastUpdated: new Date() })
@@ -597,6 +613,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { slug } = req.params;
       const { id, createdAt, slug: _slug, ...updates } = req.body;
+      // Enforce SEO field max lengths on update
+      if (updates.seoTitle && updates.seoTitle.length > 70) updates.seoTitle = updates.seoTitle.substring(0, 70);
+      if (updates.seoDescription && updates.seoDescription.length > 160) updates.seoDescription = updates.seoDescription.substring(0, 160);
       const [firm] = await db
         .update(propFirmsTable)
         .set({ ...updates, lastUpdated: new Date() })
@@ -604,6 +623,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .returning();
       if (!firm) return res.status(404).json({ error: "Prop firm not found" });
       apiCache.delete(`prop-firm:${slug}`);
+      apiCache.delete(`ssr:prop-firm:${slug}`);
       apiCache.delete('prop-firms:list');
       invalidateInternalLinksCache();
       return res.json(firm);
@@ -770,6 +790,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (body.status === "published" && !body.publishedAt) {
         body.publishedAt = new Date();
       }
+      // Auto-generate SEO fields if missing when publishing
+      if (body.status === "published") {
+        const rawTitle = (body.title || '').replace(/<[^>]+>/g, '');
+        if (!body.seoTitle) {
+          body.seoTitle = `${rawTitle} | EntryLab`.substring(0, 70);
+        }
+        if (!body.seoDescription) {
+          const rawExcerpt = (body.excerpt || '').replace(/<[^>]+>/g, '').trim();
+          body.seoDescription = rawExcerpt ? rawExcerpt.substring(0, 160) : `Read ${rawTitle} on EntryLab.`.substring(0, 160);
+        }
+        // Enforce max lengths
+        if (body.seoTitle && body.seoTitle.length > 70) body.seoTitle = body.seoTitle.substring(0, 70);
+        if (body.seoDescription && body.seoDescription.length > 160) body.seoDescription = body.seoDescription.substring(0, 160);
+      }
       // Scrub any legacy WordPress broker links before persisting
       if (body.content) body.content = sanitiseArticleContent(body.content);
       const [article] = await db
@@ -783,8 +817,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Ping search engines and submit to Indexing API when a new article is published
       if (article.status === "published") {
         pingSitemaps();
-        if (article.category && article.slug) {
-          scheduleIndexingSubmission([`/${article.category}/${article.slug}`]);
+        // Clear SSR caches so new article appears immediately
+        apiCache.delete(`ssr:article:${article.slug}`);
+        apiCache.delete(`ssr:nested-article:${article.slug}`);
+        apiCache.delete('articles:list:all');
+        if (article.category) apiCache.delete(`articles:list:${article.category}`);
+        // Submit correct canonical URL to GSC based on parent entity
+        if (article.slug) {
+          const indexUrl = article.relatedBroker
+            ? `/brokers/${article.relatedBroker}/${article.slug}`
+            : article.relatedPropFirm
+            ? `/prop-firms/${article.relatedPropFirm}/${article.slug}`
+            : `/learn/${article.category || 'news'}/${article.slug}`;
+          scheduleIndexingSubmission([indexUrl]);
         }
       }
       return res.status(201).json(article);
@@ -804,6 +849,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         body.publishedAt = new Date();
       }
       body.updatedAt = new Date();
+      // Auto-generate SEO fields if missing when publishing
+      if (body.status === "published") {
+        const rawTitle = (body.title || '').replace(/<[^>]+>/g, '');
+        if (!body.seoTitle && rawTitle) {
+          body.seoTitle = `${rawTitle} | EntryLab`.substring(0, 70);
+        }
+        if (!body.seoDescription) {
+          const rawExcerpt = (body.excerpt || '').replace(/<[^>]+>/g, '').trim();
+          if (rawExcerpt) body.seoDescription = rawExcerpt.substring(0, 160);
+        }
+        // Enforce max lengths
+        if (body.seoTitle && body.seoTitle.length > 70) body.seoTitle = body.seoTitle.substring(0, 70);
+        if (body.seoDescription && body.seoDescription.length > 160) body.seoDescription = body.seoDescription.substring(0, 160);
+      }
       // Scrub any legacy WordPress broker links before persisting
       if (body.content) body.content = sanitiseArticleContent(body.content);
       const [article] = await db
@@ -815,13 +874,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Clear both API cache and SSR cache for this article
       apiCache.delete(`article:${article.slug}`);
       apiCache.delete(`ssr:article:${article.slug}`);
+      apiCache.delete(`ssr:nested-article:${article.slug}`);
       apiCache.delete('articles:list:all');
       if (article.category) apiCache.delete(`articles:list:${article.category}`);
       // Ping search engines and submit to Indexing API when an article is published/updated
       if (article.status === "published") {
         pingSitemaps();
-        if (article.category && article.slug) {
-          scheduleIndexingSubmission([`/${article.category}/${article.slug}`]);
+        // Submit correct canonical URL to GSC based on parent entity
+        if (article.slug) {
+          const indexUrl = article.relatedBroker
+            ? `/brokers/${article.relatedBroker}/${article.slug}`
+            : article.relatedPropFirm
+            ? `/prop-firms/${article.relatedPropFirm}/${article.slug}`
+            : `/learn/${article.category || 'news'}/${article.slug}`;
+          scheduleIndexingSubmission([indexUrl]);
         }
       }
       return res.json(article);
@@ -1115,7 +1181,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .select({ slug: comparisonsTable.slug, entityType: comparisonsTable.entityType })
             .from(comparisonsTable)
             .where(inArray(comparisonsTable.id, ids));
-          const urls = published.map((c) => `/compare/${c.entityType.replace("_", "-")}/${c.slug}`);
+          const urls = published.map((c) => `/${c.entityType === 'broker' ? 'brokers' : 'prop-firms'}/compare/${c.slug}`);
           scheduleIndexingSubmission(urls);
         }
       }
@@ -1139,7 +1205,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .from(comparisonsTable)
           .where(eq(comparisonsTable.id, id));
         if (comp) {
-          scheduleIndexingSubmission([`/compare/${comp.entityType.replace("_", "-")}/${comp.slug}`]);
+          const compSegment = comp.entityType === 'broker' ? 'brokers' : 'prop-firms';
+          scheduleIndexingSubmission([`/${compSegment}/compare/${comp.slug}`]);
         }
       }
       return res.json({ ok: true });
