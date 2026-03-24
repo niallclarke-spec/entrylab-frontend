@@ -2923,11 +2923,11 @@ ${items}
               apiCache.set(ssrKey, pageData, 300, 600);
             }
           }
-        } else if (url.match(/\/[^/]+\/[^/]+$/)) {
-          // Article format: /category/slug
+        } else if (url.startsWith('/learn/') && url.match(/\/learn\/[^/]+\/[^/]+$/)) {
+          // Article format: /learn/:category/:slug
           const parts = url.split('/').filter(Boolean);
-          if (parts.length === 2) {
-            const slug = parts[1].split('?')[0];
+          if (parts.length === 3) {
+            const slug = parts[2].split('?')[0];
             const ssrKey = `ssr:article:${slug}`;
             pageData = apiCache.get(ssrKey);
             if (!pageData || apiCache.isStale(ssrKey)) {
@@ -3256,13 +3256,13 @@ ${items}
             html += `<h2>Latest Articles</h2><ul>`;
             for (const art of arts) {
               const date = art.publishedAt ? ` — ${new Date(art.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}` : '';
-              html += `<li><a href="/${pageData.catSlug}/${art.slug}">${art.title}</a>${date}</li>`;
+              html += `<li><a href="/learn/${pageData.catSlug}/${art.slug}">${art.title}</a>${date}</li>`;
             }
             html += `</ul>`;
           }
           const rels = Array.isArray(pageData.relatedEntities) ? pageData.relatedEntities : [];
           if (rels.length > 0) {
-            const entityLabel = pageData.entityPath === 'broker' ? 'Brokers Covered' : 'Prop Firms Covered';
+            const entityLabel = pageData.entityPath === 'brokers' ? 'Brokers Covered' : 'Prop Firms Covered';
             html += `<h2>${entityLabel}</h2><ul>`;
             for (const e of rels) {
               html += `<li><a href="/${pageData.entityPath}/${e.slug}">${e.name}</a></li>`;
