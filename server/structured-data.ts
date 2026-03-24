@@ -277,9 +277,14 @@ export async function getArticleSchema(slug: string) {
     const isNewsArticle = newsCategories.some(c => (article.category || '').toLowerCase().includes(c));
     const articleType = isNewsArticle ? "NewsArticle" : "Article";
 
-    // Canonical URL uses /:category/:slug format
+    // Canonical URL: use nested path when article belongs to a broker/prop-firm,
+    // otherwise fall back to /:category/:slug — must match sitemap URLs.
     const categorySlug = article.category || 'news';
-    const canonicalUrl = `https://entrylab.io/${categorySlug}/${slug}`;
+    const canonicalUrl = article.relatedBroker
+      ? `https://entrylab.io/broker/${article.relatedBroker}/${slug}`
+      : article.relatedPropFirm
+      ? `https://entrylab.io/prop-firm/${article.relatedPropFirm}/${slug}`
+      : `https://entrylab.io/${categorySlug}/${slug}`;
     const categoryLabel = categoryLabels[categorySlug] || categorySlug;
     const categoryUrl = `https://entrylab.io/${categorySlug}`;
 
@@ -320,30 +325,27 @@ export async function getArticleSchema(slug: string) {
       }
     });
 
-    // Breadcrumb schema using correct canonical URLs
+    // Breadcrumb schema — nested articles get broker/prop-firm parent in crumb trail
+    const breadcrumbItems: any[] = [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://entrylab.io" },
+    ];
+    if (article.relatedBroker) {
+      breadcrumbItems.push({ "@type": "ListItem", "position": 2, "name": "Brokers", "item": "https://entrylab.io/brokers" });
+      breadcrumbItems.push({ "@type": "ListItem", "position": 3, "name": article.relatedBroker, "item": `https://entrylab.io/broker/${article.relatedBroker}` });
+      breadcrumbItems.push({ "@type": "ListItem", "position": 4, "name": title, "item": canonicalUrl });
+    } else if (article.relatedPropFirm) {
+      breadcrumbItems.push({ "@type": "ListItem", "position": 2, "name": "Prop Firms", "item": "https://entrylab.io/prop-firms" });
+      breadcrumbItems.push({ "@type": "ListItem", "position": 3, "name": article.relatedPropFirm, "item": `https://entrylab.io/prop-firm/${article.relatedPropFirm}` });
+      breadcrumbItems.push({ "@type": "ListItem", "position": 4, "name": title, "item": canonicalUrl });
+    } else {
+      breadcrumbItems.push({ "@type": "ListItem", "position": 2, "name": categoryLabel, "item": categoryUrl });
+      breadcrumbItems.push({ "@type": "ListItem", "position": 3, "name": title, "item": canonicalUrl });
+    }
+
     schemas.push({
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://entrylab.io"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": categoryLabel,
-          "item": categoryUrl
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": title,
-          "item": canonicalUrl
-        }
-      ]
+      "itemListElement": breadcrumbItems
     });
 
     return schemas;
@@ -852,9 +854,11 @@ export async function generateStructuredData(url: string): Promise<string> {
   const urlParts = url.split('?')[0].split('/').filter(Boolean);
   
   // Determine if this is a broker/prop-firm detail page (they have their own entity schemas)
-  const isBrokerOrPropFirm = (urlParts[0] === 'broker' || urlParts[0] === 'prop-firm') && urlParts[1];
+  // Nested articles (/broker/:slug/:articleSlug) are articles, not broker pages
+  const isNestedArticle = (urlParts[0] === 'broker' || urlParts[0] === 'prop-firm') && urlParts.length >= 3;
+  const isBrokerOrPropFirm = (urlParts[0] === 'broker' || urlParts[0] === 'prop-firm') && urlParts[1] && !isNestedArticle;
   const isComparisonPage = urlParts[0] === 'compare' && urlParts.length === 3;
-  
+
   // Only include organization schema on non-broker/prop-firm detail pages
   if (!isBrokerOrPropFirm && !isComparisonPage) {
     schemas.push(getOrganizationSchema());
@@ -870,6 +874,11 @@ export async function generateStructuredData(url: string): Promise<string> {
   
   if (urlParts[0] === 'article' && urlParts[1]) {
     const articleSchemas = await getArticleSchema(urlParts[1]);
+    if (articleSchemas) schemas.push(...articleSchemas);
+  } else if (isNestedArticle) {
+    // Nested article: /broker/:brokerSlug/:articleSlug or /prop-firm/:firmSlug/:articleSlug
+    const articleSlug = urlParts[2];
+    const articleSchemas = await getArticleSchema(articleSlug);
     if (articleSchemas) schemas.push(...articleSchemas);
   } else if (urlParts[0] === 'broker' && urlParts[1]) {
     const brokerSchemas = await getBrokerSchema(urlParts[1]);

@@ -416,25 +416,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Scrubs legacy WordPress /popular_broker/ and /popular-broker/ URLs from
   // article HTML content, replacing them with canonical /broker/:slug paths.
   // Called automatically on every article create/update so no broken links
-  // ever reach the DB.
-  const wpBrokerSlugMapInline: Record<string, string> = {
-    'xm-broker-review-2026': 'xm', 'xm-broker-review-2025': 'xm',
-    'ic-markets-broker-review-2026': 'ic-markets', 'ic-markets-broker-review-2025': 'ic-markets',
-    'pepperstone-broker-review-2026': 'pepperstone', 'pepperstone-broker-review-2025': 'pepperstone',
-    'cmc-markets-broker-review-2026': 'cmc-markets', 'cmc-markets-broker-review-2025': 'cmc-markets',
-    'ig-broker-review-2026': 'ig-group', 'ig-broker-review-2025': 'ig-group',
-    'saxo-bank-broker-review-2026': 'saxo-bank', 'saxo-bank-broker-review-2025': 'saxo-bank',
-    'avatrade-broker-review-2026': 'avatrade', 'avatrade-broker-review-2025': 'avatrade',
-    'fp-markets-broker-review-2026': 'fp-markets', 'fp-markets-broker-review-2025': 'fp-markets',
-    'octafx-broker-review-2026': 'octafx', 'octafx-broker-review-2025': 'octafx',
-  };
+  // ever reach the DB.  Uses the single wpBrokerSlugMap defined above.
   function sanitiseArticleContent(content: string): string {
     if (!content) return content;
     return content.replace(
       /https?:\/\/(?:entrylab\.io)?\/popular[_-]broker\/([^/"'\s<>]+?)\/?(?=["'\s<>]|$)/gi,
       (_match, rawSlug) => {
         const clean = rawSlug.replace(/\/$/, '').toLowerCase();
-        const mapped = wpBrokerSlugMapInline[clean] ||
+        const mapped = wpBrokerSlugMap[clean] ||
           clean.replace(/-broker-review-\d{4}$/, '').replace(/-review-\d{4}$/, '') || clean;
         return `https://entrylab.io/broker/${mapped}`;
       }
@@ -442,7 +431,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       /href="\/popular[_-]broker\/([^"]+?)\/?">/gi,
       (_match, rawSlug) => {
         const clean = rawSlug.replace(/\/$/, '').toLowerCase();
-        const mapped = wpBrokerSlugMapInline[clean] ||
+        const mapped = wpBrokerSlugMap[clean] ||
           clean.replace(/-broker-review-\d{4}$/, '').replace(/-review-\d{4}$/, '') || clean;
         return `href="/broker/${mapped}">`;
       }
@@ -2023,12 +2012,42 @@ EntryLab was founded in 2024. All reviews are independently researched. Ratings 
   });
 
 
-  // Robots.txt
+  // Robots.txt — single authoritative source (static file removed)
   app.get('/robots.txt', (_req, res) => {
     res.setHeader('Content-Type', 'text/plain');
     res.setHeader('Cache-Control', 'public, max-age=86400');
     res.send(
-      `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\n\nSitemap: https://entrylab.io/sitemap.xml`
+      `User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /success
+Disallow: /dashboard
+Disallow: /free-access
+
+# AI crawlers — explicitly allowed
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://entrylab.io/sitemap.xml`
     );
   });
 
@@ -2905,7 +2924,7 @@ ${items}
           // Strip onclick and other event handlers
           .replace(/\s+on\w+="[^"]*"/gi, '')
           // Keep only safe tags — strip everything else not in whitelist
-          .replace(/<(?!\/?(?:h[1-6]|p|ul|ol|li|strong|em|b|i|a|br|table|thead|tbody|tr|th|td|blockquote|figure|figcaption|dl|dt|dd)\b)[^>]+>/gi, '')
+          .replace(/<(?!\/?(?:h[1-6]|p|ul|ol|li|strong|em|b|i|a|br|img|table|thead|tbody|tr|th|td|blockquote|figure|figcaption|dl|dt|dd)\b)[^>]+>/gi, '')
           // Demote <h1> inside content body to <h2> to prevent duplicate H1 (the SSR wrapper already injects a top-level H1)
           .replace(/<h1(\s[^>]*)?>/gi, '<h2$1>')
           .replace(/<\/h1>/gi, '</h2>')
@@ -2915,6 +2934,52 @@ ${items}
           // Clean up multiple blank lines
           .replace(/\n{3,}/g, '\n\n')
           .trim();
+      }
+
+      // Truncate HTML at a safe boundary: closes open tags and cuts at a sentence end.
+      function truncateHtml(html: string, maxLen: number): string {
+        if (html.length <= maxLen) return html;
+
+        // Find the last sentence-ending punctuation before maxLen
+        let cutPoint = maxLen;
+        const sentenceEnd = html.substring(0, maxLen).search(/[.!?]\s*(<\/[^>]+>)?\s*$/);
+        if (sentenceEnd > maxLen * 0.6) {
+          // Walk forward past any closing tag immediately after the punctuation
+          cutPoint = sentenceEnd + 1;
+        } else {
+          // Fall back: cut at last closing tag boundary
+          const lastCloseTag = html.lastIndexOf('</', cutPoint);
+          const closeBracket = lastCloseTag > 0 ? html.indexOf('>', lastCloseTag) : -1;
+          if (closeBracket > 0 && closeBracket < cutPoint + 50) {
+            cutPoint = closeBracket + 1;
+          }
+        }
+
+        let truncated = html.substring(0, cutPoint);
+
+        // Close any tags left open after truncation
+        const openTags: string[] = [];
+        const tagRe = /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi;
+        let m: RegExpExecArray | null;
+        while ((m = tagRe.exec(truncated)) !== null) {
+          const tag = m[1].toLowerCase();
+          // Skip self-closing / void tags
+          if (/^(br|hr|img|input|meta|link|area|base|col|embed|source|track|wbr)$/.test(tag)) continue;
+          if (m[0].startsWith('</')) {
+            // Closing tag — pop matching open
+            const idx = openTags.lastIndexOf(tag);
+            if (idx !== -1) openTags.splice(idx, 1);
+          } else if (!m[0].endsWith('/>')) {
+            openTags.push(tag);
+          }
+        }
+
+        // Close in reverse order
+        for (let i = openTags.length - 1; i >= 0; i--) {
+          truncated += `</${openTags[i]}>`;
+        }
+
+        return truncated;
       }
 
       // Build SSR body content from DB data
@@ -3012,7 +3077,7 @@ ${items}
           }
 
           if (pageData.content) {
-            const bodyHtml = sanitizeForSSR(pageData.content).substring(0, 60000);
+            const bodyHtml = truncateHtml(sanitizeForSSR(pageData.content), 60000);
             html += bodyHtml;
           }
         }
@@ -3063,7 +3128,7 @@ ${items}
           }
 
           if (pageData.content) {
-            const bodyHtml = sanitizeForSSR(pageData.content).substring(0, 60000);
+            const bodyHtml = truncateHtml(sanitizeForSSR(pageData.content), 60000);
             html += bodyHtml;
           }
         }
@@ -3170,7 +3235,7 @@ ${items}
           }
 
           if (pageData.content) {
-            const bodyHtml = sanitizeForSSR(pageData.content).substring(0, 30000);
+            const bodyHtml = truncateHtml(sanitizeForSSR(pageData.content), 30000);
             html += bodyHtml;
           }
         }
@@ -3191,6 +3256,15 @@ ${items}
           (urlSegments[0] === 'prop-firm' && urlSegments[1]) ||
           (urlSegments[0] === 'compare' && urlSegments.length === 3);
         if (isEntityUrl && !pageData) {
+          httpStatus = 404;
+        }
+        // Catch old WordPress root-level article URLs (/:slug) that don't match a known
+        // category archive — return 404 so Google stops indexing ghost pages.
+        const knownRootPaths = ['brokers', 'prop-firms', 'compare', 'signals', 'subscribe',
+          'success', 'free-access', 'dashboard', 'terms', 'admin', 'top-cfd-brokers',
+          'top-3-cfd-brokers', 'best-verified-propfirms', 'broker-news', 'broker-guides',
+          'prop-firm-news', 'prop-firm-guides', 'trading-tools', 'news'];
+        if (urlSegments.length === 1 && !knownRootPaths.includes(urlSegments[0]) && !pageData) {
           httpStatus = 404;
         }
         
@@ -3314,11 +3388,13 @@ ${items}
           
           modifiedHtml = modifiedHtml.replace('</head>', `${ogTags}\n  </head>`);
 
-          // T001: Inject real body content so Googlebot sees text on first-pass crawl
+          // T001: Inject real body content so Googlebot sees text on first-pass crawl.
+          // Placed BEFORE #root so React never touches it — no duplication.
+          // App.tsx removes #ssr-content after React mounts.
           try {
             const ssrContent = buildSSRContent(pageData, url);
             if (ssrContent) {
-              modifiedHtml = modifiedHtml.replace('<div id="root">', `<div id="root">${ssrContent}`);
+              modifiedHtml = modifiedHtml.replace('<div id="root">', `${ssrContent}\n    <div id="root">`);
             }
           } catch (err) {
             console.error('[SEO] SSR content injection error:', err);
@@ -3593,7 +3669,7 @@ ${items}
               }
               navHtml += `</ul></nav>`;
 
-              modifiedHtml = modifiedHtml.replace('<div id="root">', `<div id="root">${ssrHtml}${navHtml}`);
+              modifiedHtml = modifiedHtml.replace('<div id="root">', `${ssrHtml}${navHtml}\n    <div id="root">`);
               console.log('[SEO] Injected homepage SSR content + nav');
             } catch (err) {
               console.error('[SEO] Homepage SSR injection error:', err);
@@ -3616,7 +3692,7 @@ ${items}
               }
               ssrHtml += `</ul></div>`;
 
-              modifiedHtml = modifiedHtml.replace('<div id="root">', `<div id="root">${ssrHtml}`);
+              modifiedHtml = modifiedHtml.replace('<div id="root">', `${ssrHtml}\n    <div id="root">`);
               console.log('[SEO] Injected /brokers SSR content');
             } catch (err) {
               console.error('[SEO] /brokers SSR injection error:', err);
@@ -3639,7 +3715,7 @@ ${items}
               }
               ssrHtml += `</ul></div>`;
 
-              modifiedHtml = modifiedHtml.replace('<div id="root">', `<div id="root">${ssrHtml}`);
+              modifiedHtml = modifiedHtml.replace('<div id="root">', `${ssrHtml}\n    <div id="root">`);
               console.log('[SEO] Injected /prop-firms SSR content');
             } catch (err) {
               console.error('[SEO] /prop-firms SSR injection error:', err);
@@ -3702,7 +3778,7 @@ ${items}
                 }
 
                 ssrHtml += `</div>`;
-                modifiedHtml = modifiedHtml.replace('<div id="root">', `<div id="root">${ssrHtml}`);
+                modifiedHtml = modifiedHtml.replace('<div id="root">', `${ssrHtml}\n    <div id="root">`);
                 console.log(`[SEO] Injected ${cleanUrl} category archive SSR content (${catArticles.length} articles)`);
               } catch (err) {
                 console.error(`[SEO] Category archive SSR injection error for ${cleanUrl}:`, err);

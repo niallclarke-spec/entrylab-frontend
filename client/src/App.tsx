@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect } from "react";
 import { Switch, Route } from "wouter";
 import AdminLogin from "@/pages/admin/AdminLogin";
 import { queryClient } from "./lib/queryClient";
@@ -168,12 +168,17 @@ function Router() {
 }
 
 function App() {
-  useEffect(() => {
-    // Remove SSR-injected crawler content once React has hydrated — prevents
-    // the content appearing twice (once in #ssr-content, once from React render)
+  // Remove SSR-injected crawler content before paint so users never see both.
+  // SSR content lives OUTSIDE #root (sibling before it) for crawlers;
+  // React renders inside #root independently — no duplication.
+  useLayoutEffect(() => {
     const ssrEl = document.getElementById('ssr-content');
     if (ssrEl) ssrEl.remove();
+    const ssrNav = document.getElementById('ssr-nav');
+    if (ssrNav) ssrNav.remove();
+  }, []);
 
+  useEffect(() => {
     captureUTMParams();
     autoPrefetchRoutes(2000);
   }, []);
