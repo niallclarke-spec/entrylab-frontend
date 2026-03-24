@@ -173,13 +173,13 @@ export default function CategoryArchive() {
 
           {/* Directory Links */}
           <div className="mb-10 flex flex-wrap gap-3 justify-center">
-            <Link href="/top-cfd-brokers">
+            <Link href="/brokers/best-cfd">
               <Button variant="ghost" size="default" className="gap-2" style={{ color: "#186818" }} data-testid="button-brokers-directory">
                 <Shield className="h-4 w-4" />
                 Browse Broker Reviews
               </Button>
             </Link>
-            <Link href="/best-verified-propfirms">
+            <Link href="/prop-firms/best-verified">
               <Button variant="ghost" size="default" className="gap-2" style={{ color: "#186818" }} data-testid="button-prop-firms-directory">
                 <TrendingUp className="h-4 w-4" />
                 Browse Prop Firm Reviews

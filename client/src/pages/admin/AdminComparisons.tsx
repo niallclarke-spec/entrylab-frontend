@@ -78,7 +78,7 @@ function EntityRow({
   const qc = useQueryClient();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const prefix = entityType === "broker" ? "/compare/broker" : "/compare/prop-firm";
+  const prefix = entityType === "broker" ? "/brokers/compare" : "/prop-firms/compare";
 
   // Lazy-load this entity's comparisons only when expanded
   const { data: comparisons, isLoading: cmpsLoading } = useQuery<ComparisonRecord[]>({

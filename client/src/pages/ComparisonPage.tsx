@@ -465,10 +465,10 @@ function VsComparisonPage({
 
   const entityALogo = entityAData?.logo || entityAData?.logoUrl;
   const entityBLogo = entityBData?.logo || entityBData?.logoUrl;
-  const hubPath = entityType === "broker" ? "/compare/broker" : "/compare/prop-firm";
+  const hubPath = entityType === "broker" ? "/brokers/compare" : "/prop-firms/compare";
   const hubLabel = entityType === "broker" ? "Broker Comparisons" : "Prop Firm Comparisons";
-  const entityAReviewPath = entityType === "broker" ? `/broker/${record.entityASlug}` : `/prop-firm/${record.entityASlug}`;
-  const entityBReviewPath = entityType === "broker" ? `/broker/${record.entityBSlug}` : `/prop-firm/${record.entityBSlug}`;
+  const entityAReviewPath = entityType === "broker" ? `/brokers/${record.entityASlug}` : `/prop-firms/${record.entityASlug}`;
+  const entityBReviewPath = entityType === "broker" ? `/brokers/${record.entityBSlug}` : `/prop-firms/${record.entityBSlug}`;
   const winnerName = record.overallWinnerId === record.entityAId
     ? record.entityAName
     : record.overallWinnerId === record.entityBId
@@ -979,8 +979,8 @@ function AlternativesPage({
   entityType: string;
 }) {
   const entityApiType = entityType === "broker" ? "brokers" : "prop-firms";
-  const reviewBasePath = entityType === "broker" ? "/broker" : "/prop-firm";
-  const hubPath = entityType === "broker" ? "/compare/broker" : "/compare/prop-firm";
+  const reviewBasePath = entityType === "broker" ? "/brokers" : "/prop-firms";
+  const hubPath = entityType === "broker" ? "/brokers/compare" : "/prop-firms/compare";
   const hubLabel = entityType === "broker" ? "Broker Comparisons" : "Prop Firm Comparisons";
   const entityKind = entityType === "broker" ? "broker" : "prop firm";
 
@@ -1234,7 +1234,7 @@ export default function ComparisonPage() {
   const [location, setLocation] = useLocation();
   const params = useParams<{ slug: string }>();
   const { slug } = params;
-  const entityType = location.startsWith("/compare/prop-firm") ? "prop_firm" : "broker";
+  const entityType = location.startsWith("/prop-firms/compare") ? "prop_firm" : "broker";
   const qc = useQueryClient();
 
   const { data: record, isLoading, error } = useQuery<ComparisonRecord>({
@@ -1327,7 +1327,7 @@ export default function ComparisonPage() {
   }
 
   if (error || !record) {
-    const hubPath = entityType === "broker" ? "/compare/broker" : "/compare/prop-firm";
+    const hubPath = entityType === "broker" ? "/brokers/compare" : "/prop-firms/compare";
     const hubLabel = entityType === "broker" ? "Broker" : "Prop Firm";
     return (
       <>

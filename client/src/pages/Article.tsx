@@ -498,14 +498,14 @@ export default function Article() {
     breadcrumbs = [
       { name: "Home", url: "https://entrylab.io" },
       { name: "Brokers", url: "https://entrylab.io/brokers" },
-      { name: relatedBroker.name, url: `https://entrylab.io/broker/${relatedBroker.slug}` },
+      { name: relatedBroker.name, url: `https://entrylab.io/brokers/${relatedBroker.slug}` },
       { name: stripHtml(post.title), url: seoUrl },
     ];
   } else if (relatedPropFirm && typeof relatedPropFirm === "object" && relatedPropFirm.slug) {
     breadcrumbs = [
       { name: "Home", url: "https://entrylab.io" },
       { name: "Prop Firms", url: "https://entrylab.io/prop-firms" },
-      { name: relatedPropFirm.name, url: `https://entrylab.io/prop-firm/${relatedPropFirm.slug}` },
+      { name: relatedPropFirm.name, url: `https://entrylab.io/prop-firms/${relatedPropFirm.slug}` },
       { name: stripHtml(post.title), url: seoUrl },
     ];
   } else {
@@ -735,7 +735,7 @@ export default function Article() {
                 {/* Featured Firm Logo Banner */}
                 {featuredFirm && featuredFirmType && (
                   <a
-                    href={featuredFirmType === "broker" ? `/broker/${featuredFirm.slug}` : `/prop-firm/${featuredFirm.slug}`}
+                    href={featuredFirmType === "broker" ? `/brokers/${featuredFirm.slug}` : `/prop-firms/${featuredFirm.slug}`}
                     className="flex items-center gap-4 mb-8 p-4 rounded-xl no-underline group"
                     style={{ background: "#f5f7f6", border: "1px solid #e8edea", textDecoration: "none" }}
                   >

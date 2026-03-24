@@ -30,7 +30,7 @@ async function getEntities(): Promise<LinkEntity[]> {
     if (!name || name.length < 3) continue;
     entities.push({
       name,
-      url: `/broker/${b.slug}`,
+      url: `/brokers/${b.slug}`,
       pattern: new RegExp(`(?<![\\w\\-])${escapeRegex(name)}(?![\\w\\-])`, "i"),
     });
   }
@@ -40,7 +40,7 @@ async function getEntities(): Promise<LinkEntity[]> {
     if (!name || name.length < 3) continue;
     entities.push({
       name,
-      url: `/prop-firm/${p.slug}`,
+      url: `/prop-firms/${p.slug}`,
       pattern: new RegExp(`(?<![\\w\\-])${escapeRegex(name)}(?![\\w\\-])`, "i"),
     });
   }

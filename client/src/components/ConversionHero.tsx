@@ -176,7 +176,7 @@ export function ConversionHero({ topBrokers }: ConversionHeroProps) {
                             </a>
                           </Button>
                           <Button asChild variant="outline" className="flex-1" data-testid={`button-review-${broker.id}`}>
-                            <Link href={broker.reviewLink || `/broker/${broker.slug}`}>
+                            <Link href={broker.reviewLink || `/brokers/${broker.slug}`}>
                               Read Review
                             </Link>
                           </Button>

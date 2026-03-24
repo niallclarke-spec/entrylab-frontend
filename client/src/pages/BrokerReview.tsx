@@ -43,7 +43,7 @@ function RelatedGuides({ slug, entityName }: { slug: string; entityName: string 
           {guides.map((guide: any) => (
             <Link
               key={guide.id}
-              href={`/broker/${slug}/${guide.slug}`}
+              href={`/brokers/${slug}/${guide.slug}`}
               className="flex items-center justify-between p-4 rounded-lg border border-white/10 hover:border-[#2bb32a]/30 hover:bg-white/3 transition-all group"
               data-testid={`link-guide-${guide.id}`}
             >
@@ -87,7 +87,7 @@ function RelatedComparisons({ slug, entityType, entityName }: { slug: string; en
           {related.slice(0, 6).map((c: any) => {
             const otherName = c.entityASlug === slug ? c.entityBName : c.entityAName;
             const winnerName = c.overallWinnerId === c.entityAId ? c.entityAName : c.overallWinnerId === c.entityBId ? c.entityBName : null;
-            const prefix = entityType === "broker" ? "/compare/broker" : "/compare/prop-firm";
+            const prefix = entityType === "broker" ? "/brokers/compare" : "/prop-firms/compare";
             return (
               <Link
                 key={c.id}
@@ -135,7 +135,7 @@ export default function BrokerReview() {
 
   useEffect(() => {
     if (broker) {
-      trackPageView(`/broker/${slug}`, `${broker.name} Review | EntryLab`);
+      trackPageView(`/brokers/${slug}`, `${broker.name} Review | EntryLab`);
       trackReviewView({
         broker_name: broker.name,
         broker_type: 'broker',
@@ -187,7 +187,7 @@ export default function BrokerReview() {
         <div className="flex-1 flex items-center justify-center py-32">
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4" style={{ color: "#111827" }}>Broker Not Found</h2>
-            <Link href="/top-cfd-brokers">
+            <Link href="/brokers/best-cfd">
               <Button data-testid="button-back-brokers">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Brokers
               </Button>
@@ -208,7 +208,7 @@ export default function BrokerReview() {
   const breadcrumbs = [
     { name: "Home", url: "https://entrylab.io" },
     { name: "Brokers", url: "https://entrylab.io/brokers" },
-    { name: stripHtml(broker.name), url: `https://entrylab.io/broker/${broker.slug}` }
+    { name: stripHtml(broker.name), url: `https://entrylab.io/brokers/${broker.slug}` }
   ];
 
   // Parse headquarters to extract city and country (don't use full string as street address)
@@ -277,7 +277,7 @@ export default function BrokerReview() {
       <SEO
         title={seoTitle}
         description={seoDescription}
-        url={`https://entrylab.io/broker/${broker.slug}`}
+        url={`https://entrylab.io/brokers/${broker.slug}`}
         image={broker.logo}
         breadcrumbs={breadcrumbs}
         financialServiceData={financialServiceData}
@@ -980,7 +980,7 @@ export default function BrokerReview() {
                 Open Account Now <ArrowRight className="ml-2 h-4 w-4" />
               </a>
             </Button>
-            <Link href="/compare/broker">
+            <Link href="/brokers/compare">
               <Button variant="outline" size="lg" className="min-w-[200px] border-white/30 text-white" data-testid="button-compare-brokers">
                 <GitCompare className="w-4 h-4 mr-2" /> Compare Brokers
               </Button>

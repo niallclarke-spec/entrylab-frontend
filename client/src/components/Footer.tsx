@@ -54,7 +54,7 @@ export function Footer() {
             <Link href="/prop-firms/best-verified" className="text-sm hover:text-[#2bb32a] transition-colors" style={{ color: "#6b7280" }} data-testid="link-footer-all-prop-firms">
               Prop Firms
             </Link>
-            <Link href="/news" className="text-sm hover:text-[#2bb32a] transition-colors" style={{ color: "#6b7280" }} data-testid="link-footer-news">
+            <Link href="/topics/news" className="text-sm hover:text-[#2bb32a] transition-colors" style={{ color: "#6b7280" }} data-testid="link-footer-news">
               Latest News
             </Link>
           </div>

@@ -43,7 +43,7 @@ function RelatedGuides({ slug, entityName }: { slug: string; entityName: string 
           {guides.map((guide: any) => (
             <Link
               key={guide.id}
-              href={`/prop-firm/${slug}/${guide.slug}`}
+              href={`/prop-firms/${slug}/${guide.slug}`}
               className="flex items-center justify-between p-4 rounded-lg border border-white/10 hover:border-[#2bb32a]/30 hover:bg-white/3 transition-all group"
               data-testid={`link-guide-${guide.id}`}
             >
@@ -90,7 +90,7 @@ function RelatedComparisons({ slug, entityType, entityName }: { slug: string; en
             return (
               <Link
                 key={c.id}
-                href={`/compare/prop-firm/${c.slug}`}
+                href={`/prop-firms/compare/${c.slug}`}
                 className="flex items-center justify-between p-4 rounded-lg border border-white/10 hover:border-[#2bb32a]/30 hover:bg-white/3 transition-all group"
                 data-testid={`link-related-${c.id}`}
               >
@@ -153,7 +153,7 @@ export default function PropFirmReview() {
         body: JSON.stringify({ slug, name: propFirm.name, type: "prop_firm" }),
         keepalive: true,
       }).catch(() => {});
-      trackPageView(`/prop-firm/${slug}`, `${propFirm.name} Review | EntryLab`);
+      trackPageView(`/prop-firms/${slug}`, `${propFirm.name} Review | EntryLab`);
       trackReviewView({
         broker_name: propFirm.name,
         broker_type: 'prop_firm',
@@ -198,7 +198,7 @@ export default function PropFirmReview() {
         <div className="flex-1 flex items-center justify-center py-32">
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4" style={{ color: "#111827" }}>Prop Firm Not Found</h2>
-            <Link href="/best-verified-propfirms">
+            <Link href="/prop-firms/best-verified">
               <Button data-testid="button-back-prop-firms">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Prop Firms
               </Button>
@@ -219,7 +219,7 @@ export default function PropFirmReview() {
   const breadcrumbs = [
     { name: "Home", url: "https://entrylab.io" },
     { name: "Prop Firms", url: "https://entrylab.io/prop-firms" },
-    { name: stripHtml(propFirm.name), url: `https://entrylab.io/prop-firm/${propFirm.slug}` }
+    { name: stripHtml(propFirm.name), url: `https://entrylab.io/prop-firms/${propFirm.slug}` }
   ];
 
   // Parse headquarters to extract city and country (don't use full string as street address)
@@ -288,7 +288,7 @@ export default function PropFirmReview() {
       <SEO
         title={seoTitle}
         description={seoDescription}
-        url={`https://entrylab.io/prop-firm/${propFirm.slug}`}
+        url={`https://entrylab.io/prop-firms/${propFirm.slug}`}
         image={propFirm.logo}
         breadcrumbs={breadcrumbs}
         financialServiceData={financialServiceData}
@@ -980,7 +980,7 @@ export default function PropFirmReview() {
                 Start Evaluation Now <ArrowRight className="ml-2 h-4 w-4" />
               </a>
             </Button>
-            <Link href="/compare/prop-firm">
+            <Link href="/prop-firms/compare">
               <Button variant="outline" size="lg" className="min-w-[200px] border-white/30 text-white" data-testid="button-compare-prop-firms">
                 <GitCompare className="w-4 h-4 mr-2" /> Compare Prop Firms
               </Button>

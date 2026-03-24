@@ -75,7 +75,7 @@ export default function ComparisonPropFirmHub() {
               return (
                 <Link
                   key={c.id}
-                  href={`/compare/prop-firm/${c.slug}`}
+                  href={`/prop-firms/compare/${c.slug}`}
                   className="group block p-5 rounded-xl border border-white/10 hover:border-[#2bb32a]/30 hover:bg-white/3 transition-all"
                   data-testid={`link-comparison-${c.id}`}
                 >

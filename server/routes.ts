@@ -41,7 +41,7 @@ function brokerDbToApi(row: any) {
     features: (row.highlights || []).map((h: string) => ({ icon: "trending", text: h })),
     featuredHighlights: row.highlights || [],
     link: row.affiliateLink || "#",
-    reviewLink: `/broker/${row.slug}`,
+    reviewLink: `/brokers/${row.slug}`,
     tagline: row.tagline || "",
     bonusOffer: row.bonusOffer || "",
     content: row.content || "",
@@ -89,7 +89,7 @@ function propFirmDbToApi(row: any) {
     features: (row.highlights || []).map((h: string) => ({ icon: "trending", text: h })),
     featuredHighlights: row.highlights || [],
     link: row.affiliateLink || "#",
-    reviewLink: `/prop-firm/${row.slug}`,
+    reviewLink: `/prop-firms/${row.slug}`,
     tagline: row.tagline || "",
     bonusOffer: row.bonusOffer || "",
     discountCode: row.discountCode || "",
@@ -383,7 +383,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const popularMatch = req.path.match(/^\/popular[_-]broker\/(.+?)\/?$/i);
     if (popularMatch) {
       const brokerSlug = resolveWpBrokerSlug(popularMatch[1]);
-      return res.redirect(301, `/broker/${brokerSlug}`);
+      return res.redirect(301, `/brokers/${brokerSlug}`);
     }
 
     // WordPress tag, author, and category archive URLs → homepage
@@ -394,7 +394,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // WordPress /category/:slug → our matching category archive (generic fallback)
     const catMatch = req.path.match(/^\/category\/([^/]+)\/?$/);
     if (catMatch) {
-      return res.redirect(301, `/${catMatch[1]}`);
+      return res.redirect(301, `/topics/${catMatch[1]}`);
     }
 
     // WordPress pagination: /page/2/, /broker-news/page/3/ etc. → strip to base URL
@@ -425,7 +425,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const clean = rawSlug.replace(/\/$/, '').toLowerCase();
         const mapped = wpBrokerSlugMap[clean] ||
           clean.replace(/-broker-review-\d{4}$/, '').replace(/-review-\d{4}$/, '') || clean;
-        return `https://entrylab.io/broker/${mapped}`;
+        return `https://entrylab.io/brokers/${mapped}`;
       }
     ).replace(
       /href="\/popular[_-]broker\/([^"]+?)\/?">/gi,
@@ -433,7 +433,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const clean = rawSlug.replace(/\/$/, '').toLowerCase();
         const mapped = wpBrokerSlugMap[clean] ||
           clean.replace(/-broker-review-\d{4}$/, '').replace(/-review-\d{4}$/, '') || clean;
-        return `href="/broker/${mapped}">`;
+        return `href="/brokers/${mapped}">`;
       }
     );
   }
@@ -507,7 +507,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Auto-generate all vs-pair comparisons (published immediately)
       onEntityCreated("broker", broker.id).catch(() => {});
       pingSitemaps();
-      scheduleIndexingSubmission([`/broker/${broker.slug}`]);
+      scheduleIndexingSubmission([`/brokers/${broker.slug}`]);
       return res.status(201).json(broker);
     } catch (err: any) {
       console.error("[Admin] Error creating broker:", err);
@@ -575,7 +575,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Auto-generate all vs-pair comparisons (published immediately)
       onEntityCreated("prop_firm", firm.id).catch(() => {});
       pingSitemaps();
-      scheduleIndexingSubmission([`/prop-firm/${firm.slug}`]);
+      scheduleIndexingSubmission([`/prop-firms/${firm.slug}`]);
       return res.status(201).json(firm);
     } catch (err: any) {
       console.error("[Admin] Error creating prop firm:", err);
@@ -1247,7 +1247,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (pfRow) result.relatedPropFirm = propFirmDbToApi(pfRow);
         } catch (_) {}
       }
-      const selfUrl = `/${article.category || 'news'}/${article.slug}`;
+      const selfUrl = `/learn/${article.category || 'news'}/${article.slug}`;
       if (result.content) {
         result.content = await addInternalLinks(result.content, selfUrl);
       }
@@ -1668,6 +1668,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.redirect(301, "/prop-firms/best-verified");
   });
 
+  // Old category archive root URLs → /topics/ prefix
+  const categoryArchiveRedirects = ['broker-news', 'broker-guides', 'prop-firm-news', 'prop-firm-guides', 'trading-tools', 'news'];
+  for (const cat of categoryArchiveRedirects) {
+    app.get(`/${cat}`, (_req, res) => {
+      res.redirect(301, `/topics/${cat}`);
+    });
+  }
+
   // 301 redirects for old prop firm slugs → clean slugs
   const propFirmSlugRedirects: Record<string, string> = {
     'crypto-fund-trader-review-2026': 'crypto-fund-trader',
@@ -1974,12 +1982,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const brokerLines = brokers.map(b => {
         const tagline = b.tagline ? `: ${b.tagline.replace(/\n/g, ' ').slice(0, 120)}` : '';
-        return `- [${b.name} Review](${baseUrl}/broker/${b.slug})${tagline}`;
+        return `- [${b.name} Review](${baseUrl}/brokers/${b.slug})${tagline}`;
       }).join('\n');
 
       const propFirmLines = propFirms.map(p => {
         const tagline = p.tagline ? `: ${p.tagline.replace(/\n/g, ' ').slice(0, 120)}` : '';
-        return `- [${p.name} Review](${baseUrl}/prop-firm/${p.slug})${tagline}`;
+        return `- [${p.name} Review](${baseUrl}/prop-firms/${p.slug})${tagline}`;
       }).join('\n');
 
       const articleLines = recentArticles.map(a => {
@@ -2300,10 +2308,10 @@ ${items}
         const cleanTitle = (post.title || '').replace(/<[^>]*>/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         // Use nested URL when article has a parent entity
         const articleLoc = post.relatedBroker
-          ? `${baseUrl}/broker/${post.relatedBroker}/${post.slug}`
+          ? `${baseUrl}/brokers/${post.relatedBroker}/${post.slug}`
           : post.relatedPropFirm
-          ? `${baseUrl}/prop-firm/${post.relatedPropFirm}/${post.slug}`
-          : `${baseUrl}/${post.category || 'uncategorized'}/${post.slug}`;
+          ? `${baseUrl}/prop-firms/${post.relatedPropFirm}/${post.slug}`
+          : `${baseUrl}/learn/${post.category || 'uncategorized'}/${post.slug}`;
         sitemap += `  <url>\n`;
         sitemap += `    <loc>${articleLoc}</loc>\n`;
         sitemap += `    <lastmod>${modifiedDate}</lastmod>\n`;
@@ -2326,7 +2334,7 @@ ${items}
           ? new Date(broker.modified).toISOString()
           : currentDate;
         sitemap += `  <url>\n`;
-        sitemap += `    <loc>${baseUrl}/broker/${broker.slug}</loc>\n`;
+        sitemap += `    <loc>${baseUrl}/brokers/${broker.slug}</loc>\n`;
         sitemap += `    <lastmod>${modifiedDate}</lastmod>\n`;
         sitemap += `    <changefreq>monthly</changefreq>\n`;
         sitemap += `    <priority>0.7</priority>\n`;
@@ -2341,7 +2349,7 @@ ${items}
           ? new Date(firm.modified).toISOString()
           : currentDate;
         sitemap += `  <url>\n`;
-        sitemap += `    <loc>${baseUrl}/prop-firm/${firm.slug}</loc>\n`;
+        sitemap += `    <loc>${baseUrl}/prop-firms/${firm.slug}</loc>\n`;
         sitemap += `    <lastmod>${modifiedDate}</lastmod>\n`;
         sitemap += `    <changefreq>monthly</changefreq>\n`;
         sitemap += `    <priority>0.7</priority>\n`;
@@ -2581,9 +2589,9 @@ ${items}
     const url = req.originalUrl || req.url;
     
     if (url.startsWith('/category/')) {
-      const newPath = url.replace('/category/', '/');
+      const newPath = url.replace('/category/', '/topics/');
       console.log(`[REDIRECT] Old category URL: ${url} → ${newPath}`);
-      
+
       // 301 permanent redirect
       return res.redirect(301, newPath);
     }
@@ -2626,19 +2634,19 @@ ${items}
                      cleanUrlForCheck === '/brokers' ||
                      cleanUrlForCheck === '/prop-firms' ||
                      cleanUrlForCheck === '/compare' ||
-                     cleanUrlForCheck === '/compare/broker' ||
-                     cleanUrlForCheck === '/compare/prop-firm' ||
-                     url.startsWith('/compare/broker/') ||
-                     url.startsWith('/compare/prop-firm/') ||
+                     cleanUrlForCheck === '/brokers/compare' ||
+                     cleanUrlForCheck === '/prop-firms/compare' ||
+                     url.startsWith('/brokers/compare/') ||
+                     url.startsWith('/prop-firms/compare/') ||
                      cleanUrlForCheck === '/signals' ||
                      cleanUrlForCheck === '/subscribe' ||
                      cleanUrlForCheck === '/success' ||
-                     url.startsWith('/article/') || 
-                     url.startsWith('/broker/') ||
-                     url.startsWith('/prop-firm/') ||
-                     !!url.match(/^\/(news|broker-news|broker-guides|prop-firm-news|prop-firm-guides|trading-tools)/) ||
-                     url.startsWith('/broker-categories/') ||
-                     url.startsWith('/prop-firm-categories/');
+                     url.startsWith('/article/') ||
+                     url.startsWith('/brokers/') ||
+                     url.startsWith('/prop-firms/') ||
+                     url.startsWith('/learn/') ||
+                     url.startsWith('/topics/') ||
+                     url.startsWith('/brokers/category/');
     
     if (isHtmlRequest && needsSEO) {
       // Pre-fetch page data to inject into HTML
@@ -2649,7 +2657,8 @@ ${items}
         // Static pages + category archives — load from DB (cached)
         const allStaticSeo = await loadAllStaticPageSeo();
         const staticEntry = allStaticSeo[cleanUrl]                              // e.g. "/brokers"
-                         || allStaticSeo[cleanUrl.slice(1)];                   // e.g. "broker-news"
+                         || allStaticSeo[cleanUrl.slice(1)]                    // e.g. "brokers"
+                         || allStaticSeo[cleanUrl.replace('/topics/', '')];    // e.g. "broker-news" from "/topics/broker-news"
         if (staticEntry) {
           pageData = {
             seoTitle: staticEntry.title,
@@ -2664,7 +2673,7 @@ ${items}
               rating: brokersTable.rating, regulation: brokersTable.regulation,
             }).from(brokersTable).orderBy(asc(brokersTable.name));
             pageData.entities = brokers;
-            pageData.entityPath = 'broker';
+            pageData.entityPath = 'brokers';
             pageData.isListing = true;
           } else if (cleanUrl === '/prop-firms') {
             const firms = await db.select({
@@ -2672,10 +2681,10 @@ ${items}
               rating: propFirmsTable.rating,
             }).from(propFirmsTable).orderBy(asc(propFirmsTable.name));
             pageData.entities = firms;
-            pageData.entityPath = 'prop-firm';
+            pageData.entityPath = 'prop-firms';
             pageData.isListing = true;
-          } else if (['/broker-guides', '/broker-news', '/prop-firm-news', '/prop-firm-guides', '/trading-tools', '/news'].includes(cleanUrl)) {
-            const catSlug = cleanUrl.slice(1);
+          } else if (['/topics/broker-guides', '/topics/broker-news', '/topics/prop-firm-news', '/topics/prop-firm-guides', '/topics/trading-tools', '/topics/news'].includes(cleanUrl)) {
+            const catSlug = cleanUrl.replace('/topics/', '');
             const catArticles = await db.select({
               title: articlesTable.title, slug: articlesTable.slug,
               category: articlesTable.category, publishedAt: articlesTable.publishedAt,
@@ -2686,20 +2695,20 @@ ${items}
             pageData.articles = catArticles;
             pageData.catSlug = catSlug;
             pageData.isCategoryArchive = true;
-            if (cleanUrl.startsWith('/broker')) {
+            if (catSlug.startsWith('broker')) {
               const brokers = await db.select({ name: brokersTable.name, slug: brokersTable.slug })
                 .from(brokersTable).orderBy(asc(brokersTable.name)).limit(15);
               pageData.relatedEntities = brokers;
-              pageData.entityPath = 'broker';
-            } else if (cleanUrl.startsWith('/prop-firm')) {
+              pageData.entityPath = 'brokers';
+            } else if (catSlug.startsWith('prop-firm')) {
               const firms = await db.select({ name: propFirmsTable.name, slug: propFirmsTable.slug })
                 .from(propFirmsTable).orderBy(asc(propFirmsTable.name)).limit(15);
               pageData.relatedEntities = firms;
-              pageData.entityPath = 'prop-firm';
+              pageData.entityPath = 'prop-firms';
             }
           }
-        } else if (url.startsWith('/broker/')) {
-          const parts = url.replace('/broker/', '').split('?')[0].split('/').filter(Boolean);
+        } else if (url.startsWith('/brokers/') && !url.startsWith('/brokers/compare')) {
+          const parts = url.replace('/brokers/', '').split('?')[0].split('/').filter(Boolean);
           if (parts.length >= 2) {
             // Nested article: /broker/:brokerSlug/:articleSlug
             const articleSlug = parts[1];
@@ -2757,8 +2766,8 @@ ${items}
               }
             }
           }
-        } else if (url.startsWith('/prop-firm/')) {
-          const propParts = url.replace('/prop-firm/', '').split('?')[0].split('/').filter(Boolean);
+        } else if (url.startsWith('/prop-firms/') && !url.startsWith('/prop-firms/compare')) {
+          const propParts = url.replace('/prop-firms/', '').split('?')[0].split('/').filter(Boolean);
           if (propParts.length >= 2) {
             // Nested article: /prop-firm/:propFirmSlug/:articleSlug
             const articleSlug = propParts[1];
@@ -2822,7 +2831,7 @@ ${items}
               }
             }
           }
-        } else if (cleanUrl === '/compare/broker') {
+        } else if (cleanUrl === '/brokers/compare') {
           const ssrKey = 'ssr:comparison-hub:broker';
           pageData = apiCache.get(ssrKey);
           if (!pageData || apiCache.isStale(ssrKey)) {
@@ -2842,12 +2851,12 @@ ${items}
               seoDescription: 'Compare forex brokers head-to-head across regulation, fees, platforms, spreads and more. In-depth broker comparisons to help you choose the right account.',
               name: 'Broker Comparisons',
               isComparisonHub: true,
-              entityPath: 'broker',
+              entityPath: 'brokers',
               comparisons: hubComps,
             };
             apiCache.set(ssrKey, pageData, 300, 600);
           }
-        } else if (cleanUrl === '/compare/prop-firm') {
+        } else if (cleanUrl === '/prop-firms/compare') {
           const ssrKey = 'ssr:comparison-hub:prop-firm';
           pageData = apiCache.get(ssrKey);
           if (!pageData || apiCache.isStale(ssrKey)) {
@@ -2867,15 +2876,15 @@ ${items}
               seoDescription: 'Compare the top prop trading firms side by side. Challenges, profit splits, drawdown limits and payouts — all analysed so you can find the best funded account.',
               name: 'Prop Firm Comparisons',
               isComparisonHub: true,
-              entityPath: 'prop-firm',
+              entityPath: 'prop-firms',
               comparisons: hubComps,
             };
             apiCache.set(ssrKey, pageData, 300, 600);
           }
-        } else if (url.startsWith('/compare/broker/') || url.startsWith('/compare/prop-firm/')) {
-          // Comparison pages: /compare/broker/:slug or /compare/prop-firm/:slug
-          const compSlug = url.replace(/^\/compare\/(broker|prop-firm)\//, '').split('?')[0];
-          const compEntityType = url.startsWith('/compare/broker/') ? 'broker' : 'prop_firm';
+        } else if (url.startsWith('/brokers/compare/') || url.startsWith('/prop-firms/compare/')) {
+          // Comparison pages: /brokers/compare/:slug or /prop-firms/compare/:slug
+          const compSlug = url.replace(/^\/(brokers|prop-firms)\/compare\//, '').split('?')[0];
+          const compEntityType = url.startsWith('/brokers/compare/') ? 'broker' : 'prop_firm';
           const ssrKey = `ssr:comparison:${compSlug}`;
           pageData = apiCache.get(ssrKey);
           if (!pageData || apiCache.isStale(ssrKey)) {
@@ -2966,8 +2975,8 @@ ${items}
           .replace(/<h1(\s[^>]*)?>/gi, '<h2$1>')
           .replace(/<\/h1>/gi, '</h2>')
           // Rewrite old WordPress URL paths to current EntryLab routes
-          .replace(/href="https?:\/\/(?:entrylab\.io)?\/popular-broker\//gi, 'href="/broker/')
-          .replace(/href="\/popular-broker\//gi, 'href="/broker/')
+          .replace(/href="https?:\/\/(?:entrylab\.io)?\/popular-broker\//gi, 'href="/brokers/')
+          .replace(/href="\/popular-broker\//gi, 'href="/brokers/')
           // Clean up multiple blank lines
           .replace(/\n{3,}/g, '\n\n')
           .trim();
@@ -3033,7 +3042,7 @@ ${items}
         // H1 title — descriptive, matches search intent for entity pages
         if (title) {
           let h1 = title;
-          if (cleanUrl.startsWith('/broker/') && !cleanUrl.split('/').filter(Boolean)[1]?.includes('/')) {
+          if (cleanUrl.startsWith('/brokers/') && !cleanUrl.split('/').filter(Boolean)[1]?.includes('/')) {
             // Broker review page: "GatesFX Review — Spreads, Regulation & Trading Conditions"
             const reg0 = (pageData.regulation || '').split(',')[0].trim();
             const regLabel = reg0 && reg0.toLowerCase() !== 'no regulation' ? `Regulated: ${reg0}` : (reg0.toLowerCase().includes('no') ? 'Unregulated' : '');
@@ -3043,7 +3052,7 @@ ${items}
               pageData.rating ? `Rating: ${pageData.rating}/5` : '',
             ].filter(Boolean).join(' · ');
             h1 = `${title} Review${extras ? ` — ${extras}` : ''}`;
-          } else if (cleanUrl.startsWith('/prop-firm/') && cleanUrl.split('/').filter(Boolean).length === 2) {
+          } else if (cleanUrl.startsWith('/prop-firms/') && cleanUrl.split('/').filter(Boolean).length === 2) {
             // Prop firm review page: "FTMO Review — 90% Profit Split · $200K Funding"
             const extras = [
               pageData.profitSplit ? `Profit Split: ${pageData.profitSplit}` : '',
@@ -3071,7 +3080,7 @@ ${items}
           : '';
 
         // Broker-specific fields
-        if (cleanUrl.startsWith('/broker/')) {
+        if (cleanUrl.startsWith('/brokers/')) {
           const fields: [string, any][] = [
             ['Rating', pageData.rating],
             ['Regulation', pageData.regulation],
@@ -3120,7 +3129,7 @@ ${items}
         }
 
         // Prop firm-specific fields
-        else if (cleanUrl.startsWith('/prop-firm/')) {
+        else if (cleanUrl.startsWith('/prop-firms/')) {
           const fields: [string, any][] = [
             ['Rating', pageData.rating],
             ['Profit Split', pageData.profitSplit],
@@ -3170,7 +3179,7 @@ ${items}
           }
         }
 
-        // Comparison hub pages: /compare/broker, /compare/prop-firm
+        // Comparison hub pages: /brokers/compare, /prop-firms/compare
         else if (pageData.isComparisonHub) {
           if (pageData.seoDescription) html += `<p>${pageData.seoDescription}</p>`;
           const hubComps = Array.isArray(pageData.comparisons) ? pageData.comparisons : [];
@@ -3178,7 +3187,7 @@ ${items}
             html += `<h2>All ${pageData.name}</h2><ul>`;
             for (const comp of hubComps) {
               if (comp.slug && comp.entityAName && comp.entityBName) {
-                html += `<li><a href="/compare/${pageData.entityPath}/${comp.slug}">${comp.entityAName} vs ${comp.entityBName}</a></li>`;
+                html += `<li><a href="/${pageData.entityPath}/compare/${comp.slug}">${comp.entityAName} vs ${comp.entityBName}</a></li>`;
               }
             }
             html += `</ul>`;
@@ -3298,9 +3307,7 @@ ${items}
         // Catch old WordPress root-level article URLs (/:slug) that don't match a known
         // category archive — return 404 so Google stops indexing ghost pages.
         const knownRootPaths = ['brokers', 'prop-firms', 'compare', 'signals', 'subscribe',
-          'success', 'free-access', 'dashboard', 'terms', 'admin', 'top-cfd-brokers',
-          'top-3-cfd-brokers', 'best-verified-propfirms', 'broker-news', 'broker-guides',
-          'prop-firm-news', 'prop-firm-guides', 'trading-tools', 'news'];
+          'success', 'free-access', 'dashboard', 'terms', 'admin', 'learn', 'topics'];
         if (urlSegments.length === 1 && !knownRootPaths.includes(urlSegments[0]) && !pageData) {
           httpStatus = 404;
         }
@@ -3323,7 +3330,7 @@ ${items}
 
           // Build rich fallback description from DB fields
           let generatedDescription = '';
-          if (cleanUrl.startsWith('/broker/')) {
+          if (cleanUrl.startsWith('/brokers/')) {
             const parts = [
               rawName ? `Read our expert ${rawName} review.` : '',
               pageData.rating ? `Rating: ${pageData.rating}/5.` : '',
@@ -3332,7 +3339,7 @@ ${items}
               pageData.maxLeverage ? `Leverage up to ${pageData.maxLeverage}.` : '',
             ].filter(Boolean).join(' ');
             generatedDescription = parts || `${rawName} broker review — ratings, fees, regulation, and trading conditions on EntryLab.`;
-          } else if (cleanUrl.startsWith('/prop-firm/')) {
+          } else if (cleanUrl.startsWith('/prop-firms/')) {
             const parts = [
               rawName ? `Read our ${rawName} review.` : '',
               pageData.rating ? `Rating: ${pageData.rating}/5.` : '',
@@ -3380,7 +3387,7 @@ ${items}
           const ogImage = rawOgImage.startsWith('/') ? `https://entrylab.io${rawOgImage}` : rawOgImage;
           const ogUrl = `https://entrylab.io${cleanUrl}`;
           
-          const ogType = cleanUrl.match(/^\/[^/]+\/[^/]+$/) && !cleanUrl.startsWith('/broker/') && !cleanUrl.startsWith('/prop-firm/')
+          const ogType = cleanUrl.match(/^\/[^/]+\/[^/]+$/) && !cleanUrl.startsWith('/brokers/') && !cleanUrl.startsWith('/prop-firms/')
             ? 'article'
             : 'website';
 
@@ -3438,7 +3445,7 @@ ${items}
           }
 
           // FAQ JSON-LD for broker review pages — used by AI tools (Perplexity, ChatGPT) for cited Q&A
-          if (cleanUrl.startsWith('/broker/') && pageData.name) {
+          if (cleanUrl.startsWith('/brokers/') && pageData.name) {
             try {
               const brokerName = pageData.name.replace(/<[^>]+>/g, '');
               const faqItems: Array<{ q: string; a: string }> = [];
@@ -3495,7 +3502,7 @@ ${items}
           }
 
           // FAQ JSON-LD for prop-firm review pages
-          if (cleanUrl.startsWith('/prop-firm/') && pageData.name) {
+          if (cleanUrl.startsWith('/prop-firms/') && pageData.name) {
             try {
               const firmName = pageData.name.replace(/<[^>]+>/g, '');
               const faqItems: Array<{ q: string; a: string }> = [];
@@ -3597,16 +3604,16 @@ ${items}
               '/brokers':          { title: 'Forex Broker Reviews 2026 | EntryLab', desc: 'Compare 17+ regulated forex brokers by spreads, leverage, platforms and regulation. Expert unbiased reviews updated for 2026.' },
               '/prop-firms':       { title: 'Prop Firm Reviews 2026 | EntryLab', desc: 'Compare the best proprietary trading firms — FTMO, FundedNext, Funding Pips and more. Evaluation rules, profit splits and payouts reviewed.' },
               '/compare':          { title: 'Broker & Prop Firm Comparison Tool | EntryLab', desc: 'Side-by-side comparisons of forex brokers and prop trading firms. Find the right fit for your trading style and budget.' },
-              '/compare/broker':   { title: 'All Forex Broker Comparisons | EntryLab', desc: 'Every broker vs broker comparison on EntryLab — spreads, fees, regulation and platforms compared head to head.' },
-              '/compare/prop-firm':{ title: 'All Prop Firm Comparisons | EntryLab', desc: 'Every prop firm vs prop firm comparison on EntryLab — evaluation rules, profit splits and max drawdown compared.' },
+              '/brokers/compare':   { title: 'All Forex Broker Comparisons | EntryLab', desc: 'Every broker vs broker comparison on EntryLab — spreads, fees, regulation and platforms compared head to head.' },
+              '/prop-firms/compare':{ title: 'All Prop Firm Comparisons | EntryLab', desc: 'Every prop firm vs prop firm comparison on EntryLab — evaluation rules, profit splits and max drawdown compared.' },
               '/signals':          { title: 'Premium Forex Signals | EntryLab', desc: 'Professional forex trading signals delivered via Telegram. Real-time alerts with entry, stop-loss and take-profit levels.' },
               '/subscribe':        { title: 'Subscribe to Premium Forex Signals | EntryLab', desc: 'Get full access to EntryLab premium signals. Monthly and annual plans available. Cancel any time.' },
-              '/broker-news':      { title: 'Forex Broker News 2026 | EntryLab', desc: 'Latest news from the forex broker industry — regulatory updates, new brokers, promotions and trading conditions.' },
-              '/broker-guides':    { title: 'Forex Broker Guides | EntryLab', desc: 'In-depth guides on forex brokers — account types, deposit methods, platforms and trading conditions explained.' },
-              '/prop-firm-news':   { title: 'Prop Firm News 2026 | EntryLab', desc: 'Latest news and updates from the proprietary trading industry — new firms, rule changes and payout updates.' },
-              '/prop-firm-guides': { title: 'Prop Firm Guides | EntryLab', desc: 'In-depth guides on prop trading firms — evaluation rules, profit splits, drawdown limits and payout processes explained.' },
-              '/trading-tools':    { title: 'Forex Trading Tools & Resources | EntryLab', desc: 'Free forex trading tools, calculators and resources for retail and professional traders.' },
-              '/news':             { title: 'Forex News & Market Analysis | EntryLab', desc: 'Daily forex market news, economic events and analysis for retail traders and investors.' },
+              '/topics/broker-news':      { title: 'Forex Broker News 2026 | EntryLab', desc: 'Latest news from the forex broker industry — regulatory updates, new brokers, promotions and trading conditions.' },
+              '/topics/broker-guides':    { title: 'Forex Broker Guides | EntryLab', desc: 'In-depth guides on forex brokers — account types, deposit methods, platforms and trading conditions explained.' },
+              '/topics/prop-firm-news':   { title: 'Prop Firm News 2026 | EntryLab', desc: 'Latest news and updates from the proprietary trading industry — new firms, rule changes and payout updates.' },
+              '/topics/prop-firm-guides': { title: 'Prop Firm Guides | EntryLab', desc: 'In-depth guides on prop trading firms — evaluation rules, profit splits, drawdown limits and payout processes explained.' },
+              '/topics/trading-tools':    { title: 'Forex Trading Tools & Resources | EntryLab', desc: 'Free forex trading tools, calculators and resources for retail and professional traders.' },
+              '/topics/news':             { title: 'Forex News & Market Analysis | EntryLab', desc: 'Daily forex market news, economic events and analysis for retail traders and investors.' },
             };
             const ogMeta = staticOgMap[cleanUrl];
             if (ogMeta) {
@@ -3672,7 +3679,7 @@ ${items}
               ssrHtml += `<h2>Top Forex Broker Reviews</h2><ul>`;
               for (const b of allBrokers.slice(0, 20)) {
                 if (b.slug && b.name) {
-                  ssrHtml += `<li><a href="/broker/${b.slug}">${b.name}</a>${b.rating ? ` — Rating: ${b.rating}/5` : ''}${b.regulation ? ` — ${b.regulation}` : ''}</li>`;
+                  ssrHtml += `<li><a href="/brokers/${b.slug}">${b.name}</a>${b.rating ? ` — Rating: ${b.rating}/5` : ''}${b.regulation ? ` — ${b.regulation}` : ''}</li>`;
                 }
               }
               ssrHtml += `</ul>`;
@@ -3680,7 +3687,7 @@ ${items}
               ssrHtml += `<h2>Top Prop Firm Reviews</h2><ul>`;
               for (const f of allPropFirms.slice(0, 10)) {
                 if (f.slug && f.name) {
-                  ssrHtml += `<li><a href="/prop-firm/${f.slug}">${f.name}</a>${f.rating ? ` — Rating: ${f.rating}/5` : ''}</li>`;
+                  ssrHtml += `<li><a href="/prop-firms/${f.slug}">${f.name}</a>${f.rating ? ` — Rating: ${f.rating}/5` : ''}</li>`;
                 }
               }
               ssrHtml += `</ul>`;
@@ -3688,7 +3695,7 @@ ${items}
               ssrHtml += `<h2>Latest Broker News</h2><ul>`;
               for (const p of recentPosts.slice(0, 15)) {
                 if (p.slug && p.title) {
-                  ssrHtml += `<li><a href="/${p.category || 'news'}/${p.slug}">${p.title}</a></li>`;
+                  ssrHtml += `<li><a href="/learn/${p.category || 'news'}/${p.slug}">${p.title}</a></li>`;
                 }
               }
               ssrHtml += `</ul></div>`;
@@ -3696,13 +3703,13 @@ ${items}
               // Full nav for link discovery
               let navHtml = `<nav id="ssr-nav" aria-label="Site navigation"><ul>`;
               for (const b of allBrokers) {
-                if (b.slug && b.name) navHtml += `<li><a href="/broker/${b.slug}">${b.name}</a></li>`;
+                if (b.slug && b.name) navHtml += `<li><a href="/brokers/${b.slug}">${b.name}</a></li>`;
               }
               for (const f of allPropFirms) {
-                if (f.slug && f.name) navHtml += `<li><a href="/prop-firm/${f.slug}">${f.name}</a></li>`;
+                if (f.slug && f.name) navHtml += `<li><a href="/prop-firms/${f.slug}">${f.name}</a></li>`;
               }
               for (const p of recentPosts) {
-                if (p.slug && p.title) navHtml += `<li><a href="/${p.category || 'news'}/${p.slug}">${p.title}</a></li>`;
+                if (p.slug && p.title) navHtml += `<li><a href="/learn/${p.category || 'news'}/${p.slug}">${p.title}</a></li>`;
               }
               navHtml += `</ul></nav>`;
 
@@ -3724,7 +3731,7 @@ ${items}
               for (const b of brokers) {
                 if (b.slug && b.name) {
                   const details = [b.rating ? `Rating: ${b.rating}/5` : '', b.regulation || '', b.minDeposit ? `Min deposit: ${b.minDeposit}` : '', b.maxLeverage ? `Leverage: ${b.maxLeverage}` : ''].filter(Boolean).join(' · ');
-                  ssrHtml += `<li><a href="/broker/${b.slug}">${b.name}</a>${details ? ` — ${details}` : ''}</li>`;
+                  ssrHtml += `<li><a href="/brokers/${b.slug}">${b.name}</a>${details ? ` — ${details}` : ''}</li>`;
                 }
               }
               ssrHtml += `</ul></div>`;
@@ -3747,7 +3754,7 @@ ${items}
               for (const f of firms) {
                 if (f.slug && f.name) {
                   const details = [f.rating ? `Rating: ${f.rating}/5` : '', f.profitSplit ? `Profit split: ${f.profitSplit}` : '', f.maxFundingSize ? `Accounts: ${f.maxFundingSize}` : ''].filter(Boolean).join(' · ');
-                  ssrHtml += `<li><a href="/prop-firm/${f.slug}">${f.name}</a>${details ? ` — ${details}` : ''}</li>`;
+                  ssrHtml += `<li><a href="/prop-firms/${f.slug}">${f.name}</a>${details ? ` — ${details}` : ''}</li>`;
                 }
               }
               ssrHtml += `</ul></div>`;
@@ -3761,17 +3768,17 @@ ${items}
           } else {
             // Category archive pages: /broker-guides, /broker-news, /prop-firm-news, etc.
             const catArchiveMap: Record<string, { label: string; entityType: 'broker' | 'prop_firm' | null }> = {
-              '/broker-guides':    { label: 'Forex Broker Guides 2026 — Account Types, Fees &amp; Platforms Explained', entityType: 'broker' },
-              '/broker-news':      { label: 'Forex Broker News 2026 — Regulatory Updates &amp; Industry Developments',  entityType: 'broker' },
-              '/prop-firm-guides': { label: 'Prop Firm Guides 2026 — Evaluation Rules, Profit Splits &amp; Payouts',    entityType: 'prop_firm' },
-              '/prop-firm-news':   { label: 'Prop Firm News 2026 — Industry Updates &amp; Rule Changes',                entityType: 'prop_firm' },
-              '/trading-tools':    { label: 'Forex Trading Tools &amp; Resources for Retail Traders',                   entityType: null },
-              '/news':             { label: 'Forex Market News &amp; Analysis 2026',                                    entityType: null },
+              '/topics/broker-guides':    { label: 'Forex Broker Guides 2026 — Account Types, Fees &amp; Platforms Explained', entityType: 'broker' },
+              '/topics/broker-news':      { label: 'Forex Broker News 2026 — Regulatory Updates &amp; Industry Developments',  entityType: 'broker' },
+              '/topics/prop-firm-guides': { label: 'Prop Firm Guides 2026 — Evaluation Rules, Profit Splits &amp; Payouts',    entityType: 'prop_firm' },
+              '/topics/prop-firm-news':   { label: 'Prop Firm News 2026 — Industry Updates &amp; Rule Changes',                entityType: 'prop_firm' },
+              '/topics/trading-tools':    { label: 'Forex Trading Tools &amp; Resources for Retail Traders',                   entityType: null },
+              '/topics/news':             { label: 'Forex Market News &amp; Analysis 2026',                                    entityType: null },
             };
             const catMeta = catArchiveMap[cleanUrl];
             if (catMeta) {
               try {
-                const catSlug = cleanUrl.replace('/', '');
+                const catSlug = cleanUrl.replace('/topics/', '');
                 const [catArticles, relatedEntities] = await Promise.all([
                   db.select().from(articlesTable)
                     .where(and(
@@ -3796,7 +3803,7 @@ ${items}
                   for (const art of catArticles) {
                     if (art.slug && art.title) {
                       const date = art.publishedAt ? ` — ${new Date(art.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}` : '';
-                      ssrHtml += `<li><a href="/${catSlug}/${art.slug}">${art.title}</a>${date}</li>`;
+                      ssrHtml += `<li><a href="/learn/${catSlug}/${art.slug}">${art.title}</a>${date}</li>`;
                     }
                   }
                   ssrHtml += `</ul>`;
@@ -3804,7 +3811,7 @@ ${items}
 
                 if (Array.isArray(relatedEntities) && relatedEntities.length > 0) {
                   const entityLabel = catMeta.entityType === 'broker' ? 'Brokers Covered' : 'Prop Firms Covered';
-                  const entityPath = catMeta.entityType === 'broker' ? 'broker' : 'prop-firm';
+                  const entityPath = catMeta.entityType === 'broker' ? 'brokers' : 'prop-firms';
                   ssrHtml += `<h2>${entityLabel}</h2><ul>`;
                   for (const e of relatedEntities as any[]) {
                     if (e.slug && e.name) {

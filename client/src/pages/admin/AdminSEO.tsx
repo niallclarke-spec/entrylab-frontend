@@ -25,12 +25,12 @@ import {
 
 function labelUrl(url: string): { type: string; label: string; color: string } {
   const path = url.replace("https://entrylab.io", "").replace(/\/$/, "") || "/";
-  if (path.match(/^\/broker\/[^/]+$/)) return { type: "broker", label: "Broker Review", color: C.info };
-  if (path.match(/^\/prop-firm\/[^/]+$/)) return { type: "prop-firm", label: "Prop Firm Review", color: "#9b6cff" };
-  if (path.match(/^\/compare\/broker\/.+-vs-.+$/)) return { type: "comparison", label: "Broker vs Broker", color: C.warning };
-  if (path.match(/^\/compare\/prop-firm\/.+-vs-.+$/)) return { type: "comparison", label: "Prop Firm vs Prop Firm", color: C.warning };
-  if (path.match(/^\/compare\/broker(\/)?$/)) return { type: "hub", label: "Broker Compare Hub", color: C.accent };
-  if (path.match(/^\/compare\/prop-firm(\/)?$/)) return { type: "hub", label: "Prop Firm Compare Hub", color: C.accent };
+  if (path.match(/^\/brokers\/[^/]+$/) && !path.match(/^\/brokers\/(compare|category|best-cfd|top-3-cfd)$/)) return { type: "broker", label: "Broker Review", color: C.info };
+  if (path.match(/^\/prop-firms\/[^/]+$/) && !path.match(/^\/prop-firms\/(compare|best-verified)$/)) return { type: "prop-firm", label: "Prop Firm Review", color: "#9b6cff" };
+  if (path.match(/^\/brokers\/compare\/.+-vs-.+$/)) return { type: "comparison", label: "Broker vs Broker", color: C.warning };
+  if (path.match(/^\/prop-firms\/compare\/.+-vs-.+$/)) return { type: "comparison", label: "Prop Firm vs Prop Firm", color: C.warning };
+  if (path.match(/^\/brokers\/compare(\/)?$/)) return { type: "hub", label: "Broker Compare Hub", color: C.accent };
+  if (path.match(/^\/prop-firms\/compare(\/)?$/)) return { type: "hub", label: "Prop Firm Compare Hub", color: C.accent };
   if (path === "/compare") return { type: "hub", label: "Compare Hub", color: C.accent };
   if (path === "/brokers") return { type: "hub", label: "Brokers Hub", color: C.accent };
   if (path === "/prop-firms") return { type: "hub", label: "Prop Firms Hub", color: C.accent };
@@ -572,13 +572,13 @@ export default function AdminSEO() {
               <div style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: C.text, fontFamily: font }}>Manual URL Submit</div>
                 <div style={{ fontSize: 12, color: C.textMuted, fontFamily: font, marginTop: 4 }}>
-                  Submit any URL to Google's Indexing API to request immediate crawling. Use the path only (e.g. /broker/ic-markets).
+                  Submit any URL to Google's Indexing API to request immediate crawling. Use the path only (e.g. /brokers/ic-markets).
                 </div>
               </div>
               <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
                 <input
                   type="text"
-                  placeholder="/broker/ic-markets or https://entrylab.io/broker/ic-markets"
+                  placeholder="/brokers/ic-markets or https://entrylab.io/brokers/ic-markets"
                   value={submitPath}
                   onChange={(e) => { setSubmitPath(e.target.value); setSubmitResult(null); }}
                   onKeyDown={(e) => {

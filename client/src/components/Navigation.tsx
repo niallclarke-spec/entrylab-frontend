@@ -6,7 +6,7 @@ import { prefetchRoute } from "@/lib/prefetch";
 const navLinks = [
   { href: "/brokers/best-cfd", label: "Top CFD Brokers", testId: "link-top-cfd-brokers", icon: Shield },
   { href: "/prop-firms/best-verified", label: "Best Prop Firms", testId: "link-best-prop-firms", icon: TrendingUp },
-  { href: "/news", label: "News", testId: "link-news", icon: Newspaper },
+  { href: "/topics/news", label: "News", testId: "link-news", icon: Newspaper },
 ];
 
 const compareDropdownLinks = [

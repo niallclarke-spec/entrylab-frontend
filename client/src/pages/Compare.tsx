@@ -67,7 +67,7 @@ function ComparisonCard({ c, brokerMap, entityType }: {
 
   return (
     <Link
-      href={`/compare/${entityType === "prop_firm" ? "prop-firm" : "broker"}/${c.slug}`}
+      href={`/${entityType === "prop_firm" ? "prop-firms" : "brokers"}/compare/${c.slug}`}
       className="group block"
       data-testid={`link-comparison-${c.id}`}
     >
@@ -365,7 +365,7 @@ export default function Compare() {
               comparisons={brokerComparisons}
               brokerMap={entityMap}
               entityType="broker"
-              hubHref="/compare/broker"
+              hubHref="/brokers/compare"
               isLoading={loadingBrokers}
             />
 
@@ -377,7 +377,7 @@ export default function Compare() {
               comparisons={propFirmComparisons}
               brokerMap={entityMap}
               entityType="prop_firm"
-              hubHref="/compare/prop-firm"
+              hubHref="/prop-firms/compare"
               isLoading={loadingPropFirms}
             />
           </div>
