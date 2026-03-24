@@ -2715,22 +2715,10 @@ ${items}
             const ssrKey = `ssr:nested-article:${articleSlug}`;
             pageData = apiCache.get(ssrKey);
             if (!pageData || apiCache.isStale(ssrKey)) {
-              const [dbArticle] = await db.select({
-                title: articlesTable.title, seoTitle: articlesTable.seoTitle,
-                seoDescription: articlesTable.seoDescription, excerpt: articlesTable.excerpt,
-                featuredImage: articlesTable.featuredImage, publishedAt: articlesTable.publishedAt,
-                updatedAt: articlesTable.updatedAt, author: articlesTable.author,
-              }).from(articlesTable)
+              const [dbArticle] = await db.select().from(articlesTable)
                 .where(and(eq(articlesTable.slug, articleSlug), eq(articlesTable.status, 'published')));
               if (dbArticle) {
-                const rawTitle = (dbArticle.title || '').replace(/<[^>]*>/g, '');
-                pageData = {
-                  seoTitle: dbArticle.seoTitle || `${rawTitle} | EntryLab`,
-                  seoDescription: dbArticle.seoDescription || (dbArticle.excerpt || '').replace(/<[^>]*>/g, '').substring(0, 155),
-                  name: rawTitle,
-                  tagline: (dbArticle.excerpt || '').replace(/<[^>]*>/g, '').substring(0, 100),
-                  logoUrl: dbArticle.featuredImage || "",
-                };
+                pageData = articleToApi(dbArticle);
                 apiCache.set(ssrKey, pageData, 300, 600);
               }
             }
@@ -2762,6 +2750,23 @@ ${items}
                   content: (dbBroker as any).content || "",
                   logoUrl: dbBroker.logoUrl || "",
                 };
+                // Fetch related comparisons and articles for internal linking
+                try {
+                  const [relComps, relArticles] = await Promise.all([
+                    db.select({ slug: comparisonsTable.slug, entityAName: comparisonsTable.entityAName, entityBName: comparisonsTable.entityBName })
+                      .from(comparisonsTable)
+                      .where(and(eq(comparisonsTable.entityType, 'broker'), eq(comparisonsTable.status, 'published'),
+                        or(eq(comparisonsTable.entityASlug, slug), eq(comparisonsTable.entityBSlug as any, slug))))
+                      .limit(6),
+                    db.select({ title: articlesTable.title, slug: articlesTable.slug })
+                      .from(articlesTable)
+                      .where(and(eq(articlesTable.status, 'published'), eq(articlesTable.relatedBroker as any, slug)))
+                      .limit(6),
+                  ]);
+                  pageData.relatedComparisons = relComps;
+                  pageData.relatedArticles = relArticles;
+                  pageData.entitySlug = slug;
+                } catch {}
                 apiCache.set(ssrKey, pageData, 300, 600);
               }
             }
@@ -2774,21 +2779,10 @@ ${items}
             const ssrKey = `ssr:nested-article:${articleSlug}`;
             pageData = apiCache.get(ssrKey);
             if (!pageData || apiCache.isStale(ssrKey)) {
-              const [dbArticle] = await db.select({
-                title: articlesTable.title, seoTitle: articlesTable.seoTitle,
-                seoDescription: articlesTable.seoDescription, excerpt: articlesTable.excerpt,
-                featuredImage: articlesTable.featuredImage,
-              }).from(articlesTable)
+              const [dbArticle] = await db.select().from(articlesTable)
                 .where(and(eq(articlesTable.slug, articleSlug), eq(articlesTable.status, 'published')));
               if (dbArticle) {
-                const rawTitle = (dbArticle.title || '').replace(/<[^>]*>/g, '');
-                pageData = {
-                  seoTitle: dbArticle.seoTitle || `${rawTitle} | EntryLab`,
-                  seoDescription: dbArticle.seoDescription || (dbArticle.excerpt || '').replace(/<[^>]*>/g, '').substring(0, 155),
-                  name: rawTitle,
-                  tagline: (dbArticle.excerpt || '').replace(/<[^>]*>/g, '').substring(0, 100),
-                  logoUrl: dbArticle.featuredImage || "",
-                };
+                pageData = articleToApi(dbArticle);
                 apiCache.set(ssrKey, pageData, 300, 600);
               }
             }
@@ -2827,6 +2821,23 @@ ${items}
                   content: (dbFirm as any).content || "",
                   logoUrl: dbFirm.logoUrl || "",
                 };
+                // Fetch related comparisons and articles for internal linking
+                try {
+                  const [relComps, relArticles] = await Promise.all([
+                    db.select({ slug: comparisonsTable.slug, entityAName: comparisonsTable.entityAName, entityBName: comparisonsTable.entityBName })
+                      .from(comparisonsTable)
+                      .where(and(eq(comparisonsTable.entityType, 'prop-firm'), eq(comparisonsTable.status, 'published'),
+                        or(eq(comparisonsTable.entityASlug, slug), eq(comparisonsTable.entityBSlug as any, slug))))
+                      .limit(6),
+                    db.select({ title: articlesTable.title, slug: articlesTable.slug })
+                      .from(articlesTable)
+                      .where(and(eq(articlesTable.status, 'published'), eq(articlesTable.relatedPropFirm as any, slug)))
+                      .limit(6),
+                  ]);
+                  pageData.relatedComparisons = relComps;
+                  pageData.relatedArticles = relArticles;
+                  pageData.entitySlug = slug;
+                } catch {}
                 apiCache.set(ssrKey, pageData, 300, 600);
               }
             }
@@ -3126,6 +3137,25 @@ ${items}
             const bodyHtml = truncateHtml(sanitizeForSSR(pageData.content), 60000);
             html += bodyHtml;
           }
+
+          // Related comparisons for internal link discovery
+          const brokerComps = Array.isArray(pageData.relatedComparisons) ? pageData.relatedComparisons : [];
+          if (brokerComps.length > 0) {
+            html += `<h2>Compare ${title}</h2><ul>`;
+            for (const c of brokerComps) {
+              html += `<li><a href="/brokers/compare/${c.slug}">${c.entityAName} vs ${c.entityBName}</a></li>`;
+            }
+            html += `</ul>`;
+          }
+          // Related articles/guides
+          const brokerArticles = Array.isArray(pageData.relatedArticles) ? pageData.relatedArticles : [];
+          if (brokerArticles.length > 0) {
+            html += `<h2>${title} Guides &amp; Resources</h2><ul>`;
+            for (const a of brokerArticles) {
+              html += `<li><a href="/brokers/${pageData.entitySlug}/${a.slug}">${a.title}</a></li>`;
+            }
+            html += `</ul>`;
+          }
         }
 
         // Prop firm-specific fields
@@ -3176,6 +3206,25 @@ ${items}
           if (pageData.content) {
             const bodyHtml = truncateHtml(sanitizeForSSR(pageData.content), 60000);
             html += bodyHtml;
+          }
+
+          // Related comparisons for internal link discovery
+          const firmComps = Array.isArray(pageData.relatedComparisons) ? pageData.relatedComparisons : [];
+          if (firmComps.length > 0) {
+            html += `<h2>Compare ${title}</h2><ul>`;
+            for (const c of firmComps) {
+              html += `<li><a href="/prop-firms/compare/${c.slug}">${c.entityAName} vs ${c.entityBName}</a></li>`;
+            }
+            html += `</ul>`;
+          }
+          // Related articles/guides
+          const firmArticles = Array.isArray(pageData.relatedArticles) ? pageData.relatedArticles : [];
+          if (firmArticles.length > 0) {
+            html += `<h2>${title} Guides &amp; Resources</h2><ul>`;
+            for (const a of firmArticles) {
+              html += `<li><a href="/prop-firms/${pageData.entitySlug}/${a.slug}">${a.title}</a></li>`;
+            }
+            html += `</ul>`;
           }
         }
 
@@ -3285,6 +3334,44 @@ ${items}
             html += bodyHtml;
           }
         }
+
+        // Breadcrumb navigation links for crawlers
+        const breadcrumbLinks: { name: string; url: string }[] = [{ name: 'Home', url: '/' }];
+        if (cleanUrl.startsWith('/brokers/compare/')) {
+          breadcrumbLinks.push({ name: 'Brokers', url: '/brokers' });
+          breadcrumbLinks.push({ name: 'Compare Brokers', url: '/brokers/compare' });
+        } else if (cleanUrl.startsWith('/brokers/') && cleanUrl.split('/').filter(Boolean).length >= 2) {
+          breadcrumbLinks.push({ name: 'Brokers', url: '/brokers' });
+        } else if (cleanUrl.startsWith('/prop-firms/compare/')) {
+          breadcrumbLinks.push({ name: 'Prop Firms', url: '/prop-firms' });
+          breadcrumbLinks.push({ name: 'Compare Prop Firms', url: '/prop-firms/compare' });
+        } else if (cleanUrl.startsWith('/prop-firms/') && cleanUrl.split('/').filter(Boolean).length >= 2) {
+          breadcrumbLinks.push({ name: 'Prop Firms', url: '/prop-firms' });
+        } else if (cleanUrl.startsWith('/learn/') || cleanUrl.startsWith('/topics/')) {
+          const catSlug = cleanUrl.split('/').filter(Boolean)[1];
+          if (catSlug) breadcrumbLinks.push({ name: catSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), url: `/topics/${catSlug}` });
+        }
+        if (breadcrumbLinks.length > 1) {
+          html += `<nav aria-label="Breadcrumb"><ol>`;
+          for (const bc of breadcrumbLinks) {
+            html += `<li><a href="${bc.url}">${bc.name}</a></li>`;
+          }
+          html += `</ol></nav>`;
+        }
+
+        // Site-wide internal links footer for crawler link discovery on all pages
+        html += `<nav aria-label="Site links"><ul>`;
+        html += `<li><a href="/brokers">Forex Broker Reviews</a></li>`;
+        html += `<li><a href="/prop-firms">Prop Firm Reviews</a></li>`;
+        html += `<li><a href="/topics/news">Latest News</a></li>`;
+        html += `<li><a href="/topics/broker-news">Broker News</a></li>`;
+        html += `<li><a href="/topics/prop-firm-news">Prop Firm News</a></li>`;
+        html += `<li><a href="/topics/broker-guides">Broker Guides</a></li>`;
+        html += `<li><a href="/topics/prop-firm-guides">Prop Firm Guides</a></li>`;
+        html += `<li><a href="/brokers/compare">Compare Brokers</a></li>`;
+        html += `<li><a href="/prop-firms/compare">Compare Prop Firms</a></li>`;
+        html += `<li><a href="/signals">Trading Signals</a></li>`;
+        html += `</ul></nav>`;
 
         html += `</div>`;
         return html;
