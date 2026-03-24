@@ -315,29 +315,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     '/popular_brokers':   '/brokers',
     '/popular_brokers/':  '/brokers',
     // WordPress category archive URLs → our category archive pages
-    '/category/broker-news':       '/broker-news',
-    '/category/broker-news/':      '/broker-news',
-    '/category/broker-guides':     '/broker-guides',
-    '/category/broker-guides/':    '/broker-guides',
-    '/category/prop-firm-news':    '/prop-firm-news',
-    '/category/prop-firm-news/':   '/prop-firm-news',
-    '/category/prop-firm-guides':  '/prop-firm-guides',
-    '/category/prop-firm-guides/': '/prop-firm-guides',
-    '/category/trading-tools':     '/trading-tools',
-    '/category/trading-tools/':    '/trading-tools',
-    '/category/news':              '/news',
-    '/category/news/':             '/news',
-    '/category/forex-news':        '/news',
-    '/category/forex-news/':       '/news',
+    '/category/broker-news':       '/topics/broker-news',
+    '/category/broker-news/':      '/topics/broker-news',
+    '/category/broker-guides':     '/topics/broker-guides',
+    '/category/broker-guides/':    '/topics/broker-guides',
+    '/category/prop-firm-news':    '/topics/prop-firm-news',
+    '/category/prop-firm-news/':   '/topics/prop-firm-news',
+    '/category/prop-firm-guides':  '/topics/prop-firm-guides',
+    '/category/prop-firm-guides/': '/topics/prop-firm-guides',
+    '/category/trading-tools':     '/topics/trading-tools',
+    '/category/trading-tools/':    '/topics/trading-tools',
+    '/category/news':              '/topics/news',
+    '/category/news/':             '/topics/news',
+    '/category/forex-news':        '/topics/news',
+    '/category/forex-news/':       '/topics/news',
     '/category/forex-brokers':     '/brokers',
     '/category/forex-brokers/':    '/brokers',
     '/category/prop-firms':        '/prop-firms',
     '/category/prop-firms/':       '/prop-firms',
     // Old root-level WordPress article URLs
-    '/kot4x-shuts-down-what-you-should-know/': '/broker-news/kot4x-shuts-down-what-you-should-know',
-    '/kot4x-shuts-down-what-you-should-know':  '/broker-news/kot4x-shuts-down-what-you-should-know',
+    '/kot4x-shuts-down-what-you-should-know/': '/learn/broker-news/kot4x-shuts-down-what-you-should-know',
+    '/kot4x-shuts-down-what-you-should-know':  '/learn/broker-news/kot4x-shuts-down-what-you-should-know',
     // Old /article/ prefix that may be indexed
-    '/article/kot4x-shuts-down-what-you-should-know': '/broker-news/kot4x-shuts-down-what-you-should-know',
+    '/article/kot4x-shuts-down-what-you-should-know': '/learn/broker-news/kot4x-shuts-down-what-you-should-know',
   };
 
   // Map known WordPress review slugs to their canonical EntryLab broker slug.
@@ -1630,6 +1630,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.redirect(301, '/');
   });
 
+  // ─── SEO URL restructure redirects ─────────────────────────────────────
+  // 301 permanent redirects from old URL structure to new siloed URLs.
+  // Old /broker/:slug → /brokers/:slug
+  app.get("/broker/:brokerSlug/:articleSlug", (req, res) => {
+    res.redirect(301, `/brokers/${req.params.brokerSlug}/${req.params.articleSlug}`);
+  });
+  app.get("/broker/:slug", (req, res) => {
+    res.redirect(301, `/brokers/${req.params.slug}`);
+  });
+
+  // Old /compare/* → new silo locations
+  app.get("/compare/broker/:slug", (req, res) => {
+    res.redirect(301, `/brokers/compare/${req.params.slug}`);
+  });
+  app.get("/compare/prop-firm/:slug", (req, res) => {
+    res.redirect(301, `/prop-firms/compare/${req.params.slug}`);
+  });
+  app.get("/compare/broker", (req, res) => {
+    res.redirect(301, "/brokers/compare");
+  });
+  app.get("/compare/prop-firm", (req, res) => {
+    res.redirect(301, "/prop-firms/compare");
+  });
+
+  // Old category archive and best-of URLs
+  app.get("/broker-categories/:slug", (req, res) => {
+    res.redirect(301, `/brokers/category/${req.params.slug}`);
+  });
+  app.get("/top-cfd-brokers", (req, res) => {
+    res.redirect(301, "/brokers/best-cfd");
+  });
+  app.get("/top-3-cfd-brokers", (req, res) => {
+    res.redirect(301, "/brokers/top-3-cfd");
+  });
+  app.get("/best-verified-propfirms", (req, res) => {
+    res.redirect(301, "/prop-firms/best-verified");
+  });
+
   // 301 redirects for old prop firm slugs → clean slugs
   const propFirmSlugRedirects: Record<string, string> = {
     'crypto-fund-trader-review-2026': 'crypto-fund-trader',
@@ -1647,14 +1685,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     'wall-street-funded-review-2026': 'wall-street-funded',
   };
 
-  app.get("/prop-firm/:slug", (req, res, next) => {
+  app.get("/prop-firm/:propFirmSlug/:articleSlug", (req, res) => {
+    res.redirect(301, `/prop-firms/${req.params.propFirmSlug}/${req.params.articleSlug}`);
+  });
+  app.get("/prop-firm/:slug", (req, res) => {
     const { slug } = req.params;
-    const newSlug = propFirmSlugRedirects[slug];
-    if (newSlug && newSlug !== slug) {
-      console.log(`[Redirect] /prop-firm/${slug} → /prop-firm/${newSlug}`);
-      return res.redirect(301, `/prop-firm/${newSlug}`);
-    }
-    next();
+    const newSlug = propFirmSlugRedirects[slug] || slug;
+    res.redirect(301, `/prop-firms/${newSlug}`);
   });
 
   // 301 redirect: old flat /:category/:articleSlug → nested /broker/:slug/:articleSlug
@@ -1676,12 +1713,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .limit(1);
       if (!row) return next();
       if (row.relatedBroker) {
-        return res.redirect(301, `/broker/${row.relatedBroker}/${articleSlug}`);
+        return res.redirect(301, `/brokers/${row.relatedBroker}/${articleSlug}`);
       }
       if (row.relatedPropFirm) {
-        return res.redirect(301, `/prop-firm/${row.relatedPropFirm}/${articleSlug}`);
+        return res.redirect(301, `/prop-firms/${row.relatedPropFirm}/${articleSlug}`);
       }
-      return next();
+      return res.redirect(301, `/learn/${category}/${articleSlug}`);
     } catch (_) {
       return next();
     }
@@ -1695,7 +1732,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(articlesTable).where(eq(articlesTable.slug, slug));
       if (!article) return res.status(404).send('Article not found');
       const categorySlug = article.category || "uncategorized";
-      return res.redirect(301, `/${categorySlug}/${slug}`);
+      return res.redirect(301, `/learn/${categorySlug}/${slug}`);
     } catch (error) {
       console.error("[Redirect] Error:", error);
       res.status(500).send('Redirect failed');
@@ -2083,7 +2120,7 @@ Sitemap: https://entrylab.io/sitemap.xml`
 
       const items = articles.map(a => {
         const catSlug = a.category || 'news';
-        const link = `https://entrylab.io/${catSlug}/${a.slug}`;
+        const link = `https://entrylab.io/learn/${catSlug}/${a.slug}`;
         const title = escape(stripTags(a.title || ''));
         const desc = escape(stripTags(a.excerpt || '').substring(0, 280));
         const pubDate = (a.publishedAt || a.updatedAt || new Date()).toUTCString();
@@ -2178,7 +2215,7 @@ ${items}
 
       // News archive (Recent Posts)
       sitemap += `  <url>\n`;
-      sitemap += `    <loc>${baseUrl}/news</loc>\n`;
+      sitemap += `    <loc>${baseUrl}/topics/news</loc>\n`;
       sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
       sitemap += `    <changefreq>daily</changefreq>\n`;
       sitemap += `    <priority>0.9</priority>\n`;
@@ -2189,7 +2226,7 @@ ${items}
       categories.forEach((category) => {
         if (!excludedCategories.includes(category.slug.toLowerCase())) {
           sitemap += `  <url>\n`;
-          sitemap += `    <loc>${baseUrl}/${category.slug}</loc>\n`;
+          sitemap += `    <loc>${baseUrl}/topics/${category.slug}</loc>\n`;
           sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
           sitemap += `    <changefreq>daily</changefreq>\n`;
           sitemap += `    <priority>0.9</priority>\n`;
@@ -2229,13 +2266,13 @@ ${items}
       sitemap += `    <priority>0.8</priority>\n`;
       sitemap += `  </url>\n`;
       sitemap += `  <url>\n`;
-      sitemap += `    <loc>${baseUrl}/compare/broker</loc>\n`;
+      sitemap += `    <loc>${baseUrl}/brokers/compare</loc>\n`;
       sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
       sitemap += `    <changefreq>weekly</changefreq>\n`;
       sitemap += `    <priority>0.8</priority>\n`;
       sitemap += `  </url>\n`;
       sitemap += `  <url>\n`;
-      sitemap += `    <loc>${baseUrl}/compare/prop-firm</loc>\n`;
+      sitemap += `    <loc>${baseUrl}/prop-firms/compare</loc>\n`;
       sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
       sitemap += `    <changefreq>weekly</changefreq>\n`;
       sitemap += `    <priority>0.8</priority>\n`;
@@ -2243,14 +2280,14 @@ ${items}
 
       // Individual comparison pages (published/updated only)
       comparisons.forEach((comp) => {
-        const urlSegment = comp.entityType === 'broker' ? 'broker' : 'prop-firm';
+        const urlSegment = comp.entityType === 'broker' ? 'brokers' : 'prop-firms';
         const modifiedDate = comp.updatedAt
           ? new Date(comp.updatedAt).toISOString()
           : comp.publishedAt
           ? new Date(comp.publishedAt).toISOString()
           : currentDate;
         sitemap += `  <url>\n`;
-        sitemap += `    <loc>${baseUrl}/compare/${urlSegment}/${comp.slug}</loc>\n`;
+        sitemap += `    <loc>${baseUrl}/${urlSegment}/compare/${comp.slug}</loc>\n`;
         sitemap += `    <lastmod>${modifiedDate}</lastmod>\n`;
         sitemap += `    <changefreq>monthly</changefreq>\n`;
         sitemap += `    <priority>0.7</priority>\n`;

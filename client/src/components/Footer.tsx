@@ -48,10 +48,10 @@ export function Footer() {
               <Shield className="h-4 w-4 text-[#2bb32a]" />
               Reviews
             </h3>
-            <Link href="/top-cfd-brokers" className="text-sm hover:text-[#2bb32a] transition-colors" style={{ color: "#6b7280" }} data-testid="link-footer-all-brokers">
+            <Link href="/brokers/best-cfd" className="text-sm hover:text-[#2bb32a] transition-colors" style={{ color: "#6b7280" }} data-testid="link-footer-all-brokers">
               CFD Brokers
             </Link>
-            <Link href="/best-verified-propfirms" className="text-sm hover:text-[#2bb32a] transition-colors" style={{ color: "#6b7280" }} data-testid="link-footer-all-prop-firms">
+            <Link href="/prop-firms/best-verified" className="text-sm hover:text-[#2bb32a] transition-colors" style={{ color: "#6b7280" }} data-testid="link-footer-all-prop-firms">
               Prop Firms
             </Link>
             <Link href="/news" className="text-sm hover:text-[#2bb32a] transition-colors" style={{ color: "#6b7280" }} data-testid="link-footer-news">
