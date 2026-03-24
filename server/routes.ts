@@ -2708,6 +2708,7 @@ ${items}
                      cleanUrlForCheck === '/signals' ||
                      cleanUrlForCheck === '/subscribe' ||
                      cleanUrlForCheck === '/success' ||
+                     cleanUrlForCheck === '/terms' ||
                      url.startsWith('/article/') ||
                      url.startsWith('/brokers/') ||
                      url.startsWith('/prop-firms/') ||
@@ -3404,11 +3405,17 @@ ${items}
 
         // Breadcrumb navigation links for crawlers
         const breadcrumbLinks: { name: string; url: string }[] = [{ name: 'Home', url: '/' }];
-        if (cleanUrl.startsWith('/brokers/compare/')) {
+        if (cleanUrl === '/brokers/compare') {
+          breadcrumbLinks.push({ name: 'Brokers', url: '/brokers' });
+          breadcrumbLinks.push({ name: 'Compare Brokers', url: '/brokers/compare' });
+        } else if (cleanUrl.startsWith('/brokers/compare/')) {
           breadcrumbLinks.push({ name: 'Brokers', url: '/brokers' });
           breadcrumbLinks.push({ name: 'Compare Brokers', url: '/brokers/compare' });
         } else if (cleanUrl.startsWith('/brokers/') && cleanUrl.split('/').filter(Boolean).length >= 2) {
           breadcrumbLinks.push({ name: 'Brokers', url: '/brokers' });
+        } else if (cleanUrl === '/prop-firms/compare') {
+          breadcrumbLinks.push({ name: 'Prop Firms', url: '/prop-firms' });
+          breadcrumbLinks.push({ name: 'Compare Prop Firms', url: '/prop-firms/compare' });
         } else if (cleanUrl.startsWith('/prop-firms/compare/')) {
           breadcrumbLinks.push({ name: 'Prop Firms', url: '/prop-firms' });
           breadcrumbLinks.push({ name: 'Compare Prop Firms', url: '/prop-firms/compare' });
@@ -3589,13 +3596,18 @@ ${items}
           // T001: Inject real body content so Googlebot sees text on first-pass crawl.
           // Placed BEFORE #root so React never touches it — no duplication.
           // App.tsx removes #ssr-content after React mounts.
-          try {
-            const ssrContent = buildSSRContent(pageData, url);
-            if (ssrContent) {
-              modifiedHtml = modifiedHtml.replace('<div id="root">', `${ssrContent}\n    <div id="root">`);
+          // Skip for pages that have custom SSR blocks below (homepage, /brokers, /prop-firms, /compare, category archives)
+          const hasCustomSSR = ['/', '/brokers', '/prop-firms', '/compare'].includes(cleanUrl)
+            || cleanUrl.startsWith('/topics/');
+          if (!hasCustomSSR) {
+            try {
+              const ssrContent = buildSSRContent(pageData, url);
+              if (ssrContent) {
+                modifiedHtml = modifiedHtml.replace('<div id="root">', `${ssrContent}\n    <div id="root">`);
+              }
+            } catch (err) {
+              console.error('[SEO] SSR content injection error:', err);
             }
-          } catch (err) {
-            console.error('[SEO] SSR content injection error:', err);
           }
 
           // FAQ JSON-LD for broker review pages — used by AI tools (Perplexity, ChatGPT) for cited Q&A
@@ -3754,20 +3766,22 @@ ${items}
           // OG tags for all static + archive pages that don't have pageData
           if (!modifiedHtml.includes('og:title')) {
             const ogImage = 'https://entrylab.io/assets/entrylab-logo-green.png';
+            const currentYear = new Date().getFullYear();
             const staticOgMap: Record<string, { title: string; desc: string }> = {
-              '/brokers':          { title: 'Forex Broker Reviews 2026 | EntryLab', desc: 'Compare 17+ regulated forex brokers by spreads, leverage, platforms and regulation. Expert unbiased reviews updated for 2026.' },
-              '/prop-firms':       { title: 'Prop Firm Reviews 2026 | EntryLab', desc: 'Compare the best proprietary trading firms — FTMO, FundedNext, Funding Pips and more. Evaluation rules, profit splits and payouts reviewed.' },
+              '/brokers':          { title: `Forex Broker Reviews ${currentYear} | EntryLab`, desc: `Compare 17+ regulated forex brokers by spreads, leverage, platforms and regulation. Expert unbiased reviews updated for ${currentYear}.` },
+              '/prop-firms':       { title: `Prop Firm Reviews ${currentYear} | EntryLab`, desc: 'Compare the best proprietary trading firms — FTMO, FundedNext, Funding Pips and more. Evaluation rules, profit splits and payouts reviewed.' },
               '/compare':          { title: 'Broker & Prop Firm Comparison Tool | EntryLab', desc: 'Side-by-side comparisons of forex brokers and prop trading firms. Find the right fit for your trading style and budget.' },
               '/brokers/compare':   { title: 'All Forex Broker Comparisons | EntryLab', desc: 'Every broker vs broker comparison on EntryLab — spreads, fees, regulation and platforms compared head to head.' },
               '/prop-firms/compare':{ title: 'All Prop Firm Comparisons | EntryLab', desc: 'Every prop firm vs prop firm comparison on EntryLab — evaluation rules, profit splits and max drawdown compared.' },
               '/signals':          { title: 'Premium Forex Signals | EntryLab', desc: 'Professional forex trading signals delivered via Telegram. Real-time alerts with entry, stop-loss and take-profit levels.' },
               '/subscribe':        { title: 'Subscribe to Premium Forex Signals | EntryLab', desc: 'Get full access to EntryLab premium signals. Monthly and annual plans available. Cancel any time.' },
-              '/topics/broker-news':      { title: 'Forex Broker News 2026 | EntryLab', desc: 'Latest news from the forex broker industry — regulatory updates, new brokers, promotions and trading conditions.' },
+              '/topics/broker-news':      { title: `Forex Broker News ${currentYear} | EntryLab`, desc: 'Latest news from the forex broker industry — regulatory updates, new brokers, promotions and trading conditions.' },
               '/topics/broker-guides':    { title: 'Forex Broker Guides | EntryLab', desc: 'In-depth guides on forex brokers — account types, deposit methods, platforms and trading conditions explained.' },
-              '/topics/prop-firm-news':   { title: 'Prop Firm News 2026 | EntryLab', desc: 'Latest news and updates from the proprietary trading industry — new firms, rule changes and payout updates.' },
+              '/topics/prop-firm-news':   { title: `Prop Firm News ${currentYear} | EntryLab`, desc: 'Latest news and updates from the proprietary trading industry — new firms, rule changes and payout updates.' },
               '/topics/prop-firm-guides': { title: 'Prop Firm Guides | EntryLab', desc: 'In-depth guides on prop trading firms — evaluation rules, profit splits, drawdown limits and payout processes explained.' },
               '/topics/trading-tools':    { title: 'Forex Trading Tools & Resources | EntryLab', desc: 'Free forex trading tools, calculators and resources for retail and professional traders.' },
               '/topics/news':             { title: 'Forex News & Market Analysis | EntryLab', desc: 'Daily forex market news, economic events and analysis for retail traders and investors.' },
+              '/terms':                   { title: 'Terms & Conditions | EntryLab', desc: 'Terms and conditions for using EntryLab. Read our policies on content, affiliate links, and trading disclaimers.' },
             };
             const ogMeta = staticOgMap[cleanUrl];
             if (ogMeta) {
@@ -3879,7 +3893,7 @@ ${items}
 
               const ssrStyle = `<style>#ssr-content{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:24px 16px;color:#1a1a1a}#ssr-content h1{font-size:2rem;font-weight:700;margin-bottom:16px}#ssr-content h2{font-size:1.4rem;font-weight:600;margin:24px 0 12px}#ssr-content p{margin-bottom:12px;line-height:1.7}#ssr-content ul{padding-left:20px;margin-bottom:12px}#ssr-content li{margin-bottom:4px}</style>`;
               let ssrHtml = `${ssrStyle}<div id="ssr-content">`;
-              ssrHtml += `<h1>Forex Broker Reviews 2026 — Compare Regulated Brokers</h1>`;
+              ssrHtml += `<h1>Forex Broker Reviews ${new Date().getFullYear()} — Compare Regulated Brokers</h1>`;
               ssrHtml += `<p>EntryLab reviews forex brokers across regulation, spreads, leverage, platforms, and deposit methods. Compare top regulated and offshore brokers side by side.</p>`;
               ssrHtml += `<ul>`;
               for (const b of brokers) {
@@ -3902,7 +3916,7 @@ ${items}
 
               const ssrStyle = `<style>#ssr-content{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:24px 16px;color:#1a1a1a}#ssr-content h1{font-size:2rem;font-weight:700;margin-bottom:16px}#ssr-content h2{font-size:1.4rem;font-weight:600;margin:24px 0 12px}#ssr-content p{margin-bottom:12px;line-height:1.7}#ssr-content ul{padding-left:20px;margin-bottom:12px}#ssr-content li{margin-bottom:4px}</style>`;
               let ssrHtml = `${ssrStyle}<div id="ssr-content">`;
-              ssrHtml += `<h1>Best Prop Firm Reviews 2026 — Evaluation, Profit Splits &amp; Payouts</h1>`;
+              ssrHtml += `<h1>Best Prop Firm Reviews ${new Date().getFullYear()} — Evaluation, Profit Splits &amp; Payouts</h1>`;
               ssrHtml += `<p>Compare the best proprietary trading firms. EntryLab reviews evaluation processes, profit splits, drawdown rules, payout speeds, and account sizes for every major prop firm.</p>`;
               ssrHtml += `<ul>`;
               for (const f of firms) {
@@ -3919,15 +3933,61 @@ ${items}
               console.error('[SEO] /prop-firms SSR injection error:', err);
             }
 
+          } else if (cleanUrl === '/compare') {
+            // Main compare hub — list all broker + prop firm comparisons for link discovery
+            try {
+              const [brokerComps, propFirmComps] = await Promise.all([
+                db.select({ slug: comparisonsTable.slug, entityAName: comparisonsTable.entityAName, entityBName: comparisonsTable.entityBName })
+                  .from(comparisonsTable)
+                  .where(and(inArray(comparisonsTable.status, ['published', 'updated']), eq(comparisonsTable.entityType, 'broker')))
+                  .orderBy(desc(comparisonsTable.updatedAt))
+                  .limit(50),
+                db.select({ slug: comparisonsTable.slug, entityAName: comparisonsTable.entityAName, entityBName: comparisonsTable.entityBName })
+                  .from(comparisonsTable)
+                  .where(and(inArray(comparisonsTable.status, ['published', 'updated']), eq(comparisonsTable.entityType, 'prop_firm')))
+                  .orderBy(desc(comparisonsTable.updatedAt))
+                  .limit(50),
+              ]);
+
+              const ssrStyle = `<style>#ssr-content{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:24px 16px;color:#1a1a1a}#ssr-content h1{font-size:2rem;font-weight:700;margin-bottom:16px}#ssr-content h2{font-size:1.4rem;font-weight:600;margin:24px 0 12px}#ssr-content p{margin-bottom:12px;line-height:1.7}#ssr-content ul{padding-left:20px;margin-bottom:12px}#ssr-content li{margin-bottom:4px}#ssr-content a{color:#2bb32a;text-decoration:none}</style>`;
+              let ssrHtml = `${ssrStyle}<div id="ssr-content">`;
+              ssrHtml += `<h1>Compare Forex Brokers &amp; Prop Firms — Side-by-Side Analysis</h1>`;
+              ssrHtml += `<p>Side-by-side comparisons of forex brokers and prop trading firms. Compare regulation, fees, platforms, profit splits and more to find the right fit for your trading style.</p>`;
+
+              if (brokerComps.length > 0) {
+                ssrHtml += `<h2>Broker Comparisons</h2><ul>`;
+                for (const c of brokerComps) {
+                  ssrHtml += `<li><a href="/brokers/compare/${c.slug}">${c.entityAName} vs ${c.entityBName}</a></li>`;
+                }
+                ssrHtml += `</ul>`;
+              }
+
+              if (propFirmComps.length > 0) {
+                ssrHtml += `<h2>Prop Firm Comparisons</h2><ul>`;
+                for (const c of propFirmComps) {
+                  ssrHtml += `<li><a href="/prop-firms/compare/${c.slug}">${c.entityAName} vs ${c.entityBName}</a></li>`;
+                }
+                ssrHtml += `</ul>`;
+              }
+
+              ssrHtml += `<p><a href="/brokers/compare">View all broker comparisons</a> · <a href="/prop-firms/compare">View all prop firm comparisons</a></p>`;
+              ssrHtml += `</div>`;
+
+              modifiedHtml = modifiedHtml.replace('<div id="root">', `${ssrHtml}\n    <div id="root">`);
+              console.log('[SEO] Injected /compare SSR content');
+            } catch (err) {
+              console.error('[SEO] /compare SSR injection error:', err);
+            }
+
           } else {
             // Category archive pages: /broker-guides, /broker-news, /prop-firm-news, etc.
             const catArchiveMap: Record<string, { label: string; entityType: 'broker' | 'prop_firm' | null }> = {
-              '/topics/broker-guides':    { label: 'Forex Broker Guides 2026 — Account Types, Fees &amp; Platforms Explained', entityType: 'broker' },
-              '/topics/broker-news':      { label: 'Forex Broker News 2026 — Regulatory Updates &amp; Industry Developments',  entityType: 'broker' },
-              '/topics/prop-firm-guides': { label: 'Prop Firm Guides 2026 — Evaluation Rules, Profit Splits &amp; Payouts',    entityType: 'prop_firm' },
-              '/topics/prop-firm-news':   { label: 'Prop Firm News 2026 — Industry Updates &amp; Rule Changes',                entityType: 'prop_firm' },
+              '/topics/broker-guides':    { label: `Forex Broker Guides ${new Date().getFullYear()} — Account Types, Fees &amp; Platforms Explained`, entityType: 'broker' },
+              '/topics/broker-news':      { label: `Forex Broker News ${new Date().getFullYear()} — Regulatory Updates &amp; Industry Developments`,  entityType: 'broker' },
+              '/topics/prop-firm-guides': { label: `Prop Firm Guides ${new Date().getFullYear()} — Evaluation Rules, Profit Splits &amp; Payouts`,    entityType: 'prop_firm' },
+              '/topics/prop-firm-news':   { label: `Prop Firm News ${new Date().getFullYear()} — Industry Updates &amp; Rule Changes`,                entityType: 'prop_firm' },
               '/topics/trading-tools':    { label: 'Forex Trading Tools &amp; Resources for Retail Traders',                   entityType: null },
-              '/topics/news':             { label: 'Forex Market News &amp; Analysis 2026',                                    entityType: null },
+              '/topics/news':             { label: `Forex Market News &amp; Analysis ${new Date().getFullYear()}`,                                    entityType: null },
             };
             const catMeta = catArchiveMap[cleanUrl];
             if (catMeta) {
