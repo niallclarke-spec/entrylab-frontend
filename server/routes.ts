@@ -2309,6 +2309,20 @@ ${items}
         }
       });
 
+      // Broker & prop firm category archive pages
+      sitemap += `  <url>\n`;
+      sitemap += `    <loc>${baseUrl}/brokers/best-cfd</loc>\n`;
+      sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
+      sitemap += `    <changefreq>weekly</changefreq>\n`;
+      sitemap += `    <priority>0.8</priority>\n`;
+      sitemap += `  </url>\n`;
+      sitemap += `  <url>\n`;
+      sitemap += `    <loc>${baseUrl}/prop-firms/best-verified</loc>\n`;
+      sitemap += `    <lastmod>${currentDate}</lastmod>\n`;
+      sitemap += `    <changefreq>weekly</changefreq>\n`;
+      sitemap += `    <priority>0.8</priority>\n`;
+      sitemap += `  </url>\n`;
+
       // Brokers index
       sitemap += `  <url>\n`;
       sitemap += `    <loc>${baseUrl}/brokers</loc>\n`;
@@ -2777,7 +2791,37 @@ ${items}
           }
         } else if (url.startsWith('/brokers/') && !url.startsWith('/brokers/compare')) {
           const parts = url.replace('/brokers/', '').split('?')[0].split('/').filter(Boolean);
-          if (parts.length >= 2) {
+          // Category archive pages: /brokers/best-cfd, /brokers/top-3-cfd, /brokers/category/:slug
+          const brokerCategorySlugs = ['best-cfd', 'top-3-cfd'];
+          if (parts.length === 1 && (brokerCategorySlugs.includes(parts[0]) || parts[0] === 'category')) {
+            const catSlug = parts[0] === 'category' ? '' : parts[0];
+            if (catSlug) {
+              const ssrKey = `ssr:broker-category:${catSlug}`;
+              pageData = apiCache.get(ssrKey);
+              if (!pageData || apiCache.isStale(ssrKey)) {
+                try {
+                  const [catRows] = await Promise.all([
+                    db.select().from(categoriesTable).where(and(eq(categoriesTable.slug, catSlug), eq(categoriesTable.type, 'broker'))),
+                  ]);
+                  const cat = catRows[0];
+                  if (cat) {
+                    const brokerRows = await db.select({ broker: brokersTable }).from(brokerCategoriesTable)
+                      .innerJoin(brokersTable, eq(brokerCategoriesTable.brokerId, brokersTable.id))
+                      .where(eq(brokerCategoriesTable.categoryId, cat.id));
+                    const catName = cat.name || catSlug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+                    pageData = {
+                      seoTitle: `${catName} | EntryLab`,
+                      seoDescription: `Discover the ${catName.toLowerCase()}. Compare verified brokers with competitive spreads, fast execution, and trusted regulation.`,
+                      name: catName,
+                      isBrokerCategoryArchive: true,
+                      entities: brokerRows.map((r: any) => ({ name: r.broker.name, slug: r.broker.slug, rating: r.broker.rating, regulation: r.broker.regulation })),
+                    };
+                    apiCache.set(ssrKey, pageData, 300, 600);
+                  }
+                } catch {}
+              }
+            }
+          } else if (parts.length >= 2) {
             // Nested article: /broker/:brokerSlug/:articleSlug
             const articleSlug = parts[1];
             const ssrKey = `ssr:nested-article:${articleSlug}`;
@@ -2841,7 +2885,35 @@ ${items}
           }
         } else if (url.startsWith('/prop-firms/') && !url.startsWith('/prop-firms/compare')) {
           const propParts = url.replace('/prop-firms/', '').split('?')[0].split('/').filter(Boolean);
-          if (propParts.length >= 2) {
+          // Category archive pages: /prop-firms/best-verified
+          const propFirmCategorySlugs = ['best-verified'];
+          if (propParts.length === 1 && propFirmCategorySlugs.includes(propParts[0])) {
+            const catSlug = propParts[0];
+            const ssrKey = `ssr:prop-firm-category:${catSlug}`;
+            pageData = apiCache.get(ssrKey);
+            if (!pageData || apiCache.isStale(ssrKey)) {
+              try {
+                const [catRows] = await Promise.all([
+                  db.select().from(categoriesTable).where(and(eq(categoriesTable.slug, catSlug), eq(categoriesTable.type, 'prop_firm'))),
+                ]);
+                const cat = catRows[0];
+                if (cat) {
+                  const firmRows = await db.select({ firm: propFirmsTable }).from(propFirmCategoriesTable)
+                    .innerJoin(propFirmsTable, eq(propFirmCategoriesTable.propFirmId, propFirmsTable.id))
+                    .where(eq(propFirmCategoriesTable.categoryId, cat.id));
+                  const catName = cat.name || catSlug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+                  pageData = {
+                    seoTitle: `${catName} | EntryLab`,
+                    seoDescription: `Discover the ${catName.toLowerCase()}. Compare verified prop firms with competitive profit splits, funded accounts, and fast payouts.`,
+                    name: catName,
+                    isPropFirmCategoryArchive: true,
+                    entities: firmRows.map((r: any) => ({ name: r.firm.name, slug: r.firm.slug, rating: r.firm.rating })),
+                  };
+                  apiCache.set(ssrKey, pageData, 300, 600);
+                }
+              } catch {}
+            }
+          } else if (propParts.length >= 2) {
             // Nested article: /prop-firm/:propFirmSlug/:articleSlug
             const articleSlug = propParts[1];
             const ssrKey = `ssr:nested-article:${articleSlug}`;
@@ -3365,6 +3437,20 @@ ${items}
           html += `</ul>`;
         }
 
+        // Broker/prop firm category archives: /brokers/best-cfd, /prop-firms/best-verified
+        else if (pageData.isBrokerCategoryArchive || pageData.isPropFirmCategoryArchive) {
+          const entityPath = pageData.isBrokerCategoryArchive ? 'brokers' : 'prop-firms';
+          const entities = Array.isArray(pageData.entities) ? pageData.entities : [];
+          if (entities.length > 0) {
+            html += `<ul>`;
+            for (const e of entities) {
+              const details = [e.rating ? `Rating: ${e.rating}/5` : '', e.regulation || ''].filter(Boolean).join(' · ');
+              html += `<li><a href="/${entityPath}/${e.slug}">${e.name}</a>${details ? ` — ${details}` : ''}</li>`;
+            }
+            html += `</ul>`;
+          }
+        }
+
         // Category archive pages: /broker-guides, /broker-news, etc.
         else if (pageData.isCategoryArchive) {
           if (pageData.tagline) html += `<p>${cleanStr(pageData.tagline)}</p>`;
@@ -3435,8 +3521,10 @@ ${items}
 
         // Site-wide internal links footer for crawler link discovery on all pages
         html += `<nav aria-label="Site links"><ul>`;
-        html += `<li><a href="/brokers">Forex Broker Reviews</a></li>`;
-        html += `<li><a href="/prop-firms">Prop Firm Reviews</a></li>`;
+        html += `<li><a href="/brokers/best-cfd">Top CFD Brokers</a></li>`;
+        html += `<li><a href="/prop-firms/best-verified">Best Prop Firms</a></li>`;
+        html += `<li><a href="/brokers">All Broker Reviews</a></li>`;
+        html += `<li><a href="/prop-firms">All Prop Firm Reviews</a></li>`;
         html += `<li><a href="/topics/news">Latest News</a></li>`;
         html += `<li><a href="/topics/broker-news">Broker News</a></li>`;
         html += `<li><a href="/topics/prop-firm-news">Prop Firm News</a></li>`;
