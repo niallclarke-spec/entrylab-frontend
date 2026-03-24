@@ -202,7 +202,7 @@ function QuickCompareTable({
               <div className="flex items-center gap-2.5">
                 {logoA ? (
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ border: "1px solid #e8edea", background: "#fff" }}>
-                    <img src={logoA} alt={nameA} className="w-6 h-6 object-contain" />
+                    <img src={logoA} alt={nameA} width="24" height="24" className="w-6 h-6 object-contain" />
                   </div>
                 ) : (
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-bold text-white" style={{ background: "#2bb32a" }}>
@@ -233,7 +233,7 @@ function QuickCompareTable({
               <div className="flex items-center gap-2.5">
                 {logoB ? (
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ border: "1px solid #e8edea", background: "#fff" }}>
-                    <img src={logoB} alt={nameB} className="w-6 h-6 object-contain" />
+                    <img src={logoB} alt={nameB} width="24" height="24" className="w-6 h-6 object-contain" />
                   </div>
                 ) : (
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-bold text-white" style={{ background: "#6b7280" }}>

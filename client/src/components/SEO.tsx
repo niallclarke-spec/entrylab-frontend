@@ -61,6 +61,8 @@ interface SEOProps {
   };
   // Disable client-side structured data when server-side rendering is handling it
   disableStructuredData?: boolean;
+  // Set to true for pages that should not be indexed (e.g. 404, admin)
+  noindex?: boolean;
 }
 
 export function SEO({
@@ -81,6 +83,7 @@ export function SEO({
   financialServiceData,
   reviewData,
   disableStructuredData = false,
+  noindex = false,
 }: SEOProps) {
   
   // Organization Schema - Disabled on broker/prop firm pages (server-side handles it)
@@ -206,7 +209,7 @@ export function SEO({
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
-      <meta name="robots" content="index, follow" />
+      <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
       
       {/* Preload LCP image for faster rendering */}
       {preloadImage && (

@@ -44,10 +44,10 @@ export function Footer() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: "#1a1e1c" }}>
+            <h4 className="text-sm font-semibold flex items-center gap-2" style={{ color: "#1a1e1c" }}>
               <Shield className="h-4 w-4 text-[#2bb32a]" />
               Reviews
-            </h3>
+            </h4>
             <Link href="/brokers/best-cfd" className="text-sm hover:text-[#2bb32a] transition-colors" style={{ color: "#6b7280" }} data-testid="link-footer-all-brokers">
               CFD Brokers
             </Link>
@@ -60,10 +60,10 @@ export function Footer() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: "#1a1e1c" }}>
+            <h4 className="text-sm font-semibold flex items-center gap-2" style={{ color: "#1a1e1c" }}>
               <Zap className="h-4 w-4 text-[#2bb32a]" />
               Signals
-            </h3>
+            </h4>
             <Link href="/signals" className="text-sm hover:text-[#2bb32a] transition-colors" style={{ color: "#6b7280" }} data-testid="link-footer-signals">
               Free Channel
             </Link>

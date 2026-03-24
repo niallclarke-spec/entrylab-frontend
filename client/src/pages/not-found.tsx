@@ -1,5 +1,6 @@
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 import { AlertCircle } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,12 @@ import { Button } from "@/components/ui/button";
 export default function NotFound() {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}>
+      <SEO
+        title="Page Not Found | EntryLab"
+        description="The page you're looking for doesn't exist or has been moved. Browse our forex broker reviews, prop firm evaluations, and trading news."
+        url="https://entrylab.io/404"
+        noindex
+      />
       <Navigation />
       <div className="flex-1 flex items-center justify-center px-4">
         <div

@@ -200,7 +200,7 @@ export default function BrokerReview() {
   }
 
   // SEO with fallbacks: auto-generated defaults from DB data
-  const seoTitle = `${stripHtml(broker.name)} Review 2025 | EntryLab`;
+  const seoTitle = `${stripHtml(broker.name)} Review ${new Date().getFullYear()} | EntryLab`;
   const seoDescription = broker.tagline || 
                          `Comprehensive review of ${stripHtml(broker.name)}. Read about spreads, regulation, platforms, and more.`;
 
@@ -488,7 +488,7 @@ export default function BrokerReview() {
       <main className="flex-1 py-12 md:py-16" style={{ background: "#f5f7f6" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-[minmax(0,1fr)_350px] gap-8">
-            <div className="space-y-8 content-light min-w-0">
+            <article className="space-y-8 content-light min-w-0">
               {/* Pros & Cons - Market Chart Inspired */}
               {(broker.pros.length > 0 || broker.cons && broker.cons.length > 0) && (
                 <Card className="relative overflow-hidden p-6">
@@ -708,10 +708,10 @@ export default function BrokerReview() {
                   </a>
                 </Button>
               </Card>
-            </div>
+            </article>
 
             {/* Sidebar */}
-            <div className="space-y-6 content-light min-w-0">
+            <aside className="space-y-6 content-light min-w-0">
               {/* Combined Card: Quick Info + Visit Button + TOC + Update Badge */}
               <Card className="p-6 sticky top-24">
                 {/* Quick Info Section */}
@@ -801,7 +801,7 @@ export default function BrokerReview() {
                   </>
                 )}
               </Card>
-            </div>
+            </aside>
           </div>
         </div>
       </main>

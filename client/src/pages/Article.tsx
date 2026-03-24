@@ -685,7 +685,7 @@ export default function Article() {
                 <div className="flex items-center gap-2">
                   <Badge className="gap-1 bg-emerald-500/20 text-emerald-300 border-emerald-400/30 hover:bg-emerald-500/30">
                     <Award className="h-3 w-3" />
-                    Independant Analysis
+                    Independent Analysis
                   </Badge>
                 </div>
               </div>
@@ -745,6 +745,8 @@ export default function Article() {
                         <img
                           src={featuredFirm.logo}
                           alt={featuredFirm.name}
+                          width="48"
+                          height="48"
                           style={{ width: "100%", height: "100%", objectFit: "contain" }}
                         />
                       </div>

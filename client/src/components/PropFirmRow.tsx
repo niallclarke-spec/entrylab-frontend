@@ -68,7 +68,7 @@ export function PropFirmRow({ name, logo, rating, pros, highlights, tagline, lin
           className="flex-shrink-0 flex items-center justify-center p-2"
           style={{ width: "60px", height: "60px", background: "#f8faf8", border: "1px solid #e8ede9", borderRadius: "12px" }}
         >
-          <img src={logo} alt={name} loading="lazy" className="w-full h-full object-contain rounded-lg" data-testid="img-prop-firm-logo" />
+          <img src={logo} alt={name} loading="lazy" width="44" height="44" className="w-full h-full object-contain rounded-lg" data-testid="img-prop-firm-logo" />
         </div>
 
         {/* Name + tagline + stars */}
