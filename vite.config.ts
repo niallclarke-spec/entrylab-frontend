@@ -69,6 +69,28 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // React core — cached separately, rarely changes
+          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/scheduler/')) {
+            return 'react';
+          }
+          // React Query — separate chunk
+          if (id.includes('@tanstack/react-query')) {
+            return 'query';
+          }
+          // Radix UI primitives — shared across many pages
+          if (id.includes('@radix-ui/')) {
+            return 'radix';
+          }
+          // Lucide icons
+          if (id.includes('lucide-react')) {
+            return 'icons';
+          }
+        },
+      },
+    },
   },
   server: {
     fs: {

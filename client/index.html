@@ -11,17 +11,7 @@
          crash. The SW intercepts dep requests and forces a network fetch. -->
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(function(reg) {
-          // If the SW was just installed (first ever activation), reload so it
-          // can claim this page and intercept requests on the next load.
-          if (reg.installing) {
-            reg.installing.addEventListener('statechange', function() {
-              if (this.state === 'activated') {
-                window.location.reload();
-              }
-            });
-          }
-        }).catch(function(){});
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function(){});
       }
     </script>
 
@@ -82,139 +72,34 @@
       .sk-card{background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:8px;overflow:hidden}
     </style>
     
-    <!-- Defer CSS to prevent render blocking - Handle both static and dynamic CSS -->
+    <!-- Defer non-critical CSS to prevent render blocking -->
     <script>
       (function() {
-        var originalSetAttribute = Element.prototype.setAttribute;
-        
-        // Convert static stylesheets that exist in HTML
-        function convertExistingStylesheets() {
+        function deferLink(link) {
+          var ok = false; try { ok = link.sheet !== null; } catch(e) {}
+          if (ok) return;
+          link.onload = function() { this.onload = null; this.rel = 'stylesheet'; };
+          link.rel = 'preload'; link.as = 'style';
+        }
+        function deferAll() {
           var links = document.querySelectorAll('link[rel="stylesheet"]');
           for (var i = 0; i < links.length; i++) {
-            var link = links[i];
-            if (link.href && link.href.includes('/assets/')) {
-              var crossorigin = link.crossOrigin || 'anonymous';
-              
-              // Check if stylesheet is already loaded (cached)
-              var isLoaded = false;
-              try {
-                isLoaded = link.sheet !== null && link.sheet !== undefined;
-              } catch (e) {
-                // Cross-origin check failed, assume not loaded
-                isLoaded = false;
-              }
-              
-              if (isLoaded) {
-                // Already loaded (cached) - leave as stylesheet, no action needed
-                // Cached CSS doesn't block rendering
-                continue;
-              }
-              
-              // Not loaded yet - attach onload handler BEFORE converting
-              var loadHandler = function() {
-                this.onload = null;
-                originalSetAttribute.call(this, 'rel', 'stylesheet');
-              };
-              
-              link.onload = loadHandler;
-              
-              // Convert to preload
-              originalSetAttribute.call(link, 'rel', 'preload');
-              originalSetAttribute.call(link, 'as', 'style');
-              originalSetAttribute.call(link, 'crossorigin', crossorigin);
+            if (links[i].href && links[i].href.includes('/assets/')) deferLink(links[i]);
+          }
+        }
+        deferAll();
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', deferAll);
+        new MutationObserver(function(muts) {
+          for (var m = 0; m < muts.length; m++)
+            for (var n = 0; n < muts[m].addedNodes.length; n++) {
+              var el = muts[m].addedNodes[n];
+              if (el.tagName === 'LINK' && el.rel === 'stylesheet' && el.href && el.href.includes('/assets/'))
+                deferLink(el);
             }
-          }
-        }
-        
-        // Run immediately for static links in <head>
-        convertExistingStylesheets();
-        
-        // Also run after DOM loads in case more static links exist
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', convertExistingStylesheets);
-        }
-        
-        // Override createElement for dynamically added CSS
-        var originalCreateElement = document.createElement;
-        document.createElement = function(tagName) {
-          var element = originalCreateElement.call(document, tagName);
-          
-          if (tagName.toLowerCase() === 'link') {
-            var deferApplied = false;
-            var pendingRel = null;
-            var pendingHref = null;
-            
-            var applyDefer = function() {
-              if (!deferApplied && pendingRel === 'stylesheet' && pendingHref && pendingHref.includes('/assets/')) {
-                deferApplied = true;
-                
-                // Check if already loaded (cached)
-                var isLoaded = false;
-                try {
-                  isLoaded = element.sheet !== null && element.sheet !== undefined;
-                } catch (e) {
-                  isLoaded = false;
-                }
-                
-                if (isLoaded) {
-                  // Already cached - don't convert, leave as stylesheet
-                  return;
-                }
-                
-                // Not cached - attach onload BEFORE converting
-                element.onload = function() {
-                  this.onload = null;
-                  originalSetAttribute.call(this, 'rel', 'stylesheet');
-                };
-                
-                // Now convert to preload
-                originalSetAttribute.call(element, 'rel', 'preload');
-                originalSetAttribute.call(element, 'as', 'style');
-                if (element.crossOrigin === null || element.crossOrigin === '') {
-                  originalSetAttribute.call(element, 'crossorigin', 'anonymous');
-                }
-              }
-            };
-            
-            element.setAttribute = function(name, value) {
-              if (name === 'rel') {
-                pendingRel = value;
-                applyDefer();
-                if (deferApplied && value === 'stylesheet') return;
-              } else if (name === 'href') {
-                pendingHref = value;
-                applyDefer();
-              }
-              originalSetAttribute.call(element, name, value);
-            };
-            
-            Object.defineProperty(element, 'rel', {
-              get: function() { return element.getAttribute('rel'); },
-              set: function(value) {
-                pendingRel = value;
-                applyDefer();
-                if (!deferApplied || value !== 'stylesheet') {
-                  originalSetAttribute.call(element, 'rel', value);
-                }
-              }
-            });
-            
-            Object.defineProperty(element, 'href', {
-              get: function() { return element.getAttribute('href'); },
-              set: function(value) {
-                pendingHref = value;
-                applyDefer();
-                originalSetAttribute.call(element, 'href', value);
-              }
-            });
-          }
-          
-          return element;
-        };
+        }).observe(document.head, { childList: true });
       })();
     </script>
-    
-    
+
     <!-- Google Consent Mode v2 - Must load BEFORE GTM -->
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -257,15 +142,25 @@
       }
     </script>
     
-    <!-- Defer Google Tag Manager to not block rendering -->
+    <!-- Defer Google Tag Manager until after first paint to not block LCP -->
     <script>
       (function() {
-        var gtmScript = document.createElement('script');
-        gtmScript.async = true;
-        gtmScript.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-KPCJDF2M';
-        var firstScript = document.getElementsByTagName('script')[0];
-        firstScript.parentNode.insertBefore(gtmScript, firstScript);
-        window.dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
+        function loadGTM() {
+          if (window.__gtmLoaded) return;
+          window.__gtmLoaded = true;
+          var gtmScript = document.createElement('script');
+          gtmScript.async = true;
+          gtmScript.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-KPCJDF2M';
+          var firstScript = document.getElementsByTagName('script')[0];
+          firstScript.parentNode.insertBefore(gtmScript, firstScript);
+          window.dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
+        }
+        // Load GTM after first user interaction or after 3.5s — whichever comes first
+        if (document.readyState === 'complete') { setTimeout(loadGTM, 100); }
+        else { window.addEventListener('load', function() { setTimeout(loadGTM, 1500); }); }
+        ['scroll', 'click', 'touchstart', 'keydown'].forEach(function(evt) {
+          document.addEventListener(evt, loadGTM, { once: true, passive: true });
+        });
       })();
     </script>
     
