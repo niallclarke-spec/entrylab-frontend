@@ -10,16 +10,16 @@ export function getCategoryName(post: Article): string {
 
 export function getArticleUrl(post: any): string {
   if (post.relatedBroker && typeof post.relatedBroker === "string") {
-    return `/broker/${post.relatedBroker}/${post.slug}`;
+    return `/brokers/${post.relatedBroker}/${post.slug}`;
   }
   if (post.relatedBroker && typeof post.relatedBroker === "object" && post.relatedBroker?.slug) {
-    return `/broker/${post.relatedBroker.slug}/${post.slug}`;
+    return `/brokers/${post.relatedBroker.slug}/${post.slug}`;
   }
   if (post.relatedPropFirm && typeof post.relatedPropFirm === "string") {
-    return `/prop-firm/${post.relatedPropFirm}/${post.slug}`;
+    return `/prop-firms/${post.relatedPropFirm}/${post.slug}`;
   }
   if (post.relatedPropFirm && typeof post.relatedPropFirm === "object" && post.relatedPropFirm?.slug) {
-    return `/prop-firm/${post.relatedPropFirm.slug}/${post.slug}`;
+    return `/prop-firms/${post.relatedPropFirm.slug}/${post.slug}`;
   }
-  return `/${getCategorySlug(post)}/${post.slug}`;
+  return `/learn/${getCategorySlug(post)}/${post.slug}`;
 }

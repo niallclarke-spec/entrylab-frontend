@@ -43,7 +43,7 @@ function RelatedGuides({ slug, entityName }: { slug: string; entityName: string 
           {guides.map((guide: any) => (
             <Link
               key={guide.id}
-              href={`/broker/${slug}/${guide.slug}`}
+              href={`/brokers/${slug}/${guide.slug}`}
               className="flex items-center justify-between p-4 rounded-lg border border-white/10 hover:border-[#2bb32a]/30 hover:bg-white/3 transition-all group"
               data-testid={`link-guide-${guide.id}`}
             >
@@ -87,7 +87,7 @@ function RelatedComparisons({ slug, entityType, entityName }: { slug: string; en
           {related.slice(0, 6).map((c: any) => {
             const otherName = c.entityASlug === slug ? c.entityBName : c.entityAName;
             const winnerName = c.overallWinnerId === c.entityAId ? c.entityAName : c.overallWinnerId === c.entityBId ? c.entityBName : null;
-            const prefix = entityType === "broker" ? "/compare/broker" : "/compare/prop-firm";
+            const prefix = entityType === "broker" ? "/brokers/compare" : "/prop-firms/compare";
             return (
               <Link
                 key={c.id}
@@ -123,6 +123,7 @@ export default function BrokerReview() {
   const { data: rawBroker, isLoading } = useQuery<any>({
     queryKey: ["/api/brokers", slug],
     enabled: !!slug,
+    retry: 2,
   });
 
   const { data: reviews = [] } = useQuery<any[]>({
@@ -135,7 +136,7 @@ export default function BrokerReview() {
 
   useEffect(() => {
     if (broker) {
-      trackPageView(`/broker/${slug}`, `${broker.name} Review | EntryLab`);
+      trackPageView(`/brokers/${slug}`, `${broker.name} Review | EntryLab`);
       trackReviewView({
         broker_name: broker.name,
         broker_type: 'broker',
@@ -180,14 +181,14 @@ export default function BrokerReview() {
     );
   }
 
-  if (!broker) {
+  if (!broker && !isLoading) {
     return (
       <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}>
         <Navigation />
         <div className="flex-1 flex items-center justify-center py-32">
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4" style={{ color: "#111827" }}>Broker Not Found</h2>
-            <Link href="/top-cfd-brokers">
+            <Link href="/brokers/best-cfd">
               <Button data-testid="button-back-brokers">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Brokers
               </Button>
@@ -199,16 +200,16 @@ export default function BrokerReview() {
     );
   }
 
-  // SEO with fallbacks: auto-generated defaults from DB data
-  const seoTitle = `${stripHtml(broker.name)} Review 2025 | EntryLab`;
-  const seoDescription = broker.tagline || 
+  // SEO: prefer custom DB seoTitle, fall back to generated default
+  const seoTitle = (broker as any).seoTitle || `${stripHtml(broker.name)} Review ${new Date().getFullYear()} | EntryLab`;
+  const seoDescription = (broker as any).seoDescription || broker.tagline ||
                          `Comprehensive review of ${stripHtml(broker.name)}. Read about spreads, regulation, platforms, and more.`;
 
   // Breadcrumbs for structured data
   const breadcrumbs = [
     { name: "Home", url: "https://entrylab.io" },
     { name: "Brokers", url: "https://entrylab.io/brokers" },
-    { name: stripHtml(broker.name), url: `https://entrylab.io/broker/${broker.slug}` }
+    { name: stripHtml(broker.name), url: `https://entrylab.io/brokers/${broker.slug}` }
   ];
 
   // Parse headquarters to extract city and country (don't use full string as street address)
@@ -277,7 +278,7 @@ export default function BrokerReview() {
       <SEO
         title={seoTitle}
         description={seoDescription}
-        url={`https://entrylab.io/broker/${broker.slug}`}
+        url={`https://entrylab.io/brokers/${broker.slug}`}
         image={broker.logo}
         breadcrumbs={breadcrumbs}
         financialServiceData={financialServiceData}
@@ -488,7 +489,7 @@ export default function BrokerReview() {
       <main className="flex-1 py-12 md:py-16" style={{ background: "#f5f7f6" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-[minmax(0,1fr)_350px] gap-8">
-            <div className="space-y-8 content-light min-w-0">
+            <article className="space-y-8 content-light min-w-0">
               {/* Pros & Cons - Market Chart Inspired */}
               {(broker.pros.length > 0 || broker.cons && broker.cons.length > 0) && (
                 <Card className="relative overflow-hidden p-6">
@@ -708,10 +709,10 @@ export default function BrokerReview() {
                   </a>
                 </Button>
               </Card>
-            </div>
+            </article>
 
             {/* Sidebar */}
-            <div className="space-y-6 content-light min-w-0">
+            <aside className="space-y-6 content-light min-w-0">
               {/* Combined Card: Quick Info + Visit Button + TOC + Update Badge */}
               <Card className="p-6 sticky top-24">
                 {/* Quick Info Section */}
@@ -801,7 +802,7 @@ export default function BrokerReview() {
                   </>
                 )}
               </Card>
-            </div>
+            </aside>
           </div>
         </div>
       </main>
@@ -980,7 +981,7 @@ export default function BrokerReview() {
                 Open Account Now <ArrowRight className="ml-2 h-4 w-4" />
               </a>
             </Button>
-            <Link href="/compare/broker">
+            <Link href="/brokers/compare">
               <Button variant="outline" size="lg" className="min-w-[200px] border-white/30 text-white" data-testid="button-compare-brokers">
                 <GitCompare className="w-4 h-4 mr-2" /> Compare Brokers
               </Button>

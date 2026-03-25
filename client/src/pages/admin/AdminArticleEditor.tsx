@@ -342,9 +342,9 @@ export default function AdminArticleEditor() {
                 <div style={{ display: "flex", alignItems: "center" }}>
                   <span style={{ padding: "10px 12px", background: C.bg, border: `1px solid ${C.border}`, borderRight: "none", borderRadius: "7px 0 0 7px", color: C.textDim, fontSize: 13, whiteSpace: "nowrap" }}>
                     {form.relatedBroker
-                      ? `entrylab.io/broker/${form.relatedBroker}/`
+                      ? `entrylab.io/brokers/${form.relatedBroker}/`
                       : form.relatedPropFirm
-                      ? `entrylab.io/prop-firm/${form.relatedPropFirm}/`
+                      ? `entrylab.io/prop-firms/${form.relatedPropFirm}/`
                       : form.category
                       ? `entrylab.io/${form.category}/`
                       : "entrylab.io/"}
@@ -417,7 +417,7 @@ export default function AdminArticleEditor() {
               <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 4 }}>PARENT ENTITY</div>
               <p style={{ fontSize: 11, color: C.textDim, marginBottom: 14, lineHeight: 1.5 }}>
                 Linking to a broker or prop firm nests this article under their URL
-                (e.g. <span style={{ color: C.accent, fontFamily: "monospace" }}>/broker/[slug]/[article]</span>)
+                (e.g. <span style={{ color: C.accent, fontFamily: "monospace" }}>/brokers/[slug]/[article]</span>)
                 and embeds their card inside the content. Pick one or neither.
               </p>
               <div style={{ marginBottom: 16 }}>
@@ -453,8 +453,8 @@ export default function AdminArticleEditor() {
                   <div style={{ fontSize: 11, color: C.accent, fontWeight: 600, marginBottom: 2 }}>URL PREVIEW</div>
                   <div style={{ fontSize: 11, color: C.text, fontFamily: "monospace", wordBreak: "break-all" }}>
                     {form.relatedBroker
-                      ? `entrylab.io/broker/${form.relatedBroker}/${form.slug || "[slug]"}`
-                      : `entrylab.io/prop-firm/${form.relatedPropFirm}/${form.slug || "[slug]"}`}
+                      ? `entrylab.io/brokers/${form.relatedBroker}/${form.slug || "[slug]"}`
+                      : `entrylab.io/prop-firms/${form.relatedPropFirm}/${form.slug || "[slug]"}`}
                   </div>
                 </div>
               )}

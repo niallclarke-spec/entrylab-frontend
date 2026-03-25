@@ -43,7 +43,7 @@ function RelatedGuides({ slug, entityName }: { slug: string; entityName: string 
           {guides.map((guide: any) => (
             <Link
               key={guide.id}
-              href={`/prop-firm/${slug}/${guide.slug}`}
+              href={`/prop-firms/${slug}/${guide.slug}`}
               className="flex items-center justify-between p-4 rounded-lg border border-white/10 hover:border-[#2bb32a]/30 hover:bg-white/3 transition-all group"
               data-testid={`link-guide-${guide.id}`}
             >
@@ -90,7 +90,7 @@ function RelatedComparisons({ slug, entityType, entityName }: { slug: string; en
             return (
               <Link
                 key={c.id}
-                href={`/compare/prop-firm/${c.slug}`}
+                href={`/prop-firms/compare/${c.slug}`}
                 className="flex items-center justify-between p-4 rounded-lg border border-white/10 hover:border-[#2bb32a]/30 hover:bg-white/3 transition-all group"
                 data-testid={`link-related-${c.id}`}
               >
@@ -134,6 +134,7 @@ export default function PropFirmReview() {
   const { data: rawPropFirm, isLoading } = useQuery<any>({
     queryKey: ["/api/prop-firms", slug],
     enabled: !!slug,
+    retry: 2,
   });
 
   const { data: reviews = [] } = useQuery<any[]>({
@@ -153,7 +154,7 @@ export default function PropFirmReview() {
         body: JSON.stringify({ slug, name: propFirm.name, type: "prop_firm" }),
         keepalive: true,
       }).catch(() => {});
-      trackPageView(`/prop-firm/${slug}`, `${propFirm.name} Review | EntryLab`);
+      trackPageView(`/prop-firms/${slug}`, `${propFirm.name} Review | EntryLab`);
       trackReviewView({
         broker_name: propFirm.name,
         broker_type: 'prop_firm',
@@ -191,14 +192,14 @@ export default function PropFirmReview() {
     );
   }
 
-  if (!propFirm) {
+  if (!propFirm && !isLoading) {
     return (
       <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}>
         <Navigation />
         <div className="flex-1 flex items-center justify-center py-32">
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4" style={{ color: "#111827" }}>Prop Firm Not Found</h2>
-            <Link href="/best-verified-propfirms">
+            <Link href="/prop-firms/best-verified">
               <Button data-testid="button-back-prop-firms">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Prop Firms
               </Button>
@@ -210,16 +211,16 @@ export default function PropFirmReview() {
     );
   }
 
-  // SEO with auto-generated defaults from DB data
-  const seoTitle = `${stripHtml(propFirm.name)} Review 2025 | EntryLab`;
-  const seoDescription = propFirm.tagline || 
+  // SEO: prefer custom DB seoTitle, fall back to generated default
+  const seoTitle = (propFirm as any).seoTitle || `${stripHtml(propFirm.name)} Review ${new Date().getFullYear()} | EntryLab`;
+  const seoDescription = (propFirm as any).seoDescription || propFirm.tagline ||
                          `Comprehensive review of ${stripHtml(propFirm.name)}. Read about funding, profit splits, evaluation process, and more.`;
 
   // Breadcrumbs for structured data
   const breadcrumbs = [
     { name: "Home", url: "https://entrylab.io" },
     { name: "Prop Firms", url: "https://entrylab.io/prop-firms" },
-    { name: stripHtml(propFirm.name), url: `https://entrylab.io/prop-firm/${propFirm.slug}` }
+    { name: stripHtml(propFirm.name), url: `https://entrylab.io/prop-firms/${propFirm.slug}` }
   ];
 
   // Parse headquarters to extract city and country (don't use full string as street address)
@@ -288,7 +289,7 @@ export default function PropFirmReview() {
       <SEO
         title={seoTitle}
         description={seoDescription}
-        url={`https://entrylab.io/prop-firm/${propFirm.slug}`}
+        url={`https://entrylab.io/prop-firms/${propFirm.slug}`}
         image={propFirm.logo}
         breadcrumbs={breadcrumbs}
         financialServiceData={financialServiceData}
@@ -649,7 +650,7 @@ export default function PropFirmReview() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-[minmax(0,1fr)_380px] gap-8">
             {/* Main Content Column */}
-            <div className="space-y-8 content-light min-w-0">
+            <article className="space-y-8 content-light min-w-0">
               {/* Pros & Cons - Use new card component */}
               {(propFirm.pros.length > 0 || propFirm.cons && propFirm.cons.length > 0) && (
                 <ProsConsCard 
@@ -774,10 +775,10 @@ export default function PropFirmReview() {
                   </a>
                 </Button>
               </Card>
-            </div>
+            </article>
 
             {/* Sticky Conversion Sidebar */}
-            <div className="space-y-6 content-light min-w-0">
+            <aside className="space-y-6 content-light min-w-0">
               {/* Primary CTA Card */}
               <Card className="p-6 sticky top-24">
                 <Button 
@@ -825,7 +826,7 @@ export default function PropFirmReview() {
                   </>
                 )}
               </Card>
-            </div>
+            </aside>
           </div>
         </div>
       </main>
@@ -980,7 +981,7 @@ export default function PropFirmReview() {
                 Start Evaluation Now <ArrowRight className="ml-2 h-4 w-4" />
               </a>
             </Button>
-            <Link href="/compare/prop-firm">
+            <Link href="/prop-firms/compare">
               <Button variant="outline" size="lg" className="min-w-[200px] border-white/30 text-white" data-testid="button-compare-prop-firms">
                 <GitCompare className="w-4 h-4 mr-2" /> Compare Prop Firms
               </Button>

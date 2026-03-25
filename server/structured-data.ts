@@ -184,7 +184,7 @@ export async function getBrokersListSchema() {
         "@type": "ListItem",
         "position": index + 1,
         "name": broker.name,
-        "url": `https://entrylab.io/broker/${broker.slug}`,
+        "url": `https://entrylab.io/brokers/${broker.slug}`,
         "description": broker.seoDescription || broker.tagline || `Review of ${broker.name}`
       }))
     };
@@ -217,7 +217,7 @@ export async function getPropFirmsListSchema() {
         "@type": "ListItem",
         "position": index + 1,
         "name": firm.name,
-        "url": `https://entrylab.io/prop-firm/${firm.slug}`,
+        "url": `https://entrylab.io/prop-firms/${firm.slug}`,
         "description": firm.seoDescription || firm.tagline || `Review of ${firm.name}`
       }))
     };
@@ -277,11 +277,16 @@ export async function getArticleSchema(slug: string) {
     const isNewsArticle = newsCategories.some(c => (article.category || '').toLowerCase().includes(c));
     const articleType = isNewsArticle ? "NewsArticle" : "Article";
 
-    // Canonical URL uses /:category/:slug format
+    // Canonical URL: use nested path when article belongs to a broker/prop-firm,
+    // otherwise fall back to /:category/:slug — must match sitemap URLs.
     const categorySlug = article.category || 'news';
-    const canonicalUrl = `https://entrylab.io/${categorySlug}/${slug}`;
+    const canonicalUrl = article.relatedBroker
+      ? `https://entrylab.io/brokers/${article.relatedBroker}/${slug}`
+      : article.relatedPropFirm
+      ? `https://entrylab.io/prop-firms/${article.relatedPropFirm}/${slug}`
+      : `https://entrylab.io/learn/${categorySlug}/${slug}`;
     const categoryLabel = categoryLabels[categorySlug] || categorySlug;
-    const categoryUrl = `https://entrylab.io/${categorySlug}`;
+    const categoryUrl = `https://entrylab.io/topics/${categorySlug}`;
 
     const schemas = [];
 
@@ -320,30 +325,27 @@ export async function getArticleSchema(slug: string) {
       }
     });
 
-    // Breadcrumb schema using correct canonical URLs
+    // Breadcrumb schema — nested articles get broker/prop-firm parent in crumb trail
+    const breadcrumbItems: any[] = [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://entrylab.io" },
+    ];
+    if (article.relatedBroker) {
+      breadcrumbItems.push({ "@type": "ListItem", "position": 2, "name": "Brokers", "item": "https://entrylab.io/brokers" });
+      breadcrumbItems.push({ "@type": "ListItem", "position": 3, "name": article.relatedBroker, "item": `https://entrylab.io/brokers/${article.relatedBroker}` });
+      breadcrumbItems.push({ "@type": "ListItem", "position": 4, "name": title, "item": canonicalUrl });
+    } else if (article.relatedPropFirm) {
+      breadcrumbItems.push({ "@type": "ListItem", "position": 2, "name": "Prop Firms", "item": "https://entrylab.io/prop-firms" });
+      breadcrumbItems.push({ "@type": "ListItem", "position": 3, "name": article.relatedPropFirm, "item": `https://entrylab.io/prop-firms/${article.relatedPropFirm}` });
+      breadcrumbItems.push({ "@type": "ListItem", "position": 4, "name": title, "item": canonicalUrl });
+    } else {
+      breadcrumbItems.push({ "@type": "ListItem", "position": 2, "name": categoryLabel, "item": categoryUrl });
+      breadcrumbItems.push({ "@type": "ListItem", "position": 3, "name": title, "item": canonicalUrl });
+    }
+
     schemas.push({
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://entrylab.io"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": categoryLabel,
-          "item": categoryUrl
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": title,
-          "item": canonicalUrl
-        }
-      ]
+      "itemListElement": breadcrumbItems
     });
 
     return schemas;
@@ -381,12 +383,12 @@ export async function getBrokerSchema(slug: string) {
     const financialServiceSchema: any = {
       "@context": "https://schema.org",
       "@type": "FinancialService",
-      "@id": `https://entrylab.io/broker/${slug}#organization`,
+      "@id": `https://entrylab.io/brokers/${slug}#organization`,
       "name": name,
       "description": description,
       "mainEntityOfPage": {
         "@type": "WebPage",
-        "@id": `https://entrylab.io/broker/${slug}`
+        "@id": `https://entrylab.io/brokers/${slug}`
       }
     };
     
@@ -440,7 +442,7 @@ export async function getBrokerSchema(slug: string) {
       "@context": "https://schema.org",
       "@type": "Review",
       "itemReviewed": {
-        "@id": `https://entrylab.io/broker/${slug}#organization`
+        "@id": `https://entrylab.io/brokers/${slug}#organization`
       },
       "author": {
         "@type": "Organization",
@@ -476,7 +478,7 @@ export async function getBrokerSchema(slug: string) {
           "@type": "ListItem",
           "position": 3,
           "name": name,
-          "item": `https://entrylab.io/broker/${slug}`
+          "item": `https://entrylab.io/brokers/${slug}`
         }
       ]
     });
@@ -516,12 +518,12 @@ export async function getPropFirmSchema(slug: string) {
     const financialServiceSchema: any = {
       "@context": "https://schema.org",
       "@type": "FinancialService",
-      "@id": `https://entrylab.io/prop-firm/${slug}#organization`,
+      "@id": `https://entrylab.io/prop-firms/${slug}#organization`,
       "name": name,
       "description": description,
       "mainEntityOfPage": {
         "@type": "WebPage",
-        "@id": `https://entrylab.io/prop-firm/${slug}`
+        "@id": `https://entrylab.io/prop-firms/${slug}`
       }
     };
     
@@ -575,7 +577,7 @@ export async function getPropFirmSchema(slug: string) {
       "@context": "https://schema.org",
       "@type": "Review",
       "itemReviewed": {
-        "@id": `https://entrylab.io/prop-firm/${slug}#organization`
+        "@id": `https://entrylab.io/prop-firms/${slug}#organization`
       },
       "author": {
         "@type": "Organization",
@@ -611,7 +613,7 @@ export async function getPropFirmSchema(slug: string) {
           "@type": "ListItem",
           "position": 3,
           "name": name,
-          "item": `https://entrylab.io/prop-firm/${slug}`
+          "item": `https://entrylab.io/prop-firms/${slug}`
         }
       ]
     });
@@ -623,16 +625,17 @@ export async function getPropFirmSchema(slug: string) {
   }
 }
 
-// Comparison page schema — WebPage + BreadcrumbList for /compare/broker/:slug and /compare/prop-firm/:slug
+// Comparison page schema — WebPage + BreadcrumbList for /brokers/compare/:slug and /prop-firms/compare/:slug
 async function getComparisonPageSchema(entityType: 'broker' | 'prop-firm', slug: string) {
   try {
     const table = entityType === 'broker' ? brokersTable : propFirmsTable;
     const [a, b] = slug.split('-vs-');
     if (!a || !b) return null;
 
-    const canonicalUrl = `https://entrylab.io/compare/${entityType}/${slug}`;
+    const urlSegment = entityType === 'broker' ? 'brokers' : 'prop-firms';
+    const canonicalUrl = `https://entrylab.io/${urlSegment}/compare/${slug}`;
     const hubLabel = entityType === 'broker' ? 'Broker Comparisons' : 'Prop Firm Comparisons';
-    const hubUrl = `https://entrylab.io/compare/${entityType}`;
+    const hubUrl = `https://entrylab.io/${urlSegment}/compare`;
 
     // Look up display names for both entities so the breadcrumb label is human-readable
     const [rowA] = await db.select({ name: table.name }).from(table).where(eq(table.slug, a)).limit(1);
@@ -683,10 +686,10 @@ function getStaticPageSchemas(urlParts: string[]): any[] {
     'news':              { label: 'News',              desc: 'Financial market news and forex industry updates from EntryLab.' },
   };
 
-  // Category archive pages: /broker-news, /prop-firm-news, etc.
-  if (urlParts.length === 1 && categoryMeta[urlParts[0]]) {
-    const { label, desc } = categoryMeta[urlParts[0]];
-    const pageUrl = `${BASE}/${urlParts[0]}`;
+  // Category archive pages: /topics/broker-news, /topics/prop-firm-news, etc.
+  if (urlParts.length === 2 && urlParts[0] === 'topics' && categoryMeta[urlParts[1]]) {
+    const { label, desc } = categoryMeta[urlParts[1]];
+    const pageUrl = `${BASE}/topics/${urlParts[1]}`;
     return [
       {
         "@context": "https://schema.org",
@@ -773,14 +776,14 @@ function getStaticPageSchemas(urlParts: string[]): any[] {
     ];
   }
 
-  // /compare/broker and /compare/prop-firm hub pages
-  if (urlParts.length === 2 && urlParts[0] === 'compare' && (urlParts[1] === 'broker' || urlParts[1] === 'prop-firm')) {
-    const isPropFirm = urlParts[1] === 'prop-firm';
+  // /brokers/compare and /prop-firms/compare hub pages
+  if (urlParts.length === 2 && (urlParts[0] === 'brokers' || urlParts[0] === 'prop-firms') && urlParts[1] === 'compare') {
+    const isPropFirm = urlParts[0] === 'prop-firms';
     const label = isPropFirm ? 'Prop Firm Comparisons' : 'Broker Comparisons';
     const desc = isPropFirm
       ? 'Compare prop trading firms side-by-side. Evaluation fees, profit splits, max funding, and platform breakdowns.'
       : 'Compare forex brokers side-by-side. Regulation, spreads, leverage, platforms, and minimum deposits.';
-    const pageUrl = `${BASE}/compare/${urlParts[1]}`;
+    const pageUrl = `${BASE}/${urlParts[0]}/compare`;
     return [
       {
         "@context": "https://schema.org",
@@ -832,7 +835,7 @@ async function getRecentArticlesItemListSchema() {
       "itemListElement": recent.map((art, idx) => ({
         "@type": "ListItem",
         "position": idx + 1,
-        "url": `https://entrylab.io/${art.category || 'news'}/${art.slug}`,
+        "url": `https://entrylab.io/learn/${art.category || 'news'}/${art.slug}`,
         "name": stripHtml(art.title || '')
       }))
     };
@@ -852,9 +855,11 @@ export async function generateStructuredData(url: string): Promise<string> {
   const urlParts = url.split('?')[0].split('/').filter(Boolean);
   
   // Determine if this is a broker/prop-firm detail page (they have their own entity schemas)
-  const isBrokerOrPropFirm = (urlParts[0] === 'broker' || urlParts[0] === 'prop-firm') && urlParts[1];
-  const isComparisonPage = urlParts[0] === 'compare' && urlParts.length === 3;
-  
+  // Nested articles (/brokers/:slug/:articleSlug) are articles, not broker pages
+  const isNestedArticle = (urlParts[0] === 'brokers' || urlParts[0] === 'prop-firms') && urlParts.length >= 3 && urlParts[1] !== 'compare';
+  const isBrokerOrPropFirm = (urlParts[0] === 'brokers' || urlParts[0] === 'prop-firms') && urlParts[1] && urlParts[1] !== 'compare' && !isNestedArticle;
+  const isComparisonPage = (urlParts[0] === 'brokers' || urlParts[0] === 'prop-firms') && urlParts[1] === 'compare' && urlParts.length === 3;
+
   // Only include organization schema on non-broker/prop-firm detail pages
   if (!isBrokerOrPropFirm && !isComparisonPage) {
     schemas.push(getOrganizationSchema());
@@ -871,10 +876,15 @@ export async function generateStructuredData(url: string): Promise<string> {
   if (urlParts[0] === 'article' && urlParts[1]) {
     const articleSchemas = await getArticleSchema(urlParts[1]);
     if (articleSchemas) schemas.push(...articleSchemas);
-  } else if (urlParts[0] === 'broker' && urlParts[1]) {
+  } else if (isNestedArticle) {
+    // Nested article: /brokers/:brokerSlug/:articleSlug or /prop-firms/:firmSlug/:articleSlug
+    const articleSlug = urlParts[2];
+    const articleSchemas = await getArticleSchema(articleSlug);
+    if (articleSchemas) schemas.push(...articleSchemas);
+  } else if (urlParts[0] === 'brokers' && urlParts[1] && urlParts[1] !== 'compare') {
     const brokerSchemas = await getBrokerSchema(urlParts[1]);
     if (brokerSchemas) schemas.push(...brokerSchemas);
-  } else if (urlParts[0] === 'prop-firm' && urlParts[1]) {
+  } else if (urlParts[0] === 'prop-firms' && urlParts[1] && urlParts[1] !== 'compare') {
     const propFirmSchemas = await getPropFirmSchema(urlParts[1]);
     if (propFirmSchemas) schemas.push(...propFirmSchemas);
   } else if (urlParts[0] === 'brokers' && !urlParts[1]) {
@@ -899,19 +909,19 @@ export async function generateStructuredData(url: string): Promise<string> {
         { "@type": "ListItem", "position": 2, "name": "Prop Firm Reviews", "item": "https://entrylab.io/prop-firms" }
       ]
     });
-  } else if (urlParts.length === 2 && ['news', 'broker-news', 'broker-guides', 'prop-firm-news', 'prop-firm-guides', 'trading-tools'].includes(urlParts[0])) {
-    // Handle /:category/:slug article format (e.g., /broker-news/zarafx-gets-raided)
-    const articleSchemas = await getArticleSchema(urlParts[1]);
+  } else if (urlParts.length === 3 && urlParts[0] === 'learn' && ['news', 'broker-news', 'broker-guides', 'prop-firm-news', 'prop-firm-guides', 'trading-tools'].includes(urlParts[1])) {
+    // Handle /learn/:category/:slug article format (e.g., /learn/broker-news/zarafx-gets-raided)
+    const articleSchemas = await getArticleSchema(urlParts[2]);
     if (articleSchemas) schemas.push(...articleSchemas);
   } else {
-    // Hub and archive pages: /compare, /compare/broker, /compare/prop-firm, /broker-news, /signals, etc.
+    // Hub and archive pages: /compare, /brokers/compare, /prop-firms/compare, /topics/broker-news, /signals, etc.
     const staticSchemas = getStaticPageSchemas(urlParts);
     if (staticSchemas.length) schemas.push(...staticSchemas);
   }
 
-  if (urlParts[0] === 'compare' && urlParts.length === 3 && (urlParts[1] === 'broker' || urlParts[1] === 'prop-firm')) {
-    // Comparison pages: /compare/broker/:slug and /compare/prop-firm/:slug
-    const entityType = urlParts[1] as 'broker' | 'prop-firm';
+  if ((urlParts[0] === 'brokers' || urlParts[0] === 'prop-firms') && urlParts[1] === 'compare' && urlParts.length === 3) {
+    // Comparison pages: /brokers/compare/:slug and /prop-firms/compare/:slug
+    const entityType = urlParts[0] === 'brokers' ? 'broker' : 'prop-firm' as 'broker' | 'prop-firm';
     const compSchemas = await getComparisonPageSchema(entityType, urlParts[2]);
     if (compSchemas) schemas.push(...compSchemas);
   }

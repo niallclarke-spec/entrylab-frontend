@@ -84,7 +84,7 @@ export function ConversionHero({ topBrokers }: ConversionHeroProps) {
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="w-full sm:w-auto bg-card/50 backdrop-blur-sm" data-testid="button-view-reviews">
-                <Link href="/reviews">
+                <Link href="/brokers">
                   View All Reviews
                 </Link>
               </Button>
@@ -176,7 +176,7 @@ export function ConversionHero({ topBrokers }: ConversionHeroProps) {
                             </a>
                           </Button>
                           <Button asChild variant="outline" className="flex-1" data-testid={`button-review-${broker.id}`}>
-                            <Link href={broker.reviewLink || `/broker/${broker.slug}`}>
+                            <Link href={broker.reviewLink || `/brokers/${broker.slug}`}>
                               Read Review
                             </Link>
                           </Button>

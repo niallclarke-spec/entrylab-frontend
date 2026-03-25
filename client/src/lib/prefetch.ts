@@ -28,23 +28,17 @@ export function prefetchRoute(route: string) {
     case '/article':
       import('@/pages/Article');
       break;
-    case '/broker':
-      import('@/pages/BrokerReview');
+    case '/brokers/compare':
+      import('@/pages/ComparisonBrokerHub');
       break;
-    case '/prop-firm':
-      import('@/pages/PropFirmReview');
+    case '/prop-firms/compare':
+      import('@/pages/ComparisonPropFirmHub');
       break;
     case '/signals':
       import('@/pages/SignalsLanding');
       break;
     case '/compare':
       import('@/pages/Compare');
-      break;
-    case '/compare/broker':
-      import('@/pages/ComparisonBrokerHub');
-      break;
-    case '/compare/prop-firm':
-      import('@/pages/ComparisonPropFirmHub');
       break;
   }
 
@@ -63,10 +57,10 @@ export function prefetchRoute(route: string) {
       });
       break;
     case '/compare':
-    case '/compare/broker':
+    case '/brokers/compare':
       queryClient.prefetchQuery({ queryKey: ['/api/brokers'], staleTime: 5 * 60 * 1000 });
       break;
-    case '/compare/prop-firm':
+    case '/prop-firms/compare':
       queryClient.prefetchQuery({ queryKey: ['/api/prop-firms'], staleTime: 5 * 60 * 1000 });
       break;
     case '/':

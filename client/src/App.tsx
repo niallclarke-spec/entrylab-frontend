@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect } from "react";
 import { Switch, Route } from "wouter";
 import AdminLogin from "@/pages/admin/AdminLogin";
 import { queryClient } from "./lib/queryClient";
@@ -138,29 +138,34 @@ function Router() {
       <Route path="/admin"><S><AdminDashboard /></S></Route>
 
       {/* ── Public routes ── */}
+
+      {/* Broker silo — specific routes before catch-all */}
+      <Route path="/brokers/compare/:slug"><S><ComparisonPage /></S></Route>
+      <Route path="/brokers/compare"><S><ComparisonBrokerHub /></S></Route>
+      <Route path="/brokers/best-cfd"><S><BrokerCategoryArchive /></S></Route>
+      <Route path="/brokers/top-3-cfd"><S><BrokerCategoryArchive /></S></Route>
+      <Route path="/brokers/category/:slug"><S><BrokerCategoryArchive /></S></Route>
+      <Route path="/brokers/:brokerSlug/:articleSlug"><S><Article /></S></Route>
+      <Route path="/brokers/:slug"><S><BrokerReview /></S></Route>
       <Route path="/brokers"><S><Brokers /></S></Route>
-      <Route path="/broker-categories/:slug"><S><BrokerCategoryArchive /></S></Route>
-      <Route path="/broker/:brokerSlug/:articleSlug"><S><Article /></S></Route>
-      <Route path="/broker/:slug"><S><BrokerReview /></S></Route>
-      <Route path="/prop-firms/:category?"><S><PropFirms /></S></Route>
-      <Route path="/prop-firm/:propFirmSlug/:articleSlug"><S><Article /></S></Route>
-      <Route path="/prop-firm/:slug"><S><PropFirmReview /></S></Route>
+
+      {/* Prop firm silo — specific routes before catch-all */}
+      <Route path="/prop-firms/compare/:slug"><S><ComparisonPage /></S></Route>
+      <Route path="/prop-firms/compare"><S><ComparisonPropFirmHub /></S></Route>
+      <Route path="/prop-firms/best-verified"><S><PropFirmCategoryArchive /></S></Route>
+      <Route path="/prop-firms/:propFirmSlug/:articleSlug"><S><Article /></S></Route>
+      <Route path="/prop-firms/:slug"><S><PropFirmReview /></S></Route>
+      <Route path="/prop-firms"><S><PropFirms /></S></Route>
+
       <Route path="/signals"><S><SignalsLanding /></S></Route>
       <Route path="/subscribe"><S><Subscribe /></S></Route>
       <Route path="/success"><S><Success /></S></Route>
       <Route path="/free-access"><S><FreeAccess /></S></Route>
       <Route path="/dashboard"><S><Dashboard /></S></Route>
       <Route path="/terms"><S><TermsConditions /></S></Route>
-      <Route path="/compare/broker/:slug"><S><ComparisonPage /></S></Route>
-      <Route path="/compare/prop-firm/:slug"><S><ComparisonPage /></S></Route>
-      <Route path="/compare/broker"><S><ComparisonBrokerHub /></S></Route>
-      <Route path="/compare/prop-firm"><S><ComparisonPropFirmHub /></S></Route>
       <Route path="/compare"><S><Compare /></S></Route>
-      <Route path="/top-cfd-brokers"><S><BrokerCategoryArchive /></S></Route>
-      <Route path="/top-3-cfd-brokers"><S><BrokerCategoryArchive /></S></Route>
-      <Route path="/best-verified-propfirms"><S><PropFirmCategoryArchive /></S></Route>
-      <Route path="/:category/:slug"><S><Article /></S></Route>
-      <Route path="/:slug"><S><CategoryArchive /></S></Route>
+      <Route path="/learn/:category/:slug"><S><Article /></S></Route>
+      <Route path="/topics/:slug"><S><CategoryArchive /></S></Route>
       <Route path="/"><S><Home /></S></Route>
       <Route><S><NotFound /></S></Route>
     </Switch>
@@ -168,12 +173,23 @@ function Router() {
 }
 
 function App() {
-  useEffect(() => {
-    // Remove SSR-injected crawler content once React has hydrated — prevents
-    // the content appearing twice (once in #ssr-content, once from React render)
-    const ssrEl = document.getElementById('ssr-content');
-    if (ssrEl) ssrEl.remove();
+  // SSR content lives OUTSIDE #root for crawlers (Googlebot indexes it).
+  // Visually hide it once React mounts so users don't see duplicated text,
+  // but keep it IN the DOM so search-engine renderers can still read it
+  // even if the client-side data fetch fails or times out.
+  useLayoutEffect(() => {
+    const hide = (id: string) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.setAttribute('aria-hidden', 'true');
+        el.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;';
+      }
+    };
+    hide('ssr-content');
+    hide('ssr-nav');
+  }, []);
 
+  useEffect(() => {
     captureUTMParams();
     autoPrefetchRoutes(2000);
   }, []);

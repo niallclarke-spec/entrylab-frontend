@@ -151,7 +151,7 @@ export default function ComparisonBrokerHub() {
                 return (
                   <Link
                     key={c.id}
-                    href={`/compare/broker/${c.slug}`}
+                    href={`/brokers/compare/${c.slug}`}
                     className="group block"
                     data-testid={`link-comparison-${c.id}`}
                   >

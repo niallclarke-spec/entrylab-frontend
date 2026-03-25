@@ -28,9 +28,10 @@ export default function Article() {
   // Support both /:category/:slug and /broker/:brokerSlug/:articleSlug patterns
   const slug = params.articleSlug || params.slug;
 
-  const { data: post, isLoading } = useQuery<Article>({
+  const { data: post, isLoading, error } = useQuery<Article>({
     queryKey: ["/api/articles", slug],
     enabled: !!slug,
+    retry: 2,
   });
 
   const { data: brokers = [] } = useQuery<Broker[]>({
@@ -471,12 +472,12 @@ export default function Article() {
     );
   }
 
-  if (!post) {
+  if (!post && !isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navigation />
         <div className="flex-1 flex items-center justify-center py-32">
-          <p className="text-muted-foreground">Article not found</p>
+          <p className="text-muted-foreground">{error ? "Failed to load article. Please try refreshing." : "Article not found"}</p>
         </div>
         <Footer />
       </div>
@@ -498,14 +499,14 @@ export default function Article() {
     breadcrumbs = [
       { name: "Home", url: "https://entrylab.io" },
       { name: "Brokers", url: "https://entrylab.io/brokers" },
-      { name: relatedBroker.name, url: `https://entrylab.io/broker/${relatedBroker.slug}` },
+      { name: relatedBroker.name, url: `https://entrylab.io/brokers/${relatedBroker.slug}` },
       { name: stripHtml(post.title), url: seoUrl },
     ];
   } else if (relatedPropFirm && typeof relatedPropFirm === "object" && relatedPropFirm.slug) {
     breadcrumbs = [
       { name: "Home", url: "https://entrylab.io" },
       { name: "Prop Firms", url: "https://entrylab.io/prop-firms" },
-      { name: relatedPropFirm.name, url: `https://entrylab.io/prop-firm/${relatedPropFirm.slug}` },
+      { name: relatedPropFirm.name, url: `https://entrylab.io/prop-firms/${relatedPropFirm.slug}` },
       { name: stripHtml(post.title), url: seoUrl },
     ];
   } else {
@@ -685,7 +686,7 @@ export default function Article() {
                 <div className="flex items-center gap-2">
                   <Badge className="gap-1 bg-emerald-500/20 text-emerald-300 border-emerald-400/30 hover:bg-emerald-500/30">
                     <Award className="h-3 w-3" />
-                    Independant Analysis
+                    Independent Analysis
                   </Badge>
                 </div>
               </div>
@@ -735,7 +736,7 @@ export default function Article() {
                 {/* Featured Firm Logo Banner */}
                 {featuredFirm && featuredFirmType && (
                   <a
-                    href={featuredFirmType === "broker" ? `/broker/${featuredFirm.slug}` : `/prop-firm/${featuredFirm.slug}`}
+                    href={featuredFirmType === "broker" ? `/brokers/${featuredFirm.slug}` : `/prop-firms/${featuredFirm.slug}`}
                     className="flex items-center gap-4 mb-8 p-4 rounded-xl no-underline group"
                     style={{ background: "#f5f7f6", border: "1px solid #e8edea", textDecoration: "none" }}
                   >
@@ -745,6 +746,8 @@ export default function Article() {
                         <img
                           src={featuredFirm.logo}
                           alt={featuredFirm.name}
+                          width="48"
+                          height="48"
                           style={{ width: "100%", height: "100%", objectFit: "contain" }}
                         />
                       </div>

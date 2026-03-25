@@ -4,15 +4,15 @@ import { useState } from "react";
 import { prefetchRoute } from "@/lib/prefetch";
 
 const navLinks = [
-  { href: "/top-cfd-brokers", label: "Top CFD Brokers", testId: "link-top-cfd-brokers", icon: Shield },
-  { href: "/best-verified-propfirms", label: "Best Prop Firms", testId: "link-best-prop-firms", icon: TrendingUp },
-  { href: "/news", label: "News", testId: "link-news", icon: Newspaper },
+  { href: "/brokers/best-cfd", label: "Top CFD Brokers", testId: "link-top-cfd-brokers", icon: Shield },
+  { href: "/prop-firms/best-verified", label: "Best Prop Firms", testId: "link-best-prop-firms", icon: TrendingUp },
+  { href: "/topics/news", label: "News", testId: "link-news", icon: Newspaper },
 ];
 
 const compareDropdownLinks = [
   { href: "/compare", label: "All Comparisons", testId: "link-compare-tool" },
-  { href: "/compare/broker", label: "Broker vs Broker", testId: "link-compare-brokers" },
-  { href: "/compare/prop-firm", label: "Prop Firm vs Prop Firm", testId: "link-compare-prop-firms" },
+  { href: "/brokers/compare", label: "Broker vs Broker", testId: "link-compare-brokers" },
+  { href: "/prop-firms/compare", label: "Prop Firm vs Prop Firm", testId: "link-compare-prop-firms" },
 ];
 
 export function Navigation() {
@@ -20,7 +20,7 @@ export function Navigation() {
   const [compareOpen, setCompareOpen] = useState(false);
   const [location] = useLocation();
 
-  const isCompareActive = location.startsWith("/compare");
+  const isCompareActive = location === "/compare" || location.includes("/compare");
 
   return (
     <>

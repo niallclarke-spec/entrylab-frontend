@@ -23,7 +23,7 @@ export default function BrokerCategoryArchive() {
   const params = useParams();
   const [, setLocation] = useLocation();
 
-  const slug = params.slug || window.location.pathname.slice(1);
+  const slug = params.slug || window.location.pathname.split("/").pop() || "";
 
   useEffect(() => {
     trackPageView(`/${slug}`, `${slug} | EntryLab`);
@@ -171,7 +171,7 @@ export default function BrokerCategoryArchive() {
                         border: isSelected ? "1px solid rgba(43,179,42,0.15)" : "1px solid rgba(255,255,255,0.70)",
                         color: isSelected ? "#14531a" : "#374151",
                       }}
-                      onClick={() => setLocation(`/broker-categories/${cat.slug}`)}
+                      onClick={() => setLocation(`/brokers/category/${cat.slug}`)}
                       data-testid={`badge-category-${cat.slug}`}
                     >
                       {cat.name}
@@ -228,7 +228,7 @@ export default function BrokerCategoryArchive() {
                     </p>
                     <div className="flex flex-wrap gap-3 justify-center">
                       <Button asChild variant="outline" className="gap-2" style={{ color: "#186818", borderColor: "rgba(43,179,42,0.3)" }} data-testid="button-see-latest-news">
-                        <a href="/news">
+                        <a href="/topics/news">
                           <Newspaper className="h-4 w-4" />
                           See Latest FX News
                           <ArrowRight className="h-4 w-4" />
