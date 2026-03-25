@@ -1,4 +1,4 @@
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -7,13 +7,13 @@ import { PropFirmRow } from "@/components/PropFirmRow";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Shield, Star, CheckCircle2, ShieldCheck, ArrowRight, Newspaper } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { trackPageView } from "@/lib/gtm";
 import type { Broker } from "@shared/schema";
 
 export default function PropFirmCategoryArchive() {
   const params = useParams();
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [, setLocation] = useLocation();
 
   const slug = params.slug || window.location.pathname.split("/").pop() || "";
 
@@ -36,20 +36,12 @@ export default function PropFirmCategoryArchive() {
     queryKey: ["/api/prop-firm-categories"],
   });
 
-  const { data: allPropFirms, isLoading: allLoading } = useQuery<Broker[]>({
-    queryKey: ["/api/prop-firms"],
-    enabled: !activeCategory,
+  const { data: categoryContent, isLoading } = useQuery<any>({
+    queryKey: [`/api/category-content?category=${slug}`],
+    enabled: !!slug,
   });
 
-  const { data: categoryContent, isLoading: catLoading } = useQuery<any>({
-    queryKey: [`/api/category-content?category=${activeCategory}`],
-    enabled: !!activeCategory,
-  });
-
-  const isLoading = activeCategory ? catLoading : allLoading;
-  const propFirms: Broker[] = activeCategory
-    ? (categoryContent?.propFirms || [])
-    : (allPropFirms || []);
+  const propFirms: Broker[] = categoryContent?.propFirms || [];
   const totalVerified = propFirms.filter((p: Broker) => p.verified).length;
   const avgRating = propFirms.length > 0
     ? (propFirms.reduce((sum: number, p: Broker) => sum + p.rating, 0) / propFirms.length).toFixed(1)
@@ -159,7 +151,7 @@ export default function PropFirmCategoryArchive() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-2">
               <div className="flex flex-wrap items-center gap-2">
                 {filteredCategories.map((cat: any) => {
-                  const isSelected = cat.slug === activeCategory;
+                  const isSelected = cat.slug === slug;
                   return (
                     <button
                       key={cat.slug}
@@ -169,7 +161,7 @@ export default function PropFirmCategoryArchive() {
                         border: isSelected ? "1px solid rgba(43,179,42,0.15)" : "1px solid rgba(255,255,255,0.70)",
                         color: isSelected ? "#14531a" : "#374151",
                       }}
-                      onClick={() => setActiveCategory(isSelected ? null : cat.slug)}
+                      onClick={() => { if (!isSelected) setLocation(`/prop-firms/${cat.slug}`); }}
                       data-testid={`badge-category-${cat.slug}`}
                     >
                       {cat.name}
