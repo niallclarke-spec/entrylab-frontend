@@ -3190,10 +3190,15 @@ ${items}
         let html = `<style>#ssr-content{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:24px 16px;color:#1a1a1a}#ssr-content h1{font-size:2rem;font-weight:700;margin-bottom:16px}#ssr-content h2{font-size:1.4rem;font-weight:600;margin:24px 0 12px}#ssr-content p{margin-bottom:12px;line-height:1.7}#ssr-content dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}#ssr-content dt{font-weight:600;color:#555}#ssr-content dd{color:#222}#ssr-content ul{padding-left:20px;margin-bottom:12px}#ssr-content li{margin-bottom:4px}#ssr-nav{padding:16px;border-top:1px solid #eee;margin-top:24px}#ssr-nav ul{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:8px}#ssr-nav a{color:#2bb32a;text-decoration:none;font-size:0.9rem}</style>`;
         html += `<div id="ssr-content">`;
 
+        // Detect nested article URLs: /brokers/:slug/:articleSlug or /prop-firms/:slug/:articleSlug
+        const urlSegCount = cleanUrl.split('/').filter(Boolean).length;
+        const isNestedArticleUrl = (cleanUrl.startsWith('/brokers/') || cleanUrl.startsWith('/prop-firms/')) && urlSegCount >= 3
+          && !cleanUrl.includes('/compare/') && !cleanUrl.includes('/category/');
+
         // H1 title — descriptive, matches search intent for entity pages
         if (title) {
           let h1 = title;
-          if (cleanUrl.startsWith('/brokers/') && !cleanUrl.split('/').filter(Boolean)[1]?.includes('/')) {
+          if (cleanUrl.startsWith('/brokers/') && urlSegCount === 2 && !isNestedArticleUrl) {
             // Broker review page: "GatesFX Review — Spreads, Regulation & Trading Conditions"
             const reg0 = (pageData.regulation || '').split(',')[0].trim();
             const regLabel = reg0 && reg0.toLowerCase() !== 'no regulation' ? `Regulated: ${reg0}` : (reg0.toLowerCase().includes('no') ? 'Unregulated' : '');
@@ -3203,7 +3208,7 @@ ${items}
               pageData.rating ? `Rating: ${pageData.rating}/5` : '',
             ].filter(Boolean).join(' · ');
             h1 = `${title} Review${extras ? ` — ${extras}` : ''}`;
-          } else if (cleanUrl.startsWith('/prop-firms/') && cleanUrl.split('/').filter(Boolean).length === 2) {
+          } else if (cleanUrl.startsWith('/prop-firms/') && urlSegCount === 2 && !isNestedArticleUrl) {
             // Prop firm review page: "FTMO Review — 90% Profit Split · $200K Funding"
             const extras = [
               pageData.profitSplit ? `Profit Split: ${pageData.profitSplit}` : '',
@@ -3230,8 +3235,23 @@ ${items}
             .trim()
           : '';
 
+        // Nested articles under /brokers/ or /prop-firms/ — render as articles, not entity pages
+        if (isNestedArticleUrl) {
+          const author = pageData.author;
+          const date = pageData.publishedAt ? new Date(pageData.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+
+          if (author || date) {
+            html += `<p><small>${[author, date].filter(Boolean).join(' · ')}</small></p>`;
+          }
+
+          if (pageData.content) {
+            const bodyHtml = truncateHtml(sanitizeForSSR(pageData.content), 30000);
+            html += bodyHtml;
+          }
+        }
+
         // Broker-specific fields
-        if (cleanUrl.startsWith('/brokers/')) {
+        else if (cleanUrl.startsWith('/brokers/')) {
           const fields: [string, any][] = [
             ['Rating', pageData.rating],
             ['Regulation', pageData.regulation],
@@ -3548,7 +3568,9 @@ ${items}
         const urlSegments = cleanUrl.split('/').filter(Boolean);
         const isEntityUrl =
           (urlSegments[0] === 'broker' && urlSegments[1]) ||
+          (urlSegments[0] === 'brokers' && urlSegments[1] && urlSegments[1] !== 'compare' && urlSegments[1] !== 'best-cfd' && urlSegments[1] !== 'top-3-cfd' && urlSegments[1] !== 'category') ||
           (urlSegments[0] === 'prop-firm' && urlSegments[1]) ||
+          (urlSegments[0] === 'prop-firms' && urlSegments[1] && urlSegments[1] !== 'compare' && urlSegments[1] !== 'best-verified' && urlSegments[1] !== 'category') ||
           (urlSegments[0] === 'compare' && urlSegments.length === 3);
         if (isEntityUrl && !pageData) {
           httpStatus = 404;

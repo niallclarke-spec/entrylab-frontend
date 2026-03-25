@@ -28,9 +28,10 @@ export default function Article() {
   // Support both /:category/:slug and /broker/:brokerSlug/:articleSlug patterns
   const slug = params.articleSlug || params.slug;
 
-  const { data: post, isLoading } = useQuery<Article>({
+  const { data: post, isLoading, error } = useQuery<Article>({
     queryKey: ["/api/articles", slug],
     enabled: !!slug,
+    retry: 2,
   });
 
   const { data: brokers = [] } = useQuery<Broker[]>({
@@ -471,12 +472,12 @@ export default function Article() {
     );
   }
 
-  if (!post) {
+  if (!post && !isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navigation />
         <div className="flex-1 flex items-center justify-center py-32">
-          <p className="text-muted-foreground">Article not found</p>
+          <p className="text-muted-foreground">{error ? "Failed to load article. Please try refreshing." : "Article not found"}</p>
         </div>
         <Footer />
       </div>
