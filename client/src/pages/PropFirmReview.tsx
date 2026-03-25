@@ -134,6 +134,7 @@ export default function PropFirmReview() {
   const { data: rawPropFirm, isLoading } = useQuery<any>({
     queryKey: ["/api/prop-firms", slug],
     enabled: !!slug,
+    retry: 2,
   });
 
   const { data: reviews = [] } = useQuery<any[]>({
@@ -191,7 +192,7 @@ export default function PropFirmReview() {
     );
   }
 
-  if (!propFirm) {
+  if (!propFirm && !isLoading) {
     return (
       <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(160deg, #f6f9f6 0%, #f8faf8 50%, #f5f8f5 100%)" }}>
         <Navigation />

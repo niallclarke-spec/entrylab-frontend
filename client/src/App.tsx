@@ -173,14 +173,20 @@ function Router() {
 }
 
 function App() {
-  // Remove SSR-injected crawler content before paint so users never see both.
-  // SSR content lives OUTSIDE #root (sibling before it) for crawlers;
-  // React renders inside #root independently — no duplication.
+  // SSR content lives OUTSIDE #root for crawlers (Googlebot indexes it).
+  // Visually hide it once React mounts so users don't see duplicated text,
+  // but keep it IN the DOM so search-engine renderers can still read it
+  // even if the client-side data fetch fails or times out.
   useLayoutEffect(() => {
-    const ssrEl = document.getElementById('ssr-content');
-    if (ssrEl) ssrEl.remove();
-    const ssrNav = document.getElementById('ssr-nav');
-    if (ssrNav) ssrNav.remove();
+    const hide = (id: string) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.setAttribute('aria-hidden', 'true');
+        el.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;';
+      }
+    };
+    hide('ssr-content');
+    hide('ssr-nav');
   }, []);
 
   useEffect(() => {

@@ -3575,6 +3575,14 @@ ${items}
         if (isEntityUrl && !pageData) {
           httpStatus = 404;
         }
+        // /learn/:category/:slug articles — 404 if article doesn't exist
+        if (urlSegments[0] === 'learn' && urlSegments.length === 3 && !pageData) {
+          httpStatus = 404;
+        }
+        // Individual comparison pages — 404 if comparison doesn't exist
+        if ((urlSegments[0] === 'brokers' || urlSegments[0] === 'prop-firms') && urlSegments[1] === 'compare' && urlSegments.length === 3 && !pageData) {
+          httpStatus = 404;
+        }
         // Catch old WordPress root-level article URLs (/:slug) that don't match a known
         // category archive — return 404 so Google stops indexing ghost pages.
         const knownRootPaths = ['brokers', 'prop-firms', 'compare', 'signals', 'subscribe',
@@ -3705,9 +3713,9 @@ ${items}
 
           // T001: Inject real body content so Googlebot sees text on first-pass crawl.
           // Placed BEFORE #root so React never touches it — no duplication.
-          // App.tsx removes #ssr-content after React mounts.
-          // Skip for pages that have custom SSR blocks below (homepage, /brokers, /prop-firms, /compare, category archives)
-          const hasCustomSSR = ['/', '/brokers', '/prop-firms', '/compare'].includes(cleanUrl)
+          // App.tsx visually hides #ssr-content after React mounts (kept in DOM for crawlers).
+          // Skip for pages that have custom SSR blocks below (homepage, /brokers, /prop-firms, /compare, comparison hubs, category archives)
+          const hasCustomSSR = ['/', '/brokers', '/prop-firms', '/compare', '/brokers/compare', '/prop-firms/compare'].includes(cleanUrl)
             || cleanUrl.startsWith('/topics/');
           if (!hasCustomSSR) {
             try {
@@ -4041,6 +4049,35 @@ ${items}
               console.log('[SEO] Injected /prop-firms SSR content');
             } catch (err) {
               console.error('[SEO] /prop-firms SSR injection error:', err);
+            }
+
+          } else if (cleanUrl === '/brokers/compare' || cleanUrl === '/prop-firms/compare') {
+            // Comparison hub page — list all comparisons for the entity type
+            try {
+              const entityType = cleanUrl === '/brokers/compare' ? 'broker' : 'prop_firm';
+              const entityLabel = entityType === 'broker' ? 'Broker' : 'Prop Firm';
+              const entityPath = entityType === 'broker' ? 'brokers' : 'prop-firms';
+              const comps = await db.select({ slug: comparisonsTable.slug, entityAName: comparisonsTable.entityAName, entityBName: comparisonsTable.entityBName })
+                .from(comparisonsTable)
+                .where(and(inArray(comparisonsTable.status, ['published', 'updated']), eq(comparisonsTable.entityType, entityType)))
+                .orderBy(desc(comparisonsTable.updatedAt))
+                .limit(80);
+
+              const ssrStyle = `<style>#ssr-content{font-family:system-ui,sans-serif;max-width:960px;margin:0 auto;padding:24px 16px;color:#1a1a1a}#ssr-content h1{font-size:2rem;font-weight:700;margin-bottom:16px}#ssr-content h2{font-size:1.4rem;font-weight:600;margin:24px 0 12px}#ssr-content p{margin-bottom:12px;line-height:1.7}#ssr-content ul{padding-left:20px;margin-bottom:12px}#ssr-content li{margin-bottom:4px}#ssr-content a{color:#2bb32a;text-decoration:none}</style>`;
+              let ssrHtml = `${ssrStyle}<div id="ssr-content">`;
+              ssrHtml += `<h1>Compare ${entityLabel}s — Side-by-Side ${entityLabel} Reviews</h1>`;
+              ssrHtml += `<p>Detailed head-to-head ${entityLabel.toLowerCase()} comparisons covering fees, regulation, platforms, and trading conditions.</p>`;
+              if (comps.length > 0) {
+                ssrHtml += `<h2>All ${entityLabel} Comparisons</h2><ul>`;
+                for (const c of comps) {
+                  ssrHtml += `<li><a href="/${entityPath}/compare/${c.slug}">${c.entityAName} vs ${c.entityBName}</a></li>`;
+                }
+                ssrHtml += `</ul>`;
+              }
+              ssrHtml += `</div>`;
+              modifiedHtml = modifiedHtml.replace('<div id="root">', `${ssrHtml}\n    <div id="root">`);
+            } catch (err) {
+              console.error(`[SEO] ${cleanUrl} SSR injection error:`, err);
             }
 
           } else if (cleanUrl === '/compare') {
