@@ -142,8 +142,6 @@ function Router() {
       {/* Broker silo — specific routes before catch-all */}
       <Route path="/brokers/compare/:slug"><S><ComparisonPage /></S></Route>
       <Route path="/brokers/compare"><S><ComparisonBrokerHub /></S></Route>
-      <Route path="/brokers/best-cfd"><S><BrokerCategoryArchive /></S></Route>
-      <Route path="/brokers/top-3-cfd"><S><BrokerCategoryArchive /></S></Route>
       <Route path="/brokers/category/:slug"><S><BrokerCategoryArchive /></S></Route>
       <Route path="/brokers/:brokerSlug/:articleSlug"><S><Article /></S></Route>
       <Route path="/brokers/:slug"><S><BrokerReview /></S></Route>
@@ -152,7 +150,7 @@ function Router() {
       {/* Prop firm silo — specific routes before catch-all */}
       <Route path="/prop-firms/compare/:slug"><S><ComparisonPage /></S></Route>
       <Route path="/prop-firms/compare"><S><ComparisonPropFirmHub /></S></Route>
-      <Route path="/prop-firms/best-verified"><S><PropFirmCategoryArchive /></S></Route>
+      <Route path="/prop-firms/category/:slug"><S><PropFirmCategoryArchive /></S></Route>
       <Route path="/prop-firms/:propFirmSlug/:articleSlug"><S><Article /></S></Route>
       <Route path="/prop-firms/:slug"><S><PropFirmReview /></S></Route>
       <Route path="/prop-firms"><S><PropFirms /></S></Route>

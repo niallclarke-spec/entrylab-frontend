@@ -146,13 +146,13 @@ export default function Archive() {
 
           {/* Directory Links */}
           <div className="mb-10 flex flex-wrap gap-3 justify-center">
-            <Link href="/brokers/best-cfd">
+            <Link href="/brokers">
               <Button variant="ghost" size="default" className="gap-2" style={{ color: "#186818" }} data-testid="button-brokers-directory">
                 <Shield className="h-4 w-4" />
                 Browse Broker Reviews
               </Button>
             </Link>
-            <Link href="/prop-firms/best-verified">
+            <Link href="/prop-firms">
               <Button variant="ghost" size="default" className="gap-2" style={{ color: "#186818" }} data-testid="button-prop-firms-directory">
                 <TrendingUp className="h-4 w-4" />
                 Browse Prop Firm Reviews
