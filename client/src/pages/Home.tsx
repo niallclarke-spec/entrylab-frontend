@@ -192,7 +192,7 @@ export default function Home() {
                           Compare the best forex brokers trusted by thousands of traders worldwide
                         </p>
                       </div>
-                      <a href="/brokers/best-cfd" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold flex-shrink-0 hover:opacity-80 transition-opacity" style={{ color: "#186818" }}>
+                      <a href="/brokers" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold flex-shrink-0 hover:opacity-80 transition-opacity" style={{ color: "#186818" }}>
                         View All
                       </a>
                     </div>
@@ -237,7 +237,7 @@ export default function Home() {
                           Start your funded trading journey with the best verified prop firms
                         </p>
                       </div>
-                      <a href="/prop-firms/best-verified" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold flex-shrink-0 hover:opacity-80 transition-opacity mt-1" style={{ color: "#186818" }}>
+                      <a href="/prop-firms" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold flex-shrink-0 hover:opacity-80 transition-opacity mt-1" style={{ color: "#186818" }}>
                         View All
                       </a>
                     </div>

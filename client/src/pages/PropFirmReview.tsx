@@ -199,7 +199,7 @@ export default function PropFirmReview() {
         <div className="flex-1 flex items-center justify-center py-32">
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4" style={{ color: "#111827" }}>Prop Firm Not Found</h2>
-            <Link href="/prop-firms/best-verified">
+            <Link href="/prop-firms">
               <Button data-testid="button-back-prop-firms">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Prop Firms
               </Button>

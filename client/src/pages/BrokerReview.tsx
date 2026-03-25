@@ -188,7 +188,7 @@ export default function BrokerReview() {
         <div className="flex-1 flex items-center justify-center py-32">
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4" style={{ color: "#111827" }}>Broker Not Found</h2>
-            <Link href="/brokers/best-cfd">
+            <Link href="/brokers">
               <Button data-testid="button-back-brokers">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Brokers
               </Button>

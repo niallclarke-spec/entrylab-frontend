@@ -1725,15 +1725,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/broker-categories/:slug", (req, res) => {
     res.redirect(301, `/brokers/category/${req.params.slug}`);
   });
-  app.get("/top-cfd-brokers", (req, res) => {
-    res.redirect(301, "/brokers/best-cfd");
-  });
-  app.get("/top-3-cfd-brokers", (req, res) => {
-    res.redirect(301, "/brokers/top-3-cfd");
-  });
-  app.get("/best-verified-propfirms", (req, res) => {
-    res.redirect(301, "/prop-firms/best-verified");
-  });
+  // Old category URLs → main listing pages
+  app.get("/top-cfd-brokers", (_req, res) => { res.redirect(301, "/brokers"); });
+  app.get("/top-3-cfd-brokers", (_req, res) => { res.redirect(301, "/brokers"); });
+  app.get("/best-verified-propfirms", (_req, res) => { res.redirect(301, "/prop-firms"); });
+  app.get("/brokers/best-cfd", (_req, res) => { res.redirect(301, "/brokers"); });
+  app.get("/brokers/top-3-cfd", (_req, res) => { res.redirect(301, "/brokers"); });
+  app.get("/prop-firms/best-verified", (_req, res) => { res.redirect(301, "/prop-firms"); });
 
   // Old category archive root URLs → /topics/ prefix
   const categoryArchiveRedirects = ['broker-news', 'broker-guides', 'prop-firm-news', 'prop-firm-guides', 'trading-tools', 'news'];
@@ -2733,6 +2731,7 @@ ${items}
     if (isHtmlRequest && needsSEO) {
       // Pre-fetch page data to inject into HTML
       let pageData: any = null;
+      let ssrQueryFailed = false; // Track if DB query errored (vs entity not existing)
       try {
         const cleanUrl = url.split('?')[0];
         
@@ -3093,6 +3092,7 @@ ${items}
         }
       } catch (error) {
         console.error('[SEO] Failed to fetch page data:', error);
+        ssrQueryFailed = true;
       }
       
       // Wrap res.end and res.send to intercept HTML response
@@ -3541,8 +3541,8 @@ ${items}
 
         // Site-wide internal links footer for crawler link discovery on all pages
         html += `<nav aria-label="Site links"><ul>`;
-        html += `<li><a href="/brokers/best-cfd">Top CFD Brokers</a></li>`;
-        html += `<li><a href="/prop-firms/best-verified">Best Prop Firms</a></li>`;
+        html += `<li><a href="/brokers">Broker Reviews</a></li>`;
+        html += `<li><a href="/prop-firms">Prop Firm Reviews</a></li>`;
         html += `<li><a href="/brokers">All Broker Reviews</a></li>`;
         html += `<li><a href="/prop-firms">All Prop Firm Reviews</a></li>`;
         html += `<li><a href="/topics/news">Latest News</a></li>`;
@@ -3563,32 +3563,35 @@ ${items}
         let modifiedHtml = html;
         const cleanUrl = url.split('?')[0];
 
-        // Detect missing entities and return 404 status so Google doesn't index ghost pages
+        // Detect missing entities and return 404 status so Google doesn't index ghost pages.
+        // ONLY set 404 when we successfully queried the DB and found nothing — NOT when
+        // the SSR query failed (DB error, timeout, etc.), because the entity may still exist.
         let httpStatus = 200;
-        const urlSegments = cleanUrl.split('/').filter(Boolean);
-        const isEntityUrl =
-          (urlSegments[0] === 'broker' && urlSegments[1]) ||
-          (urlSegments[0] === 'brokers' && urlSegments[1] && urlSegments[1] !== 'compare' && urlSegments[1] !== 'best-cfd' && urlSegments[1] !== 'top-3-cfd' && urlSegments[1] !== 'category') ||
-          (urlSegments[0] === 'prop-firm' && urlSegments[1]) ||
-          (urlSegments[0] === 'prop-firms' && urlSegments[1] && urlSegments[1] !== 'compare' && urlSegments[1] !== 'best-verified' && urlSegments[1] !== 'category') ||
-          (urlSegments[0] === 'compare' && urlSegments.length === 3);
-        if (isEntityUrl && !pageData) {
-          httpStatus = 404;
-        }
-        // /learn/:category/:slug articles — 404 if article doesn't exist
-        if (urlSegments[0] === 'learn' && urlSegments.length === 3 && !pageData) {
-          httpStatus = 404;
-        }
-        // Individual comparison pages — 404 if comparison doesn't exist
-        if ((urlSegments[0] === 'brokers' || urlSegments[0] === 'prop-firms') && urlSegments[1] === 'compare' && urlSegments.length === 3 && !pageData) {
-          httpStatus = 404;
-        }
-        // Catch old WordPress root-level article URLs (/:slug) that don't match a known
-        // category archive — return 404 so Google stops indexing ghost pages.
-        const knownRootPaths = ['brokers', 'prop-firms', 'compare', 'signals', 'subscribe',
-          'success', 'free-access', 'dashboard', 'terms', 'admin', 'learn', 'topics'];
-        if (urlSegments.length === 1 && !knownRootPaths.includes(urlSegments[0]) && !pageData) {
-          httpStatus = 404;
+        if (!ssrQueryFailed && !pageData) {
+          const urlSegments = cleanUrl.split('/').filter(Boolean);
+          const isEntityUrl =
+            (urlSegments[0] === 'broker' && urlSegments[1]) ||
+            (urlSegments[0] === 'brokers' && urlSegments[1] && urlSegments[1] !== 'compare' && urlSegments[1] !== 'best-cfd' && urlSegments[1] !== 'top-3-cfd' && urlSegments[1] !== 'category') ||
+            (urlSegments[0] === 'prop-firm' && urlSegments[1]) ||
+            (urlSegments[0] === 'prop-firms' && urlSegments[1] && urlSegments[1] !== 'compare' && urlSegments[1] !== 'best-verified' && urlSegments[1] !== 'category') ||
+            (urlSegments[0] === 'compare' && urlSegments.length === 3);
+          if (isEntityUrl) {
+            httpStatus = 404;
+          }
+          // /learn/:category/:slug articles
+          if (urlSegments[0] === 'learn' && urlSegments.length === 3) {
+            httpStatus = 404;
+          }
+          // Individual comparison pages
+          if ((urlSegments[0] === 'brokers' || urlSegments[0] === 'prop-firms') && urlSegments[1] === 'compare' && urlSegments.length === 3) {
+            httpStatus = 404;
+          }
+          // Old WordPress root-level article URLs
+          const knownRootPaths = ['brokers', 'prop-firms', 'compare', 'signals', 'subscribe',
+            'success', 'free-access', 'dashboard', 'terms', 'admin', 'learn', 'topics'];
+          if (urlSegments.length === 1 && !knownRootPaths.includes(urlSegments[0])) {
+            httpStatus = 404;
+          }
         }
         
         // Inject structured data
