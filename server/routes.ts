@@ -3666,9 +3666,11 @@ ${items}
           const ogImage = rawOgImage.startsWith('/') ? `https://entrylab.io${rawOgImage}` : rawOgImage;
           const ogUrl = `https://entrylab.io${cleanUrl}`;
           
-          const ogType = cleanUrl.match(/^\/[^/]+\/[^/]+$/) && !cleanUrl.startsWith('/brokers/') && !cleanUrl.startsWith('/prop-firms/')
-            ? 'article'
-            : 'website';
+          // Detect article pages: /learn/:cat/:slug OR nested articles /brokers/:slug/:article, /prop-firms/:slug/:article
+          const urlParts = cleanUrl.split('/').filter(Boolean);
+          const isNestedArticlePage = (urlParts[0] === 'brokers' || urlParts[0] === 'prop-firms') && urlParts.length === 3 && urlParts[1] !== 'compare' && urlParts[1] !== 'category';
+          const isLearnArticle = cleanUrl.match(/^\/learn\/[^/]+\/[^/]+$/) != null;
+          const ogType = (isLearnArticle || isNestedArticlePage) ? 'article' : 'website';
 
           // Article-specific OG tags (og:article:* namespace)
           const catLabelMap: Record<string, string> = {
