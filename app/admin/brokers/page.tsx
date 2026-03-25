@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "../layout";
+import { useAuth } from "@/components/AdminContext";
 import { Plus, Pencil, Trash2, Star, Loader2 } from "lucide-react";
 
 export default function AdminBrokersPage() {

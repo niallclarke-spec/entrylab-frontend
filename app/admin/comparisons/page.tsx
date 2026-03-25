@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "../layout";
+import { useAuth } from "@/components/AdminContext";
 import { Pencil, Trash2, Loader2, Eye, EyeOff } from "lucide-react";
 
 export default function AdminComparisonsPage() {

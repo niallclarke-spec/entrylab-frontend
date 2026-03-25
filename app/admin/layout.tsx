@@ -1,15 +1,10 @@
 "use client";
 
-import { useState, useEffect, createContext, useContext } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Shield, TrendingUp, FileText, GitCompare, Tag, BarChart3, LogOut, Settings } from "lucide-react";
-
-const AuthContext = createContext<{ token: string | null; setToken: (t: string | null) => void }>({ token: null, setToken: () => {} });
-
-export function useAuth() {
-  return useContext(AuthContext);
-}
+import { AdminAuthProvider, useAuth } from "@/components/AdminContext";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: BarChart3 },
@@ -22,17 +17,18 @@ const navItems = [
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const [token, setToken] = useState<string | null>(null);
+  return (
+    <AdminAuthProvider>
+      <AdminShell>{children}</AdminShell>
+    </AdminAuthProvider>
+  );
+}
+
+function AdminShell({ children }: { children: React.ReactNode }) {
+  const { token, setToken, isLoading } = useAuth();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
   const pathname = usePathname();
-
-  useEffect(() => {
-    const stored = localStorage.getItem("admin_token");
-    if (stored) setToken(stored);
-    setLoading(false);
-  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +56,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setToken(null);
   };
 
-  if (loading) return <div className="flex-1 flex items-center justify-center py-32" style={{ color: "#6b7280" }}>Loading...</div>;
+  if (isLoading) return <div className="flex-1 flex items-center justify-center py-32" style={{ color: "#6b7280" }}>Loading...</div>;
 
   if (!token) {
     return (
@@ -87,43 +83,38 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <AuthContext.Provider value={{ token, setToken }}>
-      <div className="flex-1 flex" style={{ background: "#f8faf8" }}>
-        {/* Sidebar */}
-        <aside className="w-64 flex-shrink-0 hidden md:block" style={{ background: "#1a1e1c", borderRight: "1px solid rgba(255,255,255,0.1)" }}>
-          <div className="p-6">
-            <h2 className="text-white font-bold text-lg mb-6">Admin Panel</h2>
-            <nav className="space-y-1">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                      isActive ? "text-white bg-white/10" : "text-[#adb2b1] hover:text-white hover:bg-white/5"
-                    }`}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#adb2b1] hover:text-white hover:bg-white/5 transition-colors mt-8 w-full"
-            >
-              <LogOut className="h-4 w-4" /> Logout
-            </button>
-          </div>
-        </aside>
-
-        {/* Main content */}
-        <div className="flex-1 p-6 md:p-8 overflow-auto">
-          {children}
+    <div className="flex-1 flex" style={{ background: "#f8faf8" }}>
+      <aside className="w-64 flex-shrink-0 hidden md:block" style={{ background: "#1a1e1c", borderRight: "1px solid rgba(255,255,255,0.1)" }}>
+        <div className="p-6">
+          <h2 className="text-white font-bold text-lg mb-6">Admin Panel</h2>
+          <nav className="space-y-1">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                    isActive ? "text-white bg-white/10" : "text-[#adb2b1] hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#adb2b1] hover:text-white hover:bg-white/5 transition-colors mt-8 w-full"
+          >
+            <LogOut className="h-4 w-4" /> Logout
+          </button>
         </div>
+      </aside>
+      <div className="flex-1 p-6 md:p-8 overflow-auto">
+        {children}
       </div>
-    </AuthContext.Provider>
+    </div>
   );
 }

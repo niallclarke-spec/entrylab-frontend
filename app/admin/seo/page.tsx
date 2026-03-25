@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "../layout";
+import { useAuth } from "@/components/AdminContext";
 import { Send, RefreshCw, Loader2, Check, X } from "lucide-react";
 
 export default function AdminSEOPage() {
