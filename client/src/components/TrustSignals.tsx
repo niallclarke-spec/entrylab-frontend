@@ -84,7 +84,7 @@ export function TrustSignals() {
               </p>
 
               <Link
-                href="/news"
+                href="/topics/news"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all"
                 style={{
                   background: "rgba(255,255,255,0.06)",

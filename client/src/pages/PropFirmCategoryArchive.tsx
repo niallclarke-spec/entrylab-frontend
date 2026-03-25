@@ -248,7 +248,7 @@ export default function PropFirmCategoryArchive() {
                     </p>
                     <div className="flex flex-wrap gap-3 justify-center">
                       <Button asChild variant="outline" className="gap-2" style={{ color: "#186818", borderColor: "rgba(43,179,42,0.3)" }} data-testid="button-see-latest-news">
-                        <a href="/news">
+                        <a href="/topics/news">
                           <Newspaper className="h-4 w-4" />
                           See Latest FX News
                           <ArrowRight className="h-4 w-4" />

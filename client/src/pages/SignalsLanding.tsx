@@ -1453,7 +1453,7 @@ export default function SignalsLanding() {
               <span className="text-xl font-bold text-white">EntryLab</span>
             </Link>
             <div className="flex items-center gap-6 text-sm text-[#adb2b1]">
-              <Link href="/privacy" className="hover:text-white transition-colors" data-testid="link-privacy">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-white transition-colors" data-testid="link-privacy">Privacy Policy</Link>
               <Link href="/terms" className="hover:text-white transition-colors" data-testid="link-terms">Terms of Service</Link>
               <a href="mailto:support@entrylab.io" className="hover:text-white transition-colors" data-testid="link-contact">Contact</a>
             </div>
