@@ -23,7 +23,7 @@ export default function BrokerCategoryArchive() {
   const params = useParams();
   const [, setLocation] = useLocation();
 
-  const slug = params.slug || window.location.pathname.slice(1);
+  const slug = params.slug || window.location.pathname.split("/").pop() || "";
 
   useEffect(() => {
     trackPageView(`/${slug}`, `${slug} | EntryLab`);

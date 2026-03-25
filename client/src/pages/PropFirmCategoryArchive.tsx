@@ -15,7 +15,7 @@ export default function PropFirmCategoryArchive() {
   const params = useParams();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  const slug = params.slug || window.location.pathname.slice(1);
+  const slug = params.slug || window.location.pathname.split("/").pop() || "";
 
   useEffect(() => {
     trackPageView(`/${slug}`, `${slug} | EntryLab`);
