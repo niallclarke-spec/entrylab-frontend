@@ -211,9 +211,9 @@ export default function PropFirmReview() {
     );
   }
 
-  // SEO with auto-generated defaults from DB data
-  const seoTitle = `${stripHtml(propFirm.name)} Review ${new Date().getFullYear()} | EntryLab`;
-  const seoDescription = propFirm.tagline || 
+  // SEO: prefer custom DB seoTitle, fall back to generated default
+  const seoTitle = (propFirm as any).seoTitle || `${stripHtml(propFirm.name)} Review ${new Date().getFullYear()} | EntryLab`;
+  const seoDescription = (propFirm as any).seoDescription || propFirm.tagline ||
                          `Comprehensive review of ${stripHtml(propFirm.name)}. Read about funding, profit splits, evaluation process, and more.`;
 
   // Breadcrumbs for structured data

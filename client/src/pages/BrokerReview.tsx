@@ -200,9 +200,9 @@ export default function BrokerReview() {
     );
   }
 
-  // SEO with fallbacks: auto-generated defaults from DB data
-  const seoTitle = `${stripHtml(broker.name)} Review ${new Date().getFullYear()} | EntryLab`;
-  const seoDescription = broker.tagline || 
+  // SEO: prefer custom DB seoTitle, fall back to generated default
+  const seoTitle = (broker as any).seoTitle || `${stripHtml(broker.name)} Review ${new Date().getFullYear()} | EntryLab`;
+  const seoDescription = (broker as any).seoDescription || broker.tagline ||
                          `Comprehensive review of ${stripHtml(broker.name)}. Read about spreads, regulation, platforms, and more.`;
 
   // Breadcrumbs for structured data
