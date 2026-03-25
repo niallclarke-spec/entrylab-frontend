@@ -4,6 +4,7 @@ import { SITE_URL } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "Terms & Conditions",
   description: "EntryLab terms of service, disclaimer, and privacy policy.",
+  openGraph: { title: "Terms & Conditions | EntryLab", description: "EntryLab terms of service, disclaimer, and privacy policy.", url: `${SITE_URL}/terms` },
   alternates: { canonical: `${SITE_URL}/terms` },
 };
 

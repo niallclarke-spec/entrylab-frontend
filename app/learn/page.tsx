@@ -5,12 +5,11 @@ import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/utils";
 
 export const revalidate = 1800;
-export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Forex Trading Guides & Tutorials",
   description: "In-depth guides on forex brokers, prop firms, account types, deposit methods, platforms and trading conditions explained.",
-  openGraph: { title: "Forex Trading Guides & Tutorials", url: `${SITE_URL}/learn` },
+  openGraph: { title: "Forex Trading Guides & Tutorials", description: "In-depth guides on forex brokers, prop firms, account types, deposit methods, platforms and trading conditions explained.", url: `${SITE_URL}/learn` },
   alternates: { canonical: `${SITE_URL}/learn` },
 };
 

@@ -5,7 +5,6 @@ import type { MetadataRoute } from "next";
 
 const SITE_URL = "https://entrylab.io";
 
-export const dynamic = "force-dynamic";
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

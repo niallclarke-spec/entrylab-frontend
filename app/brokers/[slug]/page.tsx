@@ -8,7 +8,6 @@ import type { Metadata } from "next";
 import { stripHtml, currentYear, formatDate, SITE_URL } from "@/lib/utils";
 
 export const revalidate = 3600;
-export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ slug: string }> };
 

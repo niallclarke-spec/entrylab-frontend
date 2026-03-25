@@ -7,12 +7,11 @@ import type { Metadata } from "next";
 import { currentYear, SITE_URL } from "@/lib/utils";
 
 export const revalidate = 3600;
-export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: `Compare Forex Brokers & Prop Firms ${currentYear()} — Side-by-Side`,
   description: "Head-to-head comparisons of forex brokers and prop trading firms. Compare regulation, fees, platforms, profit splits and more.",
-  openGraph: { title: `Compare Forex Brokers & Prop Firms — Side-by-Side`, url: `${SITE_URL}/compare` },
+  openGraph: { title: `Compare Forex Brokers & Prop Firms — Side-by-Side`, description: "Head-to-head comparisons of forex brokers and prop trading firms. Compare regulation, fees, platforms, profit splits and more.", url: `${SITE_URL}/compare` },
   alternates: { canonical: `${SITE_URL}/compare` },
 };
 

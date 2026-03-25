@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Zap, Check, Shield, TrendingUp, Users } from "lucide-react";
-import type { Metadata } from "next";
-
-// Note: metadata must be in a separate file or use generateMetadata for client components
-// We'll handle this with a layout.tsx or head.tsx approach
+import { Zap, Check } from "lucide-react";
 
 export default function SubscribePage() {
   const [email, setEmail] = useState("");

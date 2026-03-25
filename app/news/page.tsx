@@ -5,12 +5,11 @@ import type { Metadata } from "next";
 import { currentYear, SITE_URL } from "@/lib/utils";
 
 export const revalidate = 1800;
-export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: `Forex & Prop Firm News ${currentYear()}`,
   description: `Latest news from the forex broker and prop firm industry. Regulatory updates, new brokers, promotions and trading conditions.`,
-  openGraph: { title: `Forex & Prop Firm News ${currentYear()}`, url: `${SITE_URL}/news` },
+  openGraph: { title: `Forex & Prop Firm News ${currentYear()}`, description: `Latest news from the forex broker and prop firm industry. Regulatory updates, new brokers, promotions and trading conditions.`, url: `${SITE_URL}/news` },
   alternates: { canonical: `${SITE_URL}/news` },
 };
 

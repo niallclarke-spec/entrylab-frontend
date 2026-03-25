@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { articlesTable } from "@/lib/schema";
-import { eq, and, desc, or, like } from "drizzle-orm";
+import { eq, and, desc, or } from "drizzle-orm";
 
 // Map URL prefix to article category patterns
 const categoryMap: Record<string, string[]> = {

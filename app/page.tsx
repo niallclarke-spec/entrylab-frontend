@@ -7,7 +7,6 @@ import { formatDate, SITE_NAME } from "@/lib/utils";
 import type { Metadata } from "next";
 
 export const revalidate = 1800; // 30 minutes
-export const dynamic = "force-dynamic"; // TODO: remove for production — ISR will handle this
 
 export const metadata: Metadata = {
   title: `${SITE_NAME} — Forex Broker Reviews & Trading Intelligence`,
@@ -19,6 +18,7 @@ export const metadata: Metadata = {
       "Independent forex broker reviews, prop firm evaluations, and XAU/USD trading signals.",
     url: "https://entrylab.io",
   },
+  alternates: { canonical: "https://entrylab.io" },
 };
 
 export default async function HomePage() {
