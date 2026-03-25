@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Allow Replit dev origin
+  allowedDevOrigins: ["*.riker.replit.dev"],
+
   // Image optimization — allow external broker logos
   images: {
     remotePatterns: [
