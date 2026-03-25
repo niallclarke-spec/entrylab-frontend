@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { gscIndexingLog } from "@/lib/schema";
+import { SignJWT, importPKCS8 } from "jose";
 
 const SCOPES = ["https://www.googleapis.com/auth/indexing"];
 const INDEXING_ENDPOINT = "https://indexing.googleapis.com/v3/urlNotifications:publish";
@@ -14,45 +15,23 @@ function getServiceAccount() {
   return cachedServiceAccount;
 }
 
-// Simple JWT-based auth for Google APIs (no external lib needed)
 async function getAccessToken(): Promise<string> {
   const sa = getServiceAccount();
   const now = Math.floor(Date.now() / 1000);
 
-  // Build JWT header and claim set
-  const header = btoa(JSON.stringify({ alg: "RS256", typ: "JWT" }));
-  const claimSet = btoa(JSON.stringify({
+  // Import the RSA private key using jose (works in Node.js)
+  const privateKey = await importPKCS8(sa.private_key, "RS256");
+
+  // Build and sign a JWT for Google's OAuth2
+  const jwt = await new SignJWT({
     iss: sa.client_email,
     scope: SCOPES.join(" "),
     aud: sa.token_uri,
-    exp: now + 3600,
-    iat: now,
-  }));
-
-  const signInput = `${header}.${claimSet}`;
-
-  // Import private key and sign
-  const pemKey = sa.private_key.replace(/-----BEGIN PRIVATE KEY-----/, "")
-    .replace(/-----END PRIVATE KEY-----/, "")
-    .replace(/\n/g, "");
-  const binaryKey = Uint8Array.from(atob(pemKey), (c) => c.charCodeAt(0));
-
-  const key = await crypto.subtle.importKey(
-    "pkcs8",
-    binaryKey,
-    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-
-  const signature = await crypto.subtle.sign(
-    "RSASSA-PKCS1-v1_5",
-    key,
-    new TextEncoder().encode(signInput)
-  );
-
-  const jwt = `${signInput}.${btoa(String.fromCharCode(...new Uint8Array(signature)))
-    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")}`;
+  })
+    .setProtectedHeader({ alg: "RS256", typ: "JWT" })
+    .setIssuedAt(now)
+    .setExpirationTime(now + 3600)
+    .sign(privateKey);
 
   // Exchange JWT for access token
   const res = await fetch(sa.token_uri, {
